@@ -78,7 +78,7 @@ Non-goals for this stage:
 Gate:
 
 - unit tests for each initial decision outcome: complete;
-- Ravenclaw adapter test proving pause/abort/cooldown can be honored between runner steps: pending;
+- Ravenclaw adapter test proving pause/abort/cooldown can be honored between runner steps: complete in Ravenclaw (`engine/tests/test_govengine_ooda_adapter.py`);
 - receipt/evidence note showing how OODA decisions are recorded without leaking raw output: pending;
 - public docs state non-claims clearly: complete.
 
