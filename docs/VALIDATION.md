@@ -25,6 +25,7 @@ Current tests cover:
 - dry-run result assembly;
 - neutral scope helpers;
 - approved execution spec and ticket helper shapes;
+- OODA decision outcomes and runner-control receipt shape;
 - SCLite lifecycle verifier seam availability.
 
 ## Ravenclaw consumption gate
@@ -66,6 +67,7 @@ These checks do not prove:
 - authorization to test live targets;
 - production deployment readiness;
 - protocol adapter correctness;
-- Logdash UI behavior.
+- Logdash UI behavior;
+- that compact OODA receipt summaries are a substitute for raw forensic logs.
 
 GovEngine is currently a reusable governed-execution helper layer, not a full autonomous runtime.
