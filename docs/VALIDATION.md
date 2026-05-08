@@ -30,7 +30,7 @@ Current tests cover:
 
 ## Ravenclaw consumption gate
 
-Ravenclaw's migration branch validates that it can consume GovEngine as an external git dependency instead of using an in-tree `govengine/` copy.
+Ravenclaw should validate that it can consume GovEngine as the external PyPI package `govengine` instead of using an in-tree `govengine/` copy or a Git URL pin.
 
 The important checks are:
 
@@ -57,7 +57,7 @@ For any Ravenclaw publication that consumes GovEngine:
 - assemble the Ravenclaw public snapshot;
 - run Ravenclaw residue audit;
 - confirm the snapshot does not include an in-tree `govengine/` directory;
-- confirm `pyproject.toml` consumes GovEngine from the intended git pin.
+- confirm `pyproject.toml` consumes GovEngine from the intended package range, not a Git URL pin.
 
 ## Non-claims
 

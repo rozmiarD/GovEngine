@@ -13,7 +13,7 @@ GovEngine is a **pre-alpha governed-execution helper package** extracted from Ra
 - OODA safety loop: deterministic between-step decision contract.
 - Live subprocess execution: not owned by GovEngine.
 - Carrier adapters: deferred.
-- PyPI publication: release candidate ready after validation.
+- PyPI publication: completed as `govengine==0.1.0`.
 
 ## What is public-safe today
 
@@ -45,4 +45,4 @@ Keep GovEngine in `0.y.z` until:
 1. GovEngine's public API boundary remains documented and tested enough for external users;
 2. changelog, security, contribution, validation, and publishing docs stay complete;
 3. release artifacts can be built and checked reproducibly;
-4. Ravenclaw consumes the released package without git pin drift.
+4. Ravenclaw consumes the released package without Git URL pin drift.

@@ -24,7 +24,7 @@ Status: completed for initial public package.
 Status: completed in Ravenclaw migration branch.
 
 - Remove in-tree `govengine/` from Ravenclaw.
-- Consume GovEngine from the public git dependency.
+- Consume GovEngine from the public PyPI package dependency.
 - Preserve Ravenclaw compatibility wrappers.
 - Validate focused GovEngine/Ravenclaw seams and Security Contract receipt.
 
@@ -88,4 +88,4 @@ Deferred.
 
 Potential hosts/carriers such as OpenClaw, MCP, or A2A should come after the core API, runner protocol, OODA safety loop, and package/publication discipline are stable. GovEngine should not become protocol-first.
 
-Before adapter implementation resumes, finish the repository-publication hygiene wave: changelog/status/security/publishing docs, versioning decision, SCLite package dependency path, and release validation gates.
+Before adapter implementation resumes, consume the published `govengine`/`sclite-core` package chain from Ravenclaw and keep release validation gates green.
