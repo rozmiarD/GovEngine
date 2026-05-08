@@ -79,7 +79,7 @@ Gate:
 
 - unit tests for each initial decision outcome: complete;
 - Ravenclaw adapter test proving pause/abort/cooldown can be honored between runner steps: complete in Ravenclaw (`engine/tests/test_govengine_ooda_adapter.py`);
-- receipt/evidence note showing how OODA decisions are recorded without leaking raw output: pending;
+- receipt/evidence note showing how OODA decisions are recorded without leaking raw output: complete (`docs/OODA_RECEIPT_EVIDENCE.md`);
 - public docs state non-claims clearly: complete.
 
 ## Stage 6 — carrier adapters
