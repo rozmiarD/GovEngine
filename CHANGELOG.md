@@ -6,7 +6,7 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-- Nothing yet.
+- Calibrated validation, roadmap, publishing, and public-status docs after `govengine==0.1.0` PyPI publication.
 
 ## 0.1.0 - initial PyPI candidate
 
