@@ -55,24 +55,28 @@ Purpose:
 - redact prepared execution specs for auditor/reviewer surfaces;
 - bridge GovEngine helpers to SCLite lifecycle artifacts.
 
-### 4. Execution helper layer
+### 4. Execution helper / runner protocol layer
 
 Modules:
 
+- `govengine.api`
 - `govengine.execution.approved_spec`
 - `govengine.execution.ticket_gate`
 - `govengine.execution.command_shape`
 - `govengine.execution.runner`
+- `govengine.execution.runner_protocol`
 - `govengine.execution_backend`
 
 Purpose:
 
+- expose stable API result/error envelopes for hard boundaries;
 - validate approved execution specs;
 - check execution-ticket presence/shape;
 - normalize command shape and target observations;
-- assemble dry-run result envelopes.
+- assemble dry-run result envelopes;
+- define the carrier-neutral runner request/receipt protocol a host adapter can honor.
 
-Important: live subprocess execution is not owned by GovEngine yet.
+Important: live subprocess execution is not owned by GovEngine yet. The runner protocol prepares and records bounded execution shape; host adapters still own concrete IO/subprocess behavior.
 
 ### 5. Host context layer
 
@@ -91,7 +95,9 @@ Purpose:
 
 ### 6. OODA safety/control layer
 
-Planned after the runner protocol.
+Module:
+
+- `govengine.ooda`
 
 Purpose:
 
@@ -100,7 +106,7 @@ Purpose:
 - decide whether the next step should continue, pause, abort, cooldown, degrade to dry-run, or require owner review;
 - act by returning deterministic control decisions to the host runner/adapter.
 
-This layer should convert Ravenclaw's existing scattered controls — stop/pause, host health gates, cooldowns, runtime decisions, and anomaly/replay checks — into a reusable GovEngine contract. It must stay policy-first and carrier-neutral.
+This layer converts Ravenclaw's existing scattered controls — stop/pause, host health gates, cooldowns, runtime decisions, and anomaly/replay checks — into a reusable GovEngine contract. It is policy-first, deterministic by default, and carrier-neutral.
 
 ## Boundary rule
 
