@@ -6,6 +6,13 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Nothing yet.
+
+## 0.1.0 - initial PyPI candidate
+
+- Switched SCLite dependency from a Git URL pin to the published PyPI distribution `sclite-core>=0.2.1,<0.3`.
+- Normalized package license metadata to SPDX-style `MIT`.
+- Added `govengine.__version__` for package/version checks.
 - Added OODA receipt/evidence guidance for recording compact governance-control decisions without publishing raw output or private telemetry.
 - Added deterministic OODA safety/control primitives: `GovObservation`, `GovOrientation`, `GovOodaDecision`, and `GovOodaController`.
 - Added carrier-neutral runner protocol primitives: `GovRunnerStep`, `GovRunnerRequest`, `GovRunnerStepResult`, `GovRunnerReceipt`, and `GovRunner`.

@@ -7,12 +7,13 @@ GovEngine is a **pre-alpha governed-execution helper package** extracted from Ra
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- SCLite integration: present through helper seams.
+- Version: `0.1.0`.
+- SCLite integration: present through helper seams via `sclite-core>=0.2.1,<0.3`.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
 - Live subprocess execution: not owned by GovEngine.
 - Carrier adapters: deferred.
-- PyPI publication: not ready yet.
+- PyPI publication: release candidate ready after validation.
 
 ## What is public-safe today
 
@@ -34,15 +35,14 @@ GovEngine does not currently claim:
 - authorization to run tools against targets;
 - protocol adapter correctness;
 - complete API stability;
-- PyPI release readiness;
+- production/stable PyPI API readiness;
 - a full replacement for Ravenclaw Runtime.
 
 ## Release posture
 
 Keep GovEngine in `0.y.z` until:
 
-1. SCLite is available through a stable package dependency path;
-2. GovEngine's public API boundary is documented and tested enough for external users;
-3. changelog, security, contribution, validation, and publishing docs are complete;
-4. release artifacts can be built and checked reproducibly;
-5. Ravenclaw consumes the released package without git pin drift.
+1. GovEngine's public API boundary remains documented and tested enough for external users;
+2. changelog, security, contribution, validation, and publishing docs stay complete;
+3. release artifacts can be built and checked reproducibly;
+4. Ravenclaw consumes the released package without git pin drift.
