@@ -1,6 +1,6 @@
 # GovEngine Publishing Checklist
 
-GovEngine is not ready for PyPI publication yet. Use this checklist to prepare without overstating maturity.
+GovEngine is a pre-alpha PyPI release candidate. Use this checklist to publish without overstating maturity.
 
 ## Preflight
 
@@ -11,10 +11,10 @@ GovEngine is not ready for PyPI publication yet. Use this checklist to prepare w
 - [ ] Build artifacts are generated from a clean tree.
 - [ ] No generated `build/`, `dist/`, `*.egg-info`, caches, private state, or Ravenclaw workspace files are committed unless intentionally package metadata.
 
-## PyPI blockers today
+## PyPI readiness notes
 
-- SCLite should be published first, so GovEngine can depend on a normal version range such as `sclite>=0.2,<0.3` instead of a Git URL pin.
-- GovEngine should choose an initial public version (`0.1.0` is likely more honest than `0.0.0` once the current API/runner/OODA surface is documented).
+- SCLite is published as the PyPI distribution `sclite-core`; GovEngine should depend on `sclite-core>=0.2.1,<0.3`.
+- Initial public GovEngine version is `0.1.0` because the API/runner/OODA surface is now documented but still pre-alpha.
 - API stability and non-claims should remain explicit because this is pre-1.0.
 
 ## Recommended release order
@@ -36,6 +36,8 @@ Optional build check once build tooling is installed:
 python -m pip install build twine
 python -m build
 python -m twine check dist/*
+python -m pip install dist/*.whl
+python -m pip check
 ```
 
 Do not upload to PyPI or create public tags until the operator explicitly approves the release action.

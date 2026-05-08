@@ -3,7 +3,7 @@
 [![pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Package: govengine 0.0.0](https://img.shields.io/badge/package-govengine%200.0.0-blueviolet.svg)](pyproject.toml)
+[![Package: govengine 0.1.0](https://img.shields.io/badge/package-govengine%200.1.0-blueviolet.svg)](pyproject.toml)
 [![SCLite](https://img.shields.io/badge/SCLite-contract%20lifecycle-informational.svg)](https://github.com/rozmiarD/SCLite)
 
 GovEngine is a carrier-agnostic governed-execution core for policy-gated security automation.
@@ -64,7 +64,17 @@ GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a prot
 
 GovEngine is **pre-alpha extraction work**. The package is importable and tested, and Ravenclaw has a migration branch that consumes it from this repository. The current public surface is intended for review and boundary hardening before any live execution backend is moved.
 
-## Install for local development
+## Installation
+
+Once published to PyPI:
+
+```bash
+python -m pip install govengine
+```
+
+GovEngine depends on the PyPI distribution `sclite-core` while preserving the Python import package `sclite`.
+
+For local development:
 
 ```bash
 python -m venv .venv

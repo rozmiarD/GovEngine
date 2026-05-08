@@ -7,11 +7,13 @@ GovEngine answers: **how does a runtime prepare, check, and consume those artifa
 
 ## Dependency
 
-`pyproject.toml` pins SCLite as a git dependency:
+`pyproject.toml` depends on the published SCLite package distribution:
 
 ```toml
-sclite @ git+https://github.com/rozmiarD/SCLite.git@43dae49b44602da76611fb42cd0b10aac3b3ae3f
+sclite-core>=0.2.1,<0.3
 ```
+
+The PyPI distribution name is `sclite-core`; the Python import package remains `sclite`.
 
 This keeps the dependency direction explicit:
 

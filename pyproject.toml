@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "govengine"
-version = "0.0.0"
+version = "0.1.0"
 description = "Carrier-agnostic governed execution services extracted from Ravenclaw"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { file = "LICENSE" }
+license = "MIT"
 authors = [{ name = "Krzysztof Probola" }]
 keywords = ["security", "governance", "execution-contracts", "dry-run", "policy"]
 classifiers = [
@@ -21,7 +21,7 @@ classifiers = [
 ]
 dependencies = [
   "PyYAML>=6,<7",
-  "sclite @ git+https://github.com/rozmiarD/SCLite.git@43dae49b44602da76611fb42cd0b10aac3b3ae3f",
+  "sclite-core>=0.2.1,<0.3",
 ]
 
 [project.urls]
