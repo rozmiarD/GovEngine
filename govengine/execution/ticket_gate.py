@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
-from sclite.integrity import artifact_descriptor
+
+def _artifact_descriptor(artifact: Dict[str, Any]) -> Dict[str, Any]:
+    from sclite.integrity import artifact_descriptor
+
+    return artifact_descriptor(artifact)
 
 APPROVED_TICKET_STATUSES = {'approve', 'approved', 'approved_for_dry_run'}
 
@@ -41,7 +45,7 @@ def validate_execution_ticket_gate(
         max_runs = 0
     if max_runs < 1:
         raise ValueError('invalid_execution_ticket_max_runs')
-    contract_digest = artifact_descriptor(execution_contract)['digest']
+    contract_digest = _artifact_descriptor(execution_contract)['digest']
     integrity = execution_ticket.get('integrity') if isinstance(execution_ticket.get('integrity'), dict) else {}
     bound_digest = str(integrity.get('ticket_binds_execution_contract_digest') or '').strip()
     if bound_digest != contract_digest:
