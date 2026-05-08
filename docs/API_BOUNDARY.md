@@ -1,8 +1,10 @@
 # GovEngine API Boundary
 
+GovEngine owns reusable governed-execution services. Its public surface should stay carrier-neutral and SCLite-aware.
+
 ## Owns
 
-GovEngine owns carrier-neutral governed-execution services:
+GovEngine owns:
 
 - `govengine.action_schema` — action type/capability constants and limits.
 - `govengine.action_validators` — action/probe shape validation.
@@ -11,10 +13,18 @@ GovEngine owns carrier-neutral governed-execution services:
 - `govengine.semantic_loss_policy` — semantic-loss classification/gates.
 - `govengine.policy.*` — policy core and gateway helpers.
 - `govengine.contracts.*` — execution-contract shaping/redaction helpers.
-- `govengine.execution.*` — approved-spec/ticket/command-shape/dry-run helpers.
+- `govengine.execution.*` — approved-spec, ticket, command-shape, and dry-run helpers.
 - `govengine.scope` — neutral scope helpers and `GovScopePort`.
 - `govengine.state_store` — neutral JSON state helper primitives.
 - `govengine.sclite_*` — explicit integration seams with SCLite.
+
+## Consumes
+
+GovEngine consumes:
+
+- SCLite schemas, lifecycle helpers, and verification surfaces;
+- host-provided filesystem/context paths;
+- host-provided policy/scope/tool registry data.
 
 ## Does not own
 
@@ -56,3 +66,5 @@ GovEngine -> Ravenclaw engine/*
 GovEngine -> Logdash
 GovEngine -> OpenClaw/MCP/A2A adapters
 ```
+
+Ravenclaw may import GovEngine. GovEngine must remain independently importable without Ravenclaw's `engine/` path.
