@@ -1,0 +1,38 @@
+# Contributing to GovEngine
+
+GovEngine is pre-alpha extraction work. Contributions should preserve the package boundary:
+
+```text
+Ravenclaw -> GovEngine -> SCLite
+```
+
+## Development setup
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e '.[dev]'
+python -m pytest -q
+python -m pip check
+```
+
+## Change rules
+
+- Keep GovEngine carrier-neutral.
+- Do not import Ravenclaw runtime, Logdash, OpenClaw, MCP, or A2A code.
+- Do not add live subprocess execution without an explicit reviewed design.
+- Prefer typed/result envelopes for new public boundaries.
+- Preserve public-safe redaction and non-claims in receipts/evidence docs.
+- Update `CHANGELOG.md` for meaningful user-visible or API-boundary changes.
+- Update docs/tests with contract changes.
+
+## Release discipline
+
+Before release-oriented work:
+
+1. confirm tests pass;
+2. confirm package metadata is accurate;
+3. confirm dependency direction remains `GovEngine -> SCLite` only;
+4. confirm no private Ravenclaw workspace state or generated artifacts are included;
+5. confirm version/changelog/public-status docs agree.
