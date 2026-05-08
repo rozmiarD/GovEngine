@@ -9,7 +9,7 @@ description = "Carrier-agnostic governed execution services extracted from Raven
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
-authors = [{ name = "GovEngine maintainers" }]
+authors = [{ name = "Krzysztof Probola" }]
 keywords = ["security", "governance", "execution-contracts", "dry-run", "policy"]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
@@ -23,6 +23,12 @@ dependencies = [
   "PyYAML>=6,<7",
   "sclite @ git+https://github.com/rozmiarD/SCLite.git@43dae49b44602da76611fb42cd0b10aac3b3ae3f",
 ]
+
+[project.urls]
+Homepage = "https://github.com/rozmiarD/GovEngine"
+Repository = "https://github.com/rozmiarD/GovEngine"
+Issues = "https://github.com/rozmiarD/GovEngine/issues"
+Documentation = "https://github.com/rozmiarD/GovEngine#readme"
 
 [project.optional-dependencies]
 dev = [
