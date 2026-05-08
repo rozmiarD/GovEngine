@@ -95,6 +95,11 @@ assert receipt["status"] == "dry-run"
 
 ## Documentation
 
+- [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md) — current maturity and non-claims.
+- [`CHANGELOG.md`](CHANGELOG.md) — notable public changes.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution and boundary rules.
+- [`SECURITY.md`](SECURITY.md) — security reporting and package safety boundaries.
+- [`PUBLISHING.md`](PUBLISHING.md) — publishing/PyPI readiness checklist.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — package shape and dependency boundaries.
 - [`docs/SCLITE_INTEGRATION.md`](docs/SCLITE_INTEGRATION.md) — how GovEngine consumes SCLite.
 - [`docs/API_BOUNDARY.md`](docs/API_BOUNDARY.md) — owned vs excluded surfaces.

@@ -84,6 +84,8 @@ Gate:
 
 ## Stage 6 — carrier adapters
 
-Not started.
+Deferred.
 
-Potential hosts/carriers such as OpenClaw, MCP, or A2A should come after the core API, runner protocol, and OODA safety loop are stable. GovEngine should not become protocol-first.
+Potential hosts/carriers such as OpenClaw, MCP, or A2A should come after the core API, runner protocol, OODA safety loop, and package/publication discipline are stable. GovEngine should not become protocol-first.
+
+Before adapter implementation resumes, finish the repository-publication hygiene wave: changelog/status/security/publishing docs, versioning decision, SCLite package dependency path, and release validation gates.
