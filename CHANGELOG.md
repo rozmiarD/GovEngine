@@ -6,6 +6,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Nothing yet.
+
+## 0.1.1 - metadata calibration
+
+- Updated the PyPI package description to describe GovEngine as carrier-agnostic governed execution services that consume SCLite contract lifecycle artifacts for policy-gated security automation.
 - Calibrated validation, roadmap, publishing, and public-status docs after `govengine==0.1.0` PyPI publication.
 
 ## 0.1.0 - initial PyPI candidate
