@@ -89,6 +89,19 @@ Purpose:
 - avoid hard dependencies on Ravenclaw internals;
 - support standalone import and package testing.
 
+### 6. OODA safety/control layer
+
+Planned after the runner protocol.
+
+Purpose:
+
+- observe normalized execution telemetry and operator-control events;
+- orient observations against approved specs, execution tickets, policy decisions, scope, budgets, and host state;
+- decide whether the next step should continue, pause, abort, cooldown, degrade to dry-run, or require owner review;
+- act by returning deterministic control decisions to the host runner/adapter.
+
+This layer should convert Ravenclaw's existing scattered controls — stop/pause, host health gates, cooldowns, runtime decisions, and anomaly/replay checks — into a reusable GovEngine contract. It must stay policy-first and carrier-neutral.
+
 ## Boundary rule
 
 GovEngine can consume SCLite and host-supplied context. It should not import Ravenclaw `engine/*`, Logdash, OpenClaw session wiring, or protocol adapters.
