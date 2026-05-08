@@ -6,6 +6,7 @@ import importlib
 def test_public_modules_import() -> None:
     modules = [
         'govengine',
+        'govengine.api',
         'govengine.context',
         'govengine.scope',
         'govengine.state_store',
@@ -25,7 +26,9 @@ def test_public_modules_import() -> None:
         'govengine.execution.approved_spec',
         'govengine.execution.command_shape',
         'govengine.execution.runner',
+        'govengine.execution.runner_protocol',
         'govengine.execution.ticket_gate',
+        'govengine.ooda',
     ]
     for module in modules:
         importlib.import_module(module)

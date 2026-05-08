@@ -30,34 +30,32 @@ Status: completed in Ravenclaw migration branch.
 
 ## Stage 3 — API hardening
 
-Next recommended work.
+Status: initial implementation complete.
 
-- Reduce implicit host-context assumptions.
-- Convert remaining dictionary-heavy boundaries into explicit typed structures where useful.
-- Add more tests around policy gateway and execution-ticket failure modes.
-- Clarify which helpers are stable public API vs internal extraction compatibility.
+- Added `govengine.api` with structured `GovApiResult` and `GovApiError` envelopes.
+- Added boundary tests for stable result/error shape.
+- Public API hardening is incremental: existing compatibility helpers remain available while new boundaries get typed envelopes first.
 
 ## Stage 4 — runner protocol design
 
-Not started.
+Status: initial implementation complete, dry-run/control-plane only.
 
-- Define a small runner protocol and result type.
-- Keep Ravenclaw subprocess execution as the first adapter.
-- Move dry-run-safe assembly before any live execution mechanics.
-- Require operator review before moving live subprocess execution into GovEngine.
+- Added `govengine.execution.runner_protocol` with `GovRunnerStep`, `GovRunnerRequest`, `GovRunnerStepResult`, `GovRunnerReceipt`, and `GovRunner` protocol.
+- Added approved-spec-to-runner-request assembly and dry-run runner receipts.
+- Ravenclaw subprocess execution remains host-owned. Moving live execution ownership into GovEngine still requires explicit operator review.
 
 ## Stage 5 — OODA safety loop
 
-Not started. Add after the runner protocol exists, before carrier adapters.
+Status: initial implementation complete for deterministic between-step decisions.
 
 Goal: define a carrier-neutral Observe-Orient-Decide-Act safety loop for governed execution. This is not an LLM agent loop and not a scanner. It is a runtime safety/control contract that can interrupt or reshape execution when observations diverge from the approved bounds.
 
-Initial concepts:
+Implemented concepts:
 
 - `GovObservation` — normalized execution telemetry, host health, policy signals, scope drift, transport anomalies, unexpected artifact shape, and operator-control events.
 - `GovOrientation` — contextual interpretation of those observations against the approved execution spec, execution ticket, policy decision, scope, aggression/budget limits, and host state.
 - `GovOodaDecision` — one of `continue`, `pause`, `abort`, `cooldown`, `degrade_to_dry_run`, `require_owner_review`, or `replan_after_step`.
-- `GovOodaController` — deterministic policy-first controller that evaluates observations before, between, and eventually during runner steps.
+- `GovOodaController` — deterministic policy-first controller that evaluates observations before and between runner steps.
 
 Required safety behavior:
 
@@ -68,7 +66,7 @@ Required safety behavior:
 - preserve an auditable decision record that can be linked into SCLite evidence/receipt artifacts;
 - keep host-specific telemetry interpretation outside protocol/carrier adapters.
 
-Ravenclaw has partial precursors today: Logdash pause/stop controls, host execution gates, host-health cooldowns, runtime decision records, and replay anomaly checks. GovEngine should turn those scattered mechanisms into an explicit reusable contract.
+Ravenclaw has partial precursors today: Logdash pause/stop controls, host execution gates, host-health cooldowns, runtime decision records, and replay anomaly checks. GovEngine is turning those scattered mechanisms into an explicit reusable contract.
 
 Non-goals for this stage:
 
@@ -79,10 +77,10 @@ Non-goals for this stage:
 
 Gate:
 
-- unit tests for each decision outcome;
-- Ravenclaw adapter test proving pause/abort/cooldown can be honored between runner steps;
-- receipt/evidence note showing how OODA decisions are recorded without leaking raw output;
-- public docs state non-claims clearly.
+- unit tests for each initial decision outcome: complete;
+- Ravenclaw adapter test proving pause/abort/cooldown can be honored between runner steps: pending;
+- receipt/evidence note showing how OODA decisions are recorded without leaking raw output: pending;
+- public docs state non-claims clearly: complete.
 
 ## Stage 6 — carrier adapters
 
