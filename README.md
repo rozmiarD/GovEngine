@@ -6,46 +6,63 @@
 [![Package: govengine 0.0.0](https://img.shields.io/badge/package-govengine%200.0.0-blueviolet.svg)](pyproject.toml)
 [![SCLite](https://img.shields.io/badge/SCLite-contract%20lifecycle-informational.svg)](https://github.com/rozmiarD/SCLite)
 
-GovEngine is the carrier-agnostic governed-execution core being extracted from Ravenclaw.
+GovEngine is a carrier-agnostic governed-execution core for policy-gated security automation.
+
+It consumes **SCLite** as its contract lifecycle layer and provides reusable services around action validation, policy decisions, execution-contract shaping, execution-ticket checks, scope handling, command-shape normalization, and dry-run result assembly.
 
 Project owner: **Krzysztof Probola**.
 
-It is intended to own reusable, policy-bound execution services:
+## Why it exists
 
-- action schema, validation, and compiler helpers;
-- policy gates and tool registry evaluation;
-- execution-contract shaping and redaction helpers;
-- approved-spec and execution-ticket validation helpers;
-- command-shape, scope, and dry-run result assembly helpers;
-- SCLite lifecycle verification integration.
+AI-assisted security workflows need a hard boundary between:
 
-Dependency direction:
+1. what an agent or caller wants;
+2. what policy allows;
+3. what execution shape was prepared;
+4. what was approved;
+5. what was dry-run or executed;
+6. what evidence can be reviewed.
+
+SCLite defines the auditable contract artifacts for that lifecycle. GovEngine is the reusable Python service layer that consumes those contracts and helps a host runtime enforce them without relying on prompt text alone.
+
+## Dependency direction
 
 ```text
 Ravenclaw -> GovEngine -> SCLite
 ```
 
-GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, or a protocol adapter. Ravenclaw remains the reference runtime, public demo/snapshot publisher, operator control plane, and owner of Ravenclaw-specific defaults/personas/UI.
+- **SCLite** owns schema-backed lifecycle artifacts and validation.
+- **GovEngine** owns reusable governed-execution helpers that consume SCLite artifacts.
+- **Ravenclaw** remains the reference runtime/control plane and concrete integration host.
+
+GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a protocol adapter.
+
+## What GovEngine includes now
+
+- action schema, validation, and compiler helpers;
+- capability recipe and tool-registry helpers;
+- semantic-loss classification helpers;
+- policy core and policy-gateway helpers;
+- execution-contract shaping/redaction helpers;
+- approved-spec and execution-ticket validation helpers;
+- command-shape and scope helpers;
+- dry-run result assembly helpers;
+- explicit SCLite integration seams;
+- focused standalone pytest coverage and GitHub Actions CI.
+
+## What it intentionally does not include yet
+
+- live subprocess execution backend;
+- raw artifact storage/writes;
+- Logdash UI/API routes;
+- OpenClaw, MCP, A2A, or other protocol adapters;
+- LLM provider integrations;
+- Ravenclaw-specific personas, workspace state, or campaign UX;
+- production-readiness claims.
 
 ## Current status
 
-This repository scaffold is pre-alpha extraction work. It validates the package boundary before public repo creation or live execution migration.
-
-Currently included:
-
-- importable `govengine` package;
-- package-local YAML data for capability recipes and tool registry defaults;
-- focused standalone tests;
-- GitHub Actions pytest workflow.
-
-Not included yet:
-
-- live subprocess execution backend;
-- artifact writes;
-- Logdash or Ravenclaw UI routes;
-- OpenClaw/MCP/A2A/protocol adapters;
-- LLM provider integrations;
-- production deployment promises.
+GovEngine is **pre-alpha extraction work**. The package is importable and tested, and Ravenclaw has a migration branch that consumes it from this repository. The current public surface is intended for review and boundary hardening before any live execution backend is moved.
 
 ## Install for local development
 
@@ -75,6 +92,14 @@ receipt = legacy_action_spec_dry_run_result(
 )
 assert receipt["status"] == "dry-run"
 ```
+
+## Documentation
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — package shape and dependency boundaries.
+- [`docs/SCLITE_INTEGRATION.md`](docs/SCLITE_INTEGRATION.md) — how GovEngine consumes SCLite.
+- [`docs/API_BOUNDARY.md`](docs/API_BOUNDARY.md) — owned vs excluded surfaces.
+- [`docs/VALIDATION.md`](docs/VALIDATION.md) — local checks and non-claims.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — staged extraction roadmap.
 
 ## Safety boundary
 
