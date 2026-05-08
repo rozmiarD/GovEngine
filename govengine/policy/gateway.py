@@ -1,17 +1,10 @@
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 from govengine.context import ravenclaw_context
 
 _CONTEXT = ravenclaw_context(Path(__file__))
-_ROOT = _CONTEXT.repo_root
-_ENGINE = _ROOT / "engine"
-for _path in (_ROOT, _ENGINE):
-    if str(_path) not in sys.path:
-        sys.path.insert(0, str(_path))
-
 import re
 from typing import Any, Dict, List
 
