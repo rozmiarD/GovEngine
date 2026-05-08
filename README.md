@@ -1,6 +1,14 @@
 # GovEngine
 
+[![pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+[![Package: govengine 0.0.0](https://img.shields.io/badge/package-govengine%200.0.0-blueviolet.svg)](pyproject.toml)
+[![SCLite](https://img.shields.io/badge/SCLite-contract%20lifecycle-informational.svg)](https://github.com/rozmiarD/SCLite)
+
 GovEngine is the carrier-agnostic governed-execution core being extracted from Ravenclaw.
+
+Project owner: **Krzysztof Probola**.
 
 It is intended to own reusable, policy-bound execution services:
 
