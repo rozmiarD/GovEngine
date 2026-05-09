@@ -8,6 +8,12 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 - Nothing yet.
 
+## 0.1.4 - API surface registry candidate
+
+- Added a tested public surface registry in `govengine.surfaces` that names the artifact-governance core, controlled-execution core, and optional security-profile helper surface without moving live execution or protocol adapters into GovEngine.
+- Clarified that action/tool/scope/policy/signal helpers are an optional security profile for hosts such as Ravenclaw, while artifact lifecycle/signing/trust/execution gates remain the neutral core.
+- Prepared the package version for the API surface registry candidate. Publication requires the standard release checklist and operator approval.
+
 ## 0.1.3 - artifact governance control gates
 
 - Added initial portable artifact-governance boundary objects in `govengine.core`.

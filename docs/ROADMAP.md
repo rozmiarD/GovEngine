@@ -243,6 +243,32 @@ Non-goals:
 - no UI ownership;
 - no raw artifact storage ownership.
 
+## Stage 12.5 — public surface registry and security-profile separation
+
+Status: initial implementation complete.
+
+Goal: make the pre-alpha API boundary easier to review before carrier-adapter work. GovEngine should expose a tested surface map that distinguishes neutral artifact-governance primitives from optional security-oriented helpers inherited from the Ravenclaw extraction path.
+
+Implemented concepts:
+
+- `govengine.surfaces.GovSurface` — compact metadata for a public surface group.
+- `govengine.surfaces.public_surface_index` — tested index of current public surfaces.
+- `artifact_governance_core` — neutral artifact descriptor/state/transition, lifecycle, signing/trust, deconfliction, and state-index modules.
+- `controlled_execution_core` — approved-spec, execution-ticket, command-shape, runner, OODA, and dry-run execution-gate modules.
+- `security_profile_helpers` — optional action/tool/scope/policy/signal helpers for hosts such as Ravenclaw.
+
+Non-goals:
+
+- no module migration or breaking import paths in this slice;
+- no live scanner/exploit capability;
+- no bug-bounty campaign orchestration ownership;
+- no protocol adapter implementation.
+
+Gate:
+
+- standalone tests prove the surface names, optional-profile flag, non-claims, and strict lookup behavior;
+- public docs state the separation without claiming stable 1.0 API maturity.
+
 ## Stage 13 — carrier adapters
 
 Deferred.

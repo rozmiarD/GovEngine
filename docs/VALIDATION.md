@@ -10,12 +10,13 @@ python -m pytest -q
 python -m pip check
 ```
 
-Expected current result for the published `0.1.3` line:
+Expected current result for the `0.1.4` source candidate:
 
-- standalone pytest suite passes (`55 passed` in the release tree);
+- standalone pytest suite passes (`59 passed` in the current source tree; `55 passed` for the published `0.1.3` release tree);
 - package dependencies are consistent;
-- `python -m build` creates `govengine-0.1.3` sdist/wheel artifacts;
-- `python -m twine check dist/*` passes for the release artifacts;
+- `python -m build` creates `govengine-0.1.4` sdist/wheel artifacts;
+- `python -m twine check dist/*` passes for the candidate artifacts;
+- clean wheel install reports `govengine.__version__ == 0.1.4`, distribution version `0.1.4`, import checks for the artifact-governance and surface-registry modules pass, and `pip check` is clean;
 - clean install from PyPI with `govengine==0.1.3` reports `govengine.__version__ == 0.1.3`, distribution version `0.1.3`, `sclite-core==0.2.1`, import checks for the artifact-governance modules pass, and `pip check` is clean;
 - no Ravenclaw runtime or Logdash process is started.
 
@@ -35,7 +36,8 @@ Current tests cover:
 - lifecycle transition gates and blocker/next-action reporting;
 - signing/trust bridge decisions without PKI/key ownership;
 - dry-run-only execution gates and default `DryRunRunner` behavior;
-- deconfliction/change-order and artifact state-index summaries.
+- deconfliction/change-order and artifact state-index summaries;
+- public surface registry separation between artifact-governance core, controlled-execution core, and optional security-profile helpers.
 
 ## Ravenclaw consumption gate
 
