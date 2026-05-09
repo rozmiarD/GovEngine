@@ -3,7 +3,7 @@
 [![pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Package: govengine 0.1.2](https://img.shields.io/badge/package-govengine%200.1.2-blueviolet.svg)](pyproject.toml)
+[![Package: govengine 0.1.3](https://img.shields.io/badge/package-govengine%200.1.3-blueviolet.svg)](pyproject.toml)
 [![SCLite](https://img.shields.io/badge/SCLite-contract%20lifecycle-informational.svg)](https://github.com/rozmiarD/SCLite)
 
 GovEngine is a carrier-agnostic governed-execution core for portable artifact governance and policy-gated controlled execution.
@@ -68,7 +68,7 @@ GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a prot
 
 ## Current status
 
-GovEngine is **pre-alpha extraction work**. The package is importable and tested, and Ravenclaw consumes the published package line while migration waves continue in this repository before release. The current public surface is intended for review and boundary hardening before any live execution backend is moved.
+GovEngine is **pre-alpha extraction work**. The package is importable and tested. The `0.1.3` line adds initial artifact-governance control gates while keeping live execution disabled by default. Ravenclaw has a host adapter for these gates, and still retains concrete runtime execution ownership.
 
 ## Installation
 

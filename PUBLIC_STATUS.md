@@ -7,7 +7,7 @@ GovEngine is a **pre-alpha governed-execution helper package** extracted from Ra
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Version: `0.1.2`.
+- Version: `0.1.3`.
 - SCLite integration: present through helper seams via `sclite-core>=0.2.1,<0.3`.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
@@ -19,7 +19,7 @@ GovEngine is a **pre-alpha governed-execution helper package** extracted from Ra
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed for the `0.1.x` line; each new release still requires the standard release checklist and operator approval before upload.
+- PyPI publication: completed through `0.1.2`; `0.1.3` is the artifact-governance control-gate release candidate until tagged/uploaded. Each new release still requires the standard release checklist and operator approval before upload.
 
 ## What is public-safe today
 
