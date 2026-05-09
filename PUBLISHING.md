@@ -5,6 +5,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 ## Preflight
 
 - [ ] Effective git identity is `0x505badc0de <32790662+rozmiarD@users.noreply.github.com>`.
+- [ ] Published Git history is preserved: no force-push, history rewrite, date rewrite, or tag rewrite to fix authorship/contribution graphs. Use corrective commits instead.
 - [ ] `CHANGELOG.md`, `PUBLIC_STATUS.md`, `README.md`, and `pyproject.toml` agree on version/status.
 - [ ] `python -m pytest -q` passes.
 - [ ] `python -m pip check` passes.
