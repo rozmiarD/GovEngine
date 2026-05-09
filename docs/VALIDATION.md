@@ -10,13 +10,13 @@ python -m pytest -q
 python -m pip check
 ```
 
-Expected current result for the published `0.1.4` line:
+Expected current result for the `0.1.5` source candidate:
 
-- standalone pytest suite passes (`59 passed` in the `0.1.4` release tree);
+- standalone pytest suite passes (`64 passed` in the current source tree; `59 passed` for the published `0.1.4` release tree);
 - package dependencies are consistent;
-- `python -m build` creates `govengine-0.1.4` sdist/wheel artifacts;
-- `python -m twine check dist/*` passes for the release artifacts;
-- clean wheel install reports `govengine.__version__ == 0.1.4`, distribution version `0.1.4`, import checks for the artifact-governance and surface-registry modules pass, and `pip check` is clean;
+- `python -m build` creates `govengine-0.1.5` sdist/wheel artifacts;
+- `python -m twine check dist/*` passes for the candidate artifacts;
+- clean wheel install reports `govengine.__version__ == 0.1.5`, distribution version `0.1.5`, import checks for the artifact-governance, surface-registry, and security-profile facade modules pass, and `pip check` is clean;
 - clean install from PyPI with `govengine==0.1.4` reports `govengine.__version__ == 0.1.4`, distribution version `0.1.4`, `sclite-core==0.2.1`, import checks for the artifact-governance and surface-registry modules pass, and `pip check` is clean;
 - no Ravenclaw runtime or Logdash process is started.
 
@@ -37,7 +37,8 @@ Current tests cover:
 - signing/trust bridge decisions without PKI/key ownership;
 - dry-run-only execution gates and default `DryRunRunner` behavior;
 - deconfliction/change-order and artifact state-index summaries;
-- public surface registry separation between artifact-governance core, controlled-execution core, and optional security-profile helpers.
+- public surface registry separation between artifact-governance core, controlled-execution core, and optional security-profile helpers;
+- optional `govengine.security_profile` facade grouping, JSON-safe index output, allowlisted lazy imports, and boundary assertions.
 
 ## Ravenclaw consumption gate
 

@@ -2,7 +2,7 @@
 
 GovEngine owns reusable governed-execution services. Its public surface should stay carrier-neutral and SCLite-aware.
 
-`govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current pre-alpha public surfaces. It separates the neutral artifact-governance core, the controlled-execution core, and optional security-profile helpers.
+`govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current pre-alpha public surfaces. It separates the neutral artifact-governance core, the controlled-execution core, and optional security-profile helpers. `govengine.security_profile.security_profile_index()` is the tested convenience facade for hosts that want to discover the optional security-profile helpers through one entrypoint without treating them as neutral core.
 
 ## Public surface groups
 
@@ -46,7 +46,7 @@ Security-oriented helpers are explicit optional profile modules, not the neutral
 - `govengine.contracts.analysis`
 - `govengine.contracts.evidence_policy`
 
-Claim: reusable public-safe helpers for hosts such as Ravenclaw that need bounded action/tool/scope/policy/signal behavior. Non-claims: live exploit/scanner capability, authorization to test targets, bug-bounty campaign orchestration, Logdash/Ravenclaw runtime ownership, or OpenClaw/MCP/A2A adapter ownership.
+Claim: reusable public-safe helpers for hosts such as Ravenclaw that need bounded action/tool/scope/policy/signal behavior. The `govengine.security_profile` facade groups these helpers into `action_tooling`, `policy_scope`, and `review_contracts`, and exposes allowlisted lazy imports for those modules only. Non-claims: live exploit/scanner capability, authorization to test targets, bug-bounty campaign orchestration, Logdash/Ravenclaw runtime ownership, or OpenClaw/MCP/A2A adapter ownership.
 
 ## Owns
 
@@ -56,6 +56,7 @@ GovEngine owns:
 - `govengine.deconfliction` / `govengine.state_index` — digest/state conflict, change-order, and lightweight artifact state summary helpers.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
 - `govengine.signing` — signature envelopes, signing/trust policy objects, host-provided signer/verifier ports, and signature transition decisions without PKI/key ownership.
+- `govengine.security_profile` — optional security-profile facade for helper discovery, grouped metadata, allowlisted lazy imports, and boundary assertions.
 - `govengine.action_schema` — optional security-profile action type/capability constants and limits.
 - `govengine.action_validators` — optional security-profile action/probe shape validation.
 - `govengine.action_compiler` — optional security-profile action spec lowering into execution plans.

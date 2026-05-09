@@ -93,6 +93,7 @@ Implemented concepts:
 - `govengine.contracts.signal` — signal contract builders/readers for workflow promotion, finding signal, success outcome, adaptation feedback, and legacy bridge flags.
 - `govengine.contracts.analysis` — analysis contract builder that maps planner hypothesis, expected signal, evidence goal, success semantics, and semantic-loss execution fit into a compact review object.
 - `govengine.contracts.evidence_policy` — confirmation gate for requiring false-positive guards, control comparison, observed control delta, and optional reproduction pass before a finding can be treated as confirmed.
+- `govengine.security_profile` — optional facade that groups action/tooling, policy/scope, and review-contract helpers behind one host-facing discovery entrypoint without moving those helpers into the neutral core.
 
 Non-goals for this stage:
 
@@ -105,6 +106,7 @@ Non-goals for this stage:
 Gate:
 
 - standalone GovEngine tests for extracted contracts: complete;
+- standalone GovEngine tests for the optional security-profile facade and boundary assertions: complete in the 0.1.5 source candidate;
 - Ravenclaw compatibility wrappers import the GovEngine modules: complete in the migration tree;
 - Ravenclaw focused seam tests pass against the GovEngine package candidate before publication: complete;
 - package release/publish requires the standard release checklist and operator approval.
@@ -256,6 +258,7 @@ Implemented concepts:
 - `artifact_governance_core` — neutral artifact descriptor/state/transition, lifecycle, signing/trust, deconfliction, and state-index modules.
 - `controlled_execution_core` — approved-spec, execution-ticket, command-shape, runner, OODA, and dry-run execution-gate modules.
 - `security_profile_helpers` — optional action/tool/scope/policy/signal helpers for hosts such as Ravenclaw.
+- `govengine.security_profile` — optional facade for grouped helper discovery, JSON-safe profile indexing, allowlisted lazy imports, and boundary assertions.
 
 Non-goals:
 
@@ -267,6 +270,7 @@ Non-goals:
 Gate:
 
 - standalone tests prove the surface names, optional-profile flag, non-claims, and strict lookup behavior;
+- standalone tests prove the security-profile facade maps exactly to the public surface registry and does not import neutral core helpers through the optional profile;
 - public docs state the separation without claiming stable 1.0 API maturity.
 
 ## Stage 13 — carrier adapters
