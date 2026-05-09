@@ -10,10 +10,13 @@ python -m pytest -q
 python -m pip check
 ```
 
-Expected current result:
+Expected current result for the `0.1.3` release candidate:
 
-- standalone pytest suite passes;
+- standalone pytest suite passes (`55 passed` in the release-candidate tree);
 - package dependencies are consistent;
+- `python -m build` creates `govengine-0.1.3` sdist/wheel artifacts;
+- `python -m twine check dist/*` passes for the release-candidate artifacts;
+- clean wheel install reports `govengine.__version__ == 0.1.3`, distribution version `0.1.3`, import checks for the artifact-governance modules pass, and `pip check` is clean;
 - no Ravenclaw runtime or Logdash process is started.
 
 ## What the focused tests cover
@@ -27,7 +30,12 @@ Current tests cover:
 - approved execution spec and ticket helper shapes;
 - OODA decision outcomes and runner-control receipt shape;
 - signal, analysis, and confirmation-evidence policy contract helpers;
-- SCLite lifecycle verifier seam availability.
+- SCLite lifecycle verifier seam availability;
+- artifact descriptor/envelope/state and transition-decision boundary objects;
+- lifecycle transition gates and blocker/next-action reporting;
+- signing/trust bridge decisions without PKI/key ownership;
+- dry-run-only execution gates and default `DryRunRunner` behavior;
+- deconfliction/change-order and artifact state-index summaries.
 
 ## Ravenclaw consumption gate
 
@@ -44,7 +52,8 @@ python -m pytest -q \
   engine/tests/test_govengine_runner_seam.py \
   engine/tests/test_signal_contract.py \
   engine/tests/test_analysis_contract.py \
-  engine/tests/test_executor_v2.py
+  engine/tests/test_executor_v2.py \
+  engine/tests/test_govengine_control_gate_adapter.py
 ```
 
 and Ravenclaw's Security Contract validation receipt:

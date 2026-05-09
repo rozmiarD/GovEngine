@@ -6,9 +6,14 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Nothing yet.
+
+## 0.1.3 - artifact governance control gates
+
 - Added initial portable artifact-governance boundary objects in `govengine.core`.
 - Added SCLite lifecycle status mapping, lifecycle transition gates, signing/trust bridge helpers, dry-run-only controlled execution gates, deconfliction/change-order helpers, and lightweight artifact state-index summaries.
 - Updated public roadmap/API/status docs to keep carrier adapters deferred and document that live execution remains disabled by default.
+- Prepared the package version for the artifact-governance control-gate line. Publication requires the standard release checklist and operator approval.
 
 ## 0.1.2 - contract extraction
 

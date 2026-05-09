@@ -6,7 +6,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 
 - [ ] For maintainer releases from the operator-controlled publish tree, effective git identity is `0x505badc0de <32790662+rozmiarD@users.noreply.github.com>`; external contributors use their own GitHub-associated identity.
 - [ ] Published Git history is preserved: no force-push, history rewrite, date rewrite, or tag rewrite to fix authorship/contribution graphs. Use corrective commits instead.
-- [ ] `CHANGELOG.md`, `PUBLIC_STATUS.md`, `README.md`, and `pyproject.toml` agree on version/status.
+- [ ] `CHANGELOG.md`, `PUBLIC_STATUS.md`, `README.md`, `docs/VALIDATION.md`, `docs/ROADMAP.md`, `docs/API_BOUNDARY.md`, and `pyproject.toml` agree on version/status and claim only tested behavior.
 - [ ] `python -m pytest -q` passes.
 - [ ] `python -m pip check` passes.
 - [ ] Build artifacts are generated from a clean tree.
@@ -15,7 +15,8 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 ## PyPI release notes
 
 - SCLite is published as the PyPI distribution `sclite-core`; GovEngine depends on `sclite-core>=0.2.1,<0.3`.
-- Initial public GovEngine version is `0.1.0` because the API/runner/OODA surface is now documented but still pre-alpha.
+- Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
+- `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
 - API stability and non-claims should remain explicit because this is pre-1.0.
 
 ## Release order
