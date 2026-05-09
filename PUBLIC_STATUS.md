@@ -19,7 +19,7 @@ GovEngine is a **pre-alpha governed-execution helper package** extracted from Ra
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `0.1.2`; `0.1.3` is the artifact-governance control-gate release candidate until tagged/uploaded. Each new release still requires the standard release checklist and operator approval before upload.
+- PyPI publication: completed through `0.1.3`; each new release still requires the standard release checklist and operator approval before upload.
 
 ## What is public-safe today
 
