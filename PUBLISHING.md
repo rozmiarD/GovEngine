@@ -4,7 +4,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 
 ## Preflight
 
-- [ ] Effective git identity is `0x505badc0de <0x505badc0de@proton.me>`.
+- [ ] Effective git identity is `0x505badc0de <32790662+rozmiarD@users.noreply.github.com>`.
 - [ ] `CHANGELOG.md`, `PUBLIC_STATUS.md`, `README.md`, and `pyproject.toml` agree on version/status.
 - [ ] `python -m pytest -q` passes.
 - [ ] `python -m pip check` passes.
