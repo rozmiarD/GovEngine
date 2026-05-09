@@ -6,7 +6,8 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-- Nothing yet.
+- Prepared `0.1.5` source candidate with `govengine.security_profile`, a tested optional-profile facade for action/tooling, policy/scope, and review-contract helpers.
+- Added allowlisted lazy imports and boundary assertions so hosts can discover security-profile helpers through one entrypoint without pulling neutral core or adapter/live-execution claims into the profile.
 
 ## 0.1.4 - API surface registry
 

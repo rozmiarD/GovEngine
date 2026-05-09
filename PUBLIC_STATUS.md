@@ -7,7 +7,7 @@ GovEngine is a **pre-alpha governed-execution helper package** extracted from Ra
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Version: `0.1.4`.
+- Version: `0.1.5` candidate in source; latest published PyPI version is `0.1.4`.
 - SCLite integration: present through helper seams via `sclite-core>=0.2.1,<0.3`.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
@@ -17,11 +17,11 @@ GovEngine is a **pre-alpha governed-execution helper package** extracted from Ra
 - Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, and transition-decision helpers without PKI/key ownership.
 - Controlled execution gate: initial dry-run-only execution gate and default `DryRunRunner`; live requests are blocked by default.
 - Public surface registry: tested `govengine.surfaces` metadata separates neutral artifact-governance core, controlled-execution core, and optional security-profile helpers.
-- Security profile: action/tool/scope/policy/signal helpers are available as optional host-facing security-profile helpers, not as the neutral core.
+- Security profile: action/tool/scope/policy/signal helpers are available through the optional `govengine.security_profile` facade for host-facing discovery, not as the neutral core.
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `0.1.4`; each new release still requires the standard release checklist and operator approval before upload.
+- PyPI publication: completed through `0.1.4`; `0.1.5` is not tagged/uploaded yet and requires the standard release checklist and operator approval before upload.
 
 ## What is public-safe today
 
@@ -33,6 +33,7 @@ GovEngine can be reviewed as a small Python package for:
 - dry-run-only controlled execution gate helpers and default dry-run runner;
 - artifact deconfliction/change-order and state-index summaries;
 - public surface metadata for current pre-alpha API boundary review;
+- a security-profile facade that groups optional action/tooling, policy/scope, and review-contract helpers behind one tested entrypoint;
 - governed action/spec validation helpers as optional security-profile helpers;
 - policy and scope helper seams as optional security-profile helpers;
 - execution-ticket and approved-spec validation helpers;
