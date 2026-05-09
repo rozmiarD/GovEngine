@@ -3,7 +3,7 @@
 [![pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Package: govengine 0.1.5 candidate](https://img.shields.io/badge/package-govengine%200.1.5%20candidate-blueviolet.svg)](pyproject.toml)
+[![Package: govengine 0.1.5](https://img.shields.io/badge/package-govengine%200.1.5-blueviolet.svg)](pyproject.toml)
 [![SCLite](https://img.shields.io/badge/SCLite-contract%20lifecycle-informational.svg)](https://github.com/rozmiarD/SCLite)
 
 GovEngine is a carrier-agnostic governed-execution core for portable artifact governance and policy-gated controlled execution.
@@ -66,7 +66,7 @@ GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a prot
 
 ## Current status
 
-GovEngine is **pre-alpha extraction work**. The package is importable and tested. The `0.1.3` line added initial artifact-governance control gates while keeping live execution disabled by default. The published `0.1.4` line adds an explicit surface registry so reviewers can distinguish the neutral core from optional security-profile helpers. The source tree is prepared as a `0.1.5` candidate with a security-profile facade for one-entrypoint helper discovery. Ravenclaw has a host adapter for the control gates, and still retains concrete runtime execution ownership.
+GovEngine is **pre-alpha extraction work**. The package is importable and tested. The `0.1.3` line added initial artifact-governance control gates while keeping live execution disabled by default. The `0.1.4` line added an explicit surface registry so reviewers can distinguish the neutral core from optional security-profile helpers. The published `0.1.5` line adds a security-profile facade for one-entrypoint helper discovery. Ravenclaw has a host adapter for the control gates, and still retains concrete runtime execution ownership.
 
 ## Installation
 
