@@ -26,6 +26,7 @@ Current tests cover:
 - neutral scope helpers;
 - approved execution spec and ticket helper shapes;
 - OODA decision outcomes and runner-control receipt shape;
+- signal, analysis, and confirmation-evidence policy contract helpers;
 - SCLite lifecycle verifier seam availability.
 
 ## Ravenclaw consumption gate
@@ -41,6 +42,8 @@ python -m pytest -q \
   engine/tests/test_govengine_policy_seam.py \
   engine/tests/test_govengine_command_shape_seam.py \
   engine/tests/test_govengine_runner_seam.py \
+  engine/tests/test_signal_contract.py \
+  engine/tests/test_analysis_contract.py \
   engine/tests/test_executor_v2.py
 ```
 

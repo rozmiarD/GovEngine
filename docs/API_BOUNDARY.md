@@ -12,7 +12,7 @@ GovEngine owns:
 - `govengine.capability_recipes` — capability and recipe resolution.
 - `govengine.semantic_loss_policy` — semantic-loss classification/gates.
 - `govengine.policy.*` — policy core and gateway helpers.
-- `govengine.contracts.*` — execution-contract shaping/redaction helpers.
+- `govengine.contracts.*` — execution-contract shaping/redaction helpers plus signal, analysis, and confirmation-evidence policy contracts.
 - `govengine.execution.*` — approved-spec, ticket, command-shape, and dry-run helpers.
 - `govengine.scope` — neutral scope helpers and `GovScopePort`.
 - `govengine.state_store` — neutral JSON state helper primitives.
