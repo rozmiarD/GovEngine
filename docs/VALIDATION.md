@@ -10,13 +10,13 @@ python -m pytest -q
 python -m pip check
 ```
 
-Expected current result for the `0.1.3` release candidate:
+Expected current result for the published `0.1.3` line:
 
-- standalone pytest suite passes (`55 passed` in the release-candidate tree);
+- standalone pytest suite passes (`55 passed` in the release tree);
 - package dependencies are consistent;
 - `python -m build` creates `govengine-0.1.3` sdist/wheel artifacts;
-- `python -m twine check dist/*` passes for the release-candidate artifacts;
-- clean wheel install reports `govengine.__version__ == 0.1.3`, distribution version `0.1.3`, import checks for the artifact-governance modules pass, and `pip check` is clean;
+- `python -m twine check dist/*` passes for the release artifacts;
+- clean install from PyPI with `govengine==0.1.3` reports `govengine.__version__ == 0.1.3`, distribution version `0.1.3`, `sclite-core==0.2.1`, import checks for the artifact-governance modules pass, and `pip check` is clean;
 - no Ravenclaw runtime or Logdash process is started.
 
 ## What the focused tests cover
