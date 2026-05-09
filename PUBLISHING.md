@@ -18,7 +18,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 - Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
 - `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
 - `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.
-- `0.1.5` is the security-profile facade candidate: it gives hosts one explicit optional-profile entrypoint for action/tooling, policy/scope, and review-contract helper discovery while keeping neutral core and adapter/live-execution claims separate.
+- `0.1.5` is the security-profile facade line: it gives hosts one explicit optional-profile entrypoint for action/tooling, policy/scope, and review-contract helper discovery while keeping neutral core and adapter/live-execution claims separate.
 - API stability and non-claims should remain explicit because this is pre-1.0.
 
 ## Release order
