@@ -9,10 +9,24 @@ __version__ = '0.1.2'
 
 from .api import GovApiError, GovApiResult
 from .context import GovEngineContext, GovEnginePaths, ravenclaw_context
+from .core import (
+    ArtifactDescriptor,
+    ArtifactEnvelope,
+    ArtifactState,
+    ExecutionPrerequisites,
+    GovernanceContext,
+    ReasonCode,
+    TransitionDecision,
+)
+from .deconfliction import ArtifactChangeOrder, ArtifactConflict, ConflictDetector
+from .execution.gate import DryRunRunner, ExecutionGate, ExecutionGateInput, RunnerProfile
 from .execution_backend import CommandResult, GovExecutionBackend
+from .lifecycle import ArtifactLifecycleController, TransitionGate, TransitionPolicy
 from .ooda import GovObservation, GovOodaController, GovOodaDecision, GovOrientation
 from .roles import GovRoleAdapters
 from .scope import FunctionalScopePort, GovScopePort
+from .signing import SignatureEnvelope, SigningPolicy, TrustPolicy, VerificationResult
+from .state_index import ArtifactStateIndex
 from .state_store import GovStateStore
 
 __all__ = [
@@ -21,6 +35,19 @@ __all__ = [
     'GovApiResult',
     'GovEngineContext',
     'GovEnginePaths',
+    'ArtifactChangeOrder',
+    'ArtifactConflict',
+    'ArtifactDescriptor',
+    'ArtifactEnvelope',
+    'ArtifactLifecycleController',
+    'ArtifactState',
+    'ArtifactStateIndex',
+    'ConflictDetector',
+    'ExecutionGate',
+    'ExecutionGateInput',
+    'ExecutionPrerequisites',
+    'DryRunRunner',
+    'GovernanceContext',
     'GovExecutionBackend',
     'GovObservation',
     'GovOodaController',
@@ -28,9 +55,18 @@ __all__ = [
     'GovOrientation',
     'GovRoleAdapters',
     'FunctionalScopePort',
+    'ReasonCode',
+    'RunnerProfile',
     'GovScopePort',
+    'SignatureEnvelope',
+    'SigningPolicy',
     'GovSCLiteLifecycleVerifier',
     'GovStateStore',
+    'TransitionDecision',
+    'TransitionGate',
+    'TransitionPolicy',
+    'TrustPolicy',
+    'VerificationResult',
     'ravenclaw_context',
     'verify_lifecycle_manifest',
 ]

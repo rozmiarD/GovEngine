@@ -11,7 +11,13 @@ GovEngine is a **pre-alpha governed-execution helper package** extracted from Ra
 - SCLite integration: present through helper seams via `sclite-core>=0.2.1,<0.3`.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
-- Live subprocess execution: not owned by GovEngine.
+- Core artifact governance boundaries: initial portable dataclasses for artifact descriptors/envelopes/state, governance context, transition decisions, and execution prerequisites.
+- SCLite lifecycle status bridge: initial descriptor/state/transition mapping that delegates verification to SCLite.
+- Artifact lifecycle controller: initial transition policy/gate/controller for ordered lifecycle transitions and blocker/next-action reporting.
+- Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, and transition-decision helpers without PKI/key ownership.
+- Controlled execution gate: initial dry-run-only execution gate and default `DryRunRunner`; live requests are blocked by default.
+- Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
+- Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
 - PyPI publication: completed for the `0.1.x` line; each new release still requires the standard release checklist and operator approval before upload.
 
@@ -19,25 +25,35 @@ GovEngine is a **pre-alpha governed-execution helper package** extracted from Ra
 
 GovEngine can be reviewed as a small Python package for:
 
+- portable artifact descriptor/envelope/state and transition-decision boundary objects;
+- lightweight artifact lifecycle transition gate/controller helpers;
+- signature/trust policy bridge helpers that require host-provided verification;
+- dry-run-only controlled execution gate helpers and default dry-run runner;
+- artifact deconfliction/change-order and state-index summaries;
 - governed action/spec validation helpers;
 - policy and scope helper seams;
 - execution-ticket and approved-spec validation helpers;
 - runner request/receipt shapes;
 - OODA decision objects;
 - signal, analysis, and evidence-confirmation contracts extracted from Ravenclaw;
-- SCLite lifecycle integration boundaries.
+- SCLite lifecycle integration boundaries and lifecycle status mapping into portable GovEngine state/transition objects.
 
 ## What is not claimed
 
 GovEngine does not currently claim:
 
 - production runtime readiness;
+- direct execution from raw intent;
 - live exploit or scanner capability;
 - authorization to run tools against targets;
 - protocol adapter correctness;
 - complete API stability;
 - production/stable PyPI API readiness;
 - a full replacement for Ravenclaw Runtime.
+
+## Controlled execution posture
+
+Controlled execution is a later capability, not the current default. Execution must be gated by a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, and allowed runner profile. Dry-run behavior is the default; live backends are optional future work and must stay disabled by default.
 
 ## Release posture
 
