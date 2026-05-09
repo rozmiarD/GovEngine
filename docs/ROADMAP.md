@@ -109,10 +109,144 @@ Gate:
 - Ravenclaw focused seam tests pass against the GovEngine package candidate before publication: complete;
 - package release/publish requires the standard release checklist and operator approval.
 
-## Stage 7 — carrier adapters
+## Stage 7 — artifact governance core hardening
+
+Status: initial implementation complete for neutral boundary objects.
+
+Goal: make GovEngine portable as an artifact governance layer before any live execution backend or carrier adapter work. This stage introduces small, Ravenclaw-independent core objects that future lifecycle, signing/trust, and controlled-execution gates can share.
+
+Implemented concepts:
+
+- `govengine.core.ReasonCode` — stable reason-code values for portable boundary decisions.
+- `govengine.core.ArtifactDescriptor` — neutral artifact descriptor object; SCLite still owns canonicalization and digest calculation.
+- `govengine.core.ArtifactEnvelope` — descriptor plus artifact payload at the GovEngine boundary.
+- `govengine.core.ArtifactState` — lightweight state summary with chain/signature/policy status, blockers, and next actions.
+- `govengine.core.GovernanceContext` — profile, policy, trust, and runner-profile context without Ravenclaw path discovery.
+- `govengine.core.TransitionDecision` — portable lifecycle transition decision envelope.
+- `govengine.core.ExecutionPrerequisites` — guardrail summary that rejects raw-intent execution and keeps live backends disabled unless explicitly enabled.
+
+Required safety behavior:
+
+- GovEngine must never execute directly from raw intent.
+- Execution requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, and allowed runner profile.
+- Dry-run behavior remains the default path.
+- Live backends remain disabled by default.
+- A future `LocalSubprocessRunner` must be optional, policy-enabled, negative-tested, and never default.
+
+Non-goals for this stage:
+
+- no schema/canonicalization/hash ownership movement out of SCLite;
+- no live subprocess execution backend;
+- no PKI, CA, KMS, or trust-store implementation;
+- no carrier-specific OpenClaw/MCP/A2A behavior;
+- no Ravenclaw campaign, Logdash, or persona ownership.
+
+Gate:
+
+- standalone tests prove stable descriptor/envelope/state/transition shapes;
+- raw-intent execution prerequisites are rejected deterministically;
+- live execution stays blocked by default even when dry-run prerequisites pass.
+
+## Stage 8 — SCLite lifecycle verifier/status bridge
+
+Status: initial implementation complete for descriptor/status/decision mapping.
+
+Goal: make the existing SCLite adapter a neutral lifecycle verifier and status bridge, not a schema owner. GovEngine should build/read SCLite descriptors, call SCLite artifact/lifecycle validation helpers, and map lifecycle verification into `ArtifactState`/`TransitionDecision` objects.
+
+Implemented concepts:
+
+- `govengine.sclite_contracts.descriptor_from_artifact` maps SCLite descriptors into `ArtifactDescriptor` without reimplementing hashing.
+- `govengine.sclite_contracts.lifecycle_state_from_manifest` delegates chain/lifecycle verification to SCLite and maps status into `ArtifactState`.
+- `govengine.sclite_contracts.lifecycle_transition_decision` maps lifecycle verification into a portable `TransitionDecision`.
+
+Non-goals:
+
+- no duplicate schema registry, canonical JSON, digest, or chain verification implementation in GovEngine;
+- no workflow engine;
+- no carrier adapters.
+
+## Stage 9 — artifact lifecycle controller and transition gates
+
+Status: initial implementation complete for ordered transitions, missing-artifact blockers, and blocked-artifact propagation.
+
+Goal: make artifact transitions the central governance primitive. Add a lightweight `ArtifactLifecycleController`/`TransitionGate` around SCLite lifecycle roles, blocking reasons, missing artifacts, and invalidation rules.
+
+Implemented concepts:
+
+- `govengine.lifecycle.TransitionPolicy` — small allow-list for lifecycle state transitions.
+- `govengine.lifecycle.TransitionGate` — evaluates proposed transitions against policy, required artifact roles, and artifact blockers.
+- `govengine.lifecycle.ArtifactLifecycleController` — thin controller facade for transition decisions and next actions.
+
+This stage must precede controlled live execution.
+
+## Stage 10 — signing/trust policy bridge
+
+Status: initial implementation complete for signature envelopes, signing/trust policy objects, signer/verifier ports, and signature transition decisions.
+
+Goal: define signing and verification ports plus trust-policy decisions without making SCLite or GovEngine own PKI/key management. GovEngine may verify that signatures bind to descriptor/chain/ticket digests and ask host-provided signer/verifier ports for trust decisions.
+
+Implemented concepts:
+
+- `govengine.signing.SignatureEnvelope` — portable signature metadata and digest binding.
+- `govengine.signing.SigningPolicy` / `TrustPolicy` — local requirements and allowed trust statuses.
+- `govengine.signing.SignerPort` / `VerifierPort` — host-provided interfaces; GovEngine core stores no keys.
+- `govengine.signing.VerificationResult` — verifier/trust decision result shape.
+- `govengine.signing.signature_transition_decision` — transition gate for required signatures, digest mismatch, signer allow-list, and trust decision status.
+
+This stage must precede controlled live execution.
+
+## Stage 11 — controlled execution layer
+
+Status: initial implementation complete for dry-run-only execution gate and default `DryRunRunner`.
+
+Goal: allow GovEngine to prepare/gate approved `RunnerRequest` execution only after lifecycle gates and signing/trust gates are explicit. `DryRunRunner` remains the default. Live backends are optional future adapters and must stay policy-enabled and never default.
+
+Implemented concepts:
+
+- `govengine.execution.gate.RunnerProfile` — policy-visible runner profile with live backend disabled by default.
+- `govengine.execution.gate.ExecutionGateInput` — required boundary inputs before a runner request can proceed.
+- `govengine.execution.gate.ExecutionGate` — rejects raw intent, missing policy/ticket/trust, disallowed profiles, and live execution when disabled.
+- `govengine.execution.gate.DryRunRunner` — default runner that returns dry-run receipts and blocks live requests.
+
+Required inputs before execution:
+
+1. prepared execution contract;
+2. valid policy decision;
+3. approved execution ticket;
+4. valid signature/trust decision;
+5. allowed runner profile.
+
+Non-goals:
+
+- no execution from raw intent;
+- no scanner/campaign executor ownership;
+- no Ravenclaw executor moved 1:1 into GovEngine;
+- no arbitrary subprocess execution by default.
+
+## Stage 12 — deconfliction and artifact state index
+
+Status: initial implementation complete for digest conflict detection, blocked-artifact propagation, change orders, and lightweight state summaries.
+
+Goal: detect lifecycle conflicts and invalidated artifacts, then expose a small common operational picture without creating a workflow engine.
+
+Implemented concepts:
+
+- `govengine.deconfliction.ArtifactConflict` — portable conflict finding.
+- `govengine.deconfliction.ArtifactChangeOrder` — required actions and invalidated downstream roles.
+- `govengine.deconfliction.ConflictDetector` — digest/state conflict detection without replacing SCLite verification.
+- `govengine.state_index.ArtifactStateIndex` — lightweight state summary with missing roles, blocked roles, invalidated roles, and next actions.
+
+Non-goals:
+
+- no event bus;
+- no workflow scheduler;
+- no UI ownership;
+- no raw artifact storage ownership.
+
+## Stage 13 — carrier adapters
 
 Deferred.
 
-Potential hosts/carriers such as OpenClaw, MCP, or A2A should come after the core API, runner protocol, OODA safety loop, contract-extraction seams, and package/publication discipline are stable. GovEngine should not become protocol-first.
+Potential hosts/carriers such as OpenClaw, MCP, or A2A should come only after the artifact lifecycle, signing/trust, controlled-execution gates, package/publication discipline, and Ravenclaw consumption path are stable. GovEngine should not become protocol-first.
 
-Before adapter implementation resumes, consume the published `govengine`/`sclite-core` package chain from Ravenclaw and keep release validation gates green.
+Adapter order remains: OpenClaw first later, MCP later, A2A last/example-first.

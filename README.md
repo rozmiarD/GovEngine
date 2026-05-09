@@ -6,9 +6,9 @@
 [![Package: govengine 0.1.2](https://img.shields.io/badge/package-govengine%200.1.2-blueviolet.svg)](pyproject.toml)
 [![SCLite](https://img.shields.io/badge/SCLite-contract%20lifecycle-informational.svg)](https://github.com/rozmiarD/SCLite)
 
-GovEngine is a carrier-agnostic governed-execution core for policy-gated security automation.
+GovEngine is a carrier-agnostic governed-execution core for portable artifact governance and policy-gated controlled execution.
 
-It consumes **SCLite** as its contract lifecycle layer and provides reusable services around action validation, policy decisions, execution-contract shaping, signal/analysis/evidence policy contracts, execution-ticket checks, scope handling, command-shape normalization, and dry-run result assembly.
+It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, action validation, policy decisions, execution-contract shaping, signal/analysis/evidence policy contracts, execution-ticket checks, scope handling, command-shape normalization, and dry-run result assembly.
 
 Project owner: **Krzysztof Probola**.
 
@@ -45,7 +45,12 @@ GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a prot
 - policy core and policy-gateway helpers;
 - execution-contract shaping/redaction helpers;
 - signal, analysis, and evidence-confirmation policy contracts;
+- artifact descriptor/state/transition boundary helpers;
+- SCLite lifecycle status bridge and lightweight lifecycle transition gate/controller;
+- artifact deconfliction/change-order helpers and lightweight state-index summaries;
+- signature/trust policy bridge helpers with host-provided verifier ports;
 - approved-spec and execution-ticket validation helpers;
+- controlled execution gate helpers with dry-run as the default runner path;
 - command-shape and scope helpers;
 - dry-run result assembly helpers;
 - explicit SCLite integration seams;
@@ -67,7 +72,7 @@ GovEngine is **pre-alpha extraction work**. The package is importable and tested
 
 ## Installation
 
-Once published to PyPI:
+Install the current public package from PyPI:
 
 ```bash
 python -m pip install govengine
@@ -119,4 +124,6 @@ assert receipt["status"] == "dry-run"
 
 ## Safety boundary
 
-GovEngine should preserve deterministic governance over prompt-only behavior. Any future execution backend must be introduced behind explicit interfaces and tests, with Ravenclaw retaining the concrete runtime adapter until reviewed.
+GovEngine should preserve deterministic governance over prompt-only behavior. GovEngine must never execute directly from raw intent: execution requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, and allowed runner profile.
+
+`DryRunRunner`/dry-run behavior remains the default. Live execution backends are disabled by default; any future `LocalSubprocessRunner` must be optional, policy-enabled, negative-tested, and never the default. Controlled execution depends on lifecycle gates and signing/trust gates, with Ravenclaw retaining the concrete runtime adapter until reviewed.

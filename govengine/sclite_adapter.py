@@ -1,10 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
-from govengine.context import ravenclaw_context
-
-_CONTEXT = ravenclaw_context(Path(__file__))
 from datetime import datetime, timezone
 from typing import Any, Dict, Mapping
 
