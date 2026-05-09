@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 from .api import GovApiError, GovApiResult
 from .context import GovEngineContext, GovEnginePaths, ravenclaw_context
@@ -28,6 +28,7 @@ from .scope import FunctionalScopePort, GovScopePort
 from .signing import SignatureEnvelope, SigningPolicy, TrustPolicy, VerificationResult
 from .state_index import ArtifactStateIndex
 from .state_store import GovStateStore
+from .surfaces import GovSurface, public_surface_index, security_profile_surface
 
 __all__ = [
     'CommandResult',
@@ -54,6 +55,7 @@ __all__ = [
     'GovOodaDecision',
     'GovOrientation',
     'GovRoleAdapters',
+    'GovSurface',
     'FunctionalScopePort',
     'ReasonCode',
     'RunnerProfile',
@@ -67,7 +69,9 @@ __all__ = [
     'TransitionPolicy',
     'TrustPolicy',
     'VerificationResult',
+    'public_surface_index',
     'ravenclaw_context',
+    'security_profile_surface',
     'verify_lifecycle_manifest',
 ]
 

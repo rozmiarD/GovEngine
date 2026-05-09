@@ -2,6 +2,52 @@
 
 GovEngine owns reusable governed-execution services. Its public surface should stay carrier-neutral and SCLite-aware.
 
+`govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current pre-alpha public surfaces. It separates the neutral artifact-governance core, the controlled-execution core, and optional security-profile helpers.
+
+## Public surface groups
+
+### Artifact-governance core
+
+Neutral core modules:
+
+- `govengine.core`
+- `govengine.sclite_contracts`
+- `govengine.lifecycle`
+- `govengine.signing`
+- `govengine.deconfliction`
+- `govengine.state_index`
+- `govengine.state_store`
+
+Claim: portable artifact descriptor/state/transition, lifecycle bridge, signing/trust decision, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization ownership, PKI/key-store ownership, raw artifact storage ownership, workflow scheduler ownership.
+
+### Controlled-execution core
+
+Neutral controlled-execution modules:
+
+- `govengine.execution.*`
+- `govengine.contracts.execution`
+- `govengine.ooda`
+
+Claim: approved-spec, execution-ticket, command-shape, runner receipt, OODA, and dry-run-only execution-gate helpers. Non-claims: raw-intent execution, default live subprocess execution, scanner/campaign execution ownership, protocol adapter ownership.
+
+### Optional security-profile helpers
+
+Security-oriented helpers are explicit optional profile modules, not the neutral artifact-governance core:
+
+- `govengine.action_schema`
+- `govengine.action_validators`
+- `govengine.action_compiler`
+- `govengine.capability_recipes`
+- `govengine.tool_registry`
+- `govengine.semantic_loss_policy`
+- `govengine.policy.*`
+- `govengine.scope`
+- `govengine.contracts.signal`
+- `govengine.contracts.analysis`
+- `govengine.contracts.evidence_policy`
+
+Claim: reusable public-safe helpers for hosts such as Ravenclaw that need bounded action/tool/scope/policy/signal behavior. Non-claims: live exploit/scanner capability, authorization to test targets, bug-bounty campaign orchestration, Logdash/Ravenclaw runtime ownership, or OpenClaw/MCP/A2A adapter ownership.
+
 ## Owns
 
 GovEngine owns:
@@ -10,15 +56,15 @@ GovEngine owns:
 - `govengine.deconfliction` / `govengine.state_index` — digest/state conflict, change-order, and lightweight artifact state summary helpers.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
 - `govengine.signing` — signature envelopes, signing/trust policy objects, host-provided signer/verifier ports, and signature transition decisions without PKI/key ownership.
-- `govengine.action_schema` — action type/capability constants and limits.
-- `govengine.action_validators` — action/probe shape validation.
-- `govengine.action_compiler` — action spec lowering into execution plans.
-- `govengine.capability_recipes` — capability and recipe resolution.
-- `govengine.semantic_loss_policy` — semantic-loss classification/gates.
-- `govengine.policy.*` — policy core and gateway helpers.
-- `govengine.contracts.*` — execution-contract shaping/redaction helpers plus signal, analysis, and confirmation-evidence policy contracts.
+- `govengine.action_schema` — optional security-profile action type/capability constants and limits.
+- `govengine.action_validators` — optional security-profile action/probe shape validation.
+- `govengine.action_compiler` — optional security-profile action spec lowering into execution plans.
+- `govengine.capability_recipes` — optional security-profile capability and recipe resolution.
+- `govengine.semantic_loss_policy` — optional security-profile semantic-loss classification/gates.
+- `govengine.policy.*` — optional security-profile policy core and gateway helpers.
+- `govengine.contracts.*` — execution-contract shaping/redaction helpers plus optional security-profile signal, analysis, and confirmation-evidence policy contracts.
 - `govengine.execution.*` — approved-spec, ticket, command-shape, dry-run helpers, and controlled execution gates that keep live backends disabled by default.
-- `govengine.scope` — neutral scope helpers and `GovScopePort`.
+- `govengine.scope` — optional security-profile scope helpers and `GovScopePort`.
 - `govengine.state_store` — neutral JSON state helper primitives.
 - `govengine.sclite_*` — explicit integration seams with SCLite, including descriptor/status/transition mapping that delegates lifecycle verification to SCLite.
 

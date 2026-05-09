@@ -3,12 +3,12 @@
 [![pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Package: govengine 0.1.3](https://img.shields.io/badge/package-govengine%200.1.3-blueviolet.svg)](pyproject.toml)
+[![Package: govengine 0.1.4 candidate](https://img.shields.io/badge/package-govengine%200.1.4%20candidate-blueviolet.svg)](pyproject.toml)
 [![SCLite](https://img.shields.io/badge/SCLite-contract%20lifecycle-informational.svg)](https://github.com/rozmiarD/SCLite)
 
 GovEngine is a carrier-agnostic governed-execution core for portable artifact governance and policy-gated controlled execution.
 
-It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, action validation, policy decisions, execution-contract shaping, signal/analysis/evidence policy contracts, execution-ticket checks, scope handling, command-shape normalization, and dry-run result assembly.
+It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, and dry-run result assembly. Security-oriented action/tool/scope/signal helpers remain available as an optional profile for hosts such as Ravenclaw, not as the neutral core itself.
 
 Project owner: **Krzysztof Probola**.
 
@@ -39,20 +39,17 @@ GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a prot
 
 ## What GovEngine includes now
 
-- action schema, validation, and compiler helpers;
-- capability recipe and tool-registry helpers;
-- semantic-loss classification helpers;
-- policy core and policy-gateway helpers;
+- a public surface registry that separates neutral artifact-governance core, controlled-execution core, and optional security-profile helpers;
 - execution-contract shaping/redaction helpers;
-- signal, analysis, and evidence-confirmation policy contracts;
 - artifact descriptor/state/transition boundary helpers;
 - SCLite lifecycle status bridge and lightweight lifecycle transition gate/controller;
 - artifact deconfliction/change-order helpers and lightweight state-index summaries;
 - signature/trust policy bridge helpers with host-provided verifier ports;
 - approved-spec and execution-ticket validation helpers;
 - controlled execution gate helpers with dry-run as the default runner path;
-- command-shape and scope helpers;
+- command-shape helpers;
 - dry-run result assembly helpers;
+- optional security-profile helpers for action schema/validation/compilation, capability recipes, tool registry, semantic-loss policy, scope checks, policy gateway, and signal/analysis/evidence-confirmation contracts;
 - explicit SCLite integration seams;
 - focused standalone pytest coverage and GitHub Actions CI.
 
@@ -68,11 +65,11 @@ GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a prot
 
 ## Current status
 
-GovEngine is **pre-alpha extraction work**. The package is importable and tested. The `0.1.3` line adds initial artifact-governance control gates while keeping live execution disabled by default. Ravenclaw has a host adapter for these gates, and still retains concrete runtime execution ownership.
+GovEngine is **pre-alpha extraction work**. The package is importable and tested. The published `0.1.3` line added initial artifact-governance control gates while keeping live execution disabled by default. The source tree is prepared as a `0.1.4` candidate with an explicit surface registry so reviewers can distinguish the neutral core from optional security-profile helpers. Ravenclaw has a host adapter for the control gates, and still retains concrete runtime execution ownership.
 
 ## Installation
 
-Install the current public package from PyPI:
+Install the current public package from PyPI (`0.1.3` until the `0.1.4` candidate is explicitly released):
 
 ```bash
 python -m pip install govengine
@@ -92,8 +89,15 @@ python -m pytest -q
 ## Minimal smoke example
 
 ```python
+from govengine import public_surface_index
 from govengine.action_compiler import compile_action_spec
 from govengine.execution.runner import legacy_action_spec_dry_run_result
+
+assert [surface.name for surface in public_surface_index()] == [
+    "artifact_governance_core",
+    "controlled_execution_core",
+    "security_profile_helpers",
+]
 
 compiled = compile_action_spec({
     "action_type": "single_probe",
