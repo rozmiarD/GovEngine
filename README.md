@@ -3,12 +3,12 @@
 [![pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Package: govengine 0.1.0](https://img.shields.io/badge/package-govengine%200.1.0-blueviolet.svg)](pyproject.toml)
+[![Package: govengine 0.1.2](https://img.shields.io/badge/package-govengine%200.1.2-blueviolet.svg)](pyproject.toml)
 [![SCLite](https://img.shields.io/badge/SCLite-contract%20lifecycle-informational.svg)](https://github.com/rozmiarD/SCLite)
 
 GovEngine is a carrier-agnostic governed-execution core for policy-gated security automation.
 
-It consumes **SCLite** as its contract lifecycle layer and provides reusable services around action validation, policy decisions, execution-contract shaping, execution-ticket checks, scope handling, command-shape normalization, and dry-run result assembly.
+It consumes **SCLite** as its contract lifecycle layer and provides reusable services around action validation, policy decisions, execution-contract shaping, signal/analysis/evidence policy contracts, execution-ticket checks, scope handling, command-shape normalization, and dry-run result assembly.
 
 Project owner: **Krzysztof Probola**.
 
@@ -44,6 +44,7 @@ GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a prot
 - semantic-loss classification helpers;
 - policy core and policy-gateway helpers;
 - execution-contract shaping/redaction helpers;
+- signal, analysis, and evidence-confirmation policy contracts;
 - approved-spec and execution-ticket validation helpers;
 - command-shape and scope helpers;
 - dry-run result assembly helpers;
@@ -62,7 +63,7 @@ GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a prot
 
 ## Current status
 
-GovEngine is **pre-alpha extraction work**. The package is importable and tested, and Ravenclaw has a migration branch that consumes it from this repository. The current public surface is intended for review and boundary hardening before any live execution backend is moved.
+GovEngine is **pre-alpha extraction work**. The package is importable and tested, and Ravenclaw consumes the published package line while migration waves continue in this repository before release. The current public surface is intended for review and boundary hardening before any live execution backend is moved.
 
 ## Installation
 

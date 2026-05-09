@@ -8,6 +8,12 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 - Nothing yet.
 
+## 0.1.2 - contract extraction
+
+- Extracted reusable signal, analysis, and confirmation-evidence policy contracts from Ravenclaw into `govengine.contracts.*`.
+- Added standalone tests for signal promotion bridges, governance-blocked evidence classification, analysis success semantics, and confirmed-evidence gates.
+- Prepared the package version for the signal/evidence/analysis contract extraction line. Publication requires the standard release checklist and operator approval.
+
 ## 0.1.1 - metadata calibration
 
 - Updated the PyPI package description to describe GovEngine as carrier-agnostic governed execution services that consume SCLite contract lifecycle artifacts for policy-gated security automation.

@@ -82,10 +82,37 @@ Gate:
 - receipt/evidence note showing how OODA decisions are recorded without leaking raw output: complete (`docs/OODA_RECEIPT_EVIDENCE.md`);
 - public docs state non-claims clearly: complete.
 
-## Stage 6 — carrier adapters
+## Stage 6 — signal/evidence/analysis contracts
+
+Status: initial extraction complete for the pure contract helpers.
+
+Goal: move pure decision/evidence contracts out of Ravenclaw Runtime and into GovEngine without moving UI, storage, raw artifacts, live execution, or campaign orchestration. These contracts make the reusable post-run reasoning seam explicit while preserving Ravenclaw as the reference host.
+
+Implemented concepts:
+
+- `govengine.contracts.signal` — signal contract builders/readers for workflow promotion, finding signal, success outcome, adaptation feedback, and legacy bridge flags.
+- `govengine.contracts.analysis` — analysis contract builder that maps planner hypothesis, expected signal, evidence goal, success semantics, and semantic-loss execution fit into a compact review object.
+- `govengine.contracts.evidence_policy` — confirmation gate for requiring false-positive guards, control comparison, observed control delta, and optional reproduction pass before a finding can be treated as confirmed.
+
+Non-goals for this stage:
+
+- no raw evidence storage ownership;
+- no Logdash projection/UI ownership;
+- no live execution backend movement;
+- no protocol/carrier adapters;
+- no broad stable API claim beyond tested pre-alpha helpers.
+
+Gate:
+
+- standalone GovEngine tests for extracted contracts: complete;
+- Ravenclaw compatibility wrappers import the GovEngine modules: complete in the migration tree;
+- Ravenclaw focused seam tests pass against the GovEngine package candidate before publication: complete;
+- package release/publish requires the standard release checklist and operator approval.
+
+## Stage 7 — carrier adapters
 
 Deferred.
 
-Potential hosts/carriers such as OpenClaw, MCP, or A2A should come after the core API, runner protocol, OODA safety loop, and package/publication discipline are stable. GovEngine should not become protocol-first.
+Potential hosts/carriers such as OpenClaw, MCP, or A2A should come after the core API, runner protocol, OODA safety loop, contract-extraction seams, and package/publication discipline are stable. GovEngine should not become protocol-first.
 
 Before adapter implementation resumes, consume the published `govengine`/`sclite-core` package chain from Ravenclaw and keep release validation gates green.

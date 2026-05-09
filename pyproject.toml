@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "govengine"
-version = "0.1.1"
+version = "0.1.2"
 description = "Carrier-agnostic governed execution services that consume SCLite contract lifecycle artifacts for policy-gated security automation."
 readme = "README.md"
 requires-python = ">=3.11"
