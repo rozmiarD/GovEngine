@@ -247,7 +247,7 @@ Non-goals:
 
 ## Stage 12.5 — public surface registry and security-profile separation
 
-Status: initial implementation complete.
+Status: implemented and published in the `0.1.4`/`0.1.5` line.
 
 Goal: make the pre-alpha API boundary easier to review before carrier-adapter work. GovEngine should expose a tested surface map that distinguishes neutral artifact-governance primitives from optional security-oriented helpers inherited from the Ravenclaw extraction path.
 

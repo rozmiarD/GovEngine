@@ -66,7 +66,7 @@ GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a prot
 
 ## Current status
 
-GovEngine is **pre-alpha extraction work**. The package is importable and tested. The `0.1.3` line added initial artifact-governance control gates while keeping live execution disabled by default. The `0.1.4` line added an explicit surface registry so reviewers can distinguish the neutral core from optional security-profile helpers. The published `0.1.5` line adds a security-profile facade for one-entrypoint helper discovery. Ravenclaw has a host adapter for the control gates, and still retains concrete runtime execution ownership.
+GovEngine is a **pre-alpha 0.1.x helper package**. The package is importable, tested, and published through `0.1.5`. The `0.1.3` line added artifact-governance control gates while keeping live execution disabled by default. The `0.1.4` line added a surface registry that separates the neutral core from optional security-profile helpers. The `0.1.5` line adds a security-profile facade for one-entrypoint helper discovery. Ravenclaw has a host adapter for the control gates and still owns concrete runtime execution.
 
 ## Installation
 

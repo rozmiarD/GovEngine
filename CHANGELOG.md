@@ -6,7 +6,7 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-- Nothing yet.
+- Polished public docs to state the `0.1.5` publication state, security-profile boundary, and deferred adapter/live-execution non-claims more plainly.
 
 ## 0.1.5 - security profile facade
 
