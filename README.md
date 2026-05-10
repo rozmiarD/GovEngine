@@ -1,16 +1,15 @@
 # GovEngine
 
-[![pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Package: govengine 0.1.5](https://img.shields.io/badge/package-govengine%200.1.5-blueviolet.svg)](pyproject.toml)
-[![SCLite](https://img.shields.io/badge/SCLite-contract%20lifecycle-informational.svg)](https://github.com/rozmiarD/SCLite)
+[![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
+[![Package: govengine 0.1.5](https://img.shields.io/pypi/v/govengine?label=package%3A%20govengine&color=blueviolet)](https://pypi.org/project/govengine/)
+[![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+[![Dependency: SCLite >=0.2.1](https://img.shields.io/badge/dependency-SCLite%20%3E%3D0.2.1-informational.svg)](https://github.com/rozmiarD/SCLite)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
 GovEngine is a carrier-agnostic governed-execution core for portable artifact governance and policy-gated controlled execution.
 
 It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, and dry-run result assembly. Security-oriented action/tool/scope/signal helpers remain available as an optional profile for hosts such as Ravenclaw, not as the neutral core itself.
 
-Project owner: **Krzysztof Probola**.
 
 ## Why it exists
 
