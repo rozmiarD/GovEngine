@@ -13,11 +13,15 @@ authors = [{ name = "Krzysztof Probola" }]
 keywords = ["security", "governance", "execution-contracts", "dry-run", "policy"]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Topic :: Security",
+  "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
   "PyYAML>=6,<7",
@@ -28,6 +32,7 @@ dependencies = [
 Homepage = "https://github.com/rozmiarD/GovEngine"
 Repository = "https://github.com/rozmiarD/GovEngine"
 Issues = "https://github.com/rozmiarD/GovEngine/issues"
+Changelog = "https://github.com/rozmiarD/GovEngine/blob/main/CHANGELOG.md"
 Documentation = "https://github.com/rozmiarD/GovEngine#readme"
 
 [project.optional-dependencies]

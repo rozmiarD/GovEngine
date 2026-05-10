@@ -108,8 +108,8 @@ Gate:
 - standalone GovEngine tests for extracted contracts: complete;
 - standalone GovEngine tests for the optional security-profile facade and boundary assertions: complete in the 0.1.5 line;
 - Ravenclaw compatibility wrappers import the GovEngine modules: complete in the migration tree;
-- Ravenclaw focused seam tests pass against the GovEngine package candidate before publication: complete;
-- package release/publish requires the standard release checklist and operator approval.
+- Ravenclaw focused seam tests passed against the released GovEngine package line: complete;
+- future package releases still require the standard release checklist and operator approval.
 
 ## Stage 7 — artifact governance core hardening
 
