@@ -44,7 +44,7 @@ GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a prot
 - artifact descriptor/state/transition boundary helpers;
 - SCLite lifecycle status bridge and lightweight lifecycle transition gate/controller;
 - artifact deconfliction/change-order helpers and lightweight state-index summaries;
-- signature/trust policy bridge helpers with host-provided verifier ports;
+- signature/trust policy bridge helpers with host-provided signer/verifier ports and deterministic demo ports for fixtures;
 - approved-spec and execution-ticket validation helpers;
 - controlled execution gate helpers with dry-run as the default runner path;
 - command-shape helpers;
@@ -61,7 +61,8 @@ GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a prot
 - OpenClaw, MCP, A2A, or other protocol adapters;
 - LLM provider integrations;
 - Ravenclaw-specific personas, workspace state, or campaign UX;
-- production-readiness claims.
+- production-readiness claims;
+- PKI, CA, KMS, key storage, or production identity proof.
 
 ## Current status
 

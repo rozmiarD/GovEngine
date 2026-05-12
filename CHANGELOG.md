@@ -6,6 +6,7 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Added deterministic demo signing/verifier ports for host-provided signing/trust examples without adding PKI, key storage, or production identity claims.
 - Cleaned README badge order, removed personal ownership copy from public-facing docs, completed package metadata fields, and updated roadmap wording for the published `0.1.5` line.
 - Polished public docs to state the `0.1.5` publication state, security-profile boundary, and deferred adapter/live-execution non-claims more plainly.
 

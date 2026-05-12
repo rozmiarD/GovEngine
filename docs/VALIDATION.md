@@ -34,7 +34,7 @@ Current tests cover:
 - SCLite lifecycle verifier seam availability;
 - artifact descriptor/envelope/state and transition-decision boundary objects;
 - lifecycle transition gates and blocker/next-action reporting;
-- signing/trust bridge decisions without PKI/key ownership;
+- signing/trust bridge decisions and deterministic demo signer/verifier ports without PKI/key ownership;
 - dry-run-only execution gates and default `DryRunRunner` behavior;
 - deconfliction/change-order and artifact state-index summaries;
 - public surface registry separation between artifact-governance core, controlled-execution core, and optional security-profile helpers;
