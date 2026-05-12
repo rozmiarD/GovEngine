@@ -25,7 +25,7 @@ from .lifecycle import ArtifactLifecycleController, TransitionGate, TransitionPo
 from .ooda import GovObservation, GovOodaController, GovOodaDecision, GovOrientation
 from .roles import GovRoleAdapters
 from .scope import FunctionalScopePort, GovScopePort
-from .signing import SignatureEnvelope, SigningPolicy, TrustPolicy, VerificationResult
+from .signing import DemoDigestSigner, DemoDigestVerifier, SignatureEnvelope, SigningPolicy, TrustPolicy, VerificationResult, demo_sign_and_verify
 from .state_index import ArtifactStateIndex
 from .state_store import GovStateStore
 from .security_profile import (
@@ -56,6 +56,8 @@ __all__ = [
     'ExecutionGateInput',
     'ExecutionPrerequisites',
     'DryRunRunner',
+    'DemoDigestSigner',
+    'DemoDigestVerifier',
     'GovernanceContext',
     'GovExecutionBackend',
     'GovObservation',
@@ -78,6 +80,7 @@ __all__ = [
     'TransitionPolicy',
     'TrustPolicy',
     'VerificationResult',
+    'demo_sign_and_verify',
     'assert_security_profile_boundary',
     'import_security_profile_module',
     'public_surface_index',

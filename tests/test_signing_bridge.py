@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from govengine.core import ArtifactDescriptor
 from govengine.signing import (
+    DemoDigestSigner,
+    DemoDigestVerifier,
+    SigningRequest,
+    demo_sign_and_verify,
     SignatureEnvelope,
     SigningPolicy,
     TrustPolicy,
@@ -98,3 +102,44 @@ def test_signature_gate_allows_trusted_signed_artifact() -> None:
 
     assert decision.allowed is True
     assert decision.context.trust_decision["verifier_id"] == "fixture"
+
+def test_demo_digest_signer_and_verifier_bind_signature_to_descriptor_digest() -> None:
+    descriptor = _descriptor()
+    signer = DemoDigestSigner(signer_id="owner-demo")
+    signing = signer.sign(SigningRequest(descriptor=descriptor, purpose="execution_ticket"))
+    verifier = DemoDigestVerifier(allowed_signer_ids=("owner-demo",))
+
+    verification = verifier.verify(descriptor, signing.signature)
+    decision = signature_transition_decision(
+        descriptor,
+        signature=signing.signature,
+        verification=verification,
+        signing_policy=SigningPolicy(require_signature=True, allowed_modes=("detached_demo_digest",), required_signer_ids=("owner-demo",)),
+        trust_policy=TrustPolicy(allowed_trust_statuses=("trusted",)),
+    )
+
+    assert signing.status == "signed"
+    assert signing.signature.mode == "detached_demo_digest"
+    assert signing.signature.binds_digest == descriptor.digest
+    assert verification.trusted is True
+    assert verification.metadata["demo_only"] is True
+    assert decision.allowed is True
+
+
+def test_demo_digest_verifier_rejects_tampered_digest() -> None:
+    descriptor = _descriptor()
+    other = ArtifactDescriptor("execution_ticket", "v0.2", "sha256:other")
+    signing, _verification = demo_sign_and_verify(descriptor, purpose="execution_ticket", signer_id="owner-demo")
+
+    verification = DemoDigestVerifier(allowed_signer_ids=("owner-demo",)).verify(other, signing.signature)
+
+    assert verification.status == "failed"
+    assert verification.reason_code == "signature_digest_mismatch"
+
+
+def test_demo_sign_and_verify_helper_has_no_pki_claim() -> None:
+    signing, verification = demo_sign_and_verify(_descriptor(), purpose="fixture")
+
+    assert signing.signature.metadata["demo_only"] is True
+    assert verification.metadata["demo_only"] is True
+    assert signing.signature.algorithm == "demo-sha256-digest-binding"

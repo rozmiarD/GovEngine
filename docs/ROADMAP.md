@@ -193,6 +193,7 @@ Implemented concepts:
 - `govengine.signing.SigningPolicy` / `TrustPolicy` — local requirements and allowed trust statuses.
 - `govengine.signing.SignerPort` / `VerifierPort` — host-provided interfaces; GovEngine core stores no keys.
 - `govengine.signing.VerificationResult` — verifier/trust decision result shape.
+- `govengine.signing.DemoDigestSigner` / `DemoDigestVerifier` — deterministic fixture/demo ports for exercising host-provided signing and verification without PKI or key storage.
 - `govengine.signing.signature_transition_decision` — transition gate for required signatures, digest mismatch, signer allow-list, and trust decision status.
 
 This stage must precede controlled live execution.

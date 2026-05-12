@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+from hashlib import sha256
 from typing import Any, Mapping, Protocol
 
 from govengine.api import GovApiError, require_mapping
@@ -128,6 +129,84 @@ class VerificationResult:
             "verifier_id": self.verifier_id,
             "metadata": dict(self.metadata),
         }
+
+
+
+
+@dataclass(frozen=True)
+class DemoDigestSigner:
+    """Deterministic host-demo signer for fixtures and tests.
+
+    This is deliberately not PKI and not a production signing backend. It keeps
+    no keys and produces a reproducible detached demo signature bound to the
+    descriptor digest, signer id, and request purpose so hosts can exercise the
+    signing/trust ports without claiming cryptographic identity.
+    """
+
+    signer_id: str = "demo-signer"
+    algorithm: str = "demo-sha256-digest-binding"
+
+    def sign(self, request: SigningRequest) -> SigningResult:
+        payload = f"{request.descriptor.digest}|{self.signer_id}|{request.purpose}".encode("utf-8")
+        digest = sha256(payload).hexdigest()
+        envelope = SignatureEnvelope(
+            mode="detached_demo_digest",
+            signer_id=self.signer_id,
+            signature=f"demo:{digest}",
+            binds_digest=request.descriptor.digest,
+            algorithm=self.algorithm,
+            metadata={"purpose": request.purpose, "demo_only": True},
+        )
+        return SigningResult(status="signed", signature=envelope, reason_code=ReasonCode.OK.value)
+
+
+@dataclass(frozen=True)
+class DemoDigestVerifier:
+    """Verifier companion for :class:`DemoDigestSigner`.
+
+    The verifier checks deterministic digest binding and optional signer ids. It
+    returns a trust decision for demo/test purposes only; it is not a CA, KMS,
+    key store, certificate verifier, or production identity proof.
+    """
+
+    verifier_id: str = "demo-verifier"
+    allowed_signer_ids: tuple[str, ...] = ()
+    trusted_status: str = "trusted"
+
+    def verify(self, descriptor: ArtifactDescriptor, signature: SignatureEnvelope) -> VerificationResult:
+        if signature.mode != "detached_demo_digest":
+            return VerificationResult(status="failed", trust_status="denied", reason_code="unsupported_signature_mode", verifier_id=self.verifier_id)
+        if signature.binds_digest != descriptor.digest:
+            return VerificationResult(status="failed", trust_status="denied", reason_code="signature_digest_mismatch", verifier_id=self.verifier_id)
+        if self.allowed_signer_ids and signature.signer_id not in self.allowed_signer_ids:
+            return VerificationResult(status="failed", trust_status="denied", reason_code="signer_not_allowed", verifier_id=self.verifier_id)
+        purpose = str(signature.metadata.get("purpose") or "") if isinstance(signature.metadata, Mapping) else ""
+        expected = "demo:" + sha256(f"{descriptor.digest}|{signature.signer_id}|{purpose}".encode("utf-8")).hexdigest()
+        if signature.signature != expected:
+            return VerificationResult(status="failed", trust_status="denied", reason_code="signature_value_mismatch", verifier_id=self.verifier_id)
+        return VerificationResult(
+            status="passed",
+            trust_status=self.trusted_status,
+            reason_code=ReasonCode.OK.value,
+            verifier_id=self.verifier_id,
+            metadata={"demo_only": True, "signer_id": signature.signer_id, "purpose": purpose},
+        )
+
+
+def demo_sign_and_verify(
+    descriptor: ArtifactDescriptor,
+    *,
+    purpose: str = "artifact_transition",
+    signer_id: str = "demo-signer",
+    verifier_id: str = "demo-verifier",
+) -> tuple[SigningResult, VerificationResult]:
+    """Exercise the host signing/verifier ports with deterministic demo objects."""
+
+    signer = DemoDigestSigner(signer_id=signer_id)
+    signing = signer.sign(SigningRequest(descriptor=descriptor, purpose=purpose, metadata={"demo_only": True}))
+    verifier = DemoDigestVerifier(verifier_id=verifier_id, allowed_signer_ids=(signer_id,))
+    verification = verifier.verify(descriptor, signing.signature)
+    return signing, verification
 
 
 class SignerPort(Protocol):
