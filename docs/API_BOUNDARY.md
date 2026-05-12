@@ -55,7 +55,7 @@ GovEngine owns:
 - `govengine.core` — portable artifact descriptors/envelopes/state, governance context, transition decisions, reason codes, and execution-prerequisite guardrails.
 - `govengine.deconfliction` / `govengine.state_index` — digest/state conflict, change-order, and lightweight artifact state summary helpers.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
-- `govengine.signing` — signature envelopes, signing/trust policy objects, host-provided signer/verifier ports, and signature transition decisions without PKI/key ownership.
+- `govengine.signing` — signature envelopes, signing/trust policy objects, host-provided signer/verifier ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
 - `govengine.security_profile` — optional security-profile facade for helper discovery, grouped metadata, allowlisted lazy imports, and boundary assertions.
 - `govengine.action_schema` — optional security-profile action type/capability constants and limits.
 - `govengine.action_validators` — optional security-profile action/probe shape validation.
@@ -86,10 +86,14 @@ GovEngine must not own Ravenclaw-specific runtime/application concerns:
 - OpenClaw session wiring;
 - BRAIN/AUDITOR/ANALYSIS/LIGHT prompts/personas;
 - LLM provider configuration;
-- PKI, CA, KMS, key storage, or trust-store ownership;
+- PKI, CA, KMS, key storage, trust-store ownership, or production identity proof;
 - protocol adapters such as MCP/A2A;
 - live target campaign orchestration UX;
 - public demo branding/docs owned by Ravenclaw.
+
+## Demo signing fixture rule
+
+`DemoDigestSigner`, `DemoDigestVerifier`, and `demo_sign_and_verify` are test/reviewer helpers. They create deterministic digest-bound demo signatures so hosts can exercise the `SignerPort`/`VerifierPort` contract and inspect trust decisions without bringing real keys into GovEngine. They are not cryptographic identity proof, not a CA/KMS/key-store, and not a replacement for a host-owned production verifier. Hosts that need real signatures must provide their own signer/verifier ports and trust policy.
 
 ## Execution backend rule
 

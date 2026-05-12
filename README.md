@@ -66,7 +66,7 @@ GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a prot
 
 ## Current status
 
-GovEngine is a **pre-alpha 0.1.x helper package**. The package is importable, tested, and published through `0.1.5`. The `0.1.3` line added artifact-governance control gates while keeping live execution disabled by default. The `0.1.4` line added a surface registry that separates the neutral core from optional security-profile helpers. The `0.1.5` line adds a security-profile facade for one-entrypoint helper discovery. Ravenclaw has a host adapter for the control gates and still owns concrete runtime execution.
+GovEngine is a **pre-alpha 0.1.x helper package**. The package is importable, tested, and published through `0.1.5`. The `0.1.3` line added artifact-governance control gates while keeping live execution disabled by default. The `0.1.4` line added a surface registry that separates the neutral core from optional security-profile helpers. The `0.1.5` line adds a security-profile facade for one-entrypoint helper discovery. Current `main` also contains unreleased deterministic demo signer/verifier ports for host proof fixtures; those ports exercise signing/trust seams without changing the package version or claiming PKI/key ownership. Ravenclaw has a host adapter for the control gates and still owns concrete runtime execution.
 
 ## Installation
 
@@ -132,4 +132,4 @@ assert receipt["status"] == "dry-run"
 
 GovEngine should preserve deterministic governance over prompt-only behavior. GovEngine must never execute directly from raw intent: execution requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, and allowed runner profile.
 
-`DryRunRunner`/dry-run behavior remains the default. Live execution backends are disabled by default; any future `LocalSubprocessRunner` must be optional, policy-enabled, negative-tested, and never the default. Controlled execution depends on lifecycle gates and signing/trust gates, with Ravenclaw retaining the concrete runtime adapter until reviewed.
+`DryRunRunner`/dry-run behavior remains the default. Live execution backends are disabled by default; any future `LocalSubprocessRunner` must be optional, policy-enabled, negative-tested, and never the default. Controlled execution depends on lifecycle gates and signing/trust gates, with Ravenclaw retaining the concrete runtime adapter until reviewed. Demo signing helpers are fixture ports only: they bind a deterministic signature to an artifact digest for tests/reviewer demos and must not be presented as cryptographic identity, PKI, CA, KMS, or trust-store support.

@@ -14,14 +14,14 @@ GovEngine is a **pre-alpha governed-execution helper package** extracted from Ra
 - Core artifact governance boundaries: initial portable dataclasses for artifact descriptors/envelopes/state, governance context, transition decisions, and execution prerequisites.
 - SCLite lifecycle status bridge: initial descriptor/state/transition mapping that delegates verification to SCLite.
 - Artifact lifecycle controller: initial transition policy/gate/controller for ordered lifecycle transitions and blocker/next-action reporting.
-- Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, and transition-decision helpers without PKI/key ownership.
+- Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, transition-decision helpers, and unreleased deterministic demo signer/verifier ports without PKI/key ownership.
 - Controlled execution gate: initial dry-run-only execution gate and default `DryRunRunner`; live requests are blocked by default.
 - Public surface registry: tested `govengine.surfaces` metadata separates neutral artifact-governance core, controlled-execution core, and optional security-profile helpers.
 - Security profile: action/tool/scope/policy/signal helpers are available through the optional `govengine.security_profile` facade for host-facing discovery, not as the neutral core.
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `0.1.5`; each new release still requires the standard release checklist and operator approval before upload.
+- PyPI publication: completed through `0.1.5`; current `main` may contain unreleased changes such as demo signer/verifier fixture ports, and each new release still requires the standard release checklist and operator approval before upload.
 
 ## What is public-safe today
 
@@ -29,7 +29,7 @@ GovEngine can be reviewed as a small Python package for:
 
 - portable artifact descriptor/envelope/state and transition-decision boundary objects;
 - lightweight artifact lifecycle transition gate/controller helpers;
-- signature/trust policy bridge helpers that require host-provided verification;
+- signature/trust policy bridge helpers that require host-provided verification, plus deterministic demo ports for public-safe fixture/reviewer examples;
 - dry-run-only controlled execution gate helpers and default dry-run runner;
 - artifact deconfliction/change-order and state-index summaries;
 - public surface metadata for current pre-alpha API boundary review;
@@ -54,6 +54,7 @@ GovEngine does not currently claim:
 - protocol adapter correctness;
 - complete API stability;
 - production/stable PyPI API readiness;
+- PKI, CA, KMS, trust-store, or key-management ownership;
 - a full replacement for Ravenclaw Runtime.
 
 ## Controlled execution posture
