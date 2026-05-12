@@ -10,15 +10,16 @@ python -m pytest -q
 python -m pip check
 ```
 
-Expected current result for the published `0.1.5` line:
+Expected result for the published `0.1.5` line, plus current-main notes:
 
-- standalone pytest suite passes (`64 passed` in the `0.1.5` release tree);
+- standalone pytest suite passes (`64 passed` in the `0.1.5` release tree; current `main` with unreleased demo signer/verifier ports reports `67 passed`);
 - package dependencies are consistent;
 - `python -m build` creates `govengine-0.1.5` sdist/wheel artifacts;
 - `python -m twine check dist/*` passes for the release artifacts;
 - clean wheel install reports `govengine.__version__ == 0.1.5`, distribution version `0.1.5`, import checks for the artifact-governance, surface-registry, and security-profile facade modules pass, and `pip check` is clean;
 - clean install from PyPI with `govengine==0.1.5` reports `govengine.__version__ == 0.1.5`, distribution version `0.1.5`, `sclite-core==0.2.1`, import checks for the artifact-governance, surface-registry, and security-profile facade modules pass, and `pip check` is clean;
-- no Ravenclaw runtime or Logdash process is started.
+- no Ravenclaw runtime or Logdash process is started;
+- demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness.
 
 ## What the focused tests cover
 
@@ -83,6 +84,7 @@ These checks do not prove:
 - production deployment readiness;
 - protocol adapter correctness;
 - Logdash UI behavior;
-- that compact OODA receipt summaries are a substitute for raw forensic logs.
+- that compact OODA receipt summaries are a substitute for raw forensic logs;
+- that demo digest signatures are production signatures, identity proof, or PKI validation.
 
 GovEngine is currently a reusable governed-execution helper layer, not a full autonomous runtime.
