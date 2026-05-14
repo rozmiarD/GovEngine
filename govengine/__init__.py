@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 
 from .api import GovApiError, GovApiResult
 from .context import GovEngineContext, GovEnginePaths, ravenclaw_context

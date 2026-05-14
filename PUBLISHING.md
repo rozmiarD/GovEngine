@@ -14,11 +14,11 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 
 ## PyPI release notes
 
-- SCLite is published as the PyPI distribution `sclite-core`; GovEngine depends on `sclite-core>=0.2.1,<0.3`.
+- SCLite is published as the PyPI distribution `sclite-core`; GovEngine depends on `sclite-core>=0.3.5,<0.4`.
 - Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
 - `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
 - `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.
-- `0.1.5` is the security-profile facade line: it gives hosts one explicit optional-profile entrypoint for action/tooling, policy/scope, and review-contract helper discovery while keeping neutral core and adapter/live-execution claims separate.
+- `0.1.6` consumes `sclite-core>=0.3.5,<0.4`, keeps the security-profile facade boundary, and adds thin SCLite v0.3 scoped-ticket / receipt-bounded-evidence gate delegation while keeping adapters/live execution out of scope.
 - API stability and non-claims should remain explicit because this is pre-1.0.
 
 ## Release order

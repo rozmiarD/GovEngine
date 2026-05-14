@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Mapping
 
 
 def _artifact_descriptor(artifact: Dict[str, Any]) -> Dict[str, Any]:
@@ -9,6 +9,61 @@ def _artifact_descriptor(artifact: Dict[str, Any]) -> Dict[str, Any]:
     return artifact_descriptor(artifact)
 
 APPROVED_TICKET_STATUSES = {'approve', 'approved', 'approved_for_dry_run'}
+SUPPORTED_TICKET_SCHEMA_VERSIONS = {'v0.2', 'v0.3'}
+
+
+def _sclite_ticket_semantics(ticket: Mapping[str, Any], execution_contract: Mapping[str, Any]) -> List[str]:
+    """Delegate scoped-ticket semantic checks to SCLite when a v0.3 ticket is used."""
+
+    from sclite.tickets import TicketSemanticError, validate_ticket_semantics
+
+    try:
+        return validate_ticket_semantics(ticket, execution_contract)
+    except TicketSemanticError as exc:
+        raise ValueError(f'sclite_ticket_semantics_failed:{exc}') from exc
+
+
+def validate_scoped_ticket_use_gate(
+    *,
+    execution_ticket: Dict[str, Any] | None,
+    execution_contract: Dict[str, Any] | None,
+    execution_receipt: Dict[str, Any] | None,
+    evidence_contract: Dict[str, Any] | None = None,
+) -> Dict[str, Any]:
+    """Validate receipt/evidence use against a SCLite v0.3 scoped ticket.
+
+    This is a thin GovEngine host gate around SCLite's `verify_ticket_use`.
+    GovEngine does not reimplement SCLite's artifact semantics; it maps the
+    result into a small gate receipt that host runtimes can attach to runner
+    receipts or review packets.
+    """
+
+    if not isinstance(execution_ticket, dict):
+        raise ValueError('missing_execution_ticket')
+    if not isinstance(execution_contract, dict):
+        raise ValueError('missing_execution_contract')
+    if not isinstance(execution_receipt, dict):
+        raise ValueError('missing_execution_receipt')
+
+    from sclite.tickets import TicketUseVerificationError, verify_ticket_use
+
+    try:
+        result = verify_ticket_use(
+            execution_ticket,
+            execution_contract,
+            execution_receipt,
+            evidence_contract,
+        )
+    except TicketUseVerificationError as exc:
+        raise ValueError(f'sclite_ticket_use_failed:{exc}') from exc
+    return {
+        'status': str(result.get('status') or 'passed'),
+        'ticket_id': str(result.get('ticket_id') or execution_ticket.get('ticket_id') or ''),
+        'receipt_id': str(result.get('receipt_id') or execution_receipt.get('receipt_id') or ''),
+        'profile': str(execution_ticket.get('ticket_profile') or ''),
+        'checks': tuple(str(check) for check in result.get('checks', ())),
+        'source': 'sclite.verify_ticket_use',
+    }
 
 
 def validate_execution_ticket_gate(
@@ -32,8 +87,11 @@ def validate_execution_ticket_gate(
         raise ValueError('missing_execution_contract')
     artifact_type = str(execution_ticket.get('artifact_type') or '').strip()
     schema_version = str(execution_ticket.get('schema_version') or '').strip()
-    if artifact_type != 'execution_ticket' or schema_version != 'v0.2':
+    if artifact_type != 'execution_ticket' or schema_version not in SUPPORTED_TICKET_SCHEMA_VERSIONS:
         raise ValueError(f'invalid_execution_ticket:{artifact_type or "missing"}:{schema_version or "missing"}')
+    sclite_checks: List[str] = []
+    if schema_version == 'v0.3':
+        sclite_checks = _sclite_ticket_semantics(execution_ticket, execution_contract)
     approval = execution_ticket.get('approval') if isinstance(execution_ticket.get('approval'), dict) else {}
     status = str(approval.get('status') or '').strip().lower()
     if status not in APPROVED_TICKET_STATUSES:
@@ -66,4 +124,6 @@ def validate_execution_ticket_gate(
         'ticket_id': str(execution_ticket.get('ticket_id') or ''),
         'execution_contract_digest': contract_digest,
         'profile': str(integrity.get('profile') or ''),
+        'schema_version': schema_version,
+        'sclite_checks': tuple(sclite_checks),
     }
