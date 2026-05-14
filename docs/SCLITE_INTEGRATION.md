@@ -10,7 +10,7 @@ GovEngine answers: **how does a runtime prepare, check, and consume those artifa
 `pyproject.toml` depends on the published SCLite package distribution:
 
 ```toml
-sclite-core>=0.2.1,<0.3
+sclite-core>=0.3.5,<0.4
 ```
 
 The PyPI distribution name is `sclite-core`; the Python import package remains `sclite`.

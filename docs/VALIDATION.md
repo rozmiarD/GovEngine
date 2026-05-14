@@ -10,16 +10,16 @@ python -m pytest -q
 python -m pip check
 ```
 
-Expected result for the published `0.1.5` line, plus current-main notes:
+Expected result for the `0.1.6` release line:
 
-- standalone pytest suite passes (`64 passed` in the `0.1.5` release tree; current `main` with unreleased demo signer/verifier ports reports `67 passed`);
+- standalone pytest suite passes (`70 passed` in the `0.1.6` release tree);
 - package dependencies are consistent;
-- `python -m build` creates `govengine-0.1.5` sdist/wheel artifacts;
+- `python -m build` creates `govengine-0.1.6` sdist/wheel artifacts;
 - `python -m twine check dist/*` passes for the release artifacts;
-- clean wheel install reports `govengine.__version__ == 0.1.5`, distribution version `0.1.5`, import checks for the artifact-governance, surface-registry, and security-profile facade modules pass, and `pip check` is clean;
-- clean install from PyPI with `govengine==0.1.5` reports `govengine.__version__ == 0.1.5`, distribution version `0.1.5`, `sclite-core==0.2.1`, import checks for the artifact-governance, surface-registry, and security-profile facade modules pass, and `pip check` is clean;
+- clean wheel install reports `govengine.__version__ == 0.1.6`, distribution version `0.1.6`, import checks for the artifact-governance, surface-registry, and security-profile facade modules pass, and `pip check` is clean;
+- clean install from PyPI with `govengine==0.1.6` reports `govengine.__version__ == 0.1.6`, distribution version `0.1.6`, `sclite-core==0.3.5`, import checks for the artifact-governance, surface-registry, and security-profile facade modules pass, and `pip check` is clean;
 - no Ravenclaw runtime or Logdash process is started;
-- demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness.
+- demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness; scoped-ticket use-gate tests prove SCLite v0.3 receipt/evidence bounds delegation, not live runtime enforcement.
 
 ## What the focused tests cover
 

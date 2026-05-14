@@ -6,9 +6,16 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Nothing yet.
+
+## 0.1.6 - SCLite 0.3.5 scoped-ticket bridge
+
+- Updated the SCLite dependency to `sclite-core>=0.3.5,<0.4`.
+- Added thin GovEngine gates that delegate SCLite v0.3 scoped-ticket semantics and receipt/evidence use-bounds verification to SCLite.
+- Added deterministic tests for valid scoped-ticket use and rejection of unbounded execution claims.
 - Added deterministic demo signing/verifier ports for host-provided signing/trust examples without adding PKI, key storage, or production identity claims.
 - Cleaned README badge order, removed personal ownership copy from public-facing docs, completed package metadata fields, and updated roadmap wording for the published `0.1.5` line.
-- Polished public docs to state the `0.1.5` publication state, security-profile boundary, and deferred adapter/live-execution non-claims more plainly.
+- Polished public docs to state the package boundary, security-profile boundary, and deferred adapter/live-execution non-claims more plainly.
 
 ## 0.1.5 - security profile facade
 
