@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.1.6'
+__version__ = '0.1.7'
 
 from .api import GovApiError, GovApiResult
 from .context import GovEngineContext, GovEnginePaths, ravenclaw_context
@@ -75,6 +75,9 @@ __all__ = [
     'SigningPolicy',
     'GovSCLiteLifecycleVerifier',
     'GovStateStore',
+    'review_bundle_state',
+    'review_bundle_transition_decision',
+    'review_sclite_bundle',
     'TransitionDecision',
     'TransitionGate',
     'TransitionPolicy',
@@ -94,11 +97,26 @@ __all__ = [
 
 
 def __getattr__(name: str):
-    if name in {'GovSCLiteLifecycleVerifier', 'verify_lifecycle_manifest'}:
-        from .sclite_contracts import GovSCLiteLifecycleVerifier, verify_lifecycle_manifest
+    if name in {
+        'GovSCLiteLifecycleVerifier',
+        'review_bundle_state',
+        'review_bundle_transition_decision',
+        'review_sclite_bundle',
+        'verify_lifecycle_manifest',
+    }:
+        from .sclite_contracts import (
+            GovSCLiteLifecycleVerifier,
+            review_bundle_state,
+            review_bundle_transition_decision,
+            review_sclite_bundle,
+            verify_lifecycle_manifest,
+        )
 
         return {
             'GovSCLiteLifecycleVerifier': GovSCLiteLifecycleVerifier,
+            'review_bundle_state': review_bundle_state,
+            'review_bundle_transition_decision': review_bundle_transition_decision,
+            'review_sclite_bundle': review_sclite_bundle,
             'verify_lifecycle_manifest': verify_lifecycle_manifest,
         }[name]
     raise AttributeError(name)

@@ -1,9 +1,9 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.1.6](https://img.shields.io/pypi/v/govengine?label=package%3A%20govengine&color=blueviolet)](https://pypi.org/project/govengine/)
+[![Package: govengine](https://img.shields.io/pypi/v/govengine?label=package%3A%20govengine&color=blueviolet)](https://pypi.org/project/govengine/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Dependency: SCLite >=0.3.5](https://img.shields.io/badge/dependency-SCLite%20%3E%3D0.3.5-informational.svg)](https://github.com/rozmiarD/SCLite)
+[![Dependency: SCLite >=0.5.1](https://img.shields.io/badge/dependency-SCLite%20%3E%3D0.5.1-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
 GovEngine is a carrier-agnostic deterministic governed-runtime kernel for portable artifact governance and policy-gated controlled execution.
@@ -67,7 +67,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 
 ## Current status
 
-GovEngine is a **pre-alpha 0.1.x helper package**. The package is importable, tested, and published through `0.1.6`. The `0.1.3` line added artifact-governance control gates while keeping live execution disabled by default. The `0.1.4` line added a surface registry that separates the neutral core from optional security-profile helpers. The `0.1.5` line adds a security-profile facade for one-entrypoint helper discovery. The `0.1.6` line consumes `sclite-core>=0.3.5,<0.4`, includes thin scoped-ticket / receipt-bounded-evidence gates, and contains deterministic demo signer/verifier ports for host proof fixtures; those ports exercise signing/trust seams without claiming PKI/key ownership. Ravenclaw has a host adapter for the control gates and still owns concrete runtime execution.
+GovEngine is a **pre-alpha 0.1.x helper package**. The package is importable, tested, and published through `0.1.6`; the source tree is prepared as `0.1.7`. The `0.1.3` line added artifact-governance control gates while keeping live execution disabled by default. The `0.1.4` line added a surface registry that separates the neutral core from optional security-profile helpers. The `0.1.5` line adds a security-profile facade for one-entrypoint helper discovery. The `0.1.6` line consumes `sclite-core>=0.3.5,<0.4`, includes thin scoped-ticket / receipt-bounded-evidence gates, and contains deterministic demo signer/verifier ports for host proof fixtures; those ports exercise signing/trust seams without claiming PKI/key ownership. The `0.1.7` source line consumes `sclite-core>=0.5.1,<0.6` and adds a thin SCLite review-bundle bridge for the packaged GovEngine integration fixtures. Ravenclaw has a host adapter for the control gates and still owns concrete runtime execution.
 
 ## Installation
 
