@@ -1,12 +1,12 @@
 # GovEngine Architecture
 
-GovEngine is a small governed-execution service layer. It is designed to sit between a host runtime and the SCLite contract lifecycle.
+GovEngine is a deterministic governed-runtime kernel in pre-alpha form. It is designed to sit between a host/domain runtime and the SCLite contract lifecycle.
 
 ```text
 host runtime -> GovEngine -> SCLite
 ```
 
-For the current extraction, the host runtime is Ravenclaw. Later hosts may be OpenClaw, MCP/A2A-style carriers, or other local runtimes, but GovEngine should not become a carrier-specific adapter.
+For the current extraction, the host/domain runtime is Ravenclaw. A future infrastructure-operations runtime/profile is reserved as Tecrax. Later carriers may include OpenClaw, MCP/A2A-style transports, or other local harnesses, but GovEngine should not become a carrier-specific adapter or a domain product shell.
 
 ## Layers
 
@@ -120,4 +120,4 @@ forbidden: GovEngine -> Logdash/OpenClaw/MCP/A2A adapters
 
 ## Current maturity
 
-The package currently covers dry-run-safe helpers and contract/policy seams. It is not a full runtime and does not claim production execution safety on its own.
+The package currently covers dry-run-safe helpers and contract/policy seams. It is not yet a complete orchestrator/scheduler/supervisor stack and does not claim production execution safety on its own. The roadmap moves toward that kernel through neutral contracts, profile adapters, and negative-tested execution gates rather than mechanical migration of Ravenclaw files.

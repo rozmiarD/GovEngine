@@ -1,283 +1,344 @@
 # GovEngine Roadmap
 
-GovEngine is being extracted in stages from Ravenclaw. The goal is a reusable governed-execution core that consumes SCLite and remains independent of Ravenclaw UI/runtime specifics.
+GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
+
+Current package baseline: `govengine==0.1.6`, depending on `sclite-core>=0.3.5,<0.4`.
+
+## Architecture thesis
+
+```text
+LLM intent is not execution authority.
+```
+
+GovEngine exists to keep intent, permission, execution, receipt, and review as separate runtime states. A model, agent, UI, or carrier may propose an action, but execution must pass through deterministic governance boundaries:
+
+```text
+intent
+  -> policy decision
+  -> execution contract
+  -> execution ticket
+  -> trust decision
+  -> runner gate
+  -> execution or dry-run
+  -> receipt
+  -> evidence contract
+  -> review bundle
+```
+
+SCLite owns the contract/proof/review artifact layer. GovEngine owns the runtime mechanics that consume those artifacts. Domain runtimes such as Ravenclaw and Tecrax own domain semantics, UX, tools, and operator workflows.
+
+## Responsibility boundary
+
+GovEngine owns reusable mechanics:
+
+- event/state/control envelopes;
+- reason-code and transition-decision registries;
+- task and planning contracts;
+- audit, policy, admission, approval, and ticket-control boundaries;
+- trust/signer/verifier ports without PKI or key-store ownership;
+- runner request/receipt/gate/supervisor contracts;
+- OODA-style pause/abort/cooldown/replan decisions;
+- deconfliction and common operational picture summaries;
+- evidence qualification and review-controller contracts;
+- domain-profile SDK and conformance tests.
+
+GovEngine does **not** own:
+
+- SCLite schemas, canonicalization, chain verification, or review-bundle CLI;
+- Ravenclaw campaign semantics, finding taxonomy, Logdash, or security toolchains;
+- Tecrax infrastructure UX, service inventories, change-management policy, or host credentials;
+- OpenClaw/MCP/A2A carrier adapters as core;
+- live subprocess execution by default;
+- PKI, CA, KMS, trust-store, or key storage;
+- legal authorization, organizational approval, or operator accountability.
+
+Rule of thumb:
+
+```text
+GovEngine owns mechanics.
+Profiles own meaning.
+Runtimes own UX/integration.
+SCLite owns proof/review artifacts.
+```
 
-## Stage 0 — package boundary
+## Current implemented baseline: 0.1.x
+
+The `0.1.x` line already proves the first useful slice of the model:
+
+- stable-ish API result/error envelopes;
+- SCLite lifecycle integration seams;
+- artifact descriptor/state/transition boundary objects;
+- lifecycle transition gates;
+- signing/trust policy bridge with host-provided ports;
+- dry-run controlled-execution gate and default `DryRunRunner`;
+- execution-ticket and receipt-bounded-evidence checks delegated to SCLite v0.3;
+- OODA safety-loop decisions;
+- deconfliction and artifact state index;
+- public surface registry;
+- optional `govengine.security_profile` helper facade for Ravenclaw-derived security helpers.
 
-Status: completed.
+This is still pre-alpha. The next roadmap should not be a file move from Ravenclaw into GovEngine. It should be contract-first extraction: define neutral contracts, add GovEngine tests, add Ravenclaw compatibility wrappers, then thin Ravenclaw only after behavior is preserved.
 
-- Create importable `govengine` package.
-- Add standalone tests and CI.
-- Document owned vs excluded surfaces.
-- Keep live execution out of scope.
+## Version roadmap
 
-## Stage 1 — SCLite consumption
+### 0.2.x — Kernel boundary freeze and stable envelopes
 
-Status: completed for initial public package.
+Goal: make the kernel/profile split explicit before extracting more runtime mechanics.
 
-- Pin SCLite as the contract lifecycle dependency.
-- Keep schema/lifecycle ownership in SCLite.
-- Expose GovEngine helpers that prepare/check execution contracts around SCLite artifacts.
+Planned work:
 
-## Stage 2 — Ravenclaw external consumption
+1. Add/settle architecture docs:
+   - `docs/GOVENGINE_KERNEL_BOUNDARY.md`
+   - `docs/DOMAIN_PROFILE_CONTRACT.md`
+   - `docs/ORCHESTRATOR_MODEL.md`
+   - `docs/EVENT_MODEL.md`
+   - `docs/STATE_MACHINE.md`
+   - `docs/RUNNER_SUPERVISION.md`
+2. Promote portable envelopes:
+   - `ReasonCode`
+   - `TransitionDecision`
+   - `PolicyDecision`
+   - `TrustDecision`
+   - `RunnerProfile`
+   - `ExecutionPrerequisites`
+3. Add compatibility notes for Ravenclaw and future Tecrax profiles.
+4. Keep live execution disabled by default.
 
-Status: completed in Ravenclaw migration branch.
+Definition of done:
 
-- Remove in-tree `govengine/` from Ravenclaw.
-- Consume GovEngine from the public PyPI package dependency.
-- Preserve Ravenclaw compatibility wrappers.
-- Validate focused GovEngine/Ravenclaw seams and Security Contract receipt.
+- public docs explain kernel vs profile vs runtime vs SCLite;
+- standalone tests cover envelope serialization and negative boundary cases;
+- Ravenclaw can still consume the package without behavior drift.
 
-## Stage 3 — API hardening
+### 0.3.x — Event, state, queue, scheduler, and control shell
 
-Status: initial implementation complete.
+Goal: introduce a deterministic orchestration shell without making GovEngine an LLM agent loop.
 
-- Added `govengine.api` with structured `GovApiResult` and `GovApiError` envelopes.
-- Added boundary tests for stable result/error shape.
-- Public API hardening is incremental: existing compatibility helpers remain available while new boundaries get typed envelopes first.
+Planned work:
 
-## Stage 4 — runner protocol design
+- `GovEvent`, `EventEnvelope`, `EventStore` protocol;
+- `GovState`, `GovRunState`, `StateStore` protocol;
+- `GovControlAction` values: `start`, `pause`, `resume`, `stop`, `cancel`, `replan`, `degrade_to_dry_run`, `cooldown`, `retry`, `archive`;
+- `WorkQueue`, `PriorityQueue`, `DelayedQueue`, `RetryQueue`, `CooldownQueue`, `ApprovalQueue`, `DeadLetterQueue`;
+- `QueueSnapshot`, `RetryPolicy`, `CooldownPolicy`, `HeartbeatPolicy`;
+- `SchedulerTick`, `HeartbeatMonitor`, `LeaseManager`, `StaleRunDetector`, `RecoveryPolicy`.
 
-Status: initial implementation complete, dry-run/control-plane only.
+Definition of done:
 
-- Added `govengine.execution.runner_protocol` with `GovRunnerStep`, `GovRunnerRequest`, `GovRunnerStepResult`, `GovRunnerReceipt`, and `GovRunner` protocol.
-- Added approved-spec-to-runner-request assembly and dry-run runner receipts.
-- Ravenclaw subprocess execution remains host-owned. Moving live execution ownership into GovEngine still requires explicit operator review.
+- the orchestrator shell reacts to events/state/control actions deterministically;
+- storage is protocol/interface-driven and host-provided;
+- no Ravenclaw paths, Logdash assumptions, or carrier adapters enter core;
+- Ravenclaw state/control files can be represented through GovEngine-compatible adapters.
 
-## Stage 5 — OODA safety loop
+### 0.4.x — Planning kernel
 
-Status: initial implementation complete for deterministic between-step decisions.
+Goal: extract neutral planning contracts while leaving domain planning semantics in profiles.
 
-Goal: define a carrier-neutral Observe-Orient-Decide-Act safety loop for governed execution. This is not an LLM agent loop and not a scanner. It is a runtime safety/control contract that can interrupt or reshape execution when observations diverge from the approved bounds.
+Planned work:
 
-Implemented concepts:
+- `GovTaskContract`;
+- `PlanRequest`;
+- `PlanCandidate`;
+- `PlanIntentContract`;
+- `PlanningLadder`;
+- `PlanNormalizer`;
+- `PlanValidator`;
+- `PlannerPort`;
+- deterministic `StaticPlanner` fixtures;
+- optional host-provided `LLMPlannerPort` interface, not a default dependency.
 
-- `GovObservation` — normalized execution telemetry, host health, policy signals, scope drift, transport anomalies, unexpected artifact shape, and operator-control events.
-- `GovOrientation` — contextual interpretation of those observations against the approved execution spec, execution ticket, policy decision, scope, aggression/budget limits, and host state.
-- `GovOodaDecision` — one of `continue`, `pause`, `abort`, `cooldown`, `degrade_to_dry_run`, `require_owner_review`, or `replan_after_step`.
-- `GovOodaController` — deterministic policy-first controller that evaluates observations before and between runner steps.
+Definition of done:
 
-Required safety behavior:
+- Ravenclaw `RuntimeTaskContract` v2 and planner intent compatibility can route through GovEngine contracts;
+- security planning stages remain in Ravenclaw profile;
+- Tecrax can define infrastructure planning stages without changing the kernel.
 
-- detect out-of-scope drift and abort before the next action;
-- detect repeated transport/host-health anomalies and apply cooldowns;
-- detect policy/ticket/spec mismatch and require owner review;
-- detect execution output shape anomalies before evidence is trusted;
-- preserve an auditable decision record that can be linked into SCLite evidence/receipt artifacts;
-- keep host-specific telemetry interpretation outside protocol/carrier adapters.
+### 0.5.x — Audit, policy, admission, and approval kernel
 
-Ravenclaw has partial precursors today: Logdash pause/stop controls, host execution gates, host-health cooldowns, runtime decision records, and replay anomaly checks. GovEngine is turning those scattered mechanisms into an explicit reusable contract.
+Goal: make go/no-go decisions, escalation, and positive-control boundaries reusable.
 
-Non-goals for this stage:
+Planned work:
 
-- no autonomous escalation beyond approved bounds;
-- no live subprocess execution ownership unless Stage 4 runner protocol explicitly allows the adapter;
-- no protocol-specific OpenClaw/MCP/A2A behavior;
-- no LLM-dependent safety decision as the default path.
+- `AuditCase`, `AuditChecklist`, `AuditFinding`, `AuditDecision`;
+- `ApprovalRequest` and approval/ticket-controller interfaces;
+- `PolicyDecision`, `PDP`, `PEP` boundaries;
+- `AdmissionContext`, `AdmissionDecision`, `AdmissionController`;
+- `SignalGate`, `DepthGate`, `BudgetGate`, `CooldownGate`, `ResourceHealthGate`.
 
-Gate:
+Definition of done:
 
-- unit tests for each initial decision outcome: complete;
-- Ravenclaw adapter test proving pause/abort/cooldown can be honored between runner steps: complete in Ravenclaw (`engine/tests/test_govengine_ooda_adapter.py`);
-- receipt/evidence note showing how OODA decisions are recorded without leaking raw output: complete (`docs/OODA_RECEIPT_EVIDENCE.md`);
-- public docs state non-claims clearly: complete.
+- hosts can ask GovEngine whether a task may proceed, must dry-run, requires approval/replan, or is blocked;
+- profile-specific policy remains outside neutral core;
+- deterministic negative tests cover raw-intent execution, missing ticket, policy drift, budget exceedance, and cooldown behavior.
 
-## Stage 6 — signal/evidence/analysis contracts
+### 0.6.x — Execution supervisor and runner kernel
 
-Status: initial extraction complete for the pure contract helpers.
+Goal: provide the reusable supervision layer for bounded execution while preserving dry-run as default.
 
-Goal: move pure decision/evidence contracts out of Ravenclaw Runtime and into GovEngine without moving UI, storage, raw artifacts, live execution, or campaign orchestration. These contracts make the reusable post-run reasoning seam explicit while preserving Ravenclaw as the reference host.
+Planned work:
 
-Implemented concepts:
+- `RunnerGate`;
+- `RunnerRequest`;
+- `RunnerReceipt`;
+- `RunnerLease`;
+- `ExecutionSupervisor`;
+- `DryRunRunner` as default;
+- optional `LocalSubprocessRunner`, disabled by default and policy-enabled only.
 
-- `govengine.contracts.signal` — signal contract builders/readers for workflow promotion, finding signal, success outcome, adaptation feedback, and legacy bridge flags.
-- `govengine.contracts.analysis` — analysis contract builder that maps planner hypothesis, expected signal, evidence goal, success semantics, and semantic-loss execution fit into a compact review object.
-- `govengine.contracts.evidence_policy` — confirmation gate for requiring false-positive guards, control comparison, observed control delta, and optional reproduction pass before a finding can be treated as confirmed.
-- `govengine.security_profile` — optional facade that groups action/tooling, policy/scope, and review-contract helpers behind one host-facing discovery entrypoint without moving those helpers into the neutral core.
-
-Non-goals for this stage:
-
-- no raw evidence storage ownership;
-- no Logdash projection/UI ownership;
-- no live execution backend movement;
-- no protocol/carrier adapters;
-- no broad stable API claim beyond tested pre-alpha helpers.
-
-Gate:
-
-- standalone GovEngine tests for extracted contracts: complete;
-- standalone GovEngine tests for the optional security-profile facade and boundary assertions: complete in the 0.1.5 line;
-- Ravenclaw compatibility wrappers import the GovEngine modules: complete in the migration tree;
-- Ravenclaw focused seam tests passed against the released GovEngine package line: complete;
-- future package releases still require the standard release checklist and operator approval.
-
-## Stage 7 — artifact governance core hardening
-
-Status: initial implementation complete for neutral boundary objects.
-
-Goal: make GovEngine portable as an artifact governance layer before any live execution backend or carrier adapter work. This stage introduces small, Ravenclaw-independent core objects that future lifecycle, signing/trust, and controlled-execution gates can share.
-
-Implemented concepts:
-
-- `govengine.core.ReasonCode` — stable reason-code values for portable boundary decisions.
-- `govengine.core.ArtifactDescriptor` — neutral artifact descriptor object; SCLite still owns canonicalization and digest calculation.
-- `govengine.core.ArtifactEnvelope` — descriptor plus artifact payload at the GovEngine boundary.
-- `govengine.core.ArtifactState` — lightweight state summary with chain/signature/policy status, blockers, and next actions.
-- `govengine.core.GovernanceContext` — profile, policy, trust, and runner-profile context without Ravenclaw path discovery.
-- `govengine.core.TransitionDecision` — portable lifecycle transition decision envelope.
-- `govengine.core.ExecutionPrerequisites` — guardrail summary that rejects raw-intent execution and keeps live backends disabled unless explicitly enabled.
-
-Required safety behavior:
-
-- GovEngine must never execute directly from raw intent.
-- Execution requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, and allowed runner profile.
-- Dry-run behavior remains the default path.
-- Live backends remain disabled by default.
-- A future `LocalSubprocessRunner` must be optional, policy-enabled, negative-tested, and never default.
-
-Non-goals for this stage:
-
-- no schema/canonicalization/hash ownership movement out of SCLite;
-- no live subprocess execution backend;
-- no PKI, CA, KMS, or trust-store implementation;
-- no carrier-specific OpenClaw/MCP/A2A behavior;
-- no Ravenclaw campaign, Logdash, or persona ownership.
-
-Gate:
-
-- standalone tests prove stable descriptor/envelope/state/transition shapes;
-- raw-intent execution prerequisites are rejected deterministically;
-- live execution stays blocked by default even when dry-run prerequisites pass.
-
-## Stage 8 — SCLite lifecycle verifier/status bridge
-
-Status: initial implementation complete for descriptor/status/decision mapping.
-
-Goal: make the existing SCLite adapter a neutral lifecycle verifier and status bridge, not a schema owner. GovEngine should build/read SCLite descriptors, call SCLite artifact/lifecycle validation helpers, and map lifecycle verification into `ArtifactState`/`TransitionDecision` objects.
-
-Implemented concepts:
-
-- `govengine.sclite_contracts.descriptor_from_artifact` maps SCLite descriptors into `ArtifactDescriptor` without reimplementing hashing.
-- `govengine.sclite_contracts.lifecycle_state_from_manifest` delegates chain/lifecycle verification to SCLite and maps status into `ArtifactState`.
-- `govengine.sclite_contracts.lifecycle_transition_decision` maps lifecycle verification into a portable `TransitionDecision`.
-
-Non-goals:
-
-- no duplicate schema registry, canonical JSON, digest, or chain verification implementation in GovEngine;
-- no workflow engine;
-- no carrier adapters.
-
-## Stage 9 — artifact lifecycle controller and transition gates
-
-Status: initial implementation complete for ordered transitions, missing-artifact blockers, and blocked-artifact propagation.
-
-Goal: make artifact transitions the central governance primitive. Add a lightweight `ArtifactLifecycleController`/`TransitionGate` around SCLite lifecycle roles, blocking reasons, missing artifacts, and invalidation rules.
-
-Implemented concepts:
-
-- `govengine.lifecycle.TransitionPolicy` — small allow-list for lifecycle state transitions.
-- `govengine.lifecycle.TransitionGate` — evaluates proposed transitions against policy, required artifact roles, and artifact blockers.
-- `govengine.lifecycle.ArtifactLifecycleController` — thin controller facade for transition decisions and next actions.
-
-This stage must precede controlled live execution.
-
-## Stage 10 — signing/trust policy bridge
-
-Status: initial implementation complete for signature envelopes, signing/trust policy objects, signer/verifier ports, and signature transition decisions.
-
-Goal: define signing and verification ports plus trust-policy decisions without making SCLite or GovEngine own PKI/key management. GovEngine may verify that signatures bind to descriptor/chain/ticket digests and ask host-provided signer/verifier ports for trust decisions.
-
-Implemented concepts:
-
-- `govengine.signing.SignatureEnvelope` — portable signature metadata and digest binding.
-- `govengine.signing.SigningPolicy` / `TrustPolicy` — local requirements and allowed trust statuses.
-- `govengine.signing.SignerPort` / `VerifierPort` — host-provided interfaces; GovEngine core stores no keys.
-- `govengine.signing.VerificationResult` — verifier/trust decision result shape.
-- `govengine.signing.DemoDigestSigner` / `DemoDigestVerifier` — deterministic fixture/demo ports for exercising host-provided signing and verification without PKI or key storage.
-- `govengine.signing.signature_transition_decision` — transition gate for required signatures, digest mismatch, signer allow-list, and trust decision status.
-
-This stage must precede controlled live execution.
-
-## Stage 11 — controlled execution layer
-
-Status: initial implementation complete for dry-run-only execution gate and default `DryRunRunner`.
-
-Goal: allow GovEngine to prepare/gate approved `RunnerRequest` execution only after lifecycle gates and signing/trust gates are explicit. `DryRunRunner` remains the default. Live backends are optional future adapters and must stay policy-enabled and never default.
-
-Implemented concepts:
-
-- `govengine.execution.gate.RunnerProfile` — policy-visible runner profile with live backend disabled by default.
-- `govengine.execution.gate.ExecutionGateInput` — required boundary inputs before a runner request can proceed.
-- `govengine.execution.gate.ExecutionGate` — rejects raw intent, missing policy/ticket/trust, disallowed profiles, and live execution when disabled.
-- `govengine.execution.gate.DryRunRunner` — default runner that returns dry-run receipts and blocks live requests.
-
-Required inputs before execution:
-
-1. prepared execution contract;
-2. valid policy decision;
-3. approved execution ticket;
-4. valid signature/trust decision;
-5. allowed runner profile.
-
-Non-goals:
+Required guardrails:
 
 - no execution from raw intent;
-- no scanner/campaign executor ownership;
-- no Ravenclaw executor moved 1:1 into GovEngine;
-- no arbitrary subprocess execution by default.
+- valid execution contract required;
+- valid policy decision required;
+- approved scoped ticket required;
+- trust decision required;
+- runner profile required;
+- timeout/env/cwd/stdin policy required for local subprocess backends;
+- receipt required for every attempted step;
+- live backend must be negative-tested as blocked by default.
 
-## Stage 12 — deconfliction and artifact state index
+Definition of done:
 
-Status: initial implementation complete for digest conflict detection, blocked-artifact propagation, change orders, and lightweight state summaries.
+- Ravenclaw approved execution can pass through GovEngine runner gate/supervisor;
+- legacy direct execution remains marked as compatibility/dev path until retired;
+- no scanner/campaign execution semantics move into GovEngine.
 
-Goal: detect lifecycle conflicts and invalidated artifacts, then expose a small common operational picture without creating a workflow engine.
+### 0.7.x — Evidence and review kernel
 
-Implemented concepts:
+Goal: make post-execution qualification reusable while SCLite remains the proof/review authority.
 
-- `govengine.deconfliction.ArtifactConflict` — portable conflict finding.
-- `govengine.deconfliction.ArtifactChangeOrder` — required actions and invalidated downstream roles.
-- `govengine.deconfliction.ConflictDetector` — digest/state conflict detection without replacing SCLite verification.
-- `govengine.state_index.ArtifactStateIndex` — lightweight state summary with missing roles, blocked roles, invalidated roles, and next actions.
+Planned work:
 
-Non-goals:
+- `EvidenceRequirement`;
+- `EvidenceClaim`;
+- `EvidenceQualification`;
+- `ConfirmationPolicy`;
+- `FalsePositiveGuard`;
+- `ControlComparison`;
+- `ReproductionRequirement`;
+- `ReviewResult`;
+- `AnalysisContract`;
+- `EvidenceReviewController`;
+- SCLite review-bundle bridge.
 
-- no event bus;
-- no workflow scheduler;
-- no UI ownership;
-- no raw artifact storage ownership.
+Definition of done:
 
-## Stage 12.5 — public surface registry and security-profile separation
+- Ravenclaw finding/evidence qualification can use GovEngine review contracts;
+- SCLite still validates lifecycle/proof boundaries and review bundles;
+- overclaims are rejected when receipt bounds do not support evidence claims.
 
-Status: implemented and published in the `0.1.4`/`0.1.5` line.
+### 0.8.x — Domain Profile SDK
 
-Goal: make the pre-alpha API boundary easier to review before carrier-adapter work. GovEngine should expose a tested surface map that distinguishes neutral artifact-governance primitives from optional security-oriented helpers inherited from the Ravenclaw extraction path.
+Goal: prove portability across more than one domain without turning GovEngine into a domain monolith.
 
-Implemented concepts:
+Planned work:
 
-- `govengine.surfaces.GovSurface` — compact metadata for a public surface group.
-- `govengine.surfaces.public_surface_index` — tested index of current public surfaces.
-- `artifact_governance_core` — neutral artifact descriptor/state/transition, lifecycle, signing/trust, deconfliction, and state-index modules.
-- `controlled_execution_core` — approved-spec, execution-ticket, command-shape, runner, OODA, and dry-run execution-gate modules.
-- `security_profile_helpers` — optional action/tool/scope/policy/signal helpers for hosts such as Ravenclaw.
-- `govengine.security_profile` — optional facade for grouped helper discovery, JSON-safe profile indexing, allowlisted lazy imports, and boundary assertions.
+- `DomainProfile` metadata and conformance contracts;
+- resource-type registry;
+- task-family registry;
+- planning-stage registry;
+- capability and runner-profile declarations;
+- policy/evidence/audit checklist hooks;
+- profile conformance tests;
+- `SecurityResearchProfile` extracted/normalized from Ravenclaw-facing helpers;
+- `TecraxProfile` skeleton for governed infrastructure operations.
 
-Non-goals:
+Definition of done:
 
-- no module migration or breaking import paths in this slice;
-- no live scanner/exploit capability;
-- no bug-bounty campaign orchestration ownership;
-- no protocol adapter implementation.
+- Ravenclaw can identify as a security-research runtime/profile;
+- Tecrax can exist as a second profile skeleton without live infrastructure authority;
+- profile conformance proves generic kernel portability.
 
-Gate:
+### 0.9.x — Multi-runtime integration proofs
 
-- standalone tests prove the surface names, optional-profile flag, non-claims, and strict lookup behavior;
-- standalone tests prove the security-profile facade maps exactly to the public surface registry and does not import neutral core helpers through the optional profile;
-- public docs state the separation without claiming stable 1.0 API maturity.
+Goal: demonstrate that the same kernel supports multiple domain runtimes without expanding authority.
 
-## Stage 13 — carrier adapters
+Planned work:
 
-Deferred.
+- Ravenclaw profile integration proof;
+- Tecrax dry-run infrastructure-change proof;
+- profile-to-SCLite review-bundle examples;
+- readiness packet for first carrier adapter, likely OpenClaw, if boundaries are stable.
 
-Potential hosts/carriers such as OpenClaw, MCP, or A2A should come only after the artifact lifecycle, signing/trust, controlled-execution gates, package/publication discipline, and Ravenclaw consumption path are stable. GovEngine should not become protocol-first.
+Definition of done:
 
-Adapter order remains: OpenClaw first later, MCP later, A2A last/example-first.
+- at least two public-safe domain proofs use the same GovEngine/SCLite lifecycle;
+- carrier adapter work remains gated and does not bypass GovEngine.
+
+## Domain profiles
+
+### Ravenclaw Security Research Profile
+
+Ravenclaw supplies security meaning:
+
+- resource types: `host`, `url`, `endpoint`, `web_app`;
+- task families: `recon`, `authz`, `idor`, `workflow`, `content_discovery`, `tls_assessment`;
+- planning stages: `discovery`, `validation`, `control_boundary_confirmation`, `state_transition_confirmation`, `bounded_exploit_proof`, `report_artifact_capture`;
+- security-specific audit checklists, policy rules, tools, and evidence rules.
+
+### Tecrax Infrastructure Operations Profile
+
+Tecrax is the reserved name for the future governed infrastructure-operations runtime/profile. Avoid inherited working-name/product framing until public language is deliberately chosen.
+
+Tecrax should supply infrastructure meaning:
+
+- resource types: `server`, `service`, `container`, `firewall`, `switch`, `vm`, `backup_job`;
+- task families: `inspect`, `diagnose`, `propose_change`, `dry_run_change`, `apply_change`, `verify`, `rollback`;
+- planning stages: `observe`, `diagnose`, `plan_change`, `validate_dry_run`, `approve`, `execute`, `verify`, `rollback_if_needed`.
+
+Initial Tecrax work should be dry-run/local-fixture only until GovEngine runner supervision and SCLite review bundles are mature.
+
+## Carrier adapters
+
+Carrier adapters remain deferred. OpenClaw should be evaluated first because it is the natural operator/carrier environment. MCP should come later. A2A should stay last and example-first.
+
+Correct model:
+
+```text
+carrier or harness proposes
+  -> domain runtime maps to workflow/profile semantics
+  -> GovEngine gates and supervises
+  -> SCLite artifacts bind lifecycle and review
+  -> operator approves where required
+  -> runner performs bounded step or dry-run
+  -> receipt/evidence returns to carrier
+```
+
+Incorrect model:
+
+```text
+agent says execute -> runner executes
+```
+
+## Refactor rule
+
+Do not move files mechanically from Ravenclaw into GovEngine. For each extraction:
+
+1. identify the reusable concept;
+2. name it neutrally;
+3. define the GovEngine contract;
+4. add GovEngine tests;
+5. add Ravenclaw compatibility wrappers/adapters;
+6. route Ravenclaw seam tests through the new contract;
+7. remove or thin old code only after parity is proven.
+
+## Research documentation backlog
+
+Later, after the boundaries are implemented enough to support claims, add:
+
+- `docs/RESEARCH_THESIS.md`;
+- `docs/RESEARCH_EVALUATION_MATRIX.md`;
+- `docs/BASELINE_COMPARISON.md`;
+- `examples/research-scenarios/`.
+
+Candidate scenarios:
+
+- raw intent rejected;
+- ticket digest drift rejected;
+- policy changed after ticket;
+- receipt overclaim rejected;
+- evidence overclaim rejected;
+- signature digest mismatch rejected;
+- OODA scope drift abort;
+- live runner disabled by default;
+- common operational picture shows blocked state.
