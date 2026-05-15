@@ -17,7 +17,7 @@ Expected result for the `0.1.7` source line:
 - `python -m build` creates `govengine-0.1.7` sdist/wheel artifacts;
 - `python -m twine check dist/*` passes for the release artifacts;
 - clean wheel install reports `govengine.__version__ == 0.1.7`, distribution version `0.1.7`, import checks for the artifact-governance, surface-registry, security-profile facade, and SCLite review-bundle bridge modules pass, and `pip check` is clean;
-- clean install from PyPI with `govengine==0.1.6` remains the latest published package until an explicit `0.1.7` release; source-tree validation for `0.1.7` resolves `sclite-core==0.5.1`;
+- clean install from PyPI with `govengine==0.1.7` reports `govengine.__version__ == 0.1.7`, distribution version `0.1.7`, `sclite-core==0.5.1`, SCLite review-bundle bridge checks pass, and `pip check` is clean;
 - no Ravenclaw runtime or Logdash process is started;
 - demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness; scoped-ticket use-gate tests prove SCLite receipt/evidence bounds delegation, and review-bundle tests prove GovEngine delegates pass/fail verdicts to SCLite `0.5.1`, not live runtime enforcement.
 
