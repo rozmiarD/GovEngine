@@ -2,7 +2,7 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current source baseline: `govengine==0.1.7`, depending on `sclite-core>=0.5.1,<0.6`. Latest PyPI publication remains `govengine==0.1.6` until an explicit release.
+Current package baseline: `govengine==0.1.7`, depending on `sclite-core>=0.5.1,<0.6`.
 
 ## Architecture thesis
 

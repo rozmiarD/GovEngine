@@ -7,7 +7,7 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Version: `0.1.7` in source; PyPI remains published through `0.1.6` until an explicit release.
+- Version: `0.1.7`.
 - SCLite integration: present through helper seams via `sclite-core>=0.5.1,<0.6`.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
@@ -21,7 +21,7 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `0.1.6`; `0.1.7` is source-prepared but not tagged or uploaded. Each new release still requires the standard release checklist and operator approval before upload.
+- PyPI publication: completed through `0.1.7`; each new release still requires the standard release checklist and operator approval before upload.
 
 ## What is public-safe today
 
