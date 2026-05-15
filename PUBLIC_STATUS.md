@@ -1,6 +1,6 @@
 # GovEngine Public Status
 
-GovEngine is a **pre-alpha governed-execution helper package** extracted from Ravenclaw.
+GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Ravenclaw in contract-first stages.
 
 ## Current maturity
 
@@ -55,7 +55,8 @@ GovEngine does not currently claim:
 - complete API stability;
 - production/stable PyPI API readiness;
 - PKI, CA, KMS, trust-store, or key-management ownership;
-- a full replacement for Ravenclaw Runtime.
+- a full replacement for Ravenclaw Runtime;
+- Tecrax infrastructure-domain semantics, credentials, or product UX.
 
 ## Controlled execution posture
 

@@ -6,7 +6,7 @@
 [![Dependency: SCLite >=0.3.5](https://img.shields.io/badge/dependency-SCLite%20%3E%3D0.3.5-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-GovEngine is a carrier-agnostic governed-execution core for portable artifact governance and policy-gated controlled execution.
+GovEngine is a carrier-agnostic deterministic governed-runtime kernel for portable artifact governance and policy-gated controlled execution.
 
 It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, and dry-run result assembly. Security-oriented action/tool/scope/signal helpers remain available as an optional profile for hosts such as Ravenclaw, not as the neutral core itself.
 
@@ -32,9 +32,10 @@ Ravenclaw -> GovEngine -> SCLite
 
 - **SCLite** owns schema-backed lifecycle artifacts and validation.
 - **GovEngine** owns reusable governed-execution helpers that consume SCLite artifacts.
-- **Ravenclaw** remains the reference runtime/control plane and concrete integration host.
+- **Ravenclaw** remains the reference security runtime/control plane and concrete integration host.
+- **Tecrax** is reserved as a future infrastructure-operations runtime/profile on the same foundation.
 
-GovEngine is **not** Ravenclaw, Logdash, an LLM agent loop, a scanner, or a protocol adapter.
+GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, or a protocol adapter.
 
 ## What GovEngine includes now
 
