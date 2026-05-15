@@ -10,7 +10,7 @@ GovEngine answers: **how does a runtime prepare, check, and consume those artifa
 `pyproject.toml` depends on the published SCLite package distribution:
 
 ```toml
-sclite-core>=0.3.5,<0.4
+sclite-core>=0.5.1,<0.6
 ```
 
 The PyPI distribution name is `sclite-core`; the Python import package remains `sclite`.
@@ -23,7 +23,7 @@ GovEngine -> SCLite
 
 ## Lifecycle relationship
 
-SCLite v0.2 models the lifecycle as schema-backed artifacts:
+SCLite models the lifecycle as schema-backed artifacts and review bundles:
 
 ```text
 intent_contract
@@ -33,6 +33,7 @@ intent_contract
 -> execution_receipt
 -> evidence_contract
 -> artifact_chain_manifest
+-> review_record / review bundle
 ```
 
 GovEngine currently provides helpers around the runtime-facing parts of that lifecycle:
@@ -42,11 +43,12 @@ GovEngine currently provides helpers around the runtime-facing parts of that lif
 - execution-contract shaping and redaction;
 - approved-spec and execution-ticket checks;
 - dry-run result assembly;
-- integration seams for SCLite verification.
+- integration seams for SCLite verification;
+- review-bundle verdict mapping through SCLite `0.5.1` review surfaces.
 
 ## What GovEngine does not replace
 
-GovEngine does not replace SCLite schemas, lifecycle verification, or artifact integrity checks. Those stay in SCLite.
+GovEngine does not replace SCLite schemas, lifecycle verification, artifact integrity checks, Scope Fidelity checks, or review-bundle verdict semantics. Those stay in SCLite.
 
 GovEngine also does not execute live targets by itself. A host runtime such as Ravenclaw remains responsible for concrete execution adapters, artifact persistence, operator approval UX, and public snapshot/demo publishing.
 

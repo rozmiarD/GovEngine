@@ -6,7 +6,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-- Nothing yet.
+- Prepared the `0.1.7` source line to consume `sclite-core>=0.5.1,<0.6`.
+- Added thin SCLite review-bundle bridge helpers that delegate GovEngine integration bundle pass/fail verdicts to SCLite `0.5.1`.
+- Added integration tests for packaged SCLite GovEngine review bundles, including the expected cross-host failure fixture.
+- Updated public docs/status/validation notes for the SCLite `0.5.1` chain sync without tagging or uploading a GovEngine release.
 
 ## 0.1.6 - SCLite 0.3.5 scoped-ticket bridge
 

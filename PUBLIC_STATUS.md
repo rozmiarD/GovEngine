@@ -7,12 +7,12 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Version: `0.1.6`.
-- SCLite integration: present through helper seams via `sclite-core>=0.3.5,<0.4`.
+- Version: `0.1.7` in source; PyPI remains published through `0.1.6` until an explicit release.
+- SCLite integration: present through helper seams via `sclite-core>=0.5.1,<0.6`.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
 - Core artifact governance boundaries: initial portable dataclasses for artifact descriptors/envelopes/state, governance context, transition decisions, and execution prerequisites.
-- SCLite lifecycle status bridge: initial descriptor/state/transition mapping that delegates verification to SCLite.
+- SCLite lifecycle/review bridge: descriptor/state/transition mapping and review-bundle verdict mapping that delegate verification and review semantics to SCLite.
 - Artifact lifecycle controller: initial transition policy/gate/controller for ordered lifecycle transitions and blocker/next-action reporting.
 - Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, transition-decision helpers, and unreleased deterministic demo signer/verifier ports without PKI/key ownership.
 - Controlled execution gate: initial dry-run-only execution gate and default `DryRunRunner`; live requests are blocked by default.
@@ -21,7 +21,7 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `0.1.6`; each new release still requires the standard release checklist and operator approval before upload.
+- PyPI publication: completed through `0.1.6`; `0.1.7` is source-prepared but not tagged or uploaded. Each new release still requires the standard release checklist and operator approval before upload.
 
 ## What is public-safe today
 
@@ -40,7 +40,7 @@ GovEngine can be reviewed as a small Python package for:
 - runner request/receipt shapes;
 - OODA decision objects;
 - signal, analysis, and evidence-confirmation contracts extracted from Ravenclaw;
-- SCLite lifecycle integration boundaries and lifecycle status mapping into portable GovEngine state/transition objects.
+- SCLite lifecycle/review integration boundaries and status/verdict mapping into portable GovEngine state/transition objects.
 
 ## What is not claimed
 

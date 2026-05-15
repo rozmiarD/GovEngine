@@ -2,7 +2,7 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current package baseline: `govengine==0.1.6`, depending on `sclite-core>=0.3.5,<0.4`.
+Current source baseline: `govengine==0.1.7`, depending on `sclite-core>=0.5.1,<0.6`. Latest PyPI publication remains `govengine==0.1.6` until an explicit release.
 
 ## Architecture thesis
 
@@ -67,6 +67,7 @@ The `0.1.x` line already proves the first useful slice of the model:
 
 - stable-ish API result/error envelopes;
 - SCLite lifecycle integration seams;
+- SCLite review-bundle bridge delegated to SCLite `0.5.1`;
 - artifact descriptor/state/transition boundary objects;
 - lifecycle transition gates;
 - signing/trust policy bridge with host-provided ports;
@@ -219,7 +220,7 @@ Planned work:
 - `ReviewResult`;
 - `AnalysisContract`;
 - `EvidenceReviewController`;
-- SCLite review-bundle bridge.
+- SCLite review-bundle bridge. The `0.1.7` source line now includes the first thin review-bundle bridge delegated to SCLite `0.5.1`.
 
 Definition of done:
 

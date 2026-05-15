@@ -18,7 +18,7 @@ Neutral core modules:
 - `govengine.state_index`
 - `govengine.state_store`
 
-Claim: portable artifact descriptor/state/transition, lifecycle bridge, signing/trust decision, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization ownership, PKI/key-store ownership, raw artifact storage ownership, workflow scheduler ownership.
+Claim: portable artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, PKI/key-store ownership, raw artifact storage ownership, workflow scheduler ownership.
 
 ### Controlled-execution core
 
@@ -67,13 +67,13 @@ GovEngine owns:
 - `govengine.execution.*` — approved-spec, ticket, command-shape, dry-run helpers, and controlled execution gates that keep live backends disabled by default.
 - `govengine.scope` — optional security-profile scope helpers and `GovScopePort`.
 - `govengine.state_store` — neutral JSON state helper primitives.
-- `govengine.sclite_*` — explicit integration seams with SCLite, including descriptor/status/transition mapping that delegates lifecycle verification to SCLite.
+- `govengine.sclite_*` — explicit integration seams with SCLite, including descriptor/status/transition mapping that delegates lifecycle verification and review-bundle verdicts to SCLite.
 
 ## Consumes
 
 GovEngine consumes:
 
-- SCLite schemas, lifecycle helpers, and verification surfaces;
+- SCLite schemas, lifecycle helpers, review-bundle helpers, and verification surfaces;
 - host-provided filesystem/context paths;
 - host-provided policy/scope/tool registry data.
 

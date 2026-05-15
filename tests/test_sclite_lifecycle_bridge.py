@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import json
+from importlib.resources import as_file, files
 
 from govengine.sclite_contracts import (
     descriptor_from_artifact,
     lifecycle_state_from_manifest,
     lifecycle_transition_decision,
+    review_bundle_state,
+    review_bundle_transition_decision,
+    review_sclite_bundle,
 )
 from sclite.integrity import build_artifact_chain_manifest
 
@@ -55,3 +59,37 @@ def test_lifecycle_transition_decision_blocks_invalid_chain(tmp_path) -> None:
     assert decision.reason_code == "lifecycle_blocked"
     assert decision.blockers
     assert "repair_artifact_chain" in decision.next_actions
+
+
+def _sclite_example_dir(name: str):
+    return as_file(files("sclite.examples").joinpath(name))
+
+
+def test_review_sclite_bundle_delegates_govengine_integration_bundle_to_sclite() -> None:
+    with _sclite_example_dir("govengine-integration") as bundle_dir:
+        record = review_sclite_bundle(bundle_dir)
+        state = review_bundle_state(bundle_dir)
+        decision = review_bundle_transition_decision(bundle_dir)
+
+    assert record["artifact_type"] == "review_record"
+    assert record["schema_version"] == "v0.1"
+    assert record["verdict"] == "pass"
+    assert state.blocked is False
+    assert state.lifecycle_state == "review_bundle_passed"
+    assert state.descriptor.artifact_type == "review_record"
+    assert decision.allowed is True
+    assert decision.reason_code == "ok"
+
+
+def test_review_bundle_transition_blocks_cross_host_bundle() -> None:
+    with _sclite_example_dir("bad-review-bundle-cross-host") as bundle_dir:
+        state = review_bundle_state(bundle_dir)
+        decision = review_bundle_transition_decision(bundle_dir)
+
+    assert state.blocked is True
+    assert state.lifecycle_state == "blocked"
+    assert state.blocked_reasons
+    assert "review_sclite_bundle" in state.next_actions
+    assert decision.allowed is False
+    assert decision.reason_code == "lifecycle_blocked"
+    assert decision.blockers
