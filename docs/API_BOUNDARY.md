@@ -3,6 +3,7 @@
 GovEngine owns reusable governed-execution services. Its public surface should stay carrier-neutral and SCLite-aware.
 
 `govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current pre-alpha public surfaces. It separates the neutral artifact-governance core, the controlled-execution core, and optional security-profile helpers. `govengine.security_profile.security_profile_index()` is the tested convenience facade for hosts that want to discover the optional security-profile helpers through one entrypoint without treating them as neutral core.
+`govengine.boundary.kernel_boundary_report()` is the tested machine-readable 0.2 boundary report. It combines the kernel/profile/runtime/SCLite ownership contract, known domain-profile contracts such as Ravenclaw, and the current public surface index.
 
 ## Public surface groups
 
