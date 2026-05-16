@@ -72,3 +72,16 @@ def test_control_model_doc_tracks_between_step_boundaries() -> None:
     assert 'commands, subprocesses, or shells' in text
     assert 'queues, schedulers, or schedules' in text
     assert 'does not write to disk' in text
+
+
+def test_validation_doc_tracks_unreleased_0_2_boundary_line() -> None:
+    text = (ROOT / 'docs' / 'VALIDATION.md').read_text(encoding='utf-8')
+
+    assert 'current unreleased 0.2 kernel-boundary line' in text
+    assert 'govengine.boundary' in text
+    assert 'govengine.orchestration' in text
+    assert 'govengine.events' in text
+    assert 'govengine.state_machine' in text
+    assert 'govengine.control' in text
+    assert 'no queue, scheduler, carrier adapter, credential store' in text
+    assert 'live execution authority is introduced' in text
