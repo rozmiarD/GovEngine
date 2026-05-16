@@ -40,6 +40,7 @@ def test_core_surfaces_keep_live_execution_and_adapter_non_claims() -> None:
     assert 'govengine.boundary' in artifact.modules
     assert 'govengine.signing' in artifact.modules
     assert 'govengine.execution.gate' in execution.modules
+    assert 'govengine.orchestration' in execution.modules
     assert 'raw-intent execution' in execution.non_claims
     assert 'default live subprocess execution' in execution.non_claims
     assert 'protocol adapter ownership' in execution.non_claims

@@ -39,6 +39,7 @@ def test_public_modules_import() -> None:
         'govengine.execution.runner_protocol',
         'govengine.execution.ticket_gate',
         'govengine.ooda',
+        'govengine.orchestration',
     ]
     for module in modules:
         importlib.import_module(module)

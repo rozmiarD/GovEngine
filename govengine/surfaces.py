@@ -76,9 +76,10 @@ def controlled_execution_surface() -> GovSurface:
             'govengine.execution.gate',
             'govengine.contracts.execution',
             'govengine.ooda',
+            'govengine.orchestration',
         )),
         claim=(
-            'Approved-spec, execution-ticket, command-shape, runner receipt, OODA, '
+            'Approved-spec, execution-ticket, command-shape, runner receipt, OODA, orchestration boundary, '
             'and dry-run-only execution gate helpers.'
         ),
         non_claims=_tuple((
