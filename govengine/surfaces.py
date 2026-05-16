@@ -79,10 +79,11 @@ def controlled_execution_surface() -> GovSurface:
             'govengine.ooda',
             'govengine.orchestration',
             'govengine.events',
+            'govengine.control',
         )),
         claim=(
             'Approved-spec, execution-ticket, command-shape, runner receipt, OODA, orchestration boundary, event metadata, '
-            'and dry-run-only execution gate helpers.'
+            'control-decision, and dry-run-only execution gate helpers.'
         ),
         non_claims=_tuple((
             'raw-intent execution',

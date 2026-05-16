@@ -60,3 +60,15 @@ def test_state_machine_doc_tracks_runtime_non_claims() -> None:
     assert 'queues, schedulers, or schedules' in text
     assert 'live execution' in text
     assert 'does not write to disk' in text
+
+
+def test_control_model_doc_tracks_between_step_boundaries() -> None:
+    text = (ROOT / 'docs' / 'CONTROL_MODEL.md').read_text(encoding='utf-8')
+
+    assert 'ControlDecision' in text
+    assert 'validate_control_decision()' in text
+    assert 'apply_control_decision()' in text
+    assert 'raw intent or prompts' in text
+    assert 'commands, subprocesses, or shells' in text
+    assert 'queues, schedulers, or schedules' in text
+    assert 'does not write to disk' in text

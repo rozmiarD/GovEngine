@@ -23,6 +23,7 @@ from .boundary import (
     validate_domain_profile_conformance,
 )
 from .context import GovEngineContext, GovEnginePaths, ravenclaw_context
+from .control import ControlDecision, apply_control_decision, validate_control_decision
 from .core import (
     ArtifactDescriptor,
     ArtifactEnvelope,
@@ -69,6 +70,7 @@ from .surfaces import GovSurface, public_surface_index, security_profile_surface
 __all__ = [
     'CommandResult',
     'BoundaryReport',
+    'ControlDecision',
     'DomainProfileConformance',
     'DomainProfileContract',
     'GovApiError',
@@ -121,6 +123,7 @@ __all__ = [
     'TransitionPolicy',
     'TrustPolicy',
     'VerificationResult',
+    'apply_control_decision',
     'demo_sign_and_verify',
     'apply_state_transition',
     'assert_security_profile_boundary',
@@ -140,6 +143,7 @@ __all__ = [
     'security_profile_surface',
     'validate_domain_profile_contract',
     'validate_domain_profile_conformance',
+    'validate_control_decision',
     'validate_event_envelope',
     'validate_gov_event',
     'validate_orchestration_step',

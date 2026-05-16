@@ -131,6 +131,7 @@ assert receipt["status"] == "dry-run"
 - [`docs/ORCHESTRATOR_MODEL.md`](docs/ORCHESTRATOR_MODEL.md) — deterministic orchestration boundary and runtime non-claims.
 - [`docs/EVENT_MODEL.md`](docs/EVENT_MODEL.md) — neutral governance event metadata and payload boundaries.
 - [`docs/STATE_MACHINE.md`](docs/STATE_MACHINE.md) — neutral run-state and transition contract.
+- [`docs/CONTROL_MODEL.md`](docs/CONTROL_MODEL.md) — between-step control decisions and state-machine delegation.
 - [`docs/VALIDATION.md`](docs/VALIDATION.md) — local checks and non-claims.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — staged extraction roadmap.
 
