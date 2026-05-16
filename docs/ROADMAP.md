@@ -86,13 +86,13 @@ This is still pre-alpha. The next roadmap should not be a file move from Ravencl
 
 Goal: make the kernel/profile split explicit before extracting more runtime mechanics.
 
-Started in Unreleased: `govengine.boundary` adds serializable kernel/profile/runtime/SCLite ownership contracts, a Ravenclaw profile contract, a machine-readable boundary report, domain-profile conformance checks, and negative tests that prevent domain profiles from claiming GovEngine core ownership, SCLite authority, live execution authority, credentials, carrier adapters, or unknown consumed surfaces.
+Started in Unreleased: `govengine.boundary` adds serializable kernel/profile/runtime/SCLite ownership contracts, a Ravenclaw profile contract, a machine-readable boundary report, domain-profile conformance checks, and negative tests that prevent domain profiles from claiming GovEngine core ownership, SCLite authority, live execution authority, credentials, carrier adapters, or unknown consumed surfaces. The initial kernel-boundary and domain-profile contract docs are now present as `docs/GOVENGINE_KERNEL_BOUNDARY.md` and `docs/DOMAIN_PROFILE_CONTRACT.md`.
 
 Planned work:
 
 1. Add/settle architecture docs:
-   - `docs/GOVENGINE_KERNEL_BOUNDARY.md`
-   - `docs/DOMAIN_PROFILE_CONTRACT.md`
+   - `docs/GOVENGINE_KERNEL_BOUNDARY.md` (initial doc present)
+   - `docs/DOMAIN_PROFILE_CONTRACT.md` (initial doc present)
    - `docs/ORCHESTRATOR_MODEL.md`
    - `docs/EVENT_MODEL.md`
    - `docs/STATE_MACHINE.md`
