@@ -7,6 +7,7 @@ GovEngine owns reusable governed-execution services. Its public surface should s
 `govengine.boundary.validate_domain_profile_conformance()` checks that a domain profile does not claim forbidden ownership and consumes only known GovEngine/SCLite surfaces.
 `govengine.orchestration.validate_orchestration_step()` checks deterministic orchestration handoff records without granting agent-loop, scheduler, UI, carrier, credential, or live-execution authority.
 `govengine.events.validate_event_envelope()` checks transport-neutral governance event metadata without accepting raw prompts, credentials, live commands, carrier payloads, or scheduling claims.
+`govengine.state_machine.validate_state_transition()` checks neutral run-state transitions without accepting runtime storage, scheduler, credential, command, or live-execution claims.
 
 ## Public surface groups
 
@@ -60,6 +61,7 @@ GovEngine owns:
 - `govengine.boundary` — serializable kernel/profile/runtime/SCLite ownership contracts and profile-boundary validation helpers.
 - `govengine.core` — portable artifact descriptors/envelopes/state, governance context, transition decisions, reason codes, and execution-prerequisite guardrails.
 - `govengine.deconfliction` / `govengine.state_index` — digest/state conflict, change-order, and lightweight artifact state summary helpers.
+- `govengine.state_machine` — neutral run-state and transition validation without persistence, queue, scheduler, credential, or live-execution authority.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
 - `govengine.signing` — signature envelopes, signing/trust policy objects, host-provided signer/verifier ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
 - `govengine.security_profile` — optional security-profile facade for helper discovery, grouped metadata, allowlisted lazy imports, and boundary assertions.

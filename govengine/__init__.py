@@ -48,6 +48,13 @@ from .roles import GovRoleAdapters
 from .scope import FunctionalScopePort, GovScopePort
 from .signing import DemoDigestSigner, DemoDigestVerifier, SignatureEnvelope, SigningPolicy, TrustPolicy, VerificationResult, demo_sign_and_verify
 from .state_index import ArtifactStateIndex
+from .state_machine import (
+    GovRunState,
+    StateTransition,
+    apply_state_transition,
+    validate_run_state,
+    validate_state_transition,
+)
 from .state_store import GovStateStore
 from .security_profile import (
     SecurityProfileGroup,
@@ -91,6 +98,7 @@ __all__ = [
     'GovOodaDecision',
     'GovOrientation',
     'GovRoleAdapters',
+    'GovRunState',
     'GovSurface',
     'KernelBoundary',
     'OrchestrationStep',
@@ -102,6 +110,7 @@ __all__ = [
     'GovScopePort',
     'SignatureEnvelope',
     'SigningPolicy',
+    'StateTransition',
     'GovSCLiteLifecycleVerifier',
     'GovStateStore',
     'review_bundle_state',
@@ -113,6 +122,7 @@ __all__ = [
     'TrustPolicy',
     'VerificationResult',
     'demo_sign_and_verify',
+    'apply_state_transition',
     'assert_security_profile_boundary',
     'boundary_surface_index',
     'domain_profile_conformance',
@@ -133,6 +143,8 @@ __all__ = [
     'validate_event_envelope',
     'validate_gov_event',
     'validate_orchestration_step',
+    'validate_run_state',
+    'validate_state_transition',
     'verify_lifecycle_manifest',
 ]
 
