@@ -42,6 +42,7 @@ def artifact_governance_surface() -> GovSurface:
         status='pre_alpha_tested',
         modules=_tuple((
             'govengine.core',
+            'govengine.boundary',
             'govengine.sclite_contracts',
             'govengine.lifecycle',
             'govengine.signing',
@@ -50,8 +51,8 @@ def artifact_governance_surface() -> GovSurface:
             'govengine.state_store',
         )),
         claim=(
-            'Portable artifact descriptor/state/transition, SCLite lifecycle bridge, '
-            'signing/trust decision, deconfliction, and state-index helpers.'
+            'Portable kernel/profile boundary, artifact descriptor/state/transition, '
+            'SCLite lifecycle bridge, signing/trust decision, deconfliction, and state-index helpers.'
         ),
         non_claims=_tuple((
             'SCLite schema/canonicalization ownership',

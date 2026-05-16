@@ -10,6 +10,7 @@ GovEngine owns reusable governed-execution services. Its public surface should s
 
 Neutral core modules:
 
+- `govengine.boundary`
 - `govengine.core`
 - `govengine.sclite_contracts`
 - `govengine.lifecycle`
@@ -18,7 +19,7 @@ Neutral core modules:
 - `govengine.state_index`
 - `govengine.state_store`
 
-Claim: portable artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, PKI/key-store ownership, raw artifact storage ownership, workflow scheduler ownership.
+Claim: portable kernel/profile boundary contracts, artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, PKI/key-store ownership, raw artifact storage ownership, workflow scheduler ownership.
 
 ### Controlled-execution core
 
@@ -52,6 +53,7 @@ Claim: reusable public-safe helpers for hosts such as Ravenclaw that need bounde
 
 GovEngine owns:
 
+- `govengine.boundary` — serializable kernel/profile/runtime/SCLite ownership contracts and profile-boundary validation helpers.
 - `govengine.core` — portable artifact descriptors/envelopes/state, governance context, transition decisions, reason codes, and execution-prerequisite guardrails.
 - `govengine.deconfliction` / `govengine.state_index` — digest/state conflict, change-order, and lightweight artifact state summary helpers.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.

@@ -28,6 +28,18 @@ Purpose:
 - compile caller intent into a bounded execution plan;
 - classify semantic loss before execution planning drifts too far from request shape.
 
+### 0. Kernel/profile boundary layer
+
+Module:
+
+- `govengine.boundary`
+
+Purpose:
+
+- make the kernel/profile/runtime/SCLite ownership split serializable;
+- let hosts declare domain-profile ownership without claiming GovEngine core, SCLite authority, live execution authority, credentials, or carrier adapter ownership;
+- provide a tested Ravenclaw profile contract as the current host-profile example.
+
 ### 2. Policy layer
 
 Modules:

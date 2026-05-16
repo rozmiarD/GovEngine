@@ -7,6 +7,7 @@ def test_public_modules_import() -> None:
     modules = [
         'govengine',
         'govengine.api',
+        'govengine.boundary',
         'govengine.context',
         'govengine.core',
         'govengine.deconfliction',
