@@ -128,6 +128,7 @@ assert receipt["status"] == "dry-run"
 - [`docs/API_BOUNDARY.md`](docs/API_BOUNDARY.md) — owned vs excluded surfaces.
 - [`docs/GOVENGINE_KERNEL_BOUNDARY.md`](docs/GOVENGINE_KERNEL_BOUNDARY.md) — kernel/profile/runtime/SCLite ownership split.
 - [`docs/DOMAIN_PROFILE_CONTRACT.md`](docs/DOMAIN_PROFILE_CONTRACT.md) — domain profile contract and conformance rules.
+- [`docs/ORCHESTRATOR_MODEL.md`](docs/ORCHESTRATOR_MODEL.md) — deterministic orchestration boundary and runtime non-claims.
 - [`docs/VALIDATION.md`](docs/VALIDATION.md) — local checks and non-claims.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — staged extraction roadmap.
 

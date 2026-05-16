@@ -25,3 +25,14 @@ def test_domain_profile_contract_doc_tracks_conformance_contract() -> None:
     assert 'sclite_review_bundles' in text
     assert 'live_execution_authority' in text
     assert 'Tecrax' in text
+
+
+def test_orchestrator_model_doc_tracks_runtime_non_claims() -> None:
+    text = (ROOT / 'docs' / 'ORCHESTRATOR_MODEL.md').read_text(encoding='utf-8')
+
+    assert 'orchestrator_boundary_contract()' in text
+    assert 'validate_orchestration_step()' in text
+    assert 'workflow scheduler' in text
+    assert 'credential store' in text
+    assert 'live executor' in text
+    assert 'raw_intent' in text

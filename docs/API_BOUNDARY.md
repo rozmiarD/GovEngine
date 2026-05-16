@@ -5,6 +5,7 @@ GovEngine owns reusable governed-execution services. Its public surface should s
 `govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current pre-alpha public surfaces. It separates the neutral artifact-governance core, the controlled-execution core, and optional security-profile helpers. `govengine.security_profile.security_profile_index()` is the tested convenience facade for hosts that want to discover the optional security-profile helpers through one entrypoint without treating them as neutral core.
 `govengine.boundary.kernel_boundary_report()` is the tested machine-readable 0.2 boundary report. It combines the kernel/profile/runtime/SCLite ownership contract, known domain-profile contracts such as Ravenclaw, and the current public surface index.
 `govengine.boundary.validate_domain_profile_conformance()` checks that a domain profile does not claim forbidden ownership and consumes only known GovEngine/SCLite surfaces.
+`govengine.orchestration.validate_orchestration_step()` checks deterministic orchestration handoff records without granting agent-loop, scheduler, UI, carrier, credential, or live-execution authority.
 
 ## Public surface groups
 
@@ -69,6 +70,7 @@ GovEngine owns:
 - `govengine.policy.*` — optional security-profile policy core and gateway helpers.
 - `govengine.contracts.*` — execution-contract shaping/redaction helpers plus optional security-profile signal, analysis, and confirmation-evidence policy contracts.
 - `govengine.execution.*` — approved-spec, ticket, command-shape, dry-run helpers, and controlled execution gates that keep live backends disabled by default.
+- `govengine.orchestration` — deterministic orchestration handoff contracts without scheduler, UI, adapter, credential, or live-execution authority.
 - `govengine.scope` — optional security-profile scope helpers and `GovScopePort`.
 - `govengine.state_store` — neutral JSON state helper primitives.
 - `govengine.sclite_*` — explicit integration seams with SCLite, including descriptor/status/transition mapping that delegates lifecycle verification and review-bundle verdicts to SCLite.

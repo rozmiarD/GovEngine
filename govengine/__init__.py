@@ -37,6 +37,12 @@ from .execution.gate import DryRunRunner, ExecutionGate, ExecutionGateInput, Run
 from .execution_backend import CommandResult, GovExecutionBackend
 from .lifecycle import ArtifactLifecycleController, TransitionGate, TransitionPolicy
 from .ooda import GovObservation, GovOodaController, GovOodaDecision, GovOrientation
+from .orchestration import (
+    OrchestrationStep,
+    OrchestratorBoundary,
+    orchestrator_boundary_contract,
+    validate_orchestration_step,
+)
 from .roles import GovRoleAdapters
 from .scope import FunctionalScopePort, GovScopePort
 from .signing import DemoDigestSigner, DemoDigestVerifier, SignatureEnvelope, SigningPolicy, TrustPolicy, VerificationResult, demo_sign_and_verify
@@ -84,6 +90,8 @@ __all__ = [
     'GovRoleAdapters',
     'GovSurface',
     'KernelBoundary',
+    'OrchestrationStep',
+    'OrchestratorBoundary',
     'SecurityProfileGroup',
     'FunctionalScopePort',
     'ReasonCode',
@@ -109,6 +117,7 @@ __all__ = [
     'kernel_boundary_contract',
     'kernel_boundary_report',
     'known_profile_contracts',
+    'orchestrator_boundary_contract',
     'public_surface_index',
     'ravenclaw_context',
     'ravenclaw_profile_contract',
@@ -118,6 +127,7 @@ __all__ = [
     'security_profile_surface',
     'validate_domain_profile_contract',
     'validate_domain_profile_conformance',
+    'validate_orchestration_step',
     'verify_lifecycle_manifest',
 ]
 
