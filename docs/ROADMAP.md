@@ -2,7 +2,7 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current package baseline: `govengine==0.1.7`, depending on `sclite-core>=0.5.1,<0.6`.
+Current package baseline: `govengine==0.2.0`, depending on `sclite-core>=0.5.1,<0.6`.
 
 ## Architecture thesis
 
@@ -86,7 +86,7 @@ This is still pre-alpha. The next roadmap should not be a file move from Ravencl
 
 Goal: make the kernel/profile split explicit before extracting more runtime mechanics.
 
-Started in Unreleased: `govengine.boundary` adds serializable kernel/profile/runtime/SCLite ownership contracts, a Ravenclaw profile contract, a machine-readable boundary report, domain-profile conformance checks, deterministic orchestration handoff contracts, neutral governance event envelopes, neutral run-state transitions, deterministic control decisions, and negative tests that prevent domain profiles, orchestration steps, events, run-state metadata, or control decisions from claiming GovEngine core ownership, SCLite authority, live execution authority, credentials, carrier adapters, scheduler ownership, runtime storage, command authority, or unknown consumed surfaces. The initial kernel-boundary, domain-profile contract, orchestrator-model, event-model, state-machine, and control-model docs are now present.
+Delivered in 0.2.0: `govengine.boundary` adds serializable kernel/profile/runtime/SCLite ownership contracts, a Ravenclaw profile contract, a machine-readable boundary report, domain-profile conformance checks, deterministic orchestration handoff contracts, neutral governance event envelopes, neutral run-state transitions, deterministic control decisions, and negative tests that prevent domain profiles, orchestration steps, events, run-state metadata, or control decisions from claiming GovEngine core ownership, SCLite authority, live execution authority, credentials, carrier adapters, scheduler ownership, runtime storage, command authority, or unknown consumed surfaces. The initial kernel-boundary, domain-profile contract, orchestrator-model, event-model, state-machine, and control-model docs are now present.
 
 Planned work:
 

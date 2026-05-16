@@ -7,7 +7,7 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Version: `0.1.7`.
+- Version: `0.2.0`.
 - SCLite integration: present through helper seams via `sclite-core>=0.5.1,<0.6`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.
@@ -26,7 +26,7 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `0.1.7`; each new release still requires the standard release checklist and operator approval before upload.
+- PyPI publication: completed through `0.2.0`; each new release still requires the standard release checklist and operator approval before upload.
 
 ## What is public-safe today
 

@@ -74,10 +74,11 @@ def test_control_model_doc_tracks_between_step_boundaries() -> None:
     assert 'does not write to disk' in text
 
 
-def test_validation_doc_tracks_unreleased_0_2_boundary_line() -> None:
+def test_validation_doc_tracks_0_2_boundary_line() -> None:
     text = (ROOT / 'docs' / 'VALIDATION.md').read_text(encoding='utf-8')
 
-    assert 'current unreleased 0.2 kernel-boundary line' in text
+    assert '0.2 kernel-boundary line' in text
+    assert '0.2.0' in text
     assert 'govengine.boundary' in text
     assert 'govengine.orchestration' in text
     assert 'govengine.events' in text
