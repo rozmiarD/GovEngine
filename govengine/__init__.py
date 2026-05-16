@@ -10,14 +10,17 @@ __version__ = '0.1.7'
 from .api import GovApiError, GovApiResult
 from .boundary import (
     BoundaryReport,
+    DomainProfileConformance,
     DomainProfileContract,
     KernelBoundary,
     boundary_surface_index,
+    domain_profile_conformance,
     kernel_boundary_contract,
     kernel_boundary_report,
     known_profile_contracts,
     ravenclaw_profile_contract,
     validate_domain_profile_contract,
+    validate_domain_profile_conformance,
 )
 from .context import GovEngineContext, GovEnginePaths, ravenclaw_context
 from .core import (
@@ -52,6 +55,7 @@ from .surfaces import GovSurface, public_surface_index, security_profile_surface
 __all__ = [
     'CommandResult',
     'BoundaryReport',
+    'DomainProfileConformance',
     'DomainProfileContract',
     'GovApiError',
     'GovApiResult',
@@ -100,6 +104,7 @@ __all__ = [
     'demo_sign_and_verify',
     'assert_security_profile_boundary',
     'boundary_surface_index',
+    'domain_profile_conformance',
     'import_security_profile_module',
     'kernel_boundary_contract',
     'kernel_boundary_report',
@@ -112,6 +117,7 @@ __all__ = [
     'security_profile_module_names',
     'security_profile_surface',
     'validate_domain_profile_contract',
+    'validate_domain_profile_conformance',
     'verify_lifecycle_manifest',
 ]
 

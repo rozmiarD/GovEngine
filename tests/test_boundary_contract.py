@@ -4,13 +4,16 @@ import pytest
 
 from govengine import (
     BoundaryReport,
+    DomainProfileConformance,
     DomainProfileContract,
     boundary_surface_index,
+    domain_profile_conformance,
     kernel_boundary_contract,
     kernel_boundary_report,
     known_profile_contracts,
     ravenclaw_profile_contract,
     validate_domain_profile_contract,
+    validate_domain_profile_conformance,
 )
 from govengine.api import GovApiError
 
@@ -92,10 +95,12 @@ def test_kernel_boundary_report_is_machine_readable() -> None:
     assert payload['schema_version'] == 'v0.1'
     assert payload['summary'] == {
         'profile_count': 1,
+        'profile_conformance_passed': 1,
         'surface_count': 3,
         'forbidden_profile_ownership_count': 5,
     }
     assert payload['profiles'][0]['name'] == 'ravenclaw'
+    assert payload['profile_conformance'][0]['status'] == 'passed'
     assert payload['surfaces'][0]['name'] == 'artifact_governance_core'
     assert 'live_execution_authority' in payload['boundary']['forbidden_profile_ownership']
 
@@ -105,3 +110,30 @@ def test_kernel_boundary_report_rejects_invalid_profile_claims() -> None:
 
     with pytest.raises(GovApiError, match='forbidden_domain_profile_ownership:carrier_adapter_ownership'):
         kernel_boundary_report(profiles=(bad,))
+
+
+def test_domain_profile_conformance_accepts_known_consumes() -> None:
+    conformance = domain_profile_conformance(ravenclaw_profile_contract())
+
+    assert isinstance(conformance, DomainProfileConformance)
+    assert conformance.passed is True
+    assert conformance.unknown_consumes == ()
+    assert 'govengine_controlled_execution_core' in conformance.allowed_consumes
+    assert conformance.as_dict()['checks']['consumes_are_known'] is True
+
+
+def test_domain_profile_conformance_reports_unknown_consumes() -> None:
+    contract = DomainProfileContract(name='unknown-consumer', consumes=('mystery_surface',))
+    conformance = domain_profile_conformance(contract)
+
+    assert conformance.passed is False
+    assert conformance.unknown_consumes == ('mystery_surface',)
+    assert conformance.as_dict()['checks']['consumes_are_known'] is False
+
+
+def test_validate_domain_profile_conformance_rejects_unknown_consumes() -> None:
+    with pytest.raises(GovApiError, match='unknown_domain_profile_consume:mystery_surface'):
+        validate_domain_profile_conformance({
+            'name': 'bad-consumer',
+            'consumes': ['mystery_surface'],
+        })
