@@ -10,7 +10,7 @@ python -m pytest -q
 python -m pip check
 ```
 
-Expected result for the `0.1.7` source line:
+Expected result for the published `0.1.7` source line:
 
 - standalone pytest suite passes (`72 passed` in the `0.1.7` source tree);
 - package dependencies are consistent;
@@ -20,6 +20,14 @@ Expected result for the `0.1.7` source line:
 - clean install from PyPI with `govengine==0.1.7` reports `govengine.__version__ == 0.1.7`, distribution version `0.1.7`, `sclite-core==0.5.1`, SCLite review-bundle bridge checks pass, and `pip check` is clean;
 - no Ravenclaw runtime or Logdash process is started;
 - demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness; scoped-ticket use-gate tests prove SCLite receipt/evidence bounds delegation, and review-bundle tests prove GovEngine delegates pass/fail verdicts to SCLite `0.5.1`, not live runtime enforcement.
+
+Expected result for the current unreleased 0.2 kernel-boundary line:
+
+- full pytest passes in the source tree;
+- `python -m pip check` is clean;
+- import smoke checks for `govengine.boundary`, `govengine.orchestration`, `govengine.events`, `govengine.state_machine`, and `govengine.control` pass;
+- the public surface registry and `kernel_boundary_report()` agree that boundary, orchestration, event, state-machine, and control helpers are metadata/contracts only;
+- no queue, scheduler, carrier adapter, credential store, runtime persistence, live command, or live execution authority is introduced.
 
 ## What the focused tests cover
 
@@ -40,7 +48,11 @@ Current tests cover:
 - dry-run-only execution gates and default `DryRunRunner` behavior;
 - deconfliction/change-order and artifact state-index summaries;
 - public surface registry separation between artifact-governance core, controlled-execution core, and optional security-profile helpers;
-- optional `govengine.security_profile` facade grouping, JSON-safe index output, allowlisted lazy imports, and boundary assertions.
+- optional `govengine.security_profile` facade grouping, JSON-safe index output, allowlisted lazy imports, and boundary assertions;
+- kernel/profile/runtime/SCLite boundary contracts, boundary report, and domain-profile conformance checks;
+- deterministic orchestration handoff records without scheduler, UI, adapter, credential, or live-execution authority;
+- transport-neutral governance event metadata without raw prompt, credential, live-command, carrier-delivery, or schedule payloads;
+- neutral run-state transitions and between-step control decisions without runtime storage, queue, scheduler, command, delivery, credential, or live-execution claims.
 
 ## Ravenclaw consumption gate
 

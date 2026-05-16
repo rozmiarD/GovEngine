@@ -20,6 +20,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 - `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.
 - `0.1.6` consumes `sclite-core>=0.3.5,<0.4`, keeps the security-profile facade boundary, and adds thin SCLite v0.3 scoped-ticket / receipt-bounded-evidence gate delegation while keeping adapters/live execution out of scope.
 - `0.1.7` consumes `sclite-core>=0.5.1,<0.6` and adds thin SCLite review-bundle delegation for GovEngine integration fixtures while keeping adapters/live execution out of scope.
+- A future `0.2.x` release should be treated as the kernel-boundary freeze line: boundary reports, domain-profile conformance, orchestration handoffs, governance events, run-state transitions, and between-step control decisions. It must not add live execution, queue/scheduler ownership, carrier adapters, runtime persistence, or credential handling.
 - API stability and non-claims should remain explicit because this is pre-1.0.
 
 ## Release order
