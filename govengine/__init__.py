@@ -8,6 +8,7 @@ import time.
 __version__ = '0.1.7'
 
 from .api import GovApiError, GovApiResult
+from .boundary import DomainProfileContract, KernelBoundary, kernel_boundary_contract, ravenclaw_profile_contract, validate_domain_profile_contract
 from .context import GovEngineContext, GovEnginePaths, ravenclaw_context
 from .core import (
     ArtifactDescriptor,
@@ -40,6 +41,7 @@ from .surfaces import GovSurface, public_surface_index, security_profile_surface
 
 __all__ = [
     'CommandResult',
+    'DomainProfileContract',
     'GovApiError',
     'GovApiResult',
     'GovEngineContext',
@@ -66,6 +68,7 @@ __all__ = [
     'GovOrientation',
     'GovRoleAdapters',
     'GovSurface',
+    'KernelBoundary',
     'SecurityProfileGroup',
     'FunctionalScopePort',
     'ReasonCode',
@@ -86,12 +89,15 @@ __all__ = [
     'demo_sign_and_verify',
     'assert_security_profile_boundary',
     'import_security_profile_module',
+    'kernel_boundary_contract',
     'public_surface_index',
     'ravenclaw_context',
+    'ravenclaw_profile_contract',
     'security_profile_groups',
     'security_profile_index',
     'security_profile_module_names',
     'security_profile_surface',
+    'validate_domain_profile_contract',
     'verify_lifecycle_manifest',
 ]
 
