@@ -9,7 +9,7 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - GitHub Actions: pytest on supported Python versions.
 - Version: `0.1.7`.
 - SCLite integration: present through helper seams via `sclite-core>=0.5.1,<0.6`.
-- Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, and domain-profile conformance checks for kernel, profile, runtime, and SCLite ownership separation.
+- Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
 - Core artifact governance boundaries: initial portable dataclasses for artifact descriptors/envelopes/state, governance context, transition decisions, and execution prerequisites.
