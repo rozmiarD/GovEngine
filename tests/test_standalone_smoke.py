@@ -40,6 +40,7 @@ def test_public_modules_import() -> None:
         'govengine.execution.ticket_gate',
         'govengine.ooda',
         'govengine.orchestration',
+        'govengine.events',
     ]
     for module in modules:
         importlib.import_module(module)
