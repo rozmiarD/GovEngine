@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.1.7'
+__version__ = '0.2.0'
 
 from .api import GovApiError, GovApiResult
 from .boundary import (

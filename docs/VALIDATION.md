@@ -21,13 +21,20 @@ Expected result for the published `0.1.7` source line:
 - no Ravenclaw runtime or Logdash process is started;
 - demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness; scoped-ticket use-gate tests prove SCLite receipt/evidence bounds delegation, and review-bundle tests prove GovEngine delegates pass/fail verdicts to SCLite `0.5.1`, not live runtime enforcement.
 
-Expected result for the current unreleased 0.2 kernel-boundary line:
+Expected result for the current 0.2 kernel-boundary line:
 
 - full pytest passes in the source tree;
 - `python -m pip check` is clean;
 - import smoke checks for `govengine.boundary`, `govengine.orchestration`, `govengine.events`, `govengine.state_machine`, and `govengine.control` pass;
 - the public surface registry and `kernel_boundary_report()` agree that boundary, orchestration, event, state-machine, and control helpers are metadata/contracts only;
 - no queue, scheduler, carrier adapter, credential store, runtime persistence, live command, or live execution authority is introduced.
+
+Expected result for the `0.2.0` release line:
+
+- `python -m build` creates `govengine-0.2.0` sdist/wheel artifacts;
+- `python -m twine check dist/*` passes;
+- clean wheel install reports `govengine.__version__ == 0.2.0`, distribution version `0.2.0`, import checks for the 0.2 boundary modules pass, and `pip check` is clean;
+- clean install from PyPI with `govengine==0.2.0` reports `govengine.__version__ == 0.2.0`, distribution version `0.2.0`, and `sclite-core==0.5.1`.
 
 ## What the focused tests cover
 
