@@ -48,3 +48,15 @@ def test_event_model_doc_tracks_payload_boundaries() -> None:
     assert 'credentials, secrets, tokens' in text
     assert 'live commands' in text
     assert 'carrier delivery' in text
+
+
+def test_state_machine_doc_tracks_runtime_non_claims() -> None:
+    text = (ROOT / 'docs' / 'STATE_MACHINE.md').read_text(encoding='utf-8')
+
+    assert 'GovRunState' in text
+    assert 'StateTransition' in text
+    assert 'validate_state_transition()' in text
+    assert 'runtime storage paths' in text
+    assert 'queues, schedulers, or schedules' in text
+    assert 'live execution' in text
+    assert 'does not write to disk' in text

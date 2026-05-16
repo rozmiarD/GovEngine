@@ -39,6 +39,7 @@ def test_core_surfaces_keep_live_execution_and_adapter_non_claims() -> None:
     assert execution.optional_profile is False
     assert 'govengine.boundary' in artifact.modules
     assert 'govengine.signing' in artifact.modules
+    assert 'govengine.state_machine' in artifact.modules
     assert 'govengine.execution.gate' in execution.modules
     assert 'govengine.orchestration' in execution.modules
     assert 'govengine.events' in execution.modules
