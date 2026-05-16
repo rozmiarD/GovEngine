@@ -6,7 +6,7 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-- Added `govengine.boundary` with serializable kernel/profile/runtime/SCLite ownership contracts, a machine-readable boundary report, a Ravenclaw profile contract, and negative boundary validation for forbidden profile ownership claims.
+- Added `govengine.boundary` with serializable kernel/profile/runtime/SCLite ownership contracts, a machine-readable boundary report, a Ravenclaw profile contract, domain-profile conformance checks, and negative boundary validation for forbidden profile ownership or unknown consumed-surface claims.
 
 ## 0.1.7 - SCLite 0.5.1 review-bundle bridge
 

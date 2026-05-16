@@ -47,6 +47,14 @@ FORBIDDEN_PROFILE_OWNERSHIP = (
     'carrier_adapter_ownership',
 )
 
+ALLOWED_PROFILE_CONSUMES = (
+    'govengine_artifact_governance_core',
+    'govengine_controlled_execution_core',
+    'govengine_security_profile_helpers',
+    'sclite_lifecycle_artifacts',
+    'sclite_review_bundles',
+)
+
 
 @dataclass(frozen=True)
 class KernelBoundary:
@@ -126,11 +134,45 @@ class DomainProfileContract:
 
 
 @dataclass(frozen=True)
+class DomainProfileConformance:
+    """Deterministic conformance report for one domain profile contract."""
+
+    profile: DomainProfileContract
+    status: str
+    allowed_consumes: tuple[str, ...] = ALLOWED_PROFILE_CONSUMES
+    unknown_consumes: tuple[str, ...] = ()
+    forbidden_ownership: tuple[str, ...] = ()
+
+    @property
+    def passed(self) -> bool:
+        return self.status == 'passed'
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            'profile': self.profile.as_dict(),
+            'status': self.status,
+            'passed': self.passed,
+            'allowed_consumes': list(self.allowed_consumes),
+            'unknown_consumes': list(self.unknown_consumes),
+            'forbidden_ownership': list(self.forbidden_ownership),
+            'checks': {
+                'no_forbidden_ownership': not self.forbidden_ownership,
+                'consumes_are_known': not self.unknown_consumes,
+            },
+            'non_claims': [
+                'Conformance does not grant live execution authority.',
+                'Conformance does not make GovEngine own profile domain semantics.',
+            ],
+        }
+
+
+@dataclass(frozen=True)
 class BoundaryReport:
     """Machine-readable GovEngine 0.2 boundary snapshot."""
 
     boundary: KernelBoundary
     profiles: tuple[DomainProfileContract, ...] = field(default_factory=tuple)
+    profile_conformance: tuple[DomainProfileConformance, ...] = field(default_factory=tuple)
     surfaces: tuple[Mapping[str, Any], ...] = field(default_factory=tuple)
     status: str = 'pre_alpha_boundary_declared'
     schema_version: str = 'v0.1'
@@ -142,9 +184,11 @@ class BoundaryReport:
             'status': self.status,
             'boundary': self.boundary.as_dict(),
             'profiles': [profile.as_dict() for profile in self.profiles],
+            'profile_conformance': [conformance.as_dict() for conformance in self.profile_conformance],
             'surfaces': [dict(surface) for surface in self.surfaces],
             'summary': {
                 'profile_count': len(self.profiles),
+                'profile_conformance_passed': sum(1 for conformance in self.profile_conformance if conformance.passed),
                 'surface_count': len(self.surfaces),
                 'forbidden_profile_ownership_count': len(self.boundary.forbidden_profile_ownership),
             },
@@ -185,6 +229,37 @@ def validate_domain_profile_contract(value: Mapping[str, Any] | DomainProfileCon
     return contract
 
 
+def domain_profile_conformance(
+    value: Mapping[str, Any] | DomainProfileContract,
+    *,
+    allowed_consumes: tuple[str, ...] = ALLOWED_PROFILE_CONSUMES,
+) -> DomainProfileConformance:
+    contract = validate_domain_profile_contract(value)
+    allowed = set(allowed_consumes)
+    unknown_consumes = tuple(item for item in contract.consumes if item not in allowed)
+    forbidden = tuple(item for item in contract.owns if item in set(FORBIDDEN_PROFILE_OWNERSHIP))
+    return DomainProfileConformance(
+        profile=contract,
+        status='passed' if not unknown_consumes and not forbidden else 'failed',
+        allowed_consumes=allowed_consumes,
+        unknown_consumes=unknown_consumes,
+        forbidden_ownership=forbidden,
+    )
+
+
+def validate_domain_profile_conformance(
+    value: Mapping[str, Any] | DomainProfileContract,
+    *,
+    allowed_consumes: tuple[str, ...] = ALLOWED_PROFILE_CONSUMES,
+) -> DomainProfileConformance:
+    conformance = domain_profile_conformance(value, allowed_consumes=allowed_consumes)
+    if conformance.forbidden_ownership:
+        raise GovApiError(f'forbidden_domain_profile_ownership:{conformance.forbidden_ownership[0]}')
+    if conformance.unknown_consumes:
+        raise GovApiError(f'unknown_domain_profile_consume:{conformance.unknown_consumes[0]}')
+    return conformance
+
+
 def known_profile_contracts() -> tuple[DomainProfileContract, ...]:
     return (ravenclaw_profile_contract(),)
 
@@ -197,11 +272,11 @@ def kernel_boundary_report(
     profiles: tuple[DomainProfileContract, ...] | None = None,
 ) -> BoundaryReport:
     profile_contracts = profiles if profiles is not None else known_profile_contracts()
-    for profile in profile_contracts:
-        validate_domain_profile_contract(profile)
+    conformance = tuple(validate_domain_profile_conformance(profile) for profile in profile_contracts)
     return BoundaryReport(
         boundary=kernel_boundary_contract(),
         profiles=tuple(profile_contracts),
+        profile_conformance=conformance,
         surfaces=boundary_surface_index(),
     )
 
