@@ -42,6 +42,7 @@ def test_public_modules_import() -> None:
         'govengine.ooda',
         'govengine.orchestration',
         'govengine.events',
+        'govengine.control',
     ]
     for module in modules:
         importlib.import_module(module)
