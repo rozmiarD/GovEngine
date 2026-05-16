@@ -86,7 +86,7 @@ This is still pre-alpha. The next roadmap should not be a file move from Ravencl
 
 Goal: make the kernel/profile split explicit before extracting more runtime mechanics.
 
-Started in Unreleased: `govengine.boundary` adds serializable kernel/profile/runtime/SCLite ownership contracts, a Ravenclaw profile contract, a machine-readable boundary report, domain-profile conformance checks, deterministic orchestration handoff contracts, and negative tests that prevent domain profiles or orchestration steps from claiming GovEngine core ownership, SCLite authority, live execution authority, credentials, carrier adapters, scheduler ownership, or unknown consumed surfaces. The initial kernel-boundary, domain-profile contract, and orchestrator-model docs are now present.
+Started in Unreleased: `govengine.boundary` adds serializable kernel/profile/runtime/SCLite ownership contracts, a Ravenclaw profile contract, a machine-readable boundary report, domain-profile conformance checks, deterministic orchestration handoff contracts, neutral governance event envelopes, and negative tests that prevent domain profiles, orchestration steps, or event payloads from claiming GovEngine core ownership, SCLite authority, live execution authority, credentials, carrier adapters, scheduler ownership, or unknown consumed surfaces. The initial kernel-boundary, domain-profile contract, orchestrator-model, and event-model docs are now present.
 
 Planned work:
 
@@ -94,7 +94,7 @@ Planned work:
    - `docs/GOVENGINE_KERNEL_BOUNDARY.md` (initial doc present)
    - `docs/DOMAIN_PROFILE_CONTRACT.md` (initial doc present)
    - `docs/ORCHESTRATOR_MODEL.md` (initial doc present)
-   - `docs/EVENT_MODEL.md`
+   - `docs/EVENT_MODEL.md` (initial doc present)
    - `docs/STATE_MACHINE.md`
    - `docs/RUNNER_SUPERVISION.md`
 2. Promote portable envelopes:

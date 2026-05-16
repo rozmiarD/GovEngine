@@ -36,3 +36,15 @@ def test_orchestrator_model_doc_tracks_runtime_non_claims() -> None:
     assert 'credential store' in text
     assert 'live executor' in text
     assert 'raw_intent' in text
+
+
+def test_event_model_doc_tracks_payload_boundaries() -> None:
+    text = (ROOT / 'docs' / 'EVENT_MODEL.md').read_text(encoding='utf-8')
+
+    assert 'GovEvent' in text
+    assert 'EventEnvelope' in text
+    assert 'validate_event_envelope()' in text
+    assert 'raw intent or prompts' in text
+    assert 'credentials, secrets, tokens' in text
+    assert 'live commands' in text
+    assert 'carrier delivery' in text

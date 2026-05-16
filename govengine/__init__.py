@@ -33,6 +33,7 @@ from .core import (
     TransitionDecision,
 )
 from .deconfliction import ArtifactChangeOrder, ArtifactConflict, ConflictDetector
+from .events import EventEnvelope, GovEvent, validate_event_envelope, validate_gov_event
 from .execution.gate import DryRunRunner, ExecutionGate, ExecutionGateInput, RunnerProfile
 from .execution_backend import CommandResult, GovExecutionBackend
 from .lifecycle import ArtifactLifecycleController, TransitionGate, TransitionPolicy
@@ -78,11 +79,13 @@ __all__ = [
     'ExecutionGate',
     'ExecutionGateInput',
     'ExecutionPrerequisites',
+    'EventEnvelope',
     'DryRunRunner',
     'DemoDigestSigner',
     'DemoDigestVerifier',
     'GovernanceContext',
     'GovExecutionBackend',
+    'GovEvent',
     'GovObservation',
     'GovOodaController',
     'GovOodaDecision',
@@ -127,6 +130,8 @@ __all__ = [
     'security_profile_surface',
     'validate_domain_profile_contract',
     'validate_domain_profile_conformance',
+    'validate_event_envelope',
+    'validate_gov_event',
     'validate_orchestration_step',
     'verify_lifecycle_manifest',
 ]

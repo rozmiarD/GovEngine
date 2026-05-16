@@ -6,7 +6,7 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-- Added `govengine.boundary` and `govengine.orchestration` with serializable kernel/profile/runtime/SCLite ownership contracts, a machine-readable boundary report, a Ravenclaw profile contract, domain-profile conformance checks, deterministic orchestration handoff contracts, boundary docs, and negative boundary validation for forbidden profile ownership, forbidden orchestration authority, or unknown consumed-surface claims.
+- Added `govengine.boundary`, `govengine.orchestration`, and `govengine.events` with serializable kernel/profile/runtime/SCLite ownership contracts, a machine-readable boundary report, a Ravenclaw profile contract, domain-profile conformance checks, deterministic orchestration handoff contracts, neutral governance event envelopes, boundary docs, and negative boundary validation for forbidden profile ownership, forbidden orchestration authority, unsafe event payloads, or unknown consumed-surface claims.
 
 ## 0.1.7 - SCLite 0.5.1 review-bundle bridge
 

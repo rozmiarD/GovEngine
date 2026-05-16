@@ -129,6 +129,7 @@ assert receipt["status"] == "dry-run"
 - [`docs/GOVENGINE_KERNEL_BOUNDARY.md`](docs/GOVENGINE_KERNEL_BOUNDARY.md) — kernel/profile/runtime/SCLite ownership split.
 - [`docs/DOMAIN_PROFILE_CONTRACT.md`](docs/DOMAIN_PROFILE_CONTRACT.md) — domain profile contract and conformance rules.
 - [`docs/ORCHESTRATOR_MODEL.md`](docs/ORCHESTRATOR_MODEL.md) — deterministic orchestration boundary and runtime non-claims.
+- [`docs/EVENT_MODEL.md`](docs/EVENT_MODEL.md) — neutral governance event metadata and payload boundaries.
 - [`docs/VALIDATION.md`](docs/VALIDATION.md) — local checks and non-claims.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — staged extraction roadmap.
 
