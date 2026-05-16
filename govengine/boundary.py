@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping
 
 from govengine.api import GovApiError, require_mapping
+from govengine.surfaces import public_surface_index
 
 
 KERNEL_OWNERSHIP = (
@@ -124,6 +125,33 @@ class DomainProfileContract:
         _reject_forbidden_ownership(self.owns)
 
 
+@dataclass(frozen=True)
+class BoundaryReport:
+    """Machine-readable GovEngine 0.2 boundary snapshot."""
+
+    boundary: KernelBoundary
+    profiles: tuple[DomainProfileContract, ...] = field(default_factory=tuple)
+    surfaces: tuple[Mapping[str, Any], ...] = field(default_factory=tuple)
+    status: str = 'pre_alpha_boundary_declared'
+    schema_version: str = 'v0.1'
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            'artifact_type': 'govengine_boundary_report',
+            'schema_version': self.schema_version,
+            'status': self.status,
+            'boundary': self.boundary.as_dict(),
+            'profiles': [profile.as_dict() for profile in self.profiles],
+            'surfaces': [dict(surface) for surface in self.surfaces],
+            'summary': {
+                'profile_count': len(self.profiles),
+                'surface_count': len(self.surfaces),
+                'forbidden_profile_ownership_count': len(self.boundary.forbidden_profile_ownership),
+            },
+            'non_claims': list(self.boundary.non_claims),
+        }
+
+
 def kernel_boundary_contract() -> KernelBoundary:
     return KernelBoundary()
 
@@ -155,6 +183,27 @@ def validate_domain_profile_contract(value: Mapping[str, Any] | DomainProfileCon
     contract = value if isinstance(value, DomainProfileContract) else DomainProfileContract.from_mapping(value)
     contract.assert_boundary()
     return contract
+
+
+def known_profile_contracts() -> tuple[DomainProfileContract, ...]:
+    return (ravenclaw_profile_contract(),)
+
+
+def boundary_surface_index() -> tuple[dict[str, Any], ...]:
+    return tuple(surface.as_dict() for surface in public_surface_index())
+
+
+def kernel_boundary_report(
+    profiles: tuple[DomainProfileContract, ...] | None = None,
+) -> BoundaryReport:
+    profile_contracts = profiles if profiles is not None else known_profile_contracts()
+    for profile in profile_contracts:
+        validate_domain_profile_contract(profile)
+    return BoundaryReport(
+        boundary=kernel_boundary_contract(),
+        profiles=tuple(profile_contracts),
+        surfaces=boundary_surface_index(),
+    )
 
 
 def _tuple(values: Any) -> tuple[str, ...]:

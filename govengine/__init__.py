@@ -8,7 +8,17 @@ import time.
 __version__ = '0.1.7'
 
 from .api import GovApiError, GovApiResult
-from .boundary import DomainProfileContract, KernelBoundary, kernel_boundary_contract, ravenclaw_profile_contract, validate_domain_profile_contract
+from .boundary import (
+    BoundaryReport,
+    DomainProfileContract,
+    KernelBoundary,
+    boundary_surface_index,
+    kernel_boundary_contract,
+    kernel_boundary_report,
+    known_profile_contracts,
+    ravenclaw_profile_contract,
+    validate_domain_profile_contract,
+)
 from .context import GovEngineContext, GovEnginePaths, ravenclaw_context
 from .core import (
     ArtifactDescriptor,
@@ -41,6 +51,7 @@ from .surfaces import GovSurface, public_surface_index, security_profile_surface
 
 __all__ = [
     'CommandResult',
+    'BoundaryReport',
     'DomainProfileContract',
     'GovApiError',
     'GovApiResult',
@@ -88,8 +99,11 @@ __all__ = [
     'VerificationResult',
     'demo_sign_and_verify',
     'assert_security_profile_boundary',
+    'boundary_surface_index',
     'import_security_profile_module',
     'kernel_boundary_contract',
+    'kernel_boundary_report',
+    'known_profile_contracts',
     'public_surface_index',
     'ravenclaw_context',
     'ravenclaw_profile_contract',
