@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.7.0'
+__version__ = '0.7.1'
 
 from .admission import (
     GovAdmissionDecision,
@@ -102,7 +102,8 @@ from .runtime_shell import (
     validate_runtime_snapshot,
     validate_scheduler_tick,
 )
-from .scope import FunctionalScopePort, GovScopePort
+from .scope import FunctionalScopePort
+from .scope_ports import GovScopePort
 from .signing import DemoDigestSigner, DemoDigestVerifier, SignatureEnvelope, SigningPolicy, TrustPolicy, VerificationResult, demo_sign_and_verify
 from .state_index import ArtifactStateIndex
 from .state_machine import (

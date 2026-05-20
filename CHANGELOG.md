@@ -4,6 +4,12 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## 0.7.1 - Public truth and boundary hardening
+
+- Prepared a stabilization release that aligns public status, validation, publishing, roadmap, and API-boundary docs with the `0.7.x` source baseline.
+- Added a public truth validator for version/dependency/status/surface consistency across package metadata and public docs.
+- Hardened neutral-core boundary tests so controlled-execution core no longer depends on optional security-profile helper modules at import time.
+
 ## 0.7.0 - Evidence review contracts
 
 - Added `govengine.review` with neutral `GovEvidenceRequirement`, `GovEvidenceClaim`, `GovEvidenceQualification`, and `GovReviewResult` validators.

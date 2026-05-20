@@ -7,7 +7,8 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Version: `0.4.0`.
+- Source version: `0.7.1`.
+- Latest published PyPI release before this stabilization patch: `0.7.0`.
 - SCLite integration: present through helper seams via `sclite-core>=0.5.1,<0.6`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.
@@ -16,6 +17,9 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Control model: initial `govengine.control` decisions define deterministic between-step control and validated state-machine delegation without storage, scheduler, delivery, command, credential, or live-execution authority.
 - Runtime shell: `govengine.runtime_shell` defines neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, queue persistence, scheduler ownership, delivery, command, credential, or live-execution authority.
 - Planning contracts: `govengine.planning` defines neutral task-contract, plan-intent, and planner-port validators without planner implementation ownership, raw target/prompt ownership, Ravenclaw security semantics ownership, queue/scheduler/storage ownership, commands, adapters, or live execution.
+- Admission/policy contracts: `govengine.admission` defines neutral admission, policy-decision, approval-request, and audit-record validators without domain policy meaning, approval workflow, audit storage, adapter, command, or live-execution ownership.
+- Evidence review contracts: `govengine.review` defines neutral evidence requirements, claims, qualifications, and review results without SCLite verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage, adapter, command, or live-execution ownership.
+- Public truth gate: `scripts/validate_public_truth.py` checks version/dependency/status/surface consistency across package metadata and public docs.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
 - Core artifact governance boundaries: initial portable dataclasses for artifact descriptors/envelopes/state, governance context, transition decisions, and execution prerequisites.
@@ -28,7 +32,7 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `0.3.0`; each new release still requires the standard release checklist and operator approval before upload.
+- PyPI publication: completed through `0.7.0`; this source tree prepares `0.7.1` as a stabilization line and still requires the standard release checklist and operator approval before upload.
 
 ## What is public-safe today
 

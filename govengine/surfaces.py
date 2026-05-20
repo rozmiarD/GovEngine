@@ -76,6 +76,7 @@ def controlled_execution_surface() -> GovSurface:
             'govengine.execution.runner_protocol',
             'govengine.execution.supervision',
             'govengine.execution.gate',
+            'govengine.scope_ports',
             'govengine.contracts.execution',
             'govengine.ooda',
             'govengine.orchestration',

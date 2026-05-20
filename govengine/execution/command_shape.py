@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Tuple
 
-from govengine.scope import GovScopePort
+from govengine.scope_ports import GovScopePort
 
 HOST_TOKEN_RE = re.compile(r"(https?://[^\s\"'<>]+)|\b((?:[a-z0-9-]+\.)+[a-z]{2,})\b", re.IGNORECASE)
 

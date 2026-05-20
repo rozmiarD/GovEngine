@@ -32,20 +32,6 @@ Neutral core modules:
 
 Claim: portable kernel/profile boundary contracts, artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, PKI/key-store ownership, raw artifact storage ownership, workflow scheduler ownership.
 
-### Controlled-execution core
-
-Neutral controlled-execution modules:
-
-- `govengine.execution.*`
-- `govengine.contracts.execution`
-- `govengine.ooda`
-- `govengine.orchestration`
-- `govengine.events`
-- `govengine.control`
-- `govengine.runtime_shell`
-
-Claim: approved-spec, execution-ticket, command-shape, runner receipt, runner supervision, OODA, orchestration handoff, event envelope, control-decision, runtime-shell projection, and dry-run-only execution-gate helpers. Non-claims: raw-intent execution, default live subprocess execution, live backend ownership, scanner/campaign execution ownership, protocol adapter ownership, runtime storage ownership, or scheduler ownership.
-
 ### Planning-contracts core
 
 Neutral planning-contract modules:
@@ -61,6 +47,29 @@ Neutral admission-policy modules:
 - `govengine.admission`
 
 Claim: neutral admission-decision, policy-decision, approval-request, and audit-record validators that hosts can use for runtime gate review. Non-claims: domain policy meaning ownership, operator approval workflow ownership, audit storage or retention ownership, raw target/prompt ownership, queue/scheduler/storage ownership, protocol adapter ownership, command authority, or live execution.
+
+### Evidence-review core
+
+Neutral evidence-review modules:
+
+- `govengine.review`
+
+Claim: neutral evidence-requirement, evidence-claim, evidence-qualification, and review-result validators that hosts can use for receipt-bounded post-execution review. Non-claims: SCLite review-bundle verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage ownership, raw target/output ownership, protocol adapter ownership, command authority, or live execution.
+
+### Controlled-execution core
+
+Neutral controlled-execution modules:
+
+- `govengine.execution.*`
+- `govengine.scope_ports`
+- `govengine.contracts.execution`
+- `govengine.ooda`
+- `govengine.orchestration`
+- `govengine.events`
+- `govengine.control`
+- `govengine.runtime_shell`
+
+Claim: approved-spec, execution-ticket, command-shape, runner receipt, runner supervision, OODA, orchestration handoff, event envelope, control-decision, runtime-shell projection, and dry-run-only execution-gate helpers. Non-claims: raw-intent execution, default live subprocess execution, live backend ownership, scanner/campaign execution ownership, protocol adapter ownership, runtime storage ownership, or scheduler ownership.
 
 ### Optional security-profile helpers
 
@@ -91,6 +100,8 @@ GovEngine owns:
 - `govengine.control` — deterministic between-step control decisions that can apply validated in-memory state transitions without storage, scheduler, delivery, command, or live-execution authority.
 - `govengine.runtime_shell` — neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, scheduler, delivery, command, credential, carrier, or live-execution authority.
 - `govengine.planning` — neutral task-contract, plan-intent, and planner-port validators without planner implementation, raw target/prompt, queue/scheduler/storage, command, credential, adapter, or live-execution authority.
+- `govengine.admission` — neutral admission-decision, policy-decision, approval-request, and audit-record validators without domain policy meaning, approval workflow, audit storage, command, credential, adapter, or live-execution authority.
+- `govengine.review` — neutral evidence-requirement, evidence-claim, evidence-qualification, and review-result validators without SCLite review verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage, command, credential, adapter, or live-execution authority.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
 - `govengine.signing` — signature envelopes, signing/trust policy objects, host-provided signer/verifier ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
 - `govengine.security_profile` — optional security-profile facade for helper discovery, grouped metadata, allowlisted lazy imports, and boundary assertions.

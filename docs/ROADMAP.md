@@ -2,8 +2,8 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current source baseline: `govengine==0.7.0`, depending on `sclite-core>=0.5.1,<0.6`.
-Latest public PyPI publication: `govengine==0.7.0`.
+Current source baseline: `govengine==0.7.1`, depending on `sclite-core>=0.5.1,<0.6`.
+Latest public PyPI publication before this stabilization patch: `govengine==0.7.0`.
 
 ## Architecture thesis
 
@@ -62,24 +62,19 @@ Runtimes own UX/integration.
 SCLite owns proof/review artifacts.
 ```
 
-## Current implemented baseline: 0.1.x
+## Current implemented baseline: 0.7.x
 
-The `0.1.x` line already proves the first useful slice of the model:
+The current `0.7.x` line proves the first useful kernel shape:
 
-- stable-ish API result/error envelopes;
-- SCLite lifecycle integration seams;
-- SCLite review-bundle bridge delegated to SCLite `0.5.1`;
-- artifact descriptor/state/transition boundary objects;
-- lifecycle transition gates;
-- signing/trust policy bridge with host-provided ports;
-- dry-run controlled-execution gate and default `DryRunRunner`;
-- execution-ticket and receipt-bounded-evidence checks delegated to SCLite v0.3;
-- OODA safety-loop decisions;
-- deconfliction and artifact state index;
-- public surface registry;
-- optional `govengine.security_profile` helper facade for Ravenclaw-derived security helpers.
+- artifact-governance and SCLite lifecycle/review bridge helpers;
+- kernel/profile/runtime/SCLite boundary reports and conformance checks;
+- neutral runtime-shell, planning, admission/policy, controlled-execution, runner-supervision, and evidence-review contracts;
+- dry-run/default-deny execution posture with no default live subprocess backend;
+- public surface registry separating neutral core from optional security-profile helpers;
+- optional `govengine.security_profile` helper facade for Ravenclaw-derived security helpers;
+- public truth validation for version/dependency/status/API-boundary drift.
 
-This is still pre-alpha. The next roadmap should not be a file move from Ravenclaw into GovEngine. It should be contract-first extraction: define neutral contracts, add GovEngine tests, add Ravenclaw compatibility wrappers, then thin Ravenclaw only after behavior is preserved.
+This is still pre-alpha. The next roadmap should not be a file move from Ravenclaw into GovEngine. It should be contract-first extraction: define neutral contracts, add GovEngine tests, add host compatibility wrappers, then thin host code only after behavior is preserved.
 
 ## Version roadmap
 
@@ -228,53 +223,68 @@ Definition of done:
 - legacy direct execution remains marked as compatibility/dev path until retired;
 - no scanner/campaign execution semantics move into GovEngine.
 
-### 0.7.x — Evidence and review kernel
+### 0.7.x — Evidence/review consolidation and public truth hardening
 
-Goal: make post-execution qualification reusable while SCLite remains the proof/review authority.
+Goal: stabilize the post-`0.7.0` baseline before adding SDK surface. Keep post-execution qualification reusable while SCLite remains the proof/review authority.
 
-Planned work:
+Delivered in `0.7.0`:
 
 - `EvidenceRequirement`;
 - `EvidenceClaim`;
 - `EvidenceQualification`;
-- `ConfirmationPolicy`;
-- `FalsePositiveGuard`;
-- `ControlComparison`;
-- `ReproductionRequirement`;
 - `ReviewResult`;
-- `AnalysisContract`;
-- `EvidenceReviewController`;
-- SCLite review-bundle bridge. The `0.1.7` source line now includes the first thin review-bundle bridge delegated to SCLite `0.5.1`.
+- receipt-bounded claim qualification;
+- `evidence_review_core` in the public surface registry.
+
+Stabilization work for `0.7.1`:
+
+- align README, public status, validation, publishing, roadmap, and API-boundary truth sources with the `0.7.x` baseline;
+- add a public truth consistency validator;
+- add import-graph and surface conformance tests;
+- keep optional security-profile helpers dependent on neutral core only, never the reverse.
 
 Definition of done:
 
 - Ravenclaw finding/evidence qualification can use GovEngine review contracts;
 - SCLite still validates lifecycle/proof boundaries and review bundles;
 - overclaims are rejected when receipt bounds do not support evidence claims.
+- public docs and `govengine.surfaces.public_surface_index()` cannot drift silently.
 
-### 0.8.x — Domain Profile SDK
+### 0.8.x — Minimal Domain Profile SDK
 
 Goal: prove portability across more than one domain without turning GovEngine into a domain monolith.
 
 Planned work:
 
-- `DomainProfile` metadata and conformance contracts;
-- resource-type registry;
-- task-family registry;
-- planning-stage registry;
-- capability and runner-profile declarations;
-- policy/evidence/audit checklist hooks;
-- profile conformance tests;
-- `SecurityResearchProfile` extracted/normalized from Ravenclaw-facing helpers;
-- `TecraxProfile` skeleton for governed infrastructure operations.
+- `DomainProfile`;
+- `ResourceTypeRegistry`;
+- `TaskFamilyRegistry`;
+- `PlanningStageRegistry`;
+- `CapabilityDeclaration`;
+- `RunnerProfileDeclaration`;
+- `PolicyHookDeclaration`;
+- `EvidenceRuleDeclaration`;
+- `ProfileConformanceReport`;
+- `RavenclawSecurityProfile` fixture/profile declaration;
+- `TecraxInfraOpsProfile` skeleton for dry-run/local-fixture infrastructure operations only.
+
+Non-goals:
+
+- OpenClaw/MCP/A2A adapters;
+- default live subprocess runner;
+- Ravenclaw finding taxonomy ownership;
+- Logdash or campaign UX;
+- Tecrax credentials, inventories, product UX, change-management authority, or live infrastructure control;
+- PKI/KMS/key-store claims.
 
 Definition of done:
 
 - Ravenclaw can identify as a security-research runtime/profile;
 - Tecrax can exist as a second profile skeleton without live infrastructure authority;
-- profile conformance proves generic kernel portability.
+- profile conformance proves generic kernel portability;
+- profile declarations are data/contract-only and cannot claim kernel, SCLite, carrier, credential, live execution, or product UX ownership.
 
-### 0.9.x — Multi-runtime integration proofs
+### 0.9.x — Multi-runtime contract proofs
 
 Goal: demonstrate that the same kernel supports multiple domain runtimes without expanding authority.
 
@@ -283,12 +293,21 @@ Planned work:
 - Ravenclaw profile integration proof;
 - Tecrax dry-run infrastructure-change proof;
 - profile-to-SCLite review-bundle examples;
-- readiness packet for first carrier adapter, likely OpenClaw, if boundaries are stable.
+- C2-style contract mapping, without new OODA surface:
+  - Commander's Intent -> operator/domain objective contract;
+  - ROE -> policy/scope/aggression constraints;
+  - Tasking Order -> task/plan contract;
+  - Control Measures -> ticket/runner bounds;
+  - SITREP -> runtime/queue/control snapshot;
+  - AAR -> receipt/evidence/review result;
+  - FRAGO -> controlled replan/change-order;
+- readiness packet for first carrier adapter, likely OpenClaw, only if boundaries are stable.
 
 Definition of done:
 
 - at least two public-safe domain proofs use the same GovEngine/SCLite lifecycle;
 - carrier adapter work remains gated and does not bypass GovEngine.
+- the C2 mapping is implemented as contract vocabulary and validation examples, not marketing copy or a new command hierarchy.
 
 ## Domain profiles
 
@@ -301,6 +320,10 @@ Ravenclaw supplies security meaning:
 - planning stages: `discovery`, `validation`, `control_boundary_confirmation`, `state_transition_confirmation`, `bounded_exploit_proof`, `report_artifact_capture`;
 - security-specific audit checklists, policy rules, tools, and evidence rules.
 
+In GovEngine 0.8 this profile should be represented as a conformance fixture
+and declaration shape only. Ravenclaw remains the authority for security finding
+taxonomy, tool semantics, disclosure workflow, and Logdash/campaign UX.
+
 ### Tecrax Infrastructure Operations Profile
 
 Tecrax is the reserved name for the future governed infrastructure-operations runtime/profile. Avoid inherited working-name/product framing until public language is deliberately chosen.
@@ -308,10 +331,10 @@ Tecrax is the reserved name for the future governed infrastructure-operations ru
 Tecrax should supply infrastructure meaning:
 
 - resource types: `server`, `service`, `container`, `firewall`, `switch`, `vm`, `backup_job`;
-- task families: `inspect`, `diagnose`, `propose_change`, `dry_run_change`, `apply_change`, `verify`, `rollback`;
-- planning stages: `observe`, `diagnose`, `plan_change`, `validate_dry_run`, `approve`, `execute`, `verify`, `rollback_if_needed`.
+- task families: `inspect`, `diagnose`, `propose_change`, `dry_run_change`, `verify_fixture`, `rollback_plan`;
+- planning stages: `observe`, `diagnose`, `plan_change`, `validate_dry_run`, `approval_required`, `verify_fixture`, `rollback_plan_ready`.
 
-Initial Tecrax work should be dry-run/local-fixture only until GovEngine runner supervision and SCLite review bundles are mature.
+Initial Tecrax work should be dry-run/local-fixture only until GovEngine runner supervision and SCLite review bundles are mature. It must not bring service inventories, host credentials, change-management authority, live infrastructure control, or product UX into GovEngine core.
 
 ## Carrier adapters
 

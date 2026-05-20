@@ -10,7 +10,7 @@ python -m pytest -q
 python -m pip check
 ```
 
-Expected result for the published `0.1.7` source line:
+Historical expected result for the published `0.1.7` source line:
 
 - standalone pytest suite passes (`72 passed` in the `0.1.7` source tree);
 - package dependencies are consistent;
@@ -21,7 +21,17 @@ Expected result for the published `0.1.7` source line:
 - no Ravenclaw runtime or Logdash process is started;
 - demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness; scoped-ticket use-gate tests prove SCLite receipt/evidence bounds delegation, and review-bundle tests prove GovEngine delegates pass/fail verdicts to SCLite `0.5.1`, not live runtime enforcement.
 
-Expected result for the current 0.2 kernel-boundary line:
+Expected result for the current `0.7.1` stabilization source line:
+
+- full pytest passes in the source tree;
+- `python -m pip check` is clean;
+- `python scripts/validate_public_truth.py` passes;
+- import smoke checks include `govengine.review`, `govengine.execution.supervision`, `govengine.admission`, `govengine.planning`, `govengine.runtime_shell`, and `govengine.scope_ports`;
+- the public surface registry and `docs/API_BOUNDARY.md` agree on the exact public surfaces;
+- neutral core surfaces do not import optional security-profile helper modules at runtime;
+- no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced.
+
+Historical expected result for the 0.2 kernel-boundary line:
 
 - full pytest passes in the source tree;
 - `python -m pip check` is clean;
@@ -36,7 +46,7 @@ Expected result for the `0.2.0` release line:
 - clean wheel install reports `govengine.__version__ == 0.2.0`, distribution version `0.2.0`, import checks for the 0.2 boundary modules pass, and `pip check` is clean;
 - clean install from PyPI with `govengine==0.2.0` reports `govengine.__version__ == 0.2.0`, distribution version `0.2.0`, and `sclite-core==0.5.1`.
 
-Expected result for the current 0.3 runtime-shell line:
+Historical expected result for the 0.3 runtime-shell line:
 
 - full pytest passes in the source tree;
 - `python -m pip check` is clean;
@@ -53,7 +63,7 @@ Expected result for the `0.3.0` release line before upload:
 - Ravenclaw validates against the 0.3 wheel/package line with `scripts/validate_public_install.py` and focused state/control projection tests;
 - clean install from PyPI with `govengine==0.3.0` is required only after the operator-approved upload completes.
 
-Expected result for the 0.4 planning-contract line:
+Historical expected result for the 0.4 planning-contract line:
 
 - full pytest passes in the source tree;
 - `python -m pip check` is clean;
@@ -62,7 +72,7 @@ Expected result for the 0.4 planning-contract line:
 - negative tests reject raw targets, raw prompts, commands, credentials, storage/scheduler/live-execution claims, and duplicate task-contract IDs;
 - no planner implementation, Ravenclaw security semantics, queue persistence, scheduler loop, adapter, credential store, runtime storage, live command, or live execution authority is introduced.
 
-Expected result for the current 0.5 admission-policy line:
+Historical expected result for the 0.5 admission-policy line:
 
 - full pytest passes in the source tree;
 - `python -m pip check` is clean;
@@ -78,7 +88,7 @@ Expected result for the `0.5.0` release line:
 - clean wheel install reports `govengine.__version__ == 0.5.0`, distribution version `0.5.0`, `sclite-core==0.5.1`, import checks for `govengine.admission` pass, and `pip check` is clean;
 - clean install from PyPI with `govengine==0.5.0` reports `govengine.__version__ == 0.5.0`, distribution version `0.5.0`, `sclite-core==0.5.1`, `admission_policy_core` in the public surface index, and `pip check` is clean.
 
-Expected result for the current 0.6 runner-supervision line:
+Historical expected result for the 0.6 runner-supervision line:
 
 - full pytest passes in the source tree;
 - `python -m pip check` is clean;
