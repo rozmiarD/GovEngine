@@ -71,6 +71,13 @@ Expected result for the current 0.5 admission-policy line:
 - negative tests reject raw targets, raw prompts, commands, credentials, carrier payloads, storage/scheduler/live-execution claims, and mismatched admission outcomes;
 - no profile policy engine, operator approval workflow, audit storage/retention, adapter, credential store, runtime storage, live command, or live execution authority is introduced.
 
+Expected result for the `0.5.0` release line:
+
+- `python -m build` creates `govengine-0.5.0` sdist/wheel artifacts;
+- `python -m twine check dist/*` passes;
+- clean wheel install reports `govengine.__version__ == 0.5.0`, distribution version `0.5.0`, `sclite-core==0.5.1`, import checks for `govengine.admission` pass, and `pip check` is clean;
+- clean install from PyPI with `govengine==0.5.0` reports `govengine.__version__ == 0.5.0`, distribution version `0.5.0`, `sclite-core==0.5.1`, `admission_policy_core` in the public surface index, and `pip check` is clean.
+
 ## What the focused tests cover
 
 Current tests cover:
