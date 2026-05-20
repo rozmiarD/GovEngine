@@ -21,15 +21,18 @@ Historical expected result for the published `0.1.7` source line:
 - no Ravenclaw runtime or Logdash process is started;
 - demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness; scoped-ticket use-gate tests prove SCLite receipt/evidence bounds delegation, and review-bundle tests prove GovEngine delegates pass/fail verdicts to SCLite `0.5.1`, not live runtime enforcement.
 
-Expected result for the current `0.9.0` source line:
+Expected result for the current `0.10.0a0` source line (`0.10.0-alpha`):
 
 - full pytest passes in the source tree;
 - `python -m pip check` is clean;
 - `python scripts/validate_public_truth.py` passes;
+- `python scripts/validate_alpha_readiness.py` passes;
 - import smoke checks include `govengine.contract_proofs`, `govengine.profiles`, `govengine.review`, `govengine.execution.supervision`, `govengine.admission`, `govengine.planning`, `govengine.runtime_shell`, and `govengine.scope_ports`;
 - the public surface registry and `docs/API_BOUNDARY.md` agree on the exact public surfaces;
 - profile SDK fixture conformance passes for Ravenclaw and Tecrax without adapter, credential, product UX, or live-execution claims;
 - runtime contract proof fixtures pass for Ravenclaw and Tecrax without adapter, credential, scheduler, storage, live-execution, or new OODA claims;
+- package build and clean wheel-install smoke checks pass before any tag or upload;
+- Ravenclaw public downstream validation passes against the local alpha package line, using explicit runtime paths such as `RAVENCLAW_REPORTS_DIR`, `RAVENCLAW_TMP_DIR`, `RAVENCLAW_LOGDASH_DB`, and `RAVENCLAW_PIPELINE_CONFIG` when the checkout should remain clean/read-only;
 - neutral core surfaces do not import optional security-profile helper modules at runtime;
 - no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced.
 

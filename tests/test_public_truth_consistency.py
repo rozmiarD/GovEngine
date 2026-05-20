@@ -17,4 +17,16 @@ def test_public_truth_validator_passes() -> None:
         check=True,
     )
 
-    assert result.stdout.strip().startswith('public_truth_ok:govengine==0.9.0:')
+    assert result.stdout.strip().startswith('public_truth_ok:govengine==0.10.0a0:')
+
+
+def test_alpha_readiness_validator_passes() -> None:
+    result = subprocess.run(
+        [sys.executable, 'scripts/validate_alpha_readiness.py'],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    assert result.stdout.strip().startswith('alpha_readiness_ok:govengine==0.10.0a0:')

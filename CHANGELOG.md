@@ -4,6 +4,12 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## 0.10.0-alpha - Alpha readiness gate
+
+- Promoted the source line to `0.10.0a0` / `0.10.0-alpha` after public truth, package-build, runtime proof, and Ravenclaw downstream compatibility validation.
+- Added an alpha-readiness validator that checks package metadata, public surfaces, runtime proof fixtures, neutral governance vocabulary, and alpha non-claims.
+- Kept PyPI upload, public tags, carrier adapters, credentials, schedulers, storage, live execution, and production-readiness claims out of scope pending operator approval.
+
 ## 0.9.0 - Runtime contract proofs
 
 - Added `govengine.contract_proofs` with public-safe Ravenclaw and Tecrax runtime proof fixtures over existing planning, supervision, runtime snapshot, review, and change-order contracts.

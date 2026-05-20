@@ -1,6 +1,6 @@
 # GovEngine Publishing Checklist
 
-GovEngine is published to PyPI as a pre-alpha package. Use this checklist for future releases without overstating maturity.
+GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for future releases without overstating maturity.
 
 ## Preflight
 
@@ -8,6 +8,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 - [ ] Published Git history is preserved: no force-push, history rewrite, date rewrite, or tag rewrite to fix authorship/contribution graphs. Use corrective commits instead.
 - [ ] `CHANGELOG.md`, `PUBLIC_STATUS.md`, `README.md`, `docs/VALIDATION.md`, `docs/ROADMAP.md`, `docs/API_BOUNDARY.md`, `govengine/surfaces.py`, and `pyproject.toml` agree on version/status and claim only tested behavior.
 - [ ] `python scripts/validate_public_truth.py` passes.
+- [ ] `python scripts/validate_alpha_readiness.py` passes for alpha source lines.
 - [ ] `python -m pytest -q` passes.
 - [ ] `python -m pip check` passes.
 - [ ] Build artifacts are generated from a clean tree.
@@ -15,7 +16,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 
 ## PyPI release notes
 
-- SCLite is published as the PyPI distribution `sclite-core`; the current GovEngine `0.9.x` source line depends on `sclite-core>=0.5.1,<0.6`.
+- SCLite is published as the PyPI distribution `sclite-core`; the current GovEngine `0.10.x` alpha source line depends on `sclite-core>=0.5.1,<0.6`.
 - Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
 - `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
 - `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.
@@ -30,6 +31,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 - `0.7.1` is the public-truth and boundary-hardening stabilization line. It should not add broad new runtime features.
 - `0.8.0` is the minimal Domain Profile SDK line: contract-only profile declarations and Ravenclaw/Tecrax fixture profiles. It does not add domain taxonomy ownership, carrier adapters, credentials, product UX, or live execution.
 - `0.9.0` is the runtime contract proof line: public-safe Ravenclaw/Tecrax proof fixtures and neutral governance vocabulary over existing contracts. It does not add carrier adapters, credentials, schedulers, storage, live execution, or new OODA surfaces.
+- `0.10.0-alpha` is the alpha-readiness line: package metadata, build/install validation, public truth, runtime proof fixtures, and Ravenclaw downstream compatibility checks are aligned. It does not add carrier adapters, credentials, schedulers, storage, live execution, production readiness, public tags, or PyPI upload without operator approval.
 - API stability and non-claims should remain explicit because this is pre-1.0.
 
 ## Release order
@@ -44,6 +46,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 python -m pytest -q
 python -m pip check
 python scripts/validate_public_truth.py
+python scripts/validate_alpha_readiness.py
 ```
 
 Optional build check once build tooling is installed:

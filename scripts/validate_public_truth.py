@@ -11,6 +11,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from govengine import __version__ as package_version  # noqa: E402
+from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
 
@@ -93,6 +94,7 @@ def _assert_no_current_stale_status(paths: Iterable[str], version: str) -> None:
 def main() -> int:
     project = _pyproject()['project']
     version = str(project['version'])
+    release_label = '0.10.0-alpha' if version == '0.10.0a0' else version
     dependency = _project_dependency(project, 'sclite-core')
     surfaces = public_surface_index()
     surface_names = [surface.name for surface in surfaces]
@@ -107,10 +109,13 @@ def main() -> int:
     validation = _read('docs/VALIDATION.md')
     api_boundary = _read('docs/API_BOUNDARY.md')
 
-    _assert_contains('README.md', readme, f'pre-alpha {version}')
+    _assert_contains('README.md', readme, f'alpha {version}')
+    _assert_contains('README.md', readme, release_label)
     _assert_contains('README.md', readme, dependency)
-    _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`, depending on `{dependency}`.')
+    _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`')
+    _assert_contains('docs/ROADMAP.md', roadmap, dependency)
     _assert_contains('PUBLIC_STATUS.md', public_status, f'Source version: `{version}`.')
+    _assert_contains('PUBLIC_STATUS.md', public_status, f'Public release label: `{release_label}`.')
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
     _assert_contains('docs/VALIDATION.md', validation, f'current `{version}` source line')
@@ -125,6 +130,10 @@ def main() -> int:
         for module in surface.modules:
             if not _module_is_documented(module, api_boundary):
                 raise AssertionError(f'docs/API_BOUNDARY.md:missing_module:{module}')
+
+    for proof in (ravenclaw_contract_proof(), tecrax_contract_proof()):
+        if proof.profile_conformance.status != 'passed':
+            raise AssertionError(f'contract_proof_failed:{proof.proof_id}')
 
     _assert_no_current_stale_status(
         (
