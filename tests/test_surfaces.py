@@ -51,6 +51,7 @@ def test_core_surfaces_keep_live_execution_and_adapter_non_claims() -> None:
     assert 'govengine.planning' in planning.modules
     assert 'govengine.admission' in admission.modules
     assert 'govengine.execution.gate' in execution.modules
+    assert 'govengine.execution.supervision' in execution.modules
     assert 'govengine.orchestration' in execution.modules
     assert 'govengine.events' in execution.modules
     assert 'govengine.control' in execution.modules
@@ -62,6 +63,7 @@ def test_core_surfaces_keep_live_execution_and_adapter_non_claims() -> None:
     assert 'default live subprocess execution' in execution.non_claims
     assert 'protocol adapter ownership' in execution.non_claims
     assert 'runtime storage or scheduler ownership' in execution.non_claims
+    assert 'live backend ownership' in execution.non_claims
 
 
 def test_surface_metadata_is_public_safe_and_lookup_is_strict() -> None:

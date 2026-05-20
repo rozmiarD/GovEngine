@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.5.0'
+__version__ = '0.6.0'
 
 from .admission import (
     GovAdmissionDecision,
@@ -47,6 +47,18 @@ from .core import (
 from .deconfliction import ArtifactChangeOrder, ArtifactConflict, ConflictDetector
 from .events import EventEnvelope, GovEvent, validate_event_envelope, validate_gov_event
 from .execution.gate import DryRunRunner, ExecutionGate, ExecutionGateInput, RunnerProfile
+from .execution.supervision import (
+    GovRunnerLease,
+    GovSupervisionDecision,
+    GovSupervisionPlan,
+    runner_lease_from_request,
+    supervision_plan_from_runner_request,
+    validate_runner_lease,
+    validate_runner_receipt_for_request,
+    validate_supervised_runner_request,
+    validate_supervision_decision,
+    validate_supervision_plan,
+)
 from .execution_backend import CommandResult, GovExecutionBackend
 from .lifecycle import ArtifactLifecycleController, TransitionGate, TransitionPolicy
 from .ooda import GovObservation, GovOodaController, GovOodaDecision, GovOrientation
@@ -141,10 +153,13 @@ __all__ = [
     'GovQueueLane',
     'GovQueueSnapshot',
     'GovRoleAdapters',
+    'GovRunnerLease',
     'GovRunState',
     'GovRuntimeSnapshot',
     'GovSchedulerTick',
     'GovSurface',
+    'GovSupervisionDecision',
+    'GovSupervisionPlan',
     'GovTaskContract',
     'KernelBoundary',
     'OrchestrationStep',
@@ -186,10 +201,12 @@ __all__ = [
     'queue_snapshot_from_lanes',
     'ravenclaw_context',
     'ravenclaw_profile_contract',
+    'runner_lease_from_request',
     'security_profile_groups',
     'security_profile_index',
     'security_profile_module_names',
     'security_profile_surface',
+    'supervision_plan_from_runner_request',
     'validate_admission_decision',
     'validate_approval_request',
     'validate_audit_record',
@@ -205,10 +222,15 @@ __all__ = [
     'validate_planner_port',
     'validate_policy_decision',
     'validate_queue_snapshot',
+    'validate_runner_lease',
+    'validate_runner_receipt_for_request',
     'validate_run_state',
     'validate_runtime_snapshot',
     'validate_scheduler_tick',
     'validate_state_transition',
+    'validate_supervised_runner_request',
+    'validate_supervision_decision',
+    'validate_supervision_plan',
     'validate_task_contract',
     'verify_lifecycle_manifest',
 ]

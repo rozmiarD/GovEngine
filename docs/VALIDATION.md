@@ -78,6 +78,15 @@ Expected result for the `0.5.0` release line:
 - clean wheel install reports `govengine.__version__ == 0.5.0`, distribution version `0.5.0`, `sclite-core==0.5.1`, import checks for `govengine.admission` pass, and `pip check` is clean;
 - clean install from PyPI with `govengine==0.5.0` reports `govengine.__version__ == 0.5.0`, distribution version `0.5.0`, `sclite-core==0.5.1`, `admission_policy_core` in the public surface index, and `pip check` is clean.
 
+Expected result for the current 0.6 runner-supervision line:
+
+- full pytest passes in the source tree;
+- `python -m pip check` is clean;
+- import smoke checks include `govengine.execution.supervision`;
+- runner-supervision tests validate `GovRunnerLease`, `GovSupervisionPlan`, `GovSupervisionDecision`, supervised runner requests, and runner receipts;
+- negative tests reject raw-intent runner requests, missing approved specs, missing receipts, live backend use without explicit enablement, and forbidden metadata claims;
+- no live subprocess backend, lease persistence, scheduler loop, carrier adapter, credential store, runtime storage, or live execution authority is introduced.
+
 ## What the focused tests cover
 
 Current tests cover:
@@ -105,6 +114,7 @@ Current tests cover:
 - runtime-shell host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, scheduler, command, delivery, credential, carrier, or live-execution claims.
 - planning/task-contract validators without planner implementation, raw target/prompt, queue, scheduler, storage, command, carrier, credential, or live-execution claims.
 - admission/policy/approval/audit validators without profile policy meaning, approval workflow, audit storage/retention, raw target/prompt, queue, scheduler, storage, command, carrier, credential, or live-execution claims.
+- runner-supervision validators without live backend ownership, lease persistence, raw intent, scheduler, storage, carrier, credential, or concrete execution claims.
 
 ## Ravenclaw consumption gate
 

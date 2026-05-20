@@ -12,6 +12,7 @@ GovEngine owns reusable governed-execution services. Its public surface should s
 `govengine.runtime_shell.validate_runtime_snapshot()` checks host-provided control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without accepting raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 `govengine.planning.validate_task_contract()` and `validate_plan_intent_contract()` check neutral planner-to-runtime handoff shapes without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 `govengine.admission.validate_admission_decision()`, `validate_policy_decision()`, `validate_approval_request()`, and `validate_audit_record()` check neutral runtime gate records without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
+`govengine.execution.supervision.validate_supervised_runner_request()` and `validate_runner_receipt_for_request()` check approved-spec runner supervision and receipt boundaries without accepting raw intent or granting live backend ownership.
 
 ## Public surface groups
 
@@ -42,7 +43,7 @@ Neutral controlled-execution modules:
 - `govengine.control`
 - `govengine.runtime_shell`
 
-Claim: approved-spec, execution-ticket, command-shape, runner receipt, OODA, orchestration handoff, event envelope, control-decision, runtime-shell projection, and dry-run-only execution-gate helpers. Non-claims: raw-intent execution, default live subprocess execution, scanner/campaign execution ownership, protocol adapter ownership, runtime storage ownership, or scheduler ownership.
+Claim: approved-spec, execution-ticket, command-shape, runner receipt, runner supervision, OODA, orchestration handoff, event envelope, control-decision, runtime-shell projection, and dry-run-only execution-gate helpers. Non-claims: raw-intent execution, default live subprocess execution, live backend ownership, scanner/campaign execution ownership, protocol adapter ownership, runtime storage ownership, or scheduler ownership.
 
 ### Planning-contracts core
 

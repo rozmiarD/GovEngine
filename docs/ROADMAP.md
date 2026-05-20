@@ -2,8 +2,9 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current source baseline: `govengine==0.5.0`, depending on `sclite-core>=0.5.1,<0.6`.
-Latest public PyPI publication: `govengine==0.5.0`.
+Current source baseline: `govengine==0.6.0`, depending on `sclite-core>=0.5.1,<0.6`.
+The latest public PyPI publication remains `0.5.0` until the standard release
+checklist, operator approval, and upload are completed for `0.6.0`.
 
 ## Architecture thesis
 
@@ -190,6 +191,13 @@ Definition of done:
 - deterministic negative tests cover raw-intent execution, missing ticket, policy drift, budget exceedance, and cooldown behavior.
 
 ### 0.6.x — Execution supervisor and runner kernel
+
+Status: implemented in `0.6.0` as the initial
+`govengine.execution.supervision` surface. The implementation adds neutral
+runner leases, supervision plans, supervision decisions, and request/receipt
+validators while leaving concrete runner behavior, lease persistence, operator
+authorization, artifact storage, carrier delivery, credentials, and live backend
+ownership to host runtimes.
 
 Goal: provide the reusable supervision layer for bounded execution while preserving dry-run as default.
 
