@@ -6,7 +6,8 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 
 - [ ] For maintainer releases from the operator-controlled publish tree, effective git identity is `0x505badc0de <32790662+rozmiarD@users.noreply.github.com>`; external contributors use their own GitHub-associated identity.
 - [ ] Published Git history is preserved: no force-push, history rewrite, date rewrite, or tag rewrite to fix authorship/contribution graphs. Use corrective commits instead.
-- [ ] `CHANGELOG.md`, `PUBLIC_STATUS.md`, `README.md`, `docs/VALIDATION.md`, `docs/ROADMAP.md`, `docs/API_BOUNDARY.md`, and `pyproject.toml` agree on version/status and claim only tested behavior.
+- [ ] `CHANGELOG.md`, `PUBLIC_STATUS.md`, `README.md`, `docs/VALIDATION.md`, `docs/ROADMAP.md`, `docs/API_BOUNDARY.md`, `govengine/surfaces.py`, and `pyproject.toml` agree on version/status and claim only tested behavior.
+- [ ] `python scripts/validate_public_truth.py` passes.
 - [ ] `python -m pytest -q` passes.
 - [ ] `python -m pip check` passes.
 - [ ] Build artifacts are generated from a clean tree.
@@ -14,7 +15,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 
 ## PyPI release notes
 
-- SCLite is published as the PyPI distribution `sclite-core`; GovEngine `0.4.0` depends on `sclite-core>=0.5.1,<0.6`; the previous published `0.3.0`, `0.2.0`, and `0.1.7` releases also depended on `sclite-core>=0.5.1,<0.6`.
+- SCLite is published as the PyPI distribution `sclite-core`; the current GovEngine `0.7.x` source line depends on `sclite-core>=0.5.1,<0.6`.
 - Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
 - `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
 - `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.
@@ -23,6 +24,10 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 - `0.2.0` is the kernel-boundary freeze line: boundary reports, domain-profile conformance, orchestration handoffs, governance events, run-state transitions, and between-step control decisions. It does not add live execution, queue/scheduler ownership, carrier adapters, runtime persistence, or credential handling.
 - `0.3.0` is the runtime-shell line: neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata. It does not add queue persistence, scheduler ownership, Logdash/UI ownership, carrier adapters, credentials, live commands, or live execution.
 - `0.4.0` is the planning-contracts line: neutral task-contract, plan-intent, and planner-port validators. It does not add planner implementation ownership, Ravenclaw security planning semantics, raw target/prompt ownership, queues, schedulers, storage, adapters, credentials, commands, or live execution.
+- `0.5.0` is the admission-policy line: neutral admission decisions, policy decisions, approval requests, and audit records. It does not add profile policy meaning, approval workflow, audit storage, adapters, credentials, commands, or live execution.
+- `0.6.0` is the runner-supervision line: neutral runner leases, supervision plans, supervision decisions, and approved-spec request/receipt validation. It does not add concrete runner behavior, scheduler ownership, carrier adapters, credentials, storage, or live execution.
+- `0.7.0` is the evidence-review line: neutral evidence requirements, claims, qualifications, and review results. It does not add SCLite verdict ownership, Ravenclaw finding taxonomy, raw evidence storage, adapters, credentials, commands, or live execution.
+- `0.7.1` is the public-truth and boundary-hardening stabilization line. It should not add broad new runtime features.
 - API stability and non-claims should remain explicit because this is pre-1.0.
 
 ## Release order
@@ -36,6 +41,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 ```bash
 python -m pytest -q
 python -m pip check
+python scripts/validate_public_truth.py
 ```
 
 Optional build check once build tooling is installed:

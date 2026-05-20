@@ -9,7 +9,7 @@ from copy import deepcopy
 from typing import Any, Dict, List
 from urllib.parse import urlparse
 
-from govengine.scope import extract_host_from_url
+from govengine.scope_ports import extract_host_from_url
 
 
 _DECORATION_HEADER_FLAGS = {'-H', '--header', '--headers'}
