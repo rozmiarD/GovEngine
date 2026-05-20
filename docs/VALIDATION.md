@@ -124,6 +124,13 @@ Current tests cover:
 - runner-supervision validators without live backend ownership, lease persistence, raw intent, scheduler, storage, carrier, credential, or concrete execution claims.
 - evidence-review validators without SCLite review verdict ownership, Ravenclaw finding taxonomy, raw output/evidence storage, target/prompt, command, carrier, credential, or live-execution claims.
 
+Expected result for the `0.7.0` release line:
+
+- `python -m build` creates `govengine-0.7.0` sdist/wheel artifacts;
+- `python -m twine check dist/*` passes;
+- clean wheel install reports `govengine.__version__ == 0.7.0`, distribution version `0.7.0`, `sclite-core==0.5.1`, import checks for `govengine.review` pass, and `pip check` is clean;
+- clean install from PyPI with `govengine==0.7.0` reports `govengine.__version__ == 0.7.0`, distribution version `0.7.0`, `sclite-core==0.5.1`, `evidence_review_core` in the public surface index, and `pip check` is clean.
+
 ## Ravenclaw consumption gate
 
 Ravenclaw should validate that it can consume GovEngine as the external PyPI package `govengine` instead of using an in-tree `govengine/` copy or a Git URL pin.
