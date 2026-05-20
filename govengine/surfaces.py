@@ -116,6 +116,26 @@ def planning_contracts_surface() -> GovSurface:
     )
 
 
+def admission_policy_surface() -> GovSurface:
+    return GovSurface(
+        name='admission_policy_core',
+        status='pre_alpha_tested',
+        modules=_tuple((
+            'govengine.admission',
+        )),
+        claim=(
+            'Neutral admission, policy-decision, approval-request, and audit-record validators for hosts '
+            'that need deterministic runtime gate records without moving domain policy semantics into GovEngine.'
+        ),
+        non_claims=_tuple((
+            'domain policy meaning ownership',
+            'operator approval workflow ownership',
+            'audit storage or retention ownership',
+            'raw target, prompt, command, credential, adapter, scheduler, storage, or live-execution ownership',
+        )),
+    )
+
+
 def security_profile_surface() -> GovSurface:
     return GovSurface(
         name='security_profile_helpers',
@@ -153,6 +173,7 @@ def public_surface_index() -> Tuple[GovSurface, ...]:
     return (
         artifact_governance_surface(),
         planning_contracts_surface(),
+        admission_policy_surface(),
         controlled_execution_surface(),
         security_profile_surface(),
     )

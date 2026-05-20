@@ -4,6 +4,12 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## 0.5.0 - Admission, policy, approval, and audit contracts
+
+- Added `govengine.admission` with neutral `GovAdmissionDecision`, `GovPolicyDecision`, `GovApprovalRequest`, and `GovAuditRecord` validators for host runtime gate records.
+- Added negative validation for raw targets, raw prompts, commands, credentials, carrier payloads, storage/scheduler/live-execution claims, and admission outcome mismatches.
+- Added `admission_policy_core` to the public surface registry while keeping profile policy meaning, operator approval workflow, audit storage/retention, adapters, commands, and live execution host-owned.
+
 ## 0.4.0 - Planning/task contracts
 
 - Added `govengine.planning` with neutral `GovTaskContract`, `GovPlanIntentContract`, and `PlannerPort` validators for planner-to-runtime handoff shapes.

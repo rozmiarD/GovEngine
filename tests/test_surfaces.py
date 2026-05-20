@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from govengine.surfaces import (
+    admission_policy_surface,
     artifact_governance_surface,
     controlled_execution_surface,
     planning_contracts_surface,
@@ -16,6 +17,7 @@ def test_public_surface_index_names_core_before_optional_profile() -> None:
     assert [surface.name for surface in surfaces] == [
         'artifact_governance_core',
         'planning_contracts_core',
+        'admission_policy_core',
         'controlled_execution_core',
         'security_profile_helpers',
     ]
@@ -36,15 +38,18 @@ def test_security_profile_is_explicitly_optional_and_does_not_own_core_gates() -
 def test_core_surfaces_keep_live_execution_and_adapter_non_claims() -> None:
     artifact = artifact_governance_surface()
     planning = planning_contracts_surface()
+    admission = admission_policy_surface()
     execution = controlled_execution_surface()
 
     assert artifact.optional_profile is False
     assert planning.optional_profile is False
+    assert admission.optional_profile is False
     assert execution.optional_profile is False
     assert 'govengine.boundary' in artifact.modules
     assert 'govengine.signing' in artifact.modules
     assert 'govengine.state_machine' in artifact.modules
     assert 'govengine.planning' in planning.modules
+    assert 'govengine.admission' in admission.modules
     assert 'govengine.execution.gate' in execution.modules
     assert 'govengine.orchestration' in execution.modules
     assert 'govengine.events' in execution.modules
@@ -53,6 +58,7 @@ def test_core_surfaces_keep_live_execution_and_adapter_non_claims() -> None:
     assert 'raw-intent execution' in execution.non_claims
     assert 'planner implementation ownership' in planning.non_claims
     assert 'raw target or prompt ownership' in planning.non_claims
+    assert 'domain policy meaning ownership' in admission.non_claims
     assert 'default live subprocess execution' in execution.non_claims
     assert 'protocol adapter ownership' in execution.non_claims
     assert 'runtime storage or scheduler ownership' in execution.non_claims
@@ -69,6 +75,7 @@ def test_surface_metadata_is_public_safe_and_lookup_is_strict() -> None:
         assert all(fragment not in joined for fragment in forbidden_fragments)
 
     assert surface_by_name('planning_contracts_core').name == 'planning_contracts_core'
+    assert surface_by_name('admission_policy_core').name == 'admission_policy_core'
     assert surface_by_name('controlled_execution_core').name == 'controlled_execution_core'
 
     try:
