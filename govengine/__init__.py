@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.7.1'
+__version__ = '0.8.0'
 
 from .admission import (
     GovAdmissionDecision,
@@ -77,6 +77,22 @@ from .planning import (
     validate_planner_port,
     validate_task_contract,
 )
+from .profiles import (
+    CapabilityDeclaration,
+    DomainProfile,
+    EvidenceRuleDeclaration,
+    PlanningStageRegistry,
+    PolicyHookDeclaration,
+    ProfileConformanceReport,
+    ResourceTypeRegistry,
+    RunnerProfileDeclaration,
+    TaskFamilyRegistry,
+    profile_conformance_report,
+    ravenclaw_security_profile,
+    tecrax_infra_ops_profile,
+    validate_domain_profile,
+    validate_profile_conformance,
+)
 from .roles import GovRoleAdapters
 from .review import (
     GovEvidenceClaim,
@@ -122,14 +138,17 @@ from .security_profile import (
     security_profile_index,
     security_profile_module_names,
 )
-from .surfaces import GovSurface, admission_policy_surface, public_surface_index, security_profile_surface
+from .surfaces import GovSurface, admission_policy_surface, domain_profile_sdk_surface, public_surface_index, security_profile_surface
 
 __all__ = [
+    'CapabilityDeclaration',
     'CommandResult',
     'BoundaryReport',
     'ControlDecision',
+    'DomainProfile',
     'DomainProfileConformance',
     'DomainProfileContract',
+    'EvidenceRuleDeclaration',
     'GovAdmissionDecision',
     'GovApiError',
     'GovApiResult',
@@ -180,8 +199,14 @@ __all__ = [
     'KernelBoundary',
     'OrchestrationStep',
     'OrchestratorBoundary',
+    'PlanningStageRegistry',
     'PlannerPort',
+    'PolicyHookDeclaration',
+    'ProfileConformanceReport',
+    'ResourceTypeRegistry',
     'SecurityProfileGroup',
+    'RunnerProfileDeclaration',
+    'TaskFamilyRegistry',
     'FunctionalScopePort',
     'ReasonCode',
     'RunnerProfile',
@@ -208,6 +233,7 @@ __all__ = [
     'assert_security_profile_boundary',
     'boundary_surface_index',
     'domain_profile_conformance',
+    'domain_profile_sdk_surface',
     'import_security_profile_module',
     'kernel_boundary_contract',
     'kernel_boundary_report',
@@ -218,15 +244,18 @@ __all__ = [
     'queue_snapshot_from_lanes',
     'ravenclaw_context',
     'ravenclaw_profile_contract',
+    'ravenclaw_security_profile',
     'runner_lease_from_request',
     'security_profile_groups',
     'security_profile_index',
     'security_profile_module_names',
     'security_profile_surface',
     'supervision_plan_from_runner_request',
+    'tecrax_infra_ops_profile',
     'validate_admission_decision',
     'validate_approval_request',
     'validate_audit_record',
+    'validate_domain_profile',
     'validate_domain_profile_contract',
     'validate_domain_profile_conformance',
     'validate_control_decision',
@@ -240,6 +269,7 @@ __all__ = [
     'task_contract_from_host_task',
     'validate_plan_intent_contract',
     'validate_planner_port',
+    'validate_profile_conformance',
     'validate_policy_decision',
     'validate_queue_snapshot',
     'validate_runner_lease',
@@ -254,6 +284,7 @@ __all__ = [
     'validate_supervision_plan',
     'validate_task_contract',
     'verify_lifecycle_manifest',
+    'profile_conformance_report',
 ]
 
 

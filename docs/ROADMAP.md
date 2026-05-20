@@ -2,8 +2,8 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current source baseline: `govengine==0.7.1`, depending on `sclite-core>=0.5.1,<0.6`.
-Latest public PyPI publication before this stabilization patch: `govengine==0.7.0`.
+Current source baseline: `govengine==0.8.0`, depending on `sclite-core>=0.5.1,<0.6`.
+Latest public PyPI publication before this source line: `govengine==0.7.0`.
 
 ## Architecture thesis
 
@@ -62,15 +62,16 @@ Runtimes own UX/integration.
 SCLite owns proof/review artifacts.
 ```
 
-## Current implemented baseline: 0.7.x
+## Current implemented baseline: 0.8.x
 
-The current `0.7.x` line proves the first useful kernel shape:
+The current `0.8.x` line proves the first useful kernel shape:
 
 - artifact-governance and SCLite lifecycle/review bridge helpers;
 - kernel/profile/runtime/SCLite boundary reports and conformance checks;
 - neutral runtime-shell, planning, admission/policy, controlled-execution, runner-supervision, and evidence-review contracts;
+- contract-only domain profile SDK declarations and Ravenclaw/Tecrax conformance fixtures;
 - dry-run/default-deny execution posture with no default live subprocess backend;
-- public surface registry separating neutral core from optional security-profile helpers;
+- public surface registry separating neutral core, contract-only domain profile SDK, and optional security-profile helpers;
 - optional `govengine.security_profile` helper facade for Ravenclaw-derived security helpers;
 - public truth validation for version/dependency/status/API-boundary drift.
 
@@ -84,7 +85,7 @@ Goal: make the kernel/profile split explicit before extracting more runtime mech
 
 Delivered in 0.2.0: `govengine.boundary` adds serializable kernel/profile/runtime/SCLite ownership contracts, a Ravenclaw profile contract, a machine-readable boundary report, domain-profile conformance checks, deterministic orchestration handoff contracts, neutral governance event envelopes, neutral run-state transitions, deterministic control decisions, and negative tests that prevent domain profiles, orchestration steps, events, run-state metadata, or control decisions from claiming GovEngine core ownership, SCLite authority, live execution authority, credentials, carrier adapters, scheduler ownership, runtime storage, command authority, or unknown consumed surfaces. The initial kernel-boundary, domain-profile contract, orchestrator-model, event-model, state-machine, and control-model docs are now present.
 
-Planned work:
+Historical 0.2.x work items:
 
 1. Add/settle architecture docs:
    - `docs/GOVENGINE_KERNEL_BOUNDARY.md` (initial doc present)
@@ -121,7 +122,7 @@ execution to host runtimes.
 
 Goal: introduce a deterministic orchestration shell without making GovEngine an LLM agent loop.
 
-Planned work:
+Historical 0.3.x work items:
 
 - `GovEvent`, `EventEnvelope`, `EventStore` protocol;
 - `GovState`, `GovRunState`, `StateStore` protocol;
@@ -254,7 +255,7 @@ Definition of done:
 
 Goal: prove portability across more than one domain without turning GovEngine into a domain monolith.
 
-Planned work:
+Delivered in `0.8.0`:
 
 - `DomainProfile`;
 - `ResourceTypeRegistry`;
@@ -267,6 +268,12 @@ Planned work:
 - `ProfileConformanceReport`;
 - `RavenclawSecurityProfile` fixture/profile declaration;
 - `TecraxInfraOpsProfile` skeleton for dry-run/local-fixture infrastructure operations only.
+
+Remaining consolidation work for `0.8.x`:
+
+- keep Ravenclaw integration as a thin profile declaration around GovEngine/SCLite contracts;
+- keep Tecrax as a dry-run/local-fixture skeleton until a separate runtime proves infrastructure semantics outside GovEngine;
+- use `scripts/validate_public_truth.py` and profile SDK tests as the public truth gate before any upload.
 
 Non-goals:
 
@@ -320,7 +327,7 @@ Ravenclaw supplies security meaning:
 - planning stages: `discovery`, `validation`, `control_boundary_confirmation`, `state_transition_confirmation`, `bounded_exploit_proof`, `report_artifact_capture`;
 - security-specific audit checklists, policy rules, tools, and evidence rules.
 
-In GovEngine 0.8 this profile should be represented as a conformance fixture
+In GovEngine 0.8 this profile is represented as a conformance fixture
 and declaration shape only. Ravenclaw remains the authority for security finding
 taxonomy, tool semantics, disclosure workflow, and Logdash/campaign UX.
 

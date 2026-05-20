@@ -75,6 +75,7 @@ def test_boundary_surface_index_matches_public_surfaces() -> None:
         'planning_contracts_core',
         'admission_policy_core',
         'evidence_review_core',
+        'domain_profile_sdk',
         'controlled_execution_core',
         'security_profile_helpers',
     ]
@@ -99,8 +100,8 @@ def test_kernel_boundary_report_is_machine_readable() -> None:
     assert payload['summary'] == {
         'profile_count': 1,
         'profile_conformance_passed': 1,
-        'surface_count': 6,
-        'forbidden_profile_ownership_count': 5,
+        'surface_count': 7,
+        'forbidden_profile_ownership_count': 7,
     }
     assert payload['profiles'][0]['name'] == 'ravenclaw'
     assert payload['profile_conformance'][0]['status'] == 'passed'
@@ -122,8 +123,10 @@ def test_domain_profile_conformance_accepts_known_consumes() -> None:
     assert conformance.passed is True
     assert conformance.unknown_consumes == ()
     assert 'govengine_controlled_execution_core' in conformance.allowed_consumes
+    assert 'govengine_planning_contracts_core' in conformance.allowed_consumes
     assert 'govengine_admission_policy_core' in conformance.allowed_consumes
     assert 'govengine_evidence_review_core' in conformance.allowed_consumes
+    assert 'govengine_domain_profile_sdk' in conformance.allowed_consumes
     assert conformance.as_dict()['checks']['consumes_are_known'] is True
 
 
