@@ -80,16 +80,18 @@ def controlled_execution_surface() -> GovSurface:
             'govengine.orchestration',
             'govengine.events',
             'govengine.control',
+            'govengine.runtime_shell',
         )),
         claim=(
             'Approved-spec, execution-ticket, command-shape, runner receipt, OODA, orchestration boundary, event metadata, '
-            'control-decision, and dry-run-only execution gate helpers.'
+            'control-decision, runtime shell, queue snapshot, scheduler-tick, and dry-run-only execution gate helpers.'
         ),
         non_claims=_tuple((
             'raw-intent execution',
             'default live subprocess execution',
             'scanner/campaign execution ownership',
             'protocol adapter ownership',
+            'runtime storage or scheduler ownership',
         )),
     )
 

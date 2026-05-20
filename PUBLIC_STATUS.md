@@ -7,13 +7,14 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Version: `0.2.0`.
+- Version: `0.3.0`.
 - SCLite integration: present through helper seams via `sclite-core>=0.5.1,<0.6`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.
 - Event model: initial `govengine.events` envelopes define transport-neutral governance metadata without raw prompts, credentials, live commands, carrier payloads, or scheduling claims.
 - State machine: initial `govengine.state_machine` contracts define neutral run-state transitions without persistence, queue, scheduler, credential, command, or live-execution authority.
 - Control model: initial `govengine.control` decisions define deterministic between-step control and validated state-machine delegation without storage, scheduler, delivery, command, credential, or live-execution authority.
+- Runtime shell: `govengine.runtime_shell` defines neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, queue persistence, scheduler ownership, delivery, command, credential, or live-execution authority.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
 - Core artifact governance boundaries: initial portable dataclasses for artifact descriptors/envelopes/state, governance context, transition decisions, and execution prerequisites.
@@ -47,6 +48,7 @@ GovEngine can be reviewed as a small Python package for:
 - OODA decision objects;
 - signal, analysis, and evidence-confirmation contracts extracted from Ravenclaw;
 - SCLite lifecycle/review integration boundaries and status/verdict mapping into portable GovEngine state/transition objects.
+- runtime-shell control/queue/snapshot projection objects for hosts that need to map their own state/control UI into a neutral reviewable shape.
 
 ## What is not claimed
 
@@ -63,6 +65,7 @@ GovEngine does not currently claim:
 - PKI, CA, KMS, trust-store, or key-management ownership;
 - a full replacement for Ravenclaw Runtime;
 - Tecrax infrastructure-domain semantics, credentials, or product UX.
+- runtime state storage, queue persistence, or scheduler ownership.
 
 ## Controlled execution posture
 

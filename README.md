@@ -8,7 +8,7 @@
 
 GovEngine is a carrier-agnostic deterministic governed-runtime kernel for portable artifact governance and policy-gated controlled execution.
 
-It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, and dry-run result assembly. Security-oriented action/tool/scope/signal helpers remain available as an optional profile for hosts such as Ravenclaw, not as the neutral core itself.
+It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, dry-run result assembly, and neutral runtime/control projections. Security-oriented action/tool/scope/signal helpers remain available as an optional profile for hosts such as Ravenclaw, not as the neutral core itself.
 
 
 ## Why it exists
@@ -52,6 +52,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 - command-shape helpers;
 - dry-run result assembly helpers;
 - deterministic orchestration handoff, governance event envelope, run-state, and between-step control-decision contracts;
+- neutral runtime-shell contracts for host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata;
 - optional security-profile helpers for action schema/validation/compilation, capability recipes, tool registry, semantic-loss policy, scope checks, policy gateway, and signal/analysis/evidence-confirmation contracts;
 - explicit SCLite integration seams;
 - focused standalone pytest coverage and GitHub Actions CI.
@@ -69,7 +70,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 
 ## Current status
 
-GovEngine is a **pre-alpha 0.2.x helper package**. The package is importable, tested, and published through `0.2.0`. The `0.1.3` line added artifact-governance control gates while keeping live execution disabled by default. The `0.1.4` line added a surface registry that separates the neutral core from optional security-profile helpers. The `0.1.5` line adds a security-profile facade for one-entrypoint helper discovery. The `0.1.6` line consumes `sclite-core>=0.3.5,<0.4`, includes thin scoped-ticket / receipt-bounded-evidence gates, and contains deterministic demo signer/verifier ports for host proof fixtures; those ports exercise signing/trust seams without claiming PKI/key ownership. The `0.1.7` line consumes `sclite-core>=0.5.1,<0.6` and adds a thin SCLite review-bundle bridge for the packaged GovEngine integration fixtures. The `0.2.0` line freezes the initial kernel/profile boundary with `govengine.boundary`, `govengine.orchestration`, `govengine.events`, `govengine.state_machine`, and `govengine.control` while keeping live execution, queue/scheduler ownership, carrier adapters, credential handling, and runtime persistence outside GovEngine. Ravenclaw has a host adapter for the control gates and still owns concrete runtime execution.
+GovEngine is a **pre-alpha 0.3.x helper package**. The package is importable and tested. The `0.1.3` line added artifact-governance control gates while keeping live execution disabled by default. The `0.1.4` line added a surface registry that separates the neutral core from optional security-profile helpers. The `0.1.5` line adds a security-profile facade for one-entrypoint helper discovery. The `0.1.6` line consumes `sclite-core>=0.3.5,<0.4`, includes thin scoped-ticket / receipt-bounded-evidence gates, and contains deterministic demo signer/verifier ports for host proof fixtures; those ports exercise signing/trust seams without claiming PKI/key ownership. The `0.1.7` line consumes `sclite-core>=0.5.1,<0.6` and adds a thin SCLite review-bundle bridge for the packaged GovEngine integration fixtures. The `0.2.0` line freezes the initial kernel/profile boundary with `govengine.boundary`, `govengine.orchestration`, `govengine.events`, `govengine.state_machine`, and `govengine.control` while keeping live execution, queue/scheduler ownership, carrier adapters, credential handling, and runtime persistence outside GovEngine. The `0.3.0` line adds `govengine.runtime_shell` for neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without making GovEngine own host storage, scheduling, UI, adapters, credentials, or concrete execution. Ravenclaw has host adapters for these gates/projections and still owns concrete runtime execution.
 
 ## Installation
 
@@ -134,6 +135,7 @@ assert receipt["status"] == "dry-run"
 - [`docs/EVENT_MODEL.md`](docs/EVENT_MODEL.md) — neutral governance event metadata and payload boundaries.
 - [`docs/STATE_MACHINE.md`](docs/STATE_MACHINE.md) — neutral run-state and transition contract.
 - [`docs/CONTROL_MODEL.md`](docs/CONTROL_MODEL.md) — between-step control decisions and state-machine delegation.
+- [`docs/RUNTIME_SHELL.md`](docs/RUNTIME_SHELL.md) — neutral host runtime/control projection contracts.
 - [`docs/VALIDATION.md`](docs/VALIDATION.md) — local checks and non-claims.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — staged extraction roadmap.
 
