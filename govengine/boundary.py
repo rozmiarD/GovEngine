@@ -45,12 +45,16 @@ FORBIDDEN_PROFILE_OWNERSHIP = (
     'live_execution_authority',
     'credential_or_key_store',
     'carrier_adapter_ownership',
+    'pki_or_kms_ownership',
+    'product_ux_ownership',
 )
 
 ALLOWED_PROFILE_CONSUMES = (
     'govengine_artifact_governance_core',
+    'govengine_planning_contracts_core',
     'govengine_admission_policy_core',
     'govengine_evidence_review_core',
+    'govengine_domain_profile_sdk',
     'govengine_controlled_execution_core',
     'govengine_security_profile_helpers',
     'sclite_lifecycle_artifacts',

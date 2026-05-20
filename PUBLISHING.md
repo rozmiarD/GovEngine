@@ -15,7 +15,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 
 ## PyPI release notes
 
-- SCLite is published as the PyPI distribution `sclite-core`; the current GovEngine `0.7.x` source line depends on `sclite-core>=0.5.1,<0.6`.
+- SCLite is published as the PyPI distribution `sclite-core`; the current GovEngine `0.8.x` source line depends on `sclite-core>=0.5.1,<0.6`.
 - Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
 - `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
 - `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.
@@ -28,6 +28,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 - `0.6.0` is the runner-supervision line: neutral runner leases, supervision plans, supervision decisions, and approved-spec request/receipt validation. It does not add concrete runner behavior, scheduler ownership, carrier adapters, credentials, storage, or live execution.
 - `0.7.0` is the evidence-review line: neutral evidence requirements, claims, qualifications, and review results. It does not add SCLite verdict ownership, Ravenclaw finding taxonomy, raw evidence storage, adapters, credentials, commands, or live execution.
 - `0.7.1` is the public-truth and boundary-hardening stabilization line. It should not add broad new runtime features.
+- `0.8.0` is the minimal Domain Profile SDK line: contract-only profile declarations and Ravenclaw/Tecrax fixture profiles. It does not add domain taxonomy ownership, carrier adapters, credentials, product UX, or live execution.
 - API stability and non-claims should remain explicit because this is pre-1.0.
 
 ## Release order

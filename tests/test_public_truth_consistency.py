@@ -17,4 +17,4 @@ def test_public_truth_validator_passes() -> None:
         check=True,
     )
 
-    assert result.stdout.strip().startswith('public_truth_ok:govengine==0.7.1:')
+    assert result.stdout.strip().startswith('public_truth_ok:govengine==0.8.0:')

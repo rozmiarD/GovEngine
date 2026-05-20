@@ -19,6 +19,7 @@ SURFACE_HEADINGS = {
     'Planning-contracts core': 'planning_contracts_core',
     'Admission-policy core': 'admission_policy_core',
     'Evidence-review core': 'evidence_review_core',
+    'Domain-profile SDK': 'domain_profile_sdk',
     'Controlled-execution core': 'controlled_execution_core',
     'Optional security-profile helpers': 'security_profile_helpers',
 }
@@ -28,6 +29,7 @@ STATUS_MARKERS = {
     'planning_contracts_core': 'Planning contracts',
     'admission_policy_core': 'Admission/policy contracts',
     'evidence_review_core': 'Evidence review contracts',
+    'domain_profile_sdk': 'Domain profile SDK',
     'controlled_execution_core': 'Controlled execution gate',
     'security_profile_helpers': 'Security profile',
 }
@@ -109,7 +111,7 @@ def main() -> int:
     _assert_contains('PUBLIC_STATUS.md', public_status, f'Source version: `{version}`.')
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
-    _assert_contains('docs/VALIDATION.md', validation, f'current `{version}` stabilization source line')
+    _assert_contains('docs/VALIDATION.md', validation, f'current `{version}` source line')
 
     documented = _documented_surface_names(api_boundary)
     if documented != surface_names:

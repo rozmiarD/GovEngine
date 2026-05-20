@@ -159,6 +159,29 @@ def evidence_review_surface() -> GovSurface:
     )
 
 
+def domain_profile_sdk_surface() -> GovSurface:
+    return GovSurface(
+        name='domain_profile_sdk',
+        status='pre_alpha_contract_only',
+        modules=_tuple((
+            'govengine.profiles',
+        )),
+        claim=(
+            'Minimal domain-profile declarations, registry shapes, fixture profiles, and conformance reports '
+            'for hosts that need to bind domain meaning around GovEngine without moving that meaning into the kernel.'
+        ),
+        non_claims=_tuple((
+            'domain taxonomy ownership',
+            'Ravenclaw finding taxonomy ownership',
+            'Tecrax infrastructure semantics ownership',
+            'default live subprocess execution',
+            'carrier adapter ownership',
+            'credential, PKI, KMS, or key-store ownership',
+            'product UX or campaign workflow ownership',
+        )),
+    )
+
+
 def security_profile_surface() -> GovSurface:
     return GovSurface(
         name='security_profile_helpers',
@@ -198,6 +221,7 @@ def public_surface_index() -> Tuple[GovSurface, ...]:
         planning_contracts_surface(),
         admission_policy_surface(),
         evidence_review_surface(),
+        domain_profile_sdk_surface(),
         controlled_execution_surface(),
         security_profile_surface(),
     )

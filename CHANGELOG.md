@@ -4,6 +4,12 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## 0.8.0 - Minimal Domain Profile SDK
+
+- Added `govengine.profiles` with contract-only `DomainProfile`, registry, capability, runner-profile, policy-hook, evidence-rule, and conformance-report declarations.
+- Added Ravenclaw security and Tecrax infrastructure-ops fixture profiles to prove profile portability without moving domain taxonomy, product UX, credentials, carrier adapters, or live execution into GovEngine.
+- Added `domain_profile_sdk` to the public surface registry while keeping profile conformance bounded by existing kernel/profile/SCLite ownership checks.
+
 ## 0.7.1 - Public truth and boundary hardening
 
 - Prepared a stabilization release that aligns public status, validation, publishing, roadmap, and API-boundary docs with the `0.7.x` source baseline.

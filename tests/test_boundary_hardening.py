@@ -74,12 +74,14 @@ def test_public_surface_index_has_single_optional_security_profile() -> None:
         'planning_contracts_core',
         'admission_policy_core',
         'evidence_review_core',
+        'domain_profile_sdk',
         'controlled_execution_core',
         'security_profile_helpers',
     ]
     assert [surface.name for surface in surfaces if surface.optional_profile] == ['security_profile_helpers']
-    assert 'govengine.scope_ports' in surfaces[4].modules
-    assert 'govengine.scope' not in surfaces[4].modules
+    execution = next(surface for surface in surfaces if surface.name == 'controlled_execution_core')
+    assert 'govengine.scope_ports' in execution.modules
+    assert 'govengine.scope' not in execution.modules
 
 
 @pytest.mark.parametrize('group', security_profile_groups())

@@ -4,6 +4,7 @@ from govengine.surfaces import (
     admission_policy_surface,
     artifact_governance_surface,
     controlled_execution_surface,
+    domain_profile_sdk_surface,
     evidence_review_surface,
     planning_contracts_surface,
     public_surface_index,
@@ -20,6 +21,7 @@ def test_public_surface_index_names_core_before_optional_profile() -> None:
         'planning_contracts_core',
         'admission_policy_core',
         'evidence_review_core',
+        'domain_profile_sdk',
         'controlled_execution_core',
         'security_profile_helpers',
     ]
@@ -42,12 +44,14 @@ def test_core_surfaces_keep_live_execution_and_adapter_non_claims() -> None:
     planning = planning_contracts_surface()
     admission = admission_policy_surface()
     review = evidence_review_surface()
+    profiles = domain_profile_sdk_surface()
     execution = controlled_execution_surface()
 
     assert artifact.optional_profile is False
     assert planning.optional_profile is False
     assert admission.optional_profile is False
     assert review.optional_profile is False
+    assert profiles.optional_profile is False
     assert execution.optional_profile is False
     assert 'govengine.boundary' in artifact.modules
     assert 'govengine.signing' in artifact.modules
@@ -55,6 +59,7 @@ def test_core_surfaces_keep_live_execution_and_adapter_non_claims() -> None:
     assert 'govengine.planning' in planning.modules
     assert 'govengine.admission' in admission.modules
     assert 'govengine.review' in review.modules
+    assert 'govengine.profiles' in profiles.modules
     assert 'govengine.execution.gate' in execution.modules
     assert 'govengine.execution.supervision' in execution.modules
     assert 'govengine.orchestration' in execution.modules
@@ -66,6 +71,8 @@ def test_core_surfaces_keep_live_execution_and_adapter_non_claims() -> None:
     assert 'raw target or prompt ownership' in planning.non_claims
     assert 'domain policy meaning ownership' in admission.non_claims
     assert 'SCLite review-bundle verdict ownership' in review.non_claims
+    assert 'default live subprocess execution' in profiles.non_claims
+    assert 'carrier adapter ownership' in profiles.non_claims
     assert 'default live subprocess execution' in execution.non_claims
     assert 'protocol adapter ownership' in execution.non_claims
     assert 'runtime storage or scheduler ownership' in execution.non_claims
@@ -85,6 +92,7 @@ def test_surface_metadata_is_public_safe_and_lookup_is_strict() -> None:
     assert surface_by_name('planning_contracts_core').name == 'planning_contracts_core'
     assert surface_by_name('admission_policy_core').name == 'admission_policy_core'
     assert surface_by_name('evidence_review_core').name == 'evidence_review_core'
+    assert surface_by_name('domain_profile_sdk').name == 'domain_profile_sdk'
     assert surface_by_name('controlled_execution_core').name == 'controlled_execution_core'
 
     try:
