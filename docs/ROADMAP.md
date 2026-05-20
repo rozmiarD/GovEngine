@@ -2,7 +2,7 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current source baseline: `govengine==0.9.0`, depending on `sclite-core>=0.5.1,<0.6`.
+Current source baseline: `govengine==0.10.0a0` (`0.10.0-alpha`), depending on `sclite-core>=0.5.1,<0.6`.
 Latest public PyPI publication before this source line: `govengine==0.7.0`.
 
 ## Architecture thesis
@@ -62,9 +62,9 @@ Runtimes own UX/integration.
 SCLite owns proof/review artifacts.
 ```
 
-## Current implemented baseline: 0.9.x
+## Current implemented baseline: 0.10.x alpha
 
-The current `0.9.x` line proves the first useful kernel shape:
+The current `0.10.x` alpha line proves the first useful kernel shape:
 
 - artifact-governance and SCLite lifecycle/review bridge helpers;
 - kernel/profile/runtime/SCLite boundary reports and conformance checks;
@@ -75,8 +75,9 @@ The current `0.9.x` line proves the first useful kernel shape:
 - public surface registry separating neutral core, contract-only domain profile SDK, and optional security-profile helpers;
 - optional `govengine.security_profile` helper facade for Ravenclaw-derived security helpers;
 - public truth validation for version/dependency/status/API-boundary drift.
+- package-build, clean wheel-install, and Ravenclaw public downstream compatibility checks for the alpha source line.
 
-This is still pre-alpha. The next roadmap should not be a file move from Ravenclaw into GovEngine. It should be contract-first extraction: define neutral contracts, add GovEngine tests, add host compatibility wrappers, then thin host code only after behavior is preserved.
+This is alpha, not stable. The next roadmap should not be a file move from Ravenclaw into GovEngine. It should remain contract-first extraction: define neutral contracts, add GovEngine tests, add host compatibility wrappers, then thin host code only after behavior is preserved.
 
 ## Version roadmap
 
@@ -318,6 +319,24 @@ Definition of done:
 - at least two public-safe domain proofs use the same GovEngine/SCLite lifecycle;
 - carrier adapter work remains gated and does not bypass GovEngine.
 - the governance vocabulary is implemented as neutral contract vocabulary and validation examples, not marketing copy or a new command hierarchy.
+
+### 0.10.x — Alpha readiness and downstream compatibility
+
+Goal: remove the pre-alpha claim only after packaging, public truth, runtime proof, and Ravenclaw downstream checks agree.
+
+Delivered in `0.10.0-alpha`:
+
+- package metadata uses PEP 440 alpha version `0.10.0a0` with public label `0.10.0-alpha`;
+- public docs/status/roadmap/validation/publishing claim alpha maturity without production-readiness claims;
+- alpha-readiness validator checks package metadata, public surfaces, runtime proof fixtures, neutral vocabulary, and non-claims;
+- build and clean wheel-install smoke checks are required before tag/upload;
+- Ravenclaw public downstream dependency and validation fixtures are aligned to the `0.10.x` alpha GovEngine surface.
+
+Definition of done:
+
+- `scripts/validate_public_truth.py`, `scripts/validate_alpha_readiness.py`, full pytest, `pip check`, build, wheel install smoke, and Ravenclaw public validation all pass;
+- no PyPI upload or public tag is performed without explicit operator approval;
+- carrier adapters, credentials, schedulers, storage, live execution, and production readiness remain out of scope.
 
 ## Domain profiles
 
