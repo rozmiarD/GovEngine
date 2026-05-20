@@ -36,6 +36,23 @@ Expected result for the `0.2.0` release line:
 - clean wheel install reports `govengine.__version__ == 0.2.0`, distribution version `0.2.0`, import checks for the 0.2 boundary modules pass, and `pip check` is clean;
 - clean install from PyPI with `govengine==0.2.0` reports `govengine.__version__ == 0.2.0`, distribution version `0.2.0`, and `sclite-core==0.5.1`.
 
+Expected result for the current 0.3 runtime-shell line:
+
+- full pytest passes in the source tree;
+- `python -m pip check` is clean;
+- import smoke checks include `govengine.runtime_shell`;
+- runtime-shell tests validate host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata;
+- negative tests reject raw intent, commands, schedules, storage, credentials, carrier payloads, and live-execution claims;
+- no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced.
+
+Expected result for the `0.3.0` release line before upload:
+
+- `python -m build` creates `govengine-0.3.0` sdist/wheel artifacts;
+- `python -m twine check dist/*` passes;
+- clean wheel install reports `govengine.__version__ == 0.3.0`, distribution version `0.3.0`, `sclite-core==0.5.1`, import checks for `govengine.runtime_shell` pass, and `pip check` is clean;
+- Ravenclaw validates against the 0.3 wheel/package line with `scripts/validate_public_install.py` and focused state/control projection tests;
+- clean install from PyPI with `govengine==0.3.0` is required only after the operator-approved upload completes.
+
 ## What the focused tests cover
 
 Current tests cover:
@@ -60,6 +77,7 @@ Current tests cover:
 - deterministic orchestration handoff records without scheduler, UI, adapter, credential, or live-execution authority;
 - transport-neutral governance event metadata without raw prompt, credential, live-command, carrier-delivery, or schedule payloads;
 - neutral run-state transitions and between-step control decisions without runtime storage, queue, scheduler, command, delivery, credential, or live-execution claims.
+- runtime-shell host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, scheduler, command, delivery, credential, carrier, or live-execution claims.
 
 ## Ravenclaw consumption gate
 

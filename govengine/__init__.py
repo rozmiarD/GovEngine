@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 from .api import GovApiError, GovApiResult
 from .boundary import (
@@ -46,6 +46,19 @@ from .orchestration import (
     validate_orchestration_step,
 )
 from .roles import GovRoleAdapters
+from .runtime_shell import (
+    GovControlAction,
+    GovQueueLane,
+    GovQueueSnapshot,
+    GovRuntimeSnapshot,
+    GovSchedulerTick,
+    control_action_from_host_action,
+    queue_snapshot_from_lanes,
+    validate_control_action,
+    validate_queue_snapshot,
+    validate_runtime_snapshot,
+    validate_scheduler_tick,
+)
 from .scope import FunctionalScopePort, GovScopePort
 from .signing import DemoDigestSigner, DemoDigestVerifier, SignatureEnvelope, SigningPolicy, TrustPolicy, VerificationResult, demo_sign_and_verify
 from .state_index import ArtifactStateIndex
@@ -77,6 +90,7 @@ __all__ = [
     'GovApiResult',
     'GovEngineContext',
     'GovEnginePaths',
+    'GovControlAction',
     'ArtifactChangeOrder',
     'ArtifactConflict',
     'ArtifactDescriptor',
@@ -99,8 +113,12 @@ __all__ = [
     'GovOodaController',
     'GovOodaDecision',
     'GovOrientation',
+    'GovQueueLane',
+    'GovQueueSnapshot',
     'GovRoleAdapters',
     'GovRunState',
+    'GovRuntimeSnapshot',
+    'GovSchedulerTick',
     'GovSurface',
     'KernelBoundary',
     'OrchestrationStep',
@@ -124,6 +142,7 @@ __all__ = [
     'TrustPolicy',
     'VerificationResult',
     'apply_control_decision',
+    'control_action_from_host_action',
     'demo_sign_and_verify',
     'apply_state_transition',
     'assert_security_profile_boundary',
@@ -135,6 +154,7 @@ __all__ = [
     'known_profile_contracts',
     'orchestrator_boundary_contract',
     'public_surface_index',
+    'queue_snapshot_from_lanes',
     'ravenclaw_context',
     'ravenclaw_profile_contract',
     'security_profile_groups',
@@ -144,10 +164,14 @@ __all__ = [
     'validate_domain_profile_contract',
     'validate_domain_profile_conformance',
     'validate_control_decision',
+    'validate_control_action',
     'validate_event_envelope',
     'validate_gov_event',
     'validate_orchestration_step',
+    'validate_queue_snapshot',
     'validate_run_state',
+    'validate_runtime_snapshot',
+    'validate_scheduler_tick',
     'validate_state_transition',
     'verify_lifecycle_manifest',
 ]

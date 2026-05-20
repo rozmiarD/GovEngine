@@ -9,6 +9,7 @@ GovEngine owns reusable governed-execution services. Its public surface should s
 `govengine.events.validate_event_envelope()` checks transport-neutral governance event metadata without accepting raw prompts, credentials, live commands, carrier payloads, or scheduling claims.
 `govengine.state_machine.validate_state_transition()` checks neutral run-state transitions without accepting runtime storage, scheduler, credential, command, or live-execution claims.
 `govengine.control.validate_control_decision()` checks deterministic between-step control decisions and delegates legal state changes to the state machine without accepting raw prompts, commands, schedulers, runtime storage, delivery, or live-execution claims.
+`govengine.runtime_shell.validate_runtime_snapshot()` checks host-provided control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without accepting raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 
 ## Public surface groups
 
@@ -37,8 +38,9 @@ Neutral controlled-execution modules:
 - `govengine.orchestration`
 - `govengine.events`
 - `govengine.control`
+- `govengine.runtime_shell`
 
-Claim: approved-spec, execution-ticket, command-shape, runner receipt, OODA, orchestration handoff, event envelope, control-decision, and dry-run-only execution-gate helpers. Non-claims: raw-intent execution, default live subprocess execution, scanner/campaign execution ownership, protocol adapter ownership.
+Claim: approved-spec, execution-ticket, command-shape, runner receipt, OODA, orchestration handoff, event envelope, control-decision, runtime-shell projection, and dry-run-only execution-gate helpers. Non-claims: raw-intent execution, default live subprocess execution, scanner/campaign execution ownership, protocol adapter ownership, runtime storage ownership, or scheduler ownership.
 
 ### Optional security-profile helpers
 
@@ -67,6 +69,7 @@ GovEngine owns:
 - `govengine.deconfliction` / `govengine.state_index` — digest/state conflict, change-order, and lightweight artifact state summary helpers.
 - `govengine.state_machine` — neutral run-state and transition validation without persistence, queue, scheduler, credential, or live-execution authority.
 - `govengine.control` — deterministic between-step control decisions that can apply validated in-memory state transitions without storage, scheduler, delivery, command, or live-execution authority.
+- `govengine.runtime_shell` — neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, scheduler, delivery, command, credential, carrier, or live-execution authority.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
 - `govengine.signing` — signature envelopes, signing/trust policy objects, host-provided signer/verifier ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
 - `govengine.security_profile` — optional security-profile facade for helper discovery, grouped metadata, allowlisted lazy imports, and boundary assertions.
