@@ -76,6 +76,7 @@ def test_boundary_surface_index_matches_public_surfaces() -> None:
         'admission_policy_core',
         'evidence_review_core',
         'domain_profile_sdk',
+        'runtime_contract_proofs',
         'controlled_execution_core',
         'security_profile_helpers',
     ]
@@ -100,7 +101,7 @@ def test_kernel_boundary_report_is_machine_readable() -> None:
     assert payload['summary'] == {
         'profile_count': 1,
         'profile_conformance_passed': 1,
-        'surface_count': 7,
+        'surface_count': 8,
         'forbidden_profile_ownership_count': 7,
     }
     assert payload['profiles'][0]['name'] == 'ravenclaw'

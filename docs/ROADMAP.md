@@ -2,7 +2,7 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current source baseline: `govengine==0.8.0`, depending on `sclite-core>=0.5.1,<0.6`.
+Current source baseline: `govengine==0.9.0`, depending on `sclite-core>=0.5.1,<0.6`.
 Latest public PyPI publication before this source line: `govengine==0.7.0`.
 
 ## Architecture thesis
@@ -62,14 +62,15 @@ Runtimes own UX/integration.
 SCLite owns proof/review artifacts.
 ```
 
-## Current implemented baseline: 0.8.x
+## Current implemented baseline: 0.9.x
 
-The current `0.8.x` line proves the first useful kernel shape:
+The current `0.9.x` line proves the first useful kernel shape:
 
 - artifact-governance and SCLite lifecycle/review bridge helpers;
 - kernel/profile/runtime/SCLite boundary reports and conformance checks;
 - neutral runtime-shell, planning, admission/policy, controlled-execution, runner-supervision, and evidence-review contracts;
 - contract-only domain profile SDK declarations and Ravenclaw/Tecrax conformance fixtures;
+- runtime contract proof fixtures showing Ravenclaw and Tecrax over the same neutral GovEngine/SCLite contract flow;
 - dry-run/default-deny execution posture with no default live subprocess backend;
 - public surface registry separating neutral core, contract-only domain profile SDK, and optional security-profile helpers;
 - optional `govengine.security_profile` helper facade for Ravenclaw-derived security helpers;
@@ -291,30 +292,32 @@ Definition of done:
 - profile conformance proves generic kernel portability;
 - profile declarations are data/contract-only and cannot claim kernel, SCLite, carrier, credential, live execution, or product UX ownership.
 
-### 0.9.x — Multi-runtime contract proofs
+### 0.9.x — Runtime contract proofs
 
 Goal: demonstrate that the same kernel supports multiple domain runtimes without expanding authority.
 
-Planned work:
+Delivered in `0.9.0`:
 
-- Ravenclaw profile integration proof;
-- Tecrax dry-run infrastructure-change proof;
-- profile-to-SCLite review-bundle examples;
-- C2-style contract mapping, without new OODA surface:
-  - Commander's Intent -> operator/domain objective contract;
-  - ROE -> policy/scope/aggression constraints;
-  - Tasking Order -> task/plan contract;
-  - Control Measures -> ticket/runner bounds;
-  - SITREP -> runtime/queue/control snapshot;
-  - AAR -> receipt/evidence/review result;
-  - FRAGO -> controlled replan/change-order;
-- readiness packet for first carrier adapter, likely OpenClaw, only if boundaries are stable.
+- Ravenclaw profile integration proof over existing planning, supervision, runtime snapshot, review, and SCLite evidence references;
+- Tecrax dry-run/local-fixture infrastructure-change proof over the same contract flow;
+- neutral governance vocabulary:
+  - `objective` -> operator/domain objective contract;
+  - `policy_constraints` -> policy/scope/aggression constraints;
+  - `task_plan` -> task/plan contract;
+  - `runner_bounds` -> ticket/runner bounds;
+  - `runtime_snapshot` -> runtime/queue/control snapshot;
+  - `review_result` -> receipt/evidence/review result;
+  - `change_order` -> controlled replan/change-order.
+
+Remaining work for later `0.9.x` or `0.10.x`:
+
+- readiness packet for first carrier adapter, likely OpenClaw, only if boundaries are stable and adapter work remains outside the kernel.
 
 Definition of done:
 
 - at least two public-safe domain proofs use the same GovEngine/SCLite lifecycle;
 - carrier adapter work remains gated and does not bypass GovEngine.
-- the C2 mapping is implemented as contract vocabulary and validation examples, not marketing copy or a new command hierarchy.
+- the governance vocabulary is implemented as neutral contract vocabulary and validation examples, not marketing copy or a new command hierarchy.
 
 ## Domain profiles
 

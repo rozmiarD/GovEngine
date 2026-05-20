@@ -20,6 +20,7 @@ SURFACE_HEADINGS = {
     'Admission-policy core': 'admission_policy_core',
     'Evidence-review core': 'evidence_review_core',
     'Domain-profile SDK': 'domain_profile_sdk',
+    'Runtime contract proofs': 'runtime_contract_proofs',
     'Controlled-execution core': 'controlled_execution_core',
     'Optional security-profile helpers': 'security_profile_helpers',
 }
@@ -30,6 +31,7 @@ STATUS_MARKERS = {
     'admission_policy_core': 'Admission/policy contracts',
     'evidence_review_core': 'Evidence review contracts',
     'domain_profile_sdk': 'Domain profile SDK',
+    'runtime_contract_proofs': 'Runtime contract proofs',
     'controlled_execution_core': 'Controlled execution gate',
     'security_profile_helpers': 'Security profile',
 }

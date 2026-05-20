@@ -75,6 +75,7 @@ def test_public_surface_index_has_single_optional_security_profile() -> None:
         'admission_policy_core',
         'evidence_review_core',
         'domain_profile_sdk',
+        'runtime_contract_proofs',
         'controlled_execution_core',
         'security_profile_helpers',
     ]

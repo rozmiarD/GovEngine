@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.8.0'
+__version__ = '0.9.0'
 
 from .admission import (
     GovAdmissionDecision,
@@ -35,6 +35,15 @@ from .boundary import (
 )
 from .context import GovEngineContext, GovEnginePaths, ravenclaw_context
 from .control import ControlDecision, apply_control_decision, validate_control_decision
+from .contract_proofs import (
+    GovernanceVocabularyEntry,
+    RuntimeContractProof,
+    governance_contract_vocabulary,
+    ravenclaw_contract_proof,
+    tecrax_contract_proof,
+    validate_governance_contract_vocabulary,
+    validate_runtime_contract_proof,
+)
 from .core import (
     ArtifactDescriptor,
     ArtifactEnvelope,
@@ -138,7 +147,14 @@ from .security_profile import (
     security_profile_index,
     security_profile_module_names,
 )
-from .surfaces import GovSurface, admission_policy_surface, domain_profile_sdk_surface, public_surface_index, security_profile_surface
+from .surfaces import (
+    GovSurface,
+    admission_policy_surface,
+    domain_profile_sdk_surface,
+    public_surface_index,
+    runtime_contract_proofs_surface,
+    security_profile_surface,
+)
 
 __all__ = [
     'CapabilityDeclaration',
@@ -160,6 +176,7 @@ __all__ = [
     'GovEvidenceQualification',
     'GovEvidenceRequirement',
     'GovControlAction',
+    'GovernanceVocabularyEntry',
     'ArtifactChangeOrder',
     'ArtifactConflict',
     'ArtifactDescriptor',
@@ -204,6 +221,7 @@ __all__ = [
     'PolicyHookDeclaration',
     'ProfileConformanceReport',
     'ResourceTypeRegistry',
+    'RuntimeContractProof',
     'SecurityProfileGroup',
     'RunnerProfileDeclaration',
     'TaskFamilyRegistry',
@@ -234,6 +252,7 @@ __all__ = [
     'boundary_surface_index',
     'domain_profile_conformance',
     'domain_profile_sdk_surface',
+    'governance_contract_vocabulary',
     'import_security_profile_module',
     'kernel_boundary_contract',
     'kernel_boundary_report',
@@ -243,14 +262,17 @@ __all__ = [
     'qualify_evidence_claim',
     'queue_snapshot_from_lanes',
     'ravenclaw_context',
+    'ravenclaw_contract_proof',
     'ravenclaw_profile_contract',
     'ravenclaw_security_profile',
     'runner_lease_from_request',
+    'runtime_contract_proofs_surface',
     'security_profile_groups',
     'security_profile_index',
     'security_profile_module_names',
     'security_profile_surface',
     'supervision_plan_from_runner_request',
+    'tecrax_contract_proof',
     'tecrax_infra_ops_profile',
     'validate_admission_decision',
     'validate_approval_request',
@@ -265,6 +287,7 @@ __all__ = [
     'validate_evidence_requirement',
     'validate_event_envelope',
     'validate_gov_event',
+    'validate_governance_contract_vocabulary',
     'validate_orchestration_step',
     'task_contract_from_host_task',
     'validate_plan_intent_contract',
@@ -277,6 +300,7 @@ __all__ = [
     'validate_run_state',
     'validate_review_result',
     'validate_runtime_snapshot',
+    'validate_runtime_contract_proof',
     'validate_scheduler_tick',
     'validate_state_transition',
     'validate_supervised_runner_request',
