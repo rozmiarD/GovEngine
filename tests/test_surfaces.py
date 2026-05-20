@@ -3,6 +3,7 @@ from __future__ import annotations
 from govengine.surfaces import (
     artifact_governance_surface,
     controlled_execution_surface,
+    planning_contracts_surface,
     public_surface_index,
     security_profile_surface,
     surface_by_name,
@@ -14,6 +15,7 @@ def test_public_surface_index_names_core_before_optional_profile() -> None:
 
     assert [surface.name for surface in surfaces] == [
         'artifact_governance_core',
+        'planning_contracts_core',
         'controlled_execution_core',
         'security_profile_helpers',
     ]
@@ -33,19 +35,24 @@ def test_security_profile_is_explicitly_optional_and_does_not_own_core_gates() -
 
 def test_core_surfaces_keep_live_execution_and_adapter_non_claims() -> None:
     artifact = artifact_governance_surface()
+    planning = planning_contracts_surface()
     execution = controlled_execution_surface()
 
     assert artifact.optional_profile is False
+    assert planning.optional_profile is False
     assert execution.optional_profile is False
     assert 'govengine.boundary' in artifact.modules
     assert 'govengine.signing' in artifact.modules
     assert 'govengine.state_machine' in artifact.modules
+    assert 'govengine.planning' in planning.modules
     assert 'govengine.execution.gate' in execution.modules
     assert 'govengine.orchestration' in execution.modules
     assert 'govengine.events' in execution.modules
     assert 'govengine.control' in execution.modules
     assert 'govengine.runtime_shell' in execution.modules
     assert 'raw-intent execution' in execution.non_claims
+    assert 'planner implementation ownership' in planning.non_claims
+    assert 'raw target or prompt ownership' in planning.non_claims
     assert 'default live subprocess execution' in execution.non_claims
     assert 'protocol adapter ownership' in execution.non_claims
     assert 'runtime storage or scheduler ownership' in execution.non_claims
@@ -61,6 +68,7 @@ def test_surface_metadata_is_public_safe_and_lookup_is_strict() -> None:
         joined = repr(payload)
         assert all(fragment not in joined for fragment in forbidden_fragments)
 
+    assert surface_by_name('planning_contracts_core').name == 'planning_contracts_core'
     assert surface_by_name('controlled_execution_core').name == 'controlled_execution_core'
 
     try:

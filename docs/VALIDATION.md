@@ -53,6 +53,15 @@ Expected result for the `0.3.0` release line before upload:
 - Ravenclaw validates against the 0.3 wheel/package line with `scripts/validate_public_install.py` and focused state/control projection tests;
 - clean install from PyPI with `govengine==0.3.0` is required only after the operator-approved upload completes.
 
+Expected result for the current 0.4 planning-contract line:
+
+- full pytest passes in the source tree;
+- `python -m pip check` is clean;
+- import smoke checks include `govengine.planning`;
+- planning-contract tests validate `GovTaskContract`, `GovPlanIntentContract`, and `PlannerPort` shapes;
+- negative tests reject raw targets, raw prompts, commands, credentials, storage/scheduler/live-execution claims, and duplicate task-contract IDs;
+- no planner implementation, Ravenclaw security semantics, queue persistence, scheduler loop, adapter, credential store, runtime storage, live command, or live execution authority is introduced.
+
 ## What the focused tests cover
 
 Current tests cover:
@@ -78,6 +87,7 @@ Current tests cover:
 - transport-neutral governance event metadata without raw prompt, credential, live-command, carrier-delivery, or schedule payloads;
 - neutral run-state transitions and between-step control decisions without runtime storage, queue, scheduler, command, delivery, credential, or live-execution claims.
 - runtime-shell host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, scheduler, command, delivery, credential, carrier, or live-execution claims.
+- planning/task-contract validators without planner implementation, raw target/prompt, queue, scheduler, storage, command, carrier, credential, or live-execution claims.
 
 ## Ravenclaw consumption gate
 

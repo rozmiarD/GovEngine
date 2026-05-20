@@ -41,6 +41,7 @@ def test_public_modules_import() -> None:
         'govengine.execution.ticket_gate',
         'govengine.ooda',
         'govengine.orchestration',
+        'govengine.planning',
         'govengine.events',
         'govengine.control',
         'govengine.runtime_shell',

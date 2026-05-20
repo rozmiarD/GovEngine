@@ -14,7 +14,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 
 ## PyPI release notes
 
-- SCLite is published as the PyPI distribution `sclite-core`; GovEngine `0.3.0` depends on `sclite-core>=0.5.1,<0.6`; the previous published `0.2.0` and `0.1.7` releases also depended on `sclite-core>=0.5.1,<0.6`.
+- SCLite is published as the PyPI distribution `sclite-core`; GovEngine `0.4.0` depends on `sclite-core>=0.5.1,<0.6`; the previous published `0.3.0`, `0.2.0`, and `0.1.7` releases also depended on `sclite-core>=0.5.1,<0.6`.
 - Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
 - `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
 - `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.
@@ -22,6 +22,7 @@ GovEngine is published to PyPI as a pre-alpha package. Use this checklist for fu
 - `0.1.7` consumes `sclite-core>=0.5.1,<0.6` and adds thin SCLite review-bundle delegation for GovEngine integration fixtures while keeping adapters/live execution out of scope.
 - `0.2.0` is the kernel-boundary freeze line: boundary reports, domain-profile conformance, orchestration handoffs, governance events, run-state transitions, and between-step control decisions. It does not add live execution, queue/scheduler ownership, carrier adapters, runtime persistence, or credential handling.
 - `0.3.0` is the runtime-shell line: neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata. It does not add queue persistence, scheduler ownership, Logdash/UI ownership, carrier adapters, credentials, live commands, or live execution.
+- `0.4.0` is the planning-contracts line: neutral task-contract, plan-intent, and planner-port validators. It does not add planner implementation ownership, Ravenclaw security planning semantics, raw target/prompt ownership, queues, schedulers, storage, adapters, credentials, commands, or live execution.
 - API stability and non-claims should remain explicit because this is pre-1.0.
 
 ## Release order

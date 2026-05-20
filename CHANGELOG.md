@@ -4,6 +4,12 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## 0.4.0 - Planning/task contracts
+
+- Added `govengine.planning` with neutral `GovTaskContract`, `GovPlanIntentContract`, and `PlannerPort` validators for planner-to-runtime handoff shapes.
+- Added negative validation for raw targets, raw prompts, commands, credentials, storage/scheduler/live-execution claims, and duplicate task-contract IDs.
+- Added `planning_contracts_core` to the public surface registry while keeping Ravenclaw security planning semantics, planner implementation, queues, schedulers, adapters, commands, and live execution host-owned.
+
 ## 0.3.0 - Runtime state/control shell
 
 - Added `govengine.runtime_shell` with neutral control actions, queue lane/snapshot summaries, runtime snapshots, and scheduler tick metadata for host runtimes such as Ravenclaw.

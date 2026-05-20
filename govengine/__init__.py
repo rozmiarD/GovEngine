@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 
 from .api import GovApiError, GovApiResult
 from .boundary import (
@@ -44,6 +44,15 @@ from .orchestration import (
     OrchestratorBoundary,
     orchestrator_boundary_contract,
     validate_orchestration_step,
+)
+from .planning import (
+    GovPlanIntentContract,
+    GovTaskContract,
+    PlannerPort,
+    task_contract_from_host_task,
+    validate_plan_intent_contract,
+    validate_planner_port,
+    validate_task_contract,
 )
 from .roles import GovRoleAdapters
 from .runtime_shell import (
@@ -113,6 +122,7 @@ __all__ = [
     'GovOodaController',
     'GovOodaDecision',
     'GovOrientation',
+    'GovPlanIntentContract',
     'GovQueueLane',
     'GovQueueSnapshot',
     'GovRoleAdapters',
@@ -120,9 +130,11 @@ __all__ = [
     'GovRuntimeSnapshot',
     'GovSchedulerTick',
     'GovSurface',
+    'GovTaskContract',
     'KernelBoundary',
     'OrchestrationStep',
     'OrchestratorBoundary',
+    'PlannerPort',
     'SecurityProfileGroup',
     'FunctionalScopePort',
     'ReasonCode',
@@ -168,11 +180,15 @@ __all__ = [
     'validate_event_envelope',
     'validate_gov_event',
     'validate_orchestration_step',
+    'task_contract_from_host_task',
+    'validate_plan_intent_contract',
+    'validate_planner_port',
     'validate_queue_snapshot',
     'validate_run_state',
     'validate_runtime_snapshot',
     'validate_scheduler_tick',
     'validate_state_transition',
+    'validate_task_contract',
     'verify_lifecycle_manifest',
 ]
 
