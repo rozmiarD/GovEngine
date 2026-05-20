@@ -21,6 +21,7 @@ A domain profile contract is the host-facing declaration that lets a runtime con
 Current 0.2 boundary work allows profiles to consume:
 
 - `govengine_artifact_governance_core`;
+- `govengine_admission_policy_core`;
 - `govengine_controlled_execution_core`;
 - `govengine_security_profile_helpers`;
 - `sclite_lifecycle_artifacts`;
@@ -42,7 +43,7 @@ These remain outside profile ownership even when a profile has runtime code that
 
 ## Ravenclaw Compatibility
 
-The built-in Ravenclaw profile contract identifies Ravenclaw as a security-research host profile. It owns campaign/runtime semantics and Logdash/operator workflow language, while consuming GovEngine controlled-execution and optional security-profile helpers plus SCLite review bundles.
+The built-in Ravenclaw profile contract identifies Ravenclaw as a security-research host profile. It owns campaign/runtime semantics and Logdash/operator workflow language, while consuming GovEngine admission-policy, controlled-execution, and optional security-profile helpers plus SCLite review bundles.
 
 ## Tecrax Compatibility
 

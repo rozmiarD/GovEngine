@@ -53,7 +53,7 @@ Expected result for the `0.3.0` release line before upload:
 - Ravenclaw validates against the 0.3 wheel/package line with `scripts/validate_public_install.py` and focused state/control projection tests;
 - clean install from PyPI with `govengine==0.3.0` is required only after the operator-approved upload completes.
 
-Expected result for the current 0.4 planning-contract line:
+Expected result for the 0.4 planning-contract line:
 
 - full pytest passes in the source tree;
 - `python -m pip check` is clean;
@@ -61,6 +61,15 @@ Expected result for the current 0.4 planning-contract line:
 - planning-contract tests validate `GovTaskContract`, `GovPlanIntentContract`, and `PlannerPort` shapes;
 - negative tests reject raw targets, raw prompts, commands, credentials, storage/scheduler/live-execution claims, and duplicate task-contract IDs;
 - no planner implementation, Ravenclaw security semantics, queue persistence, scheduler loop, adapter, credential store, runtime storage, live command, or live execution authority is introduced.
+
+Expected result for the current 0.5 admission-policy line:
+
+- full pytest passes in the source tree;
+- `python -m pip check` is clean;
+- import smoke checks include `govengine.admission`;
+- admission-policy tests validate `GovAdmissionDecision`, `GovPolicyDecision`, `GovApprovalRequest`, and `GovAuditRecord` shapes;
+- negative tests reject raw targets, raw prompts, commands, credentials, carrier payloads, storage/scheduler/live-execution claims, and mismatched admission outcomes;
+- no profile policy engine, operator approval workflow, audit storage/retention, adapter, credential store, runtime storage, live command, or live execution authority is introduced.
 
 ## What the focused tests cover
 
@@ -80,7 +89,7 @@ Current tests cover:
 - signing/trust bridge decisions and deterministic demo signer/verifier ports without PKI/key ownership;
 - dry-run-only execution gates and default `DryRunRunner` behavior;
 - deconfliction/change-order and artifact state-index summaries;
-- public surface registry separation between artifact-governance core, controlled-execution core, and optional security-profile helpers;
+- public surface registry separation between artifact-governance core, planning contracts, admission-policy contracts, controlled-execution core, and optional security-profile helpers;
 - optional `govengine.security_profile` facade grouping, JSON-safe index output, allowlisted lazy imports, and boundary assertions;
 - kernel/profile/runtime/SCLite boundary contracts, boundary report, and domain-profile conformance checks;
 - deterministic orchestration handoff records without scheduler, UI, adapter, credential, or live-execution authority;
@@ -88,6 +97,7 @@ Current tests cover:
 - neutral run-state transitions and between-step control decisions without runtime storage, queue, scheduler, command, delivery, credential, or live-execution claims.
 - runtime-shell host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, scheduler, command, delivery, credential, carrier, or live-execution claims.
 - planning/task-contract validators without planner implementation, raw target/prompt, queue, scheduler, storage, command, carrier, credential, or live-execution claims.
+- admission/policy/approval/audit validators without profile policy meaning, approval workflow, audit storage/retention, raw target/prompt, queue, scheduler, storage, command, carrier, credential, or live-execution claims.
 
 ## Ravenclaw consumption gate
 

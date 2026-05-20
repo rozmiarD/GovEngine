@@ -5,8 +5,19 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.4.0'
+__version__ = '0.5.0'
 
+from .admission import (
+    GovAdmissionDecision,
+    GovApprovalRequest,
+    GovAuditRecord,
+    GovPolicyDecision,
+    admission_decision_from_host_gate,
+    validate_admission_decision,
+    validate_approval_request,
+    validate_audit_record,
+    validate_policy_decision,
+)
 from .api import GovApiError, GovApiResult
 from .boundary import (
     BoundaryReport,
@@ -87,7 +98,7 @@ from .security_profile import (
     security_profile_index,
     security_profile_module_names,
 )
-from .surfaces import GovSurface, public_surface_index, security_profile_surface
+from .surfaces import GovSurface, admission_policy_surface, public_surface_index, security_profile_surface
 
 __all__ = [
     'CommandResult',
@@ -95,8 +106,11 @@ __all__ = [
     'ControlDecision',
     'DomainProfileConformance',
     'DomainProfileContract',
+    'GovAdmissionDecision',
     'GovApiError',
     'GovApiResult',
+    'GovApprovalRequest',
+    'GovAuditRecord',
     'GovEngineContext',
     'GovEnginePaths',
     'GovControlAction',
@@ -123,6 +137,7 @@ __all__ = [
     'GovOodaDecision',
     'GovOrientation',
     'GovPlanIntentContract',
+    'GovPolicyDecision',
     'GovQueueLane',
     'GovQueueSnapshot',
     'GovRoleAdapters',
@@ -153,6 +168,8 @@ __all__ = [
     'TransitionPolicy',
     'TrustPolicy',
     'VerificationResult',
+    'admission_decision_from_host_gate',
+    'admission_policy_surface',
     'apply_control_decision',
     'control_action_from_host_action',
     'demo_sign_and_verify',
@@ -173,6 +190,9 @@ __all__ = [
     'security_profile_index',
     'security_profile_module_names',
     'security_profile_surface',
+    'validate_admission_decision',
+    'validate_approval_request',
+    'validate_audit_record',
     'validate_domain_profile_contract',
     'validate_domain_profile_conformance',
     'validate_control_decision',
@@ -183,6 +203,7 @@ __all__ = [
     'task_contract_from_host_task',
     'validate_plan_intent_contract',
     'validate_planner_port',
+    'validate_policy_decision',
     'validate_queue_snapshot',
     'validate_run_state',
     'validate_runtime_snapshot',
