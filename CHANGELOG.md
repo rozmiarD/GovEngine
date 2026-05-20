@@ -4,6 +4,12 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## 0.6.0 - Runner supervision contracts
+
+- Added `govengine.execution.supervision` with neutral `GovRunnerLease`, `GovSupervisionPlan`, and `GovSupervisionDecision` validators for bounded runner supervision.
+- Added request/receipt validation helpers that require approved-spec runner requests, matching receipts, and dry-run/default-deny live backend behavior.
+- Added negative validation for raw-intent runner requests, missing approved specs, missing receipts, live backend use without explicit enablement, and forbidden metadata claims.
+
 ## 0.5.0 - Admission, policy, approval, and audit contracts
 
 - Added `govengine.admission` with neutral `GovAdmissionDecision`, `GovPolicyDecision`, `GovApprovalRequest`, and `GovAuditRecord` validators for host runtime gate records.
