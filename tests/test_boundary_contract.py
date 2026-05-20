@@ -72,6 +72,7 @@ def test_boundary_surface_index_matches_public_surfaces() -> None:
 
     assert [surface['name'] for surface in surfaces] == [
         'artifact_governance_core',
+        'planning_contracts_core',
         'controlled_execution_core',
         'security_profile_helpers',
     ]
@@ -96,7 +97,7 @@ def test_kernel_boundary_report_is_machine_readable() -> None:
     assert payload['summary'] == {
         'profile_count': 1,
         'profile_conformance_passed': 1,
-        'surface_count': 3,
+        'surface_count': 4,
         'forbidden_profile_ownership_count': 5,
     }
     assert payload['profiles'][0]['name'] == 'ravenclaw'

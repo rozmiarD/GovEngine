@@ -96,6 +96,26 @@ def controlled_execution_surface() -> GovSurface:
     )
 
 
+def planning_contracts_surface() -> GovSurface:
+    return GovSurface(
+        name='planning_contracts_core',
+        status='pre_alpha_tested',
+        modules=_tuple((
+            'govengine.planning',
+        )),
+        claim=(
+            'Neutral task-contract, plan-intent, and planner-port validators for hosts that need '
+            'planner-to-runtime handoff shapes without moving domain planning semantics into GovEngine.'
+        ),
+        non_claims=_tuple((
+            'planner implementation ownership',
+            'Ravenclaw security planning semantics ownership',
+            'raw target or prompt ownership',
+            'queue, scheduler, storage, adapter, command, or live-execution ownership',
+        )),
+    )
+
+
 def security_profile_surface() -> GovSurface:
     return GovSurface(
         name='security_profile_helpers',
@@ -132,6 +152,7 @@ def security_profile_surface() -> GovSurface:
 def public_surface_index() -> Tuple[GovSurface, ...]:
     return (
         artifact_governance_surface(),
+        planning_contracts_surface(),
         controlled_execution_surface(),
         security_profile_surface(),
     )

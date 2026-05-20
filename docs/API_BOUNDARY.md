@@ -10,6 +10,7 @@ GovEngine owns reusable governed-execution services. Its public surface should s
 `govengine.state_machine.validate_state_transition()` checks neutral run-state transitions without accepting runtime storage, scheduler, credential, command, or live-execution claims.
 `govengine.control.validate_control_decision()` checks deterministic between-step control decisions and delegates legal state changes to the state machine without accepting raw prompts, commands, schedulers, runtime storage, delivery, or live-execution claims.
 `govengine.runtime_shell.validate_runtime_snapshot()` checks host-provided control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without accepting raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
+`govengine.planning.validate_task_contract()` and `validate_plan_intent_contract()` check neutral planner-to-runtime handoff shapes without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 
 ## Public surface groups
 
@@ -42,6 +43,14 @@ Neutral controlled-execution modules:
 
 Claim: approved-spec, execution-ticket, command-shape, runner receipt, OODA, orchestration handoff, event envelope, control-decision, runtime-shell projection, and dry-run-only execution-gate helpers. Non-claims: raw-intent execution, default live subprocess execution, scanner/campaign execution ownership, protocol adapter ownership, runtime storage ownership, or scheduler ownership.
 
+### Planning-contracts core
+
+Neutral planning-contract modules:
+
+- `govengine.planning`
+
+Claim: neutral task-contract, plan-intent, and planner-port validators that hosts can use for planner-to-runtime handoff review. Non-claims: planner implementation ownership, Ravenclaw security planning semantics ownership, raw target/prompt ownership, queue/scheduler/storage ownership, protocol adapter ownership, command authority, or live execution.
+
 ### Optional security-profile helpers
 
 Security-oriented helpers are explicit optional profile modules, not the neutral artifact-governance core:
@@ -70,6 +79,7 @@ GovEngine owns:
 - `govengine.state_machine` — neutral run-state and transition validation without persistence, queue, scheduler, credential, or live-execution authority.
 - `govengine.control` — deterministic between-step control decisions that can apply validated in-memory state transitions without storage, scheduler, delivery, command, or live-execution authority.
 - `govengine.runtime_shell` — neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, scheduler, delivery, command, credential, carrier, or live-execution authority.
+- `govengine.planning` — neutral task-contract, plan-intent, and planner-port validators without planner implementation, raw target/prompt, queue/scheduler/storage, command, credential, adapter, or live-execution authority.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
 - `govengine.signing` — signature envelopes, signing/trust policy objects, host-provided signer/verifier ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
 - `govengine.security_profile` — optional security-profile facade for helper discovery, grouped metadata, allowlisted lazy imports, and boundary assertions.

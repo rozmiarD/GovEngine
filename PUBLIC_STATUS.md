@@ -7,7 +7,7 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Version: `0.3.0`.
+- Version: `0.4.0`.
 - SCLite integration: present through helper seams via `sclite-core>=0.5.1,<0.6`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.
@@ -15,6 +15,7 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - State machine: initial `govengine.state_machine` contracts define neutral run-state transitions without persistence, queue, scheduler, credential, command, or live-execution authority.
 - Control model: initial `govengine.control` decisions define deterministic between-step control and validated state-machine delegation without storage, scheduler, delivery, command, credential, or live-execution authority.
 - Runtime shell: `govengine.runtime_shell` defines neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, queue persistence, scheduler ownership, delivery, command, credential, or live-execution authority.
+- Planning contracts: `govengine.planning` defines neutral task-contract, plan-intent, and planner-port validators without planner implementation ownership, raw target/prompt ownership, Ravenclaw security semantics ownership, queue/scheduler/storage ownership, commands, adapters, or live execution.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
 - Core artifact governance boundaries: initial portable dataclasses for artifact descriptors/envelopes/state, governance context, transition decisions, and execution prerequisites.
@@ -22,12 +23,12 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Artifact lifecycle controller: initial transition policy/gate/controller for ordered lifecycle transitions and blocker/next-action reporting.
 - Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, transition-decision helpers, and unreleased deterministic demo signer/verifier ports without PKI/key ownership.
 - Controlled execution gate: initial dry-run-only execution gate and default `DryRunRunner`; live requests are blocked by default.
-- Public surface registry: tested `govengine.surfaces` metadata separates neutral artifact-governance core, controlled-execution core, and optional security-profile helpers.
+- Public surface registry: tested `govengine.surfaces` metadata separates neutral artifact-governance core, planning-contracts core, controlled-execution core, and optional security-profile helpers.
 - Security profile: action/tool/scope/policy/signal helpers are available through the optional `govengine.security_profile` facade for host-facing discovery, not as the neutral core.
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `0.2.0`; each new release still requires the standard release checklist and operator approval before upload.
+- PyPI publication: completed through `0.3.0`; each new release still requires the standard release checklist and operator approval before upload.
 
 ## What is public-safe today
 
@@ -40,6 +41,7 @@ GovEngine can be reviewed as a small Python package for:
 - dry-run-only controlled execution gate helpers and default dry-run runner;
 - artifact deconfliction/change-order and state-index summaries;
 - public surface metadata for current pre-alpha API boundary review;
+- neutral planning/task contract validators for hosts that need a planner-to-runtime handoff without moving domain planning semantics into GovEngine;
 - a security-profile facade that groups optional action/tooling, policy/scope, and review-contract helpers behind one tested entrypoint;
 - governed action/spec validation helpers as optional security-profile helpers;
 - policy and scope helper seams as optional security-profile helpers;
