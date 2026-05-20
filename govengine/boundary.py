@@ -50,6 +50,7 @@ FORBIDDEN_PROFILE_OWNERSHIP = (
 ALLOWED_PROFILE_CONSUMES = (
     'govengine_artifact_governance_core',
     'govengine_admission_policy_core',
+    'govengine_evidence_review_core',
     'govengine_controlled_execution_core',
     'govengine_security_profile_helpers',
     'sclite_lifecycle_artifacts',
@@ -213,6 +214,7 @@ def ravenclaw_profile_contract() -> DomainProfileContract:
         ),
         consumes=(
             'govengine_admission_policy_core',
+            'govengine_evidence_review_core',
             'govengine_controlled_execution_core',
             'govengine_security_profile_helpers',
             'sclite_review_bundles',

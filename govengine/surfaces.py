@@ -138,6 +138,26 @@ def admission_policy_surface() -> GovSurface:
     )
 
 
+def evidence_review_surface() -> GovSurface:
+    return GovSurface(
+        name='evidence_review_core',
+        status='pre_alpha_tested',
+        modules=_tuple((
+            'govengine.review',
+        )),
+        claim=(
+            'Neutral evidence requirement, claim, qualification, and review-result validators for hosts '
+            'that need receipt-bounded evidence review without moving domain finding semantics into GovEngine.'
+        ),
+        non_claims=_tuple((
+            'SCLite review-bundle verdict ownership',
+            'Ravenclaw finding taxonomy ownership',
+            'raw evidence storage ownership',
+            'raw target, output, command, credential, adapter, storage, or live-execution ownership',
+        )),
+    )
+
+
 def security_profile_surface() -> GovSurface:
     return GovSurface(
         name='security_profile_helpers',
@@ -176,6 +196,7 @@ def public_surface_index() -> Tuple[GovSurface, ...]:
         artifact_governance_surface(),
         planning_contracts_surface(),
         admission_policy_surface(),
+        evidence_review_surface(),
         controlled_execution_surface(),
         security_profile_surface(),
     )

@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.6.0'
+__version__ = '0.7.0'
 
 from .admission import (
     GovAdmissionDecision,
@@ -78,6 +78,17 @@ from .planning import (
     validate_task_contract,
 )
 from .roles import GovRoleAdapters
+from .review import (
+    GovEvidenceClaim,
+    GovEvidenceQualification,
+    GovEvidenceRequirement,
+    GovReviewResult,
+    qualify_evidence_claim,
+    validate_evidence_claim,
+    validate_evidence_qualification,
+    validate_evidence_requirement,
+    validate_review_result,
+)
 from .runtime_shell import (
     GovControlAction,
     GovQueueLane,
@@ -125,6 +136,9 @@ __all__ = [
     'GovAuditRecord',
     'GovEngineContext',
     'GovEnginePaths',
+    'GovEvidenceClaim',
+    'GovEvidenceQualification',
+    'GovEvidenceRequirement',
     'GovControlAction',
     'ArtifactChangeOrder',
     'ArtifactConflict',
@@ -152,6 +166,7 @@ __all__ = [
     'GovPolicyDecision',
     'GovQueueLane',
     'GovQueueSnapshot',
+    'GovReviewResult',
     'GovRoleAdapters',
     'GovRunnerLease',
     'GovRunState',
@@ -198,6 +213,7 @@ __all__ = [
     'known_profile_contracts',
     'orchestrator_boundary_contract',
     'public_surface_index',
+    'qualify_evidence_claim',
     'queue_snapshot_from_lanes',
     'ravenclaw_context',
     'ravenclaw_profile_contract',
@@ -214,6 +230,9 @@ __all__ = [
     'validate_domain_profile_conformance',
     'validate_control_decision',
     'validate_control_action',
+    'validate_evidence_claim',
+    'validate_evidence_qualification',
+    'validate_evidence_requirement',
     'validate_event_envelope',
     'validate_gov_event',
     'validate_orchestration_step',
@@ -225,6 +244,7 @@ __all__ = [
     'validate_runner_lease',
     'validate_runner_receipt_for_request',
     'validate_run_state',
+    'validate_review_result',
     'validate_runtime_snapshot',
     'validate_scheduler_tick',
     'validate_state_transition',

@@ -4,6 +4,12 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## 0.7.0 - Evidence review contracts
+
+- Added `govengine.review` with neutral `GovEvidenceRequirement`, `GovEvidenceClaim`, `GovEvidenceQualification`, and `GovReviewResult` validators.
+- Added receipt-bounded claim qualification that rejects live vulnerability claims when the supporting receipt is only dry-run.
+- Added `evidence_review_core` to the public surface registry while keeping SCLite review-bundle verdicts, Ravenclaw finding taxonomy, raw evidence storage, adapters, commands, and live execution host-owned.
+
 ## 0.6.0 - Runner supervision contracts
 
 - Added `govengine.execution.supervision` with neutral `GovRunnerLease`, `GovSupervisionPlan`, and `GovSupervisionDecision` validators for bounded runner supervision.
