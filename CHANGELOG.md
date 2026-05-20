@@ -4,6 +4,12 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## 0.9.0 - Runtime contract proofs
+
+- Added `govengine.contract_proofs` with public-safe Ravenclaw and Tecrax runtime proof fixtures over existing planning, supervision, runtime snapshot, review, and change-order contracts.
+- Added neutral governance vocabulary entries for objective, policy constraints, task plan, runner bounds, runtime snapshot, review result, and change order without changing neutral public API naming.
+- Added `runtime_contract_proofs` to the public surface registry while keeping adapters, credentials, schedulers, storage, live execution, and new OODA surfaces out of scope.
+
 ## 0.8.0 - Minimal Domain Profile SDK
 
 - Added `govengine.profiles` with contract-only `DomainProfile`, registry, capability, runner-profile, policy-hook, evidence-rule, and conformance-report declarations.

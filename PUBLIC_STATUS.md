@@ -7,7 +7,7 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Source version: `0.8.0`.
+- Source version: `0.9.0`.
 - Latest published PyPI release before this source line: `0.7.0`.
 - SCLite integration: present through helper seams via `sclite-core>=0.5.1,<0.6`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
@@ -20,6 +20,7 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Admission/policy contracts: `govengine.admission` defines neutral admission, policy-decision, approval-request, and audit-record validators without domain policy meaning, approval workflow, audit storage, adapter, command, or live-execution ownership.
 - Evidence review contracts: `govengine.review` defines neutral evidence requirements, claims, qualifications, and review results without SCLite verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage, adapter, command, or live-execution ownership.
 - Domain profile SDK: `govengine.profiles` defines contract-only domain profile declarations, registries, fixture profiles, and conformance reports without domain taxonomy ownership, adapters, credentials, live execution, or product UX.
+- Runtime contract proofs: `govengine.contract_proofs` defines public-safe Ravenclaw/Tecrax proof fixtures and neutral governance vocabulary over existing GovEngine contracts without adapters, credentials, live execution, schedulers, storage, or new OODA surface.
 - Public truth gate: `scripts/validate_public_truth.py` checks version/dependency/status/surface consistency across package metadata and public docs.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
@@ -28,12 +29,12 @@ GovEngine is a **pre-alpha governed-runtime kernel package** extracted from Rave
 - Artifact lifecycle controller: initial transition policy/gate/controller for ordered lifecycle transitions and blocker/next-action reporting.
 - Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, transition-decision helpers, and unreleased deterministic demo signer/verifier ports without PKI/key ownership.
 - Controlled execution gate: initial dry-run-only execution gate and default `DryRunRunner`; live requests are blocked by default.
-- Public surface registry: tested `govengine.surfaces` metadata separates neutral artifact-governance core, planning-contracts core, admission-policy core, evidence-review core, domain-profile SDK, controlled-execution core, and optional security-profile helpers.
+- Public surface registry: tested `govengine.surfaces` metadata separates neutral artifact-governance core, planning-contracts core, admission-policy core, evidence-review core, domain-profile SDK, runtime contract proofs, controlled-execution core, and optional security-profile helpers.
 - Security profile: action/tool/scope/policy/signal helpers are available through the optional `govengine.security_profile` facade for host-facing discovery, not as the neutral core.
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `0.7.0`; this source tree prepares `0.8.0` as a contract-only Domain Profile SDK line and still requires the standard release checklist and operator approval before upload.
+- PyPI publication: completed through `0.7.0`; this source tree prepares `0.9.0` as a runtime contract proof line and still requires the standard release checklist and operator approval before upload.
 
 ## What is public-safe today
 
@@ -48,6 +49,7 @@ GovEngine can be reviewed as a small Python package for:
 - public surface metadata for current pre-alpha API boundary review;
 - neutral planning/task contract validators for hosts that need a planner-to-runtime handoff without moving domain planning semantics into GovEngine;
 - contract-only domain profile declarations and conformance reports for Ravenclaw and a Tecrax dry-run/local-fixture skeleton;
+- public-safe runtime contract proof fixtures that show Ravenclaw and Tecrax using the same neutral GovEngine/SCLite contract flow;
 - a security-profile facade that groups optional action/tooling, policy/scope, and review-contract helpers behind one tested entrypoint;
 - governed action/spec validation helpers as optional security-profile helpers;
 - policy and scope helper seams as optional security-profile helpers;

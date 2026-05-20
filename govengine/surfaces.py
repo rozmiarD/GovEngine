@@ -182,6 +182,28 @@ def domain_profile_sdk_surface() -> GovSurface:
     )
 
 
+def runtime_contract_proofs_surface() -> GovSurface:
+    return GovSurface(
+        name='runtime_contract_proofs',
+        status='pre_alpha_contract_examples',
+        modules=_tuple((
+            'govengine.contract_proofs',
+        )),
+        claim=(
+            'Public-safe Ravenclaw and Tecrax runtime contract-proof fixtures plus neutral governance vocabulary '
+            'over existing planning, supervision, runtime snapshot, review, and change-order contracts.'
+        ),
+        non_claims=_tuple((
+            'new OODA surface',
+            'carrier adapter ownership',
+            'default live subprocess execution',
+            'domain runtime ownership',
+            'credential, PKI, KMS, or key-store ownership',
+            'planner, scheduler, queue, or storage ownership',
+        )),
+    )
+
+
 def security_profile_surface() -> GovSurface:
     return GovSurface(
         name='security_profile_helpers',
@@ -222,6 +244,7 @@ def public_surface_index() -> Tuple[GovSurface, ...]:
         admission_policy_surface(),
         evidence_review_surface(),
         domain_profile_sdk_surface(),
+        runtime_contract_proofs_surface(),
         controlled_execution_surface(),
         security_profile_surface(),
     )
