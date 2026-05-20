@@ -87,6 +87,13 @@ Expected result for the current 0.6 runner-supervision line:
 - negative tests reject raw-intent runner requests, missing approved specs, missing receipts, live backend use without explicit enablement, and forbidden metadata claims;
 - no live subprocess backend, lease persistence, scheduler loop, carrier adapter, credential store, runtime storage, or live execution authority is introduced.
 
+Expected result for the `0.6.0` release line:
+
+- `python -m build` creates `govengine-0.6.0` sdist/wheel artifacts;
+- `python -m twine check dist/*` passes;
+- clean wheel install reports `govengine.__version__ == 0.6.0`, distribution version `0.6.0`, `sclite-core==0.5.1`, import checks for `govengine.execution.supervision` pass, and `pip check` is clean;
+- clean install from PyPI with `govengine==0.6.0` reports `govengine.__version__ == 0.6.0`, distribution version `0.6.0`, `sclite-core==0.5.1`, `GovSupervisionPlan` import/use succeeds, and `pip check` is clean.
+
 ## What the focused tests cover
 
 Current tests cover:
