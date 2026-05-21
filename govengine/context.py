@@ -55,7 +55,7 @@ class GovEngineContext:
 
 
 def discover_repo_root(start: Path) -> Path:
-    """Find a Ravenclaw-style repository root from a file/directory anchor."""
+    """Find a compatibility host repository root from a file/directory anchor."""
 
     current = start.resolve()
     if current.is_file():
@@ -68,13 +68,20 @@ def discover_repo_root(start: Path) -> Path:
     return current
 
 
-def ravenclaw_context(root: Path | None = None) -> GovEngineContext:
-    """Build the Ravenclaw compatibility context explicitly.
+def host_compat_context(root: Path | None = None, *, profile: str = 'host_compat') -> GovEngineContext:
+    """Build a filesystem context for optional host-compatibility helpers.
 
-    This is a compatibility profile, not a GovEngine core dependency on
-    Ravenclaw environment variables.
+    The neutral kernel should receive host paths explicitly. This discovery path
+    remains for optional helper modules that still need package-in-place
+    compatibility with host repositories while that surface is narrowed.
     """
 
     anchor = root if root is not None else Path(__file__).resolve()
     repo_root = discover_repo_root(anchor)
-    return GovEngineContext(paths=GovEnginePaths.from_root(repo_root), profile='ravenclaw')
+    return GovEngineContext(paths=GovEnginePaths.from_root(repo_root), profile=profile)
+
+
+def ravenclaw_context(root: Path | None = None) -> GovEngineContext:
+    """Build the retained Ravenclaw compatibility alias explicitly."""
+
+    return host_compat_context(root, profile='ravenclaw')

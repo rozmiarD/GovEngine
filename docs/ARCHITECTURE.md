@@ -102,6 +102,8 @@ Modules:
 Purpose:
 
 - let a host runtime provide paths, scope, and state surfaces explicitly;
+- retain `host_compat_context()` only for optional package-in-place helper
+  compatibility while hosts move to explicit path/context injection;
 - avoid hard dependencies on Ravenclaw internals;
 - support standalone import and package testing.
 

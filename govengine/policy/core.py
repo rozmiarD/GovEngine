@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from govengine.context import ravenclaw_context
+from govengine.context import host_compat_context
 
-_CONTEXT = ravenclaw_context(Path(__file__))
 from typing import Any, Dict, Iterable, List, Tuple
 import yaml
 
 from govengine.tool_registry import get_execution_allowed_tools, get_planner_visible_tools, get_tool_catalog
 
+_CONTEXT = host_compat_context(Path(__file__))
 
 DEFAULT_ALLOWED_TOOLS = {"curl", "ffuf", "nmap", "gobuster", "nikto", "sqlmap"}
 DEFAULT_BRAIN_ALLOWED_TOOLS = (
