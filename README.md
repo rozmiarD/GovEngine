@@ -72,7 +72,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 
 ## Current status
 
-GovEngine is an **alpha 0.10.0a0 (`0.10.0-alpha`) helper package**. The package is importable, tested, package-buildable, and validated against the Ravenclaw public downstream contract surface. The active dependency line is `sclite-core>=0.5.1,<0.6`. The `0.10.x` line contains neutral artifact governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review contracts, a minimal contract-only Domain Profile SDK, and runtime contract proof fixtures plus optional security-profile helpers. Historical lines from `0.1.x` through `0.9.0` are documented in `CHANGELOG.md`; current status docs should treat `0.10.0a0` as the source baseline and `0.7.0` as the latest already-published PyPI release until the operator-approved release is uploaded.
+GovEngine is an **alpha 0.10.0a0 (`0.10.0-alpha`) helper package**. The package is importable, tested, package-buildable, and validated against the Ravenclaw public downstream contract surface. The active dependency line is `sclite-core>=0.5.1,<0.6`. The `0.10.x` line contains neutral artifact governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review contracts, a minimal contract-only Domain Profile SDK, and runtime contract proof fixtures plus optional security-profile helpers. Historical lines from `0.1.x` through `0.9.0` are documented in `CHANGELOG.md`; current status docs should treat `0.10.0a0` as both the source baseline and the current PyPI alpha release.
 
 ## Installation
 
