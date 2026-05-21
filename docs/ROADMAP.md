@@ -83,7 +83,9 @@ The next alpha hygiene gate is narrower than a new feature wave: neutral public
 surfaces must not embed Ravenclaw host context or `RAVENCLAW_*` configuration
 assumptions. The optional `security_profile_helpers` surface is compatibility
 scaffolding for Ravenclaw-derived helpers and should contract over time as
-profile-owned tool, policy, and UX semantics settle in their runtime. New
+profile-owned tool, policy, and UX semantics settle in their runtime. Its
+planner-profile environment default is now the neutral `GOVENGINE_TOOL_PROFILES`;
+the old Ravenclaw-named variable remains only as a compatibility fallback. New
 neutral extraction should land in the typed core/profile surfaces only when the
 code and a second host prove it there.
 
@@ -363,7 +365,8 @@ Next `0.10.x` consolidation work:
 2. narrow `security_profile_helpers` to compatibility-only residue by moving
    security meaning, demo narration, tool discovery, and profile-specific
    validation back to Ravenclaw when they no longer require GovEngine-owned
-   mechanics;
+   mechanics, with neutral configuration names where compatibility helpers
+   remain;
 3. split any remaining Ravenclaw-named helper from neutral core only after an
    import graph test and downstream compatibility test prove the split;
 4. improve host conformance and proof tests before adding a new contract family;
