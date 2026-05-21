@@ -10,6 +10,8 @@ python -m pytest -q
 python -m pip check
 ```
 
+GitHub Actions source validation installs the current SCLite source line before the editable GovEngine test dependency set. That keeps coordinated prerelease CI independent of package-index propagation timing; clean wheel and PyPI install gates below still validate the published dependency chain.
+
 Historical expected result for the published `0.1.7` source line:
 
 - standalone pytest suite passes (`72 passed` in the `0.1.7` source tree);

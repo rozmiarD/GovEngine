@@ -149,6 +149,7 @@ def main() -> int:
     publishing = _read('PUBLISHING.md')
     validation = _read('docs/VALIDATION.md')
     api_boundary = _read('docs/API_BOUNDARY.md')
+    workflow = _read('.github/workflows/pytest.yml')
 
     _assert_contains('README.md', readme, f'alpha {version}')
     _assert_contains('README.md', readme, release_label)
@@ -161,6 +162,11 @@ def main() -> int:
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
     _assert_contains('docs/VALIDATION.md', validation, f'current `{version}` source line')
+    _assert_contains(
+        '.github/workflows/pytest.yml',
+        workflow,
+        'sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main',
+    )
 
     documented = _documented_surface_names(api_boundary)
     if documented != surface_names:
