@@ -91,7 +91,7 @@ def _assert_no_current_stale_status(paths: Iterable[str], version: str) -> None:
     del version
     stale_current = re.compile(
         r'(current|Current|source baseline|Source version|Version:|PyPI publication: completed through)'
-        r'.{0,80}`?(0\.1\.6|0\.1\.7|0\.2\.0|0\.3\.0|0\.4\.0|0\.5\.0|0\.6\.0)`?',
+        r'.{0,80}`?(0\.1\.6|0\.1\.7|0\.2\.0|0\.3\.0|0\.4\.0|0\.5\.0|0\.6\.0(?!a0))`?',
         flags=re.MULTILINE,
     )
     for path in paths:
@@ -135,7 +135,7 @@ def _assert_alpha_maturity_truth(paths: Iterable[str]) -> None:
 def main() -> int:
     project = _pyproject()['project']
     version = str(project['version'])
-    release_label = '0.10.0-alpha' if version == '0.10.0a0' else version
+    release_label = '0.10.1-alpha' if version == '0.10.1a0' else version
     dependency = _project_dependency(project, 'sclite-core')
     surfaces = public_surface_index()
     surface_names = [surface.name for surface in surfaces]

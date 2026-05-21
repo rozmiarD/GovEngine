@@ -21,7 +21,7 @@ Historical expected result for the published `0.1.7` source line:
 - no Ravenclaw runtime or Logdash process is started;
 - demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness; scoped-ticket use-gate tests prove SCLite receipt/evidence bounds delegation, and review-bundle tests prove GovEngine delegates pass/fail verdicts to SCLite `0.5.1`, not live runtime enforcement.
 
-Expected result for the current `0.10.0a0` source line (`0.10.0-alpha`):
+Expected result for the current `0.10.1a0` source line (`0.10.1-alpha`):
 
 - full pytest passes in the source tree;
 - `python -m pip check` is clean;
