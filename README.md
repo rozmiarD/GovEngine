@@ -1,14 +1,14 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine](https://img.shields.io/pypi/v/govengine?label=package%3A%20govengine&color=blueviolet)](https://pypi.org/project/govengine/)
+[![Package: govengine 0.10.0a0](https://img.shields.io/badge/package-govengine%200.10.0a0-blueviolet.svg)](https://pypi.org/project/govengine/0.10.0a0/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Dependency: SCLite >=0.5.1](https://img.shields.io/badge/dependency-SCLite%20%3E%3D0.5.1-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
 GovEngine is a carrier-agnostic deterministic governed-runtime kernel for portable artifact governance and policy-gated controlled execution.
 
-It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, dry-run result assembly, and neutral runtime/control projections. Security-oriented action/tool/scope/signal helpers remain available as an optional profile for hosts such as Ravenclaw, not as the neutral core itself.
+It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, dry-run result assembly, and neutral runtime/control projections. Security-oriented action/tool/scope/signal helpers remain available as optional Ravenclaw-derived compatibility helpers, not as the neutral core itself.
 
 
 ## Why it exists
@@ -40,7 +40,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 ## What GovEngine includes now
 
 - a public surface registry that separates neutral artifact-governance core, controlled-execution core, and optional security-profile helpers;
-- an explicit `govengine.security_profile` facade for optional security-profile helper discovery;
+- an explicit `govengine.security_profile` compatibility facade for optional Ravenclaw-derived helper discovery;
 - serializable kernel/profile/runtime/SCLite boundary contracts and a machine-readable boundary report;
 - execution-contract shaping/redaction helpers;
 - artifact descriptor/state/transition boundary helpers;
@@ -55,7 +55,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 - neutral runtime-shell contracts for host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata;
 - neutral planning contracts for task, plan-intent, and planner-port handoffs;
 - neutral admission, policy, approval, and audit contracts for host runtime gates;
-- optional security-profile helpers for action schema/validation/compilation, capability recipes, tool registry, semantic-loss policy, scope checks, policy gateway, and signal/analysis/evidence-confirmation contracts;
+- optional compatibility helpers for action schema/validation/compilation, capability recipes, tool registry, semantic-loss policy, scope checks, policy gateway, and signal/analysis/evidence-confirmation contracts;
 - explicit SCLite integration seams;
 - focused standalone pytest coverage and GitHub Actions CI.
 
@@ -76,10 +76,10 @@ GovEngine is an **alpha 0.10.0a0 (`0.10.0-alpha`) helper package**. The package 
 
 ## Installation
 
-Install the current public package from PyPI:
+Install the current public alpha package from PyPI with an exact version pin:
 
 ```bash
-python -m pip install govengine
+python -m pip install govengine==0.10.0a0
 ```
 
 GovEngine depends on the PyPI distribution `sclite-core` while preserving the Python import package `sclite`.
