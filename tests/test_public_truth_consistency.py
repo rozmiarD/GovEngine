@@ -30,3 +30,17 @@ def test_alpha_readiness_validator_passes() -> None:
     )
 
     assert result.stdout.strip().startswith('alpha_readiness_ok:govengine==0.10.0a0:')
+
+
+def test_current_public_docs_do_not_reintroduce_pre_alpha_maturity_claims() -> None:
+    stale_markers = ('currently pre-alpha', 'current pre-alpha', 'pre-alpha form')
+    for relative in (
+        'README.md',
+        'PUBLIC_STATUS.md',
+        'SECURITY.md',
+        'docs/ARCHITECTURE.md',
+        'docs/API_BOUNDARY.md',
+        'docs/ROADMAP.md',
+    ):
+        text = (ROOT / relative).read_text(encoding='utf-8').lower()
+        assert not any(marker in text for marker in stale_markers), relative

@@ -44,7 +44,7 @@ Historical expected result for the 0.2 kernel-boundary line:
 - the public surface registry and `kernel_boundary_report()` agree that boundary, orchestration, event, state-machine, and control helpers are metadata/contracts only;
 - no queue, scheduler, carrier adapter, credential store, runtime persistence, live command, or live execution authority is introduced.
 
-Expected result for the `0.2.0` release line:
+Historical expected result for the `0.2.0` release line:
 
 - `python -m build` creates `govengine-0.2.0` sdist/wheel artifacts;
 - `python -m twine check dist/*` passes;
@@ -60,7 +60,7 @@ Historical expected result for the 0.3 runtime-shell line:
 - negative tests reject raw intent, commands, schedules, storage, credentials, carrier payloads, and live-execution claims;
 - no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced.
 
-Expected result for the `0.3.0` release line before upload:
+Historical expected result for the `0.3.0` release line before upload:
 
 - `python -m build` creates `govengine-0.3.0` sdist/wheel artifacts;
 - `python -m twine check dist/*` passes;
@@ -86,7 +86,7 @@ Historical expected result for the 0.5 admission-policy line:
 - negative tests reject raw targets, raw prompts, commands, credentials, carrier payloads, storage/scheduler/live-execution claims, and mismatched admission outcomes;
 - no profile policy engine, operator approval workflow, audit storage/retention, adapter, credential store, runtime storage, live command, or live execution authority is introduced.
 
-Expected result for the `0.5.0` release line:
+Historical expected result for the `0.5.0` release line:
 
 - `python -m build` creates `govengine-0.5.0` sdist/wheel artifacts;
 - `python -m twine check dist/*` passes;
@@ -102,7 +102,7 @@ Historical expected result for the 0.6 runner-supervision line:
 - negative tests reject raw-intent runner requests, missing approved specs, missing receipts, live backend use without explicit enablement, and forbidden metadata claims;
 - no live subprocess backend, lease persistence, scheduler loop, carrier adapter, credential store, runtime storage, or live execution authority is introduced.
 
-Expected result for the `0.6.0` release line:
+Historical expected result for the `0.6.0` release line:
 
 - `python -m build` creates `govengine-0.6.0` sdist/wheel artifacts;
 - `python -m twine check dist/*` passes;
@@ -139,7 +139,7 @@ Current tests cover:
 - runner-supervision validators without live backend ownership, lease persistence, raw intent, scheduler, storage, carrier, credential, or concrete execution claims.
 - evidence-review validators without SCLite review verdict ownership, Ravenclaw finding taxonomy, raw output/evidence storage, target/prompt, command, carrier, credential, or live-execution claims.
 
-Expected result for the `0.7.0` release line:
+Historical expected result for the `0.7.0` release line:
 
 - `python -m build` creates `govengine-0.7.0` sdist/wheel artifacts;
 - `python -m twine check dist/*` passes;

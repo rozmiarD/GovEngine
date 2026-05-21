@@ -37,6 +37,15 @@ STATUS_MARKERS = {
     'security_profile_helpers': 'Security profile',
 }
 
+CURRENT_ALPHA_DOCS = (
+    'README.md',
+    'PUBLIC_STATUS.md',
+    'SECURITY.md',
+    'docs/ARCHITECTURE.md',
+    'docs/API_BOUNDARY.md',
+    'docs/ROADMAP.md',
+)
+
 
 def _read(path: str) -> str:
     return (ROOT / path).read_text(encoding='utf-8')
@@ -89,6 +98,18 @@ def _assert_no_current_stale_status(paths: Iterable[str], version: str) -> None:
         text = _read(path)
         for match in stale_current.finditer(text):
             raise AssertionError(f'{path}:stale_current_claim:{match.group(0)}')
+
+
+def _assert_alpha_maturity_truth(paths: Iterable[str]) -> None:
+    forbidden = re.compile(r'\bcurrent\s+pre-alpha\b|\bcurrently\s+pre-alpha\b|\bin\s+pre-alpha\s+form\b', re.IGNORECASE)
+    for path in paths:
+        text = _read(path)
+        match = forbidden.search(text)
+        if match:
+            raise AssertionError(f'{path}:stale_maturity_claim:{match.group(0)}')
+    _assert_contains('SECURITY.md', _read('SECURITY.md'), 'currently alpha and still pre-1.0')
+    _assert_contains('docs/ARCHITECTURE.md', _read('docs/ARCHITECTURE.md'), 'kernel in alpha form')
+    _assert_contains('docs/API_BOUNDARY.md', _read('docs/API_BOUNDARY.md'), 'current alpha public surface set')
 
 
 def main() -> int:
@@ -146,6 +167,7 @@ def main() -> int:
         ),
         version,
     )
+    _assert_alpha_maturity_truth(CURRENT_ALPHA_DOCS)
 
     print(f'public_truth_ok:govengine=={version}:{dependency}:surfaces={len(surface_names)}')
     return 0

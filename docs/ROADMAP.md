@@ -142,9 +142,13 @@ Definition of done:
 
 ### 0.4.x — Planning kernel
 
-Goal: extract neutral planning contracts while leaving domain planning semantics in profiles.
+Status: implemented in `0.4.0` as the initial `govengine.planning` surface.
+The implementation adds neutral task-contract, plan-intent, and planner-port
+validators while leaving planner implementation, domain planning semantics,
+queue/scheduler/storage ownership, carrier adapters, commands, credentials,
+and live execution to host runtimes.
 
-Planned work:
+Historical planned work items:
 
 - `GovTaskContract`;
 - `PlanRequest`;
@@ -173,7 +177,7 @@ execution to host runtimes.
 
 Goal: make go/no-go decisions, escalation, and positive-control boundaries reusable.
 
-Planned work:
+Historical planned work items:
 
 - `AuditCase`, `AuditChecklist`, `AuditFinding`, `AuditDecision`;
 - `ApprovalRequest` and approval/ticket-controller interfaces;
@@ -198,7 +202,7 @@ ownership to host runtimes.
 
 Goal: provide the reusable supervision layer for bounded execution while preserving dry-run as default.
 
-Planned work:
+Historical planned work items:
 
 - `RunnerGate`;
 - `RunnerRequest`;
@@ -239,7 +243,7 @@ Delivered in `0.7.0`:
 - receipt-bounded claim qualification;
 - `evidence_review_core` in the public surface registry.
 
-Stabilization work for `0.7.1`:
+Delivered stabilization work in `0.7.1`:
 
 - align README, public status, validation, publishing, roadmap, and API-boundary truth sources with the `0.7.x` baseline;
 - add a public truth consistency validator;

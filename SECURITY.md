@@ -4,7 +4,7 @@ GovEngine is a governance and contract-helper package. It is not a scanner, expl
 
 ## Supported versions
 
-GovEngine is currently pre-alpha. Security fixes should target `main` until a stable release line exists.
+GovEngine is currently alpha and still pre-1.0. Security fixes should target `main` until a stable release line exists.
 
 ## Reporting issues
 
