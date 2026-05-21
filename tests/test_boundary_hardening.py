@@ -7,6 +7,13 @@ import pytest
 
 from govengine.security_profile import security_profile_groups
 from govengine.surfaces import public_surface_index
+from govengine.tool_registry import (
+    DEFAULT_PLANNER_PROFILES_ENV,
+    LEGACY_PLANNER_PROFILES_ENV,
+    REGISTRY_PATH,
+    get_active_planner_profile_state,
+    resolve_planner_profiles,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -103,6 +110,35 @@ def test_optional_helper_modules_use_neutral_host_compat_context_name() -> None:
             violations.append(module)
 
     assert violations == []
+
+
+def test_optional_tool_registry_uses_neutral_profile_env_name_by_default() -> None:
+    text = REGISTRY_PATH.read_text(encoding='utf-8')
+
+    assert f'planner_profiles_env: {DEFAULT_PLANNER_PROFILES_ENV}' in text
+    assert f'planner_profiles_env: {LEGACY_PLANNER_PROFILES_ENV}' not in text
+
+
+def test_optional_tool_registry_supports_neutral_profile_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(DEFAULT_PLANNER_PROFILES_ENV, 'extended')
+    monkeypatch.delenv(LEGACY_PLANNER_PROFILES_ENV, raising=False)
+
+    assert resolve_planner_profiles(None) == ['core', 'extended']
+    state = get_active_planner_profile_state()
+    assert state['env_name'] == DEFAULT_PLANNER_PROFILES_ENV
+    assert state['env_override_name'] == DEFAULT_PLANNER_PROFILES_ENV
+    assert state['legacy_env_override'] is False
+
+
+def test_optional_tool_registry_keeps_legacy_profile_env_as_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv(DEFAULT_PLANNER_PROFILES_ENV, raising=False)
+    monkeypatch.setenv(LEGACY_PLANNER_PROFILES_ENV, 'specialized')
+
+    assert resolve_planner_profiles(None) == ['core', 'extended', 'specialized']
+    state = get_active_planner_profile_state()
+    assert state['env_name'] == DEFAULT_PLANNER_PROFILES_ENV
+    assert state['env_override_name'] == LEGACY_PLANNER_PROFILES_ENV
+    assert state['legacy_env_override'] is True
 
 
 def test_public_surface_index_has_single_optional_security_profile() -> None:

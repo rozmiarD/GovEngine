@@ -11,6 +11,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   leftover Ravenclaw context import from the neutral execution-contract module.
 - Narrowed the optional `security_profile_helpers` claim to compatibility
   scaffolding instead of presenting Ravenclaw-derived helpers as a neutral SDK.
+- Renamed the optional tool-registry planner-profile environment default to
+  `GOVENGINE_TOOL_PROFILES`, while preserving the legacy Ravenclaw variable as
+  a compatibility fallback.
 
 ## 0.10.1-alpha - SCLite 0.6 alpha sync
 

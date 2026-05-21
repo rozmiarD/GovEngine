@@ -14,6 +14,8 @@ _CONTEXT = host_compat_context(Path(__file__))
 REGISTRY_PATH = _CONTEXT.paths.tool_registry_file
 TOOL_REGISTRY_STATE_PATH = _CONTEXT.paths.reports_dir / '.tool_registry.state.json'
 DEFAULT_PLANNER_PROFILE = 'core'
+DEFAULT_PLANNER_PROFILES_ENV = 'GOVENGINE_TOOL_PROFILES'
+LEGACY_PLANNER_PROFILES_ENV = 'RAVENCLAW_BRAIN_TOOL_PROFILES'
 EXTRA_EXEC_PATHS = ['/usr/sbin', '/sbin', '/usr/bin', '/bin', str(Path.home() / '.local' / 'bin')]
 
 
@@ -155,12 +157,28 @@ def save_tool_registry_state(selected_profile: str) -> Dict[str, Any]:
     return payload
 
 
+def _planner_profiles_env_name(defaults: Dict[str, Any]) -> str:
+    env_name = str(defaults.get('planner_profiles_env') or DEFAULT_PLANNER_PROFILES_ENV).strip()
+    return env_name or DEFAULT_PLANNER_PROFILES_ENV
+
+
+def _planner_profiles_env_value(env_name: str) -> tuple[str, str, bool]:
+    raw = str(os.environ.get(env_name) or '').strip()
+    if raw:
+        return raw, env_name, False
+    if env_name == DEFAULT_PLANNER_PROFILES_ENV:
+        legacy = str(os.environ.get(LEGACY_PLANNER_PROFILES_ENV) or '').strip()
+        if legacy:
+            return legacy, LEGACY_PLANNER_PROFILES_ENV, True
+    return '', env_name, False
+
+
 def _requested_profiles_from_value(value: Iterable[str] | str | None) -> List[str]:
     reg = load_tool_registry()
     defaults = reg.get('defaults') if isinstance(reg.get('defaults'), dict) else {}
-    env_name = str(defaults.get('planner_profiles_env') or 'RAVENCLAW_BRAIN_TOOL_PROFILES').strip() or 'RAVENCLAW_BRAIN_TOOL_PROFILES'
+    env_name = _planner_profiles_env_name(defaults)
     if value is None:
-        raw = str(os.environ.get(env_name) or '').strip()
+        raw, _source_env_name, _legacy_env = _planner_profiles_env_value(env_name)
         if raw:
             return [x.strip().lower() for x in raw.split(',') if x.strip()]
         state = load_tool_registry_state()
@@ -192,8 +210,8 @@ def get_active_planner_profile_state() -> Dict[str, Any]:
     profiles = get_profile_catalog()
     reg = load_tool_registry()
     defaults = reg.get('defaults') if isinstance(reg.get('defaults'), dict) else {}
-    env_name = str(defaults.get('planner_profiles_env') or 'RAVENCLAW_BRAIN_TOOL_PROFILES').strip() or 'RAVENCLAW_BRAIN_TOOL_PROFILES'
-    env_raw = str(os.environ.get(env_name) or '').strip()
+    env_name = _planner_profiles_env_name(defaults)
+    env_raw, source_env_name, legacy_env_override = _planner_profiles_env_value(env_name)
     state = load_tool_registry_state()
     selected_profile = str(state.get('selected_profile') or '').strip().lower()
     source = 'default'
@@ -223,6 +241,8 @@ def get_active_planner_profile_state() -> Dict[str, Any]:
         'source': source,
         'env_override': bool(env_raw),
         'env_name': env_name,
+        'env_override_name': source_env_name if env_raw else '',
+        'legacy_env_override': legacy_env_override,
     }
 
 
