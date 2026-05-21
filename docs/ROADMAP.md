@@ -2,8 +2,8 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current source baseline: `govengine==0.10.0a0` (`0.10.0-alpha`), depending on `sclite-core>=0.5.1,<0.6`.
-Current public PyPI alpha release: `govengine==0.10.0a0`.
+Current source baseline: `govengine==0.10.1a0` (`0.10.1-alpha`), depending on `sclite-core>=0.6.0a0,<0.7`.
+Current public PyPI alpha release: `govengine==0.10.1a0`.
 
 ## Architecture thesis
 
@@ -343,6 +343,12 @@ Delivered in `0.10.0-alpha`:
 - alpha-readiness validator checks package metadata, public surfaces, runtime proof fixtures, neutral vocabulary, and non-claims;
 - build and clean wheel-install smoke checks are required before tag/upload;
 - Ravenclaw public downstream dependency and validation fixtures are aligned to the `0.10.x` alpha GovEngine surface.
+
+Delivered in `0.10.1-alpha`:
+
+- source/package truth moves to `0.10.1a0` with public label `0.10.1-alpha`;
+- SCLite dependency truth moves to `sclite-core>=0.6.0a0,<0.7`;
+- public truth and alpha readiness validators keep the sync mechanical without expanding GovEngine's runtime boundary.
 
 Definition of done:
 

@@ -12,6 +12,12 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 - Narrowed the optional `security_profile_helpers` claim to compatibility
   scaffolding instead of presenting Ravenclaw-derived helpers as a neutral SDK.
 
+## 0.10.1-alpha - SCLite 0.6 alpha sync
+
+- Promoted the source line to `0.10.1a0` / `0.10.1-alpha`.
+- Updated the SCLite dependency and public truth validators to `sclite-core>=0.6.0a0,<0.7`.
+- Kept this as a dependency/documentation/validation sync without adding runtime execution, adapters, storage, schedulers, credentials, or production-readiness claims.
+
 ## 0.10.0-alpha - Alpha readiness gate
 
 - Promoted the source line to `0.10.0a0` / `0.10.0-alpha` after public truth, package-build, runtime proof, and Ravenclaw downstream compatibility validation.
