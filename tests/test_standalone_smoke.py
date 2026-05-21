@@ -74,3 +74,14 @@ def test_scope_helpers_are_local() -> None:
     assert extract_host_from_url('https://example.com/path') == 'example.com'
     assert host_in_scope('example.com', domains)
     assert not host_in_scope('evil.example.com', domains)
+
+
+def test_host_compat_context_keeps_ravenclaw_alias_compatible(tmp_path) -> None:
+    from govengine import host_compat_context, ravenclaw_context
+
+    host = host_compat_context(tmp_path)
+    ravenclaw = ravenclaw_context(tmp_path)
+
+    assert host.repo_root == ravenclaw.repo_root == tmp_path.resolve()
+    assert host.profile == 'host_compat'
+    assert ravenclaw.profile == 'ravenclaw'

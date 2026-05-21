@@ -89,6 +89,22 @@ def test_neutral_public_surfaces_do_not_embed_ravenclaw_host_assumptions() -> No
     assert violations == []
 
 
+def test_optional_helper_modules_use_neutral_host_compat_context_name() -> None:
+    helper_modules = (
+        'govengine.policy.core',
+        'govengine.policy.gateway',
+        'govengine.scope',
+        'govengine.tool_registry',
+    )
+    violations: list[str] = []
+    for module in helper_modules:
+        text = _source_path(module).read_text(encoding='utf-8')
+        if 'ravenclaw_context' in text:
+            violations.append(module)
+
+    assert violations == []
+
+
 def test_public_surface_index_has_single_optional_security_profile() -> None:
     surfaces = public_surface_index()
 

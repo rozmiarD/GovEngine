@@ -33,7 +33,7 @@ from .boundary import (
     validate_domain_profile_contract,
     validate_domain_profile_conformance,
 )
-from .context import GovEngineContext, GovEnginePaths, ravenclaw_context
+from .context import GovEngineContext, GovEnginePaths, host_compat_context, ravenclaw_context
 from .control import ControlDecision, apply_control_decision, validate_control_decision
 from .contract_proofs import (
     GovernanceVocabularyEntry,
@@ -253,6 +253,7 @@ __all__ = [
     'domain_profile_conformance',
     'domain_profile_sdk_surface',
     'governance_contract_vocabulary',
+    'host_compat_context',
     'import_security_profile_module',
     'kernel_boundary_contract',
     'kernel_boundary_report',

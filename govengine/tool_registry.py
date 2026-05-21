@@ -1,10 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
-from govengine.context import ravenclaw_context
-
-_CONTEXT = ravenclaw_context(Path(__file__))
 import os
 import shutil
 from pathlib import Path
@@ -12,8 +7,10 @@ from typing import Any, Dict, Iterable, List, Set
 
 import yaml
 
+from govengine.context import host_compat_context
 from govengine.state_store import atomic_write_json, safe_load_json_object
 
+_CONTEXT = host_compat_context(Path(__file__))
 REGISTRY_PATH = _CONTEXT.paths.tool_registry_file
 TOOL_REGISTRY_STATE_PATH = _CONTEXT.paths.reports_dir / '.tool_registry.state.json'
 DEFAULT_PLANNER_PROFILE = 'core'

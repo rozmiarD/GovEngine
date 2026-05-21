@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from govengine.context import ravenclaw_context
+from govengine.context import host_compat_context
 from govengine.scope_ports import FunctionalScopePort, GovScopePort, extract_host_from_url
 
 
@@ -80,7 +80,7 @@ def load_scope_domains(scope_text: str | None = None, *, repo_root: Path | None 
     ``GovScopePort``.
     """
 
-    root = (repo_root or ravenclaw_context(Path(__file__)).repo_root).resolve()
+    root = (repo_root or host_compat_context(Path(__file__)).repo_root).resolve()
     if scope_text is None:
         scope_path = root / 'scope' / 'scope.txt'
         try:
