@@ -223,8 +223,9 @@ def security_profile_surface() -> GovSurface:
             'govengine.contracts.evidence_policy',
         )),
         claim=(
-            'Optional security-oriented action/tool/scope/policy/signal helpers for '
-            'hosts such as Ravenclaw that need a bounded public-safe security profile.'
+            'Optional compatibility surface for Ravenclaw-derived '
+            'action/tool/scope/policy/signal helpers that remain public-safe '
+            'while their host-owned domain semantics are narrowed or retired.'
         ),
         non_claims=_tuple((
             'live exploit/scanner capability',

@@ -10,11 +10,12 @@ from .surfaces import GovSurface, security_profile_surface
 
 @dataclass(frozen=True)
 class SecurityProfileGroup:
-    """Named group inside GovEngine's optional security profile.
+    """Named group inside GovEngine's optional security compatibility surface.
 
-    The security profile is a convenience entrypoint for hosts such as Ravenclaw.
-    It does not make the grouped helpers part of the neutral artifact-governance
-    core and it intentionally does not import Ravenclaw runtime code.
+    The security profile is a migration convenience entrypoint for hosts such as
+    Ravenclaw. It does not make the grouped helpers part of the neutral
+    artifact-governance core and it intentionally does not import Ravenclaw
+    runtime code.
     """
 
     name: str
@@ -85,19 +86,19 @@ _SECURITY_PROFILE_GROUPS: Tuple[SecurityProfileGroup, ...] = (
 
 
 def security_profile_groups() -> Tuple[SecurityProfileGroup, ...]:
-    """Return the tested group map for optional security-profile helpers."""
+    """Return the tested group map for optional compatibility helpers."""
 
     return _SECURITY_PROFILE_GROUPS
 
 
 def security_profile_module_names() -> Tuple[str, ...]:
-    """Return the complete module list for the optional security profile."""
+    """Return the complete module list for the optional compatibility surface."""
 
     return security_profile_surface().modules
 
 
 def security_profile_index() -> Dict[str, Any]:
-    """Return a JSON-safe index for the optional security-profile entrypoint."""
+    """Return a JSON-safe index for the optional compatibility entrypoint."""
 
     surface = security_profile_surface()
     return {

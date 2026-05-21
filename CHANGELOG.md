@@ -4,6 +4,14 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## Unreleased
+
+- Added an alpha hygiene guard that rejects Ravenclaw host-context and
+  `RAVENCLAW_*` assumptions inside neutral public surfaces, and removed the
+  leftover Ravenclaw context import from the neutral execution-contract module.
+- Narrowed the optional `security_profile_helpers` claim to compatibility
+  scaffolding instead of presenting Ravenclaw-derived helpers as a neutral SDK.
+
 ## 0.10.0-alpha - Alpha readiness gate
 
 - Promoted the source line to `0.10.0a0` / `0.10.0-alpha` after public truth, package-build, runtime proof, and Ravenclaw downstream compatibility validation.

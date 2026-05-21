@@ -2,7 +2,7 @@
 
 GovEngine owns reusable governed-execution services. Its public surface should stay carrier-neutral and SCLite-aware.
 
-`govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current alpha public surface set. It separates the neutral artifact-governance core, planning contracts, admission/policy contracts, evidence review, domain-profile SDK, runtime contract proofs, controlled-execution core, and optional security-profile helpers. `govengine.security_profile.security_profile_index()` is the tested convenience facade for hosts that want to discover the optional security-profile helpers through one entrypoint without treating them as neutral core.
+`govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current alpha public surface set. It separates the neutral artifact-governance core, planning contracts, admission/policy contracts, evidence review, domain-profile SDK, runtime contract proofs, controlled-execution core, and optional security-profile helpers. `govengine.security_profile.security_profile_index()` is the tested compatibility facade for hosts that still need the optional Ravenclaw-derived helper set through one entrypoint without treating it as neutral core.
 `govengine.boundary.kernel_boundary_report()` is the tested machine-readable 0.2 boundary report. It combines the kernel/profile/runtime/SCLite ownership contract, known domain-profile contracts such as Ravenclaw, and the current public surface index.
 `govengine.boundary.validate_domain_profile_conformance()` checks that a domain profile does not claim forbidden ownership and consumes only known GovEngine/SCLite surfaces.
 `govengine.orchestration.validate_orchestration_step()` checks deterministic orchestration handoff records without granting agent-loop, scheduler, UI, carrier, credential, or live-execution authority.
@@ -105,7 +105,7 @@ Security-oriented helpers are explicit optional profile modules, not the neutral
 - `govengine.contracts.analysis`
 - `govengine.contracts.evidence_policy`
 
-Claim: reusable public-safe helpers for hosts such as Ravenclaw that need bounded action/tool/scope/policy/signal behavior. The `govengine.security_profile` facade groups these helpers into `action_tooling`, `policy_scope`, and `review_contracts`, and exposes allowlisted lazy imports for those modules only. Non-claims: live exploit/scanner capability, authorization to test targets, bug-bounty campaign orchestration, Logdash/Ravenclaw runtime ownership, or OpenClaw/MCP/A2A adapter ownership.
+Claim: compatibility-only public-safe helpers for Ravenclaw-derived bounded action/tool/scope/policy/signal behavior while this host-originated surface is narrowed. The `govengine.security_profile` facade groups these helpers into `action_tooling`, `policy_scope`, and `review_contracts`, and exposes allowlisted lazy imports for those modules only. It is not a neutral SDK target for new GovEngine extraction. Non-claims: live exploit/scanner capability, authorization to test targets, bug-bounty campaign orchestration, Logdash/Ravenclaw runtime ownership, or OpenClaw/MCP/A2A adapter ownership.
 
 ## Owns
 
@@ -124,7 +124,7 @@ GovEngine owns:
 - `govengine.contract_proofs` — public-safe runtime contract proof fixtures and neutral governance vocabulary over existing contracts without adapter, credential, scheduler, storage, live-execution, domain runtime, or new OODA ownership.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
 - `govengine.signing` — signature envelopes, signing/trust policy objects, host-provided signer/verifier ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
-- `govengine.security_profile` — optional security-profile facade for helper discovery, grouped metadata, allowlisted lazy imports, and boundary assertions.
+- `govengine.security_profile` — optional compatibility facade for bounded helper discovery, grouped metadata, allowlisted lazy imports, and boundary assertions.
 - `govengine.action_schema` — optional security-profile action type/capability constants and limits.
 - `govengine.action_validators` — optional security-profile action/probe shape validation.
 - `govengine.action_compiler` — optional security-profile action spec lowering into execution plans.

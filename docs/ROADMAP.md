@@ -79,6 +79,14 @@ The current `0.10.x` alpha line proves the first useful kernel shape:
 
 This is alpha, not stable. The next roadmap should not be a file move from Ravenclaw into GovEngine. It should remain contract-first extraction: define neutral contracts, add GovEngine tests, add host compatibility wrappers, then thin host code only after behavior is preserved.
 
+The next alpha hygiene gate is narrower than a new feature wave: neutral public
+surfaces must not embed Ravenclaw host context or `RAVENCLAW_*` configuration
+assumptions. The optional `security_profile_helpers` surface is compatibility
+scaffolding for Ravenclaw-derived helpers and should contract over time as
+profile-owned tool, policy, and UX semantics settle in their runtime. New
+neutral extraction should land in the typed core/profile surfaces only when the
+code and a second host prove it there.
+
 ## Version roadmap
 
 ### 0.2.x — Kernel boundary freeze and stable envelopes

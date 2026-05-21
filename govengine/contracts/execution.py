@@ -1,10 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
-from govengine.context import ravenclaw_context
-
-_CONTEXT = ravenclaw_context(Path(__file__))
 from copy import deepcopy
 from typing import Any, Dict, List
 from urllib.parse import urlparse
