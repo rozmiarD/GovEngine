@@ -1,6 +1,6 @@
 # GovEngine Architecture
 
-GovEngine is a deterministic governed-runtime kernel in pre-alpha form. It is designed to sit between a host/domain runtime and the SCLite contract lifecycle.
+GovEngine is a deterministic governed-runtime kernel in alpha form. It is designed to sit between a host/domain runtime and the SCLite contract lifecycle.
 
 ```text
 host runtime -> GovEngine -> SCLite

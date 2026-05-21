@@ -87,7 +87,9 @@ def main() -> int:
         for path in (
             'README.md',
             'PUBLIC_STATUS.md',
+            'SECURITY.md',
             'PUBLISHING.md',
+            'docs/ARCHITECTURE.md',
             'docs/API_BOUNDARY.md',
             'docs/ROADMAP.md',
             'docs/VALIDATION.md',
