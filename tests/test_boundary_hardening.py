@@ -66,6 +66,29 @@ def test_neutral_public_surfaces_do_not_import_optional_security_profile_modules
     assert violations == []
 
 
+def test_neutral_public_surfaces_do_not_embed_ravenclaw_host_assumptions() -> None:
+    neutral_modules = {
+        module
+        for surface in public_surface_index()
+        if not surface.optional_profile
+        for module in surface.modules
+        if _source_path(module).exists()
+    }
+    forbidden_fragments = (
+        'ravenclaw_context',
+        'RAVENCLAW_',
+    )
+
+    violations: list[str] = []
+    for module in sorted(neutral_modules):
+        text = _source_path(module).read_text(encoding='utf-8')
+        found = sorted(fragment for fragment in forbidden_fragments if fragment in text)
+        if found:
+            violations.append(f'{module} -> {found}')
+
+    assert violations == []
+
+
 def test_public_surface_index_has_single_optional_security_profile() -> None:
     surfaces = public_surface_index()
 
