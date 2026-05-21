@@ -356,6 +356,65 @@ Definition of done:
 - no PyPI upload or public tag is performed without explicit operator approval;
 - carrier adapters, credentials, schedulers, storage, live execution, and production readiness remain out of scope.
 
+Next `0.10.x` consolidation work:
+
+1. keep the neutral public surface index stable while alpha consumers exercise
+   the current kernel from SCLite fixtures and Ravenclaw projections;
+2. narrow `security_profile_helpers` to compatibility-only residue by moving
+   security meaning, demo narration, tool discovery, and profile-specific
+   validation back to Ravenclaw when they no longer require GovEngine-owned
+   mechanics;
+3. split any remaining Ravenclaw-named helper from neutral core only after an
+   import graph test and downstream compatibility test prove the split;
+4. improve host conformance and proof tests before adding a new contract family;
+5. keep Tecrax as a dry-run/local-fixture pressure test, not a reason to import
+   infrastructure semantics into the kernel.
+
+Success criteria for the consolidation line:
+
+- neutral surfaces remain free of Ravenclaw host context, profile taxonomy,
+  raw commands, storage, schedulers, credentials, carrier delivery, and default
+  live execution;
+- Ravenclaw public validation keeps passing while optional security helpers are
+  reduced or explicitly justified;
+- SCLite review-bundle verdicts and lifecycle integrity stay delegated to
+  SCLite rather than reimplemented in GovEngine;
+- any new alpha patch has truth/docs/package-chain validators and exact
+  downstream tests for the touched boundary.
+
+### 0.11.x — Host conformance before new kernel breadth
+
+Goal: decide whether GovEngine needs a new neutral contract from evidence
+across hosts, not from Ravenclaw convenience alone.
+
+Near-term candidate work:
+
+- a small host-conformance report over the existing profile, proof, runtime
+  shell, admission, supervision, and review surfaces;
+- a clearer deprecation/narrowing path for optional security helper entrypoints
+  if Ravenclaw can consume neutral surfaces and its own profile code directly;
+- missing negative tests discovered by Ravenclaw runtime adoption or by the
+  Tecrax local-fixture path.
+
+Extraction entry criteria:
+
+- the candidate is already visible in Ravenclaw and a second host/fixture path,
+  or it fixes a defect in an existing public GovEngine contract;
+- the candidate is a contract, validator, protocol, or pure projection shape,
+  not a runtime loop, Logdash behavior, scanner/tool wrapper, credential path,
+  or carrier implementation;
+- public API-boundary, surface-index, and downstream compatibility tests can
+  describe the new responsibility without widening execution authority.
+
+Success criteria:
+
+- a new public surface is added only with a neutral owner, a public boundary
+  statement, negative tests, and consumer validation;
+- if no candidate meets the entry criteria, GovEngine stays on the 0.10 alpha
+  stabilization line instead of inventing a feature wave;
+- GovEngine remains a deterministic governed-runtime kernel while SCLite owns
+  proof/review artifacts and Ravenclaw owns security runtime meaning.
+
 ## Domain profiles
 
 ### Ravenclaw Security Research Profile
