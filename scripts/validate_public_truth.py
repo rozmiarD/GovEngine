@@ -100,6 +100,26 @@ def _assert_no_current_stale_status(paths: Iterable[str], version: str) -> None:
             raise AssertionError(f'{path}:stale_current_claim:{match.group(0)}')
 
 
+def _assert_readme_package_truth(readme: str, version: str) -> None:
+    release_url = f'https://pypi.org/project/govengine/{version}/'
+    badge = f'package-govengine%20{version}-blueviolet.svg'
+    install_command = f'python -m pip install govengine=={version}'
+    forbidden_dynamic_badges = (
+        'img.shields.io/pypi/v/govengine',
+        'label=package%3A%20govengine',
+    )
+    for marker in forbidden_dynamic_badges:
+        if marker in readme:
+            raise AssertionError(f'README.md:dynamic_prerelease_unsafe_badge:{marker}')
+    _assert_contains('README.md', readme, badge)
+    _assert_contains('README.md', readme, release_url)
+    _assert_contains('README.md', readme, install_command)
+    unpinned_install = re.compile(r'python -m pip install govengine(?![=<>\[])')
+    match = unpinned_install.search(readme)
+    if match:
+        raise AssertionError(f'README.md:unpinned_alpha_install:{match.group(0)}')
+
+
 def _assert_alpha_maturity_truth(paths: Iterable[str]) -> None:
     forbidden = re.compile(r'\bcurrent\s+pre-alpha\b|\bcurrently\s+pre-alpha\b|\bin\s+pre-alpha\s+form\b', re.IGNORECASE)
     for path in paths:
@@ -133,6 +153,7 @@ def main() -> int:
     _assert_contains('README.md', readme, f'alpha {version}')
     _assert_contains('README.md', readme, release_label)
     _assert_contains('README.md', readme, dependency)
+    _assert_readme_package_truth(readme, version)
     _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`')
     _assert_contains('docs/ROADMAP.md', roadmap, dependency)
     _assert_contains('PUBLIC_STATUS.md', public_status, f'Source version: `{version}`.')
