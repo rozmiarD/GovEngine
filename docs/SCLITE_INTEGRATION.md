@@ -10,7 +10,7 @@ GovEngine answers: **how does a runtime prepare, check, and consume those artifa
 `pyproject.toml` depends on the published SCLite package distribution:
 
 ```toml
-sclite-core>=0.6.0a0,<0.7
+sclite-core>=0.7.0a0,<0.8
 ```
 
 The PyPI distribution name is `sclite-core`; the Python import package remains `sclite`.
@@ -44,7 +44,8 @@ GovEngine currently provides helpers around the runtime-facing parts of that lif
 - approved-spec and execution-ticket checks;
 - dry-run result assembly;
 - integration seams for SCLite verification;
-- review-bundle verdict mapping through SCLite `0.6.0a0` review surfaces, preserving the 0.5 review-bundle contract.
+- current scoped-ticket lifecycle artifact construction for hosts that materialize SCLite review bundles;
+- review-bundle verdict mapping through SCLite `0.7.0a0` review surfaces, preserving the review-bundle contract.
 
 ## What GovEngine does not replace
 
