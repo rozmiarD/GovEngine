@@ -135,7 +135,7 @@ def _assert_alpha_maturity_truth(paths: Iterable[str]) -> None:
 def main() -> int:
     project = _pyproject()['project']
     version = str(project['version'])
-    release_label = '0.10.1-alpha' if version == '0.10.1a0' else version
+    release_label = '0.10.2-alpha' if version == '0.10.2a0' else version
     dependency = _project_dependency(project, 'sclite-core')
     surfaces = public_surface_index()
     surface_names = [surface.name for surface in surfaces]
@@ -162,6 +162,9 @@ def main() -> int:
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
     _assert_contains('docs/VALIDATION.md', validation, f'current `{version}` source line')
+    adapter = _read('govengine/sclite_adapter.py')
+    _assert_contains('govengine/sclite_adapter.py', adapter, 'def build_current_lifecycle_artifacts(')
+    _assert_contains('govengine/sclite_adapter.py', adapter, 'def build_scoped_execution_ticket_v03(')
     _assert_contains(
         '.github/workflows/pytest.yml',
         workflow,

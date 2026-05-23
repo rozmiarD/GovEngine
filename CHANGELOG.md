@@ -4,8 +4,12 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
-## Unreleased
+## 0.10.2-alpha - SCLite 0.7 lifecycle surface sync
 
+- Promoted source/package truth to `0.10.2a0` / `0.10.2-alpha` with `sclite-core>=0.7.0a0,<0.8`.
+- Added a current SCLite lifecycle builder using scoped `execution_ticket.v0.3` semantics and receipt-bounded evidence verification.
+- Removed the legacy v0.1 descriptor from current lifecycle policy output while keeping compatibility builders available during downstream migration.
+- Added an integration test that materializes and reviews the current lifecycle through SCLite, without expanding GovEngine ownership of artifact review or runtime execution.
 - Added an alpha hygiene guard that rejects Ravenclaw host-context and
   `RAVENCLAW_*` assumptions inside neutral public surfaces, and removed the
   leftover Ravenclaw context import from the neutral execution-contract module.

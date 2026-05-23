@@ -23,7 +23,7 @@ Historical expected result for the published `0.1.7` source line:
 - no Ravenclaw runtime or Logdash process is started;
 - demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness; scoped-ticket use-gate tests prove SCLite receipt/evidence bounds delegation, and review-bundle tests prove GovEngine delegates pass/fail verdicts to SCLite `0.5.1`, not live runtime enforcement.
 
-Expected result for the current `0.10.1a0` source line (`0.10.1-alpha`):
+Expected result for the current `0.10.2a0` source line (`0.10.2-alpha`):
 
 - full pytest passes in the source tree;
 - `python -m pip check` is clean;
@@ -123,6 +123,7 @@ Current tests cover:
 - OODA decision outcomes and runner-control receipt shape;
 - signal, analysis, and confirmation-evidence policy contract helpers;
 - SCLite lifecycle verifier seam availability;
+- current scoped-ticket lifecycle construction and SCLite review-bundle materialization compatibility;
 - SCLite review-bundle bridge pass/fail mapping for packaged GovEngine integration fixtures;
 - artifact descriptor/envelope/state and transition-decision boundary objects;
 - lifecycle transition gates and blocker/next-action reporting;
