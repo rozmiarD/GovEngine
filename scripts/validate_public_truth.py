@@ -167,6 +167,13 @@ def main() -> int:
         workflow,
         'sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main',
     )
+    _assert_contains('.github/workflows/pytest.yml', workflow, "python-version: ['3.11', '3.12', '3.13']")
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_public_truth.py')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_alpha_readiness.py')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'package-dry-run:')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'rm -rf dist build *.egg-info')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'python -m twine check dist/*')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'python -m pip check')
 
     documented = _documented_surface_names(api_boundary)
     if documented != surface_names:
