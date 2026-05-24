@@ -96,6 +96,86 @@ def test_neutral_public_surfaces_do_not_embed_ravenclaw_host_assumptions() -> No
     assert violations == []
 
 
+def test_retired_host_projection_module_is_not_reintroduced_or_exported() -> None:
+    assert not (ROOT / 'govengine' / 'sclite_adapter.py').exists()
+
+    init_text = (ROOT / 'govengine' / '__init__.py').read_text(encoding='utf-8')
+    forbidden_exports = (
+        'sclite_adapter',
+        'build_current_lifecycle_artifacts',
+        'build_proof_trace_artifacts',
+    )
+
+    violations = [fragment for fragment in forbidden_exports if fragment in init_text]
+
+    assert violations == []
+
+
+def test_neutral_public_surfaces_do_not_import_host_runtime_or_carrier_packages() -> None:
+    neutral_modules = {
+        module
+        for surface in public_surface_index()
+        if not surface.optional_profile
+        for module in surface.modules
+        if _source_path(module).exists()
+    }
+    forbidden_roots = (
+        'engine',
+        'ravenclaw',
+        'logdash',
+        'openclaw',
+        'mcp',
+        'a2a',
+    )
+
+    violations: list[str] = []
+    for module in sorted(neutral_modules):
+        path = _source_path(module)
+        tree = ast.parse(path.read_text(encoding='utf-8'), filename=str(path))
+        found: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    root = alias.name.split('.', 1)[0]
+                    if root in forbidden_roots:
+                        found.add(alias.name)
+            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+                root = node.module.split('.', 1)[0]
+                if root in forbidden_roots:
+                    found.add(node.module)
+        if found:
+            violations.append(f'{module} -> {sorted(found)}')
+
+    assert violations == []
+
+
+def test_neutral_surfaces_keep_runtime_authority_as_non_claims() -> None:
+    required_by_surface = {
+        'artifact_governance_core': ('key-store', 'storage', 'scheduling'),
+        'planning_contracts_core': ('adapter', 'storage', 'live-execution'),
+        'admission_policy_core': ('credential', 'adapter', 'live-execution'),
+        'evidence_review_core': ('credential', 'adapter', 'live-execution'),
+        'domain_profile_sdk': ('credential', 'adapter', 'live subprocess'),
+        'runtime_contract_proofs': ('credential', 'scheduler', 'storage', 'live subprocess'),
+        'controlled_execution_core': ('adapter', 'storage', 'scheduler', 'live'),
+    }
+
+    violations: list[str] = []
+    for surface in public_surface_index():
+        if surface.optional_profile:
+            continue
+        non_claims = ' '.join(surface.non_claims).lower()
+        missing = [
+            fragment
+            for fragment in required_by_surface[surface.name]
+            if fragment not in non_claims
+        ]
+        if missing:
+            violations.append(f'{surface.name} -> {missing}')
+
+    assert violations == []
+
+
 def test_optional_helper_modules_use_neutral_host_compat_context_name() -> None:
     helper_modules = (
         'govengine.policy.core',
