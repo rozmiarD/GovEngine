@@ -7,10 +7,29 @@ GovEngine validation is local and public-safe. It does not run live targets.
 ```bash
 python -m pip install -e '.[dev]'
 python -m pytest -q
-python -m pip check
+python scripts/validate_public_truth.py
+python scripts/validate_alpha_readiness.py
 ```
 
 GitHub Actions source validation installs the current SCLite source line before the editable GovEngine test dependency set. That keeps coordinated prerelease CI independent of package-index propagation timing; clean wheel and PyPI install gates below still validate the published dependency chain.
+
+## Clean installed-package gate
+
+Use a new virtual environment for dependency-consistency and local package-readiness evidence:
+
+```bash
+python scripts/validate_clean_package_install.py \
+  --venv /tmp/govengine-clean-source \
+  --dev \
+  --sclite-source /path/to/SCLite \
+  --no-editable
+```
+
+This is the canonical local `pip check` gate: the script installs GovEngine
+and the selected SCLite source into a disposable virtual environment before
+running validators, tests, and `pip check`. A broad system interpreter is not
+a release-readiness environment because unrelated installed tools can make its
+dependency set inconsistent.
 
 ## Current source-line gate
 
@@ -21,7 +40,7 @@ not the active gate.
 Expected result for the current `0.11.0a0` source line (`0.11.0-alpha`):
 
 - full pytest passes in the source tree;
-- `python -m pip check` is clean;
+- `scripts/validate_clean_package_install.py` passes and runs `pip check` inside its newly created virtual environment;
 - `python scripts/validate_public_truth.py` passes;
 - `python scripts/validate_alpha_readiness.py` passes;
 - import smoke checks include `govengine.contract_proofs`, `govengine.profiles`, `govengine.review`, `govengine.execution.supervision`, `govengine.admission`, `govengine.planning`, `govengine.runtime_shell`, and `govengine.scope_ports`;

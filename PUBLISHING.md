@@ -10,7 +10,7 @@ GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for futu
 - [ ] `python scripts/validate_public_truth.py` passes.
 - [ ] `python scripts/validate_alpha_readiness.py` passes for alpha source lines.
 - [ ] `python -m pytest -q` passes.
-- [ ] `python -m pip check` passes.
+- [ ] `python scripts/validate_clean_package_install.py --venv /tmp/govengine-clean-release --dev --sclite-source /path/to/SCLite --no-editable` passes from a new virtual environment path.
 - [ ] Build artifacts are generated from a clean tree.
 - [ ] No generated `build/`, `dist/`, `*.egg-info`, caches, private state, or Ravenclaw workspace files are committed unless intentionally package metadata.
 
@@ -46,20 +46,26 @@ GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for futu
 ## Validation before a tag
 
 ```bash
-python -m pytest -q
-python -m pip check
-python scripts/validate_public_truth.py
-python scripts/validate_alpha_readiness.py
+python scripts/validate_clean_package_install.py \
+  --venv /tmp/govengine-clean-release \
+  --dev \
+  --sclite-source /path/to/SCLite \
+  --no-editable
 ```
 
-Optional build check once build tooling is installed:
+This clean-install script is the local dependency-consistency gate. Do not use
+`pip check` from a broad system interpreter as release evidence.
+
+Optional wheel build/install check in another new virtual environment:
 
 ```bash
-python -m pip install build twine
-python -m build
-python -m twine check dist/*
-python -m pip install dist/*.whl
-python -m pip check
+python -m venv /tmp/govengine-wheel-smoke
+/tmp/govengine-wheel-smoke/bin/python -m pip install --upgrade pip build twine
+/tmp/govengine-wheel-smoke/bin/python -m pip install /path/to/SCLite
+/tmp/govengine-wheel-smoke/bin/python -m build
+/tmp/govengine-wheel-smoke/bin/python -m twine check dist/*
+/tmp/govengine-wheel-smoke/bin/python -m pip install dist/*.whl
+/tmp/govengine-wheel-smoke/bin/python -m pip check
 ```
 
 Do not upload to PyPI or create public tags until the operator explicitly approves the release action.
