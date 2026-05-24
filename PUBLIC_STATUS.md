@@ -9,7 +9,7 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - GitHub Actions: pytest on supported Python versions.
 - Source version: `0.11.0a0`.
 - Public release label: `0.11.0-alpha`.
-- PyPI publication target: `0.11.0a0` after release gates pass.
+- PyPI package: `govengine==0.11.0a0` is the published current alpha package.
 - SCLite integration: present through helper seams via `sclite-core>=0.8.0a0,<0.9`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.
@@ -36,7 +36,7 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: `0.11.0a0` remains a candidate until the standard release checklist and operator-approved upload complete.
+- PyPI publication: `govengine==0.11.0a0` is published; alpha/pre-1.0 boundaries remain in force.
 
 ## What is public-safe today
 

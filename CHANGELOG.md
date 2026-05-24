@@ -6,6 +6,7 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## 0.11.0-alpha - Host projection removal and SCLite 0.8 sync
 
+- Published the alpha package as `govengine==0.11.0a0` on PyPI.
 - Promotes source/package truth to `0.11.0a0` / `0.11.0-alpha` with `sclite-core>=0.8.0a0,<0.9`.
 - Removes `govengine.sclite_adapter`, the transitional Ravenclaw-shaped lifecycle assembly seam, after Ravenclaw moved public lifecycle projection into its own runtime boundary.
 - Retains neutral lifecycle/review result mapping and validates that host-owned projection does not re-enter GovEngine core.
