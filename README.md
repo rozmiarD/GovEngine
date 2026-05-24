@@ -146,6 +146,14 @@ assert receipt["status"] == "dry-run"
 - [`docs/VALIDATION.md`](docs/VALIDATION.md) — local checks and non-claims.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — staged extraction roadmap.
 
+## License and provenance
+
+GovEngine is MIT-licensed. It was extracted from Ravenclaw in contract-first
+stages, so [`LICENSE`](LICENSE) preserves the copyright notice for the
+originating Ravenclaw contribution lineage. The author metadata in
+`pyproject.toml` identifies the GovEngine package maintainer; it does not
+replace or reassign the originating copyright notice.
+
 ## Safety boundary
 
 GovEngine should preserve deterministic governance over prompt-only behavior. GovEngine must never execute directly from raw intent: execution requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, and allowed runner profile.

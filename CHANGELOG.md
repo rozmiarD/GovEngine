@@ -9,6 +9,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 - Corrects roadmap current-baseline wording after the published `0.11.0-alpha`
   boundary release and adds public-truth coverage against regressing to the
   superseded `0.10` current-line claim.
+- Aligns contributor maturity wording with the published alpha line, makes the
+  current validation gate precede archived release evidence, and documents why
+  extracted Ravenclaw copyright attribution coexists with GovEngine package
+  maintainer metadata.
 
 ## 0.11.0-alpha - Host projection removal and SCLite 0.8 sync
 

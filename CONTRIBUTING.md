@@ -1,6 +1,6 @@
 # Contributing to GovEngine
 
-GovEngine is pre-alpha extraction work. Contributions should preserve the package boundary:
+GovEngine is an alpha (`0.11.0-alpha`) governed-runtime kernel package. Contributions should preserve the package boundary:
 
 ```text
 Ravenclaw -> GovEngine -> SCLite
