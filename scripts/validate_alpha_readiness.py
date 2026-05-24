@@ -20,8 +20,8 @@ from govengine.contract_proofs import (  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
 
-EXPECTED_VERSION = '0.10.2a0'
-EXPECTED_RELEASE_LABEL = '0.10.2-alpha'
+EXPECTED_VERSION = '0.11.0a0'
+EXPECTED_RELEASE_LABEL = '0.11.0-alpha'
 EXPECTED_SURFACES = [
     'artifact_governance_core',
     'planning_contracts_core',
@@ -71,6 +71,7 @@ def main() -> int:
     _assert('Development Status :: 2 - Pre-Alpha' not in classifiers, 'pre_alpha_classifier_still_present')
     _assert(surface_names == EXPECTED_SURFACES, f'surface_mismatch:{surface_names}')
     _assert(surfaces[-1].name == 'security_profile_helpers' and surfaces[-1].optional_profile, 'optional_surface_order_mismatch')
+    _assert(all(surface.status.startswith('alpha_') for surface in surfaces), 'surface_status_retains_pre_alpha_label')
 
     vocabulary = validate_governance_contract_vocabulary()
     _assert(tuple(entry.term for entry in vocabulary) == tuple(entry.term for entry in governance_contract_vocabulary()), 'vocabulary_mismatch')

@@ -56,6 +56,6 @@ The `ravenclaw_security_profile()` SDK fixture is narrower than Ravenclaw itself
 
 ## Tecrax Compatibility
 
-Tecrax is reserved as a future governed infrastructure-operations runtime/profile. Until it is implemented, GovEngine should only document compatibility expectations: Tecrax would own infrastructure domain semantics and change-management language, while GovEngine would still own only the neutral kernel mechanics. Credential handling, host access, and live operations must stay runtime-owned and disabled by default in kernel examples.
+Tecrax is reserved as a future governed infrastructure-operations runtime/profile. Its present implementation is only a dry-run/local-fixture skeleton used for conformance pressure; it does not establish infrastructure runtime ownership. Tecrax would own infrastructure domain semantics and change-management language, while GovEngine still owns only neutral kernel mechanics. Credential handling, host access, and live operations must stay runtime-owned and disabled by default in kernel examples.
 
 The `tecrax_infra_ops_profile()` SDK fixture is a skeleton for dry-run/local-fixture infrastructure operations only. It exists to prove that GovEngine can validate a second domain profile without absorbing service inventories, credentials, change-management authority, live infrastructure control, or product UX.

@@ -14,6 +14,7 @@ from govengine import __version__ as package_version  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
+EXPECTED_RELEASE_LABEL = '0.11.0-alpha'
 
 SURFACE_HEADINGS = {
     'Artifact-governance core': 'artifact_governance_core',
@@ -135,7 +136,7 @@ def _assert_alpha_maturity_truth(paths: Iterable[str]) -> None:
 def main() -> int:
     project = _pyproject()['project']
     version = str(project['version'])
-    release_label = '0.10.2-alpha' if version == '0.10.2a0' else version
+    release_label = EXPECTED_RELEASE_LABEL
     dependency = _project_dependency(project, 'sclite-core')
     surfaces = public_surface_index()
     surface_names = [surface.name for surface in surfaces]
@@ -149,6 +150,8 @@ def main() -> int:
     publishing = _read('PUBLISHING.md')
     validation = _read('docs/VALIDATION.md')
     api_boundary = _read('docs/API_BOUNDARY.md')
+    sclite_integration = _read('docs/SCLITE_INTEGRATION.md')
+    domain_profile = _read('docs/DOMAIN_PROFILE_CONTRACT.md')
     workflow = _read('.github/workflows/pytest.yml')
 
     _assert_contains('README.md', readme, f'alpha {version}')
@@ -162,9 +165,14 @@ def main() -> int:
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
     _assert_contains('docs/VALIDATION.md', validation, f'current `{version}` source line')
-    adapter = _read('govengine/sclite_adapter.py')
-    _assert_contains('govengine/sclite_adapter.py', adapter, 'def build_current_lifecycle_artifacts(')
-    _assert_contains('govengine/sclite_adapter.py', adapter, 'def build_scoped_execution_ticket_v03(')
+    if (ROOT / 'govengine/sclite_adapter.py').exists():
+        raise AssertionError('govengine/sclite_adapter.py:retired_host_projection_present')
+    _assert_contains('PUBLIC_STATUS.md', public_status, 'Ravenclaw owns lifecycle artifact projection from its runtime payloads')
+    _assert_contains('docs/API_BOUNDARY.md', api_boundary, 'Host-owned lifecycle projection is outside GovEngine')
+    _assert_contains('docs/SCLITE_INTEGRATION.md', sclite_integration, 'Host-owned artifact projection is outside GovEngine')
+    _assert_contains('docs/DOMAIN_PROFILE_CONTRACT.md', domain_profile, 'dry-run/local-fixture skeleton used for conformance pressure')
+    if 'unreleased deterministic demo signer/verifier ports' in public_status:
+        raise AssertionError('PUBLIC_STATUS.md:published_demo_ports_marked_unreleased')
     _assert_contains(
         '.github/workflows/pytest.yml',
         workflow,
@@ -183,6 +191,8 @@ def main() -> int:
         raise AssertionError(f'api_boundary_surface_mismatch:{documented}!={surface_names}')
 
     for surface in surfaces:
+        if not surface.status.startswith('alpha_'):
+            raise AssertionError(f'surface_status_not_alpha:{surface.name}:{surface.status}')
         marker = STATUS_MARKERS[surface.name]
         _assert_contains('PUBLIC_STATUS.md', public_status, marker)
         for module in surface.modules:

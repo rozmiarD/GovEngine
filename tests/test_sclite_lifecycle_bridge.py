@@ -11,9 +11,6 @@ from govengine.sclite_contracts import (
     review_bundle_transition_decision,
     review_sclite_bundle,
 )
-from govengine.sclite_adapter import build_current_lifecycle_artifacts
-from govengine.execution.ticket_gate import validate_scoped_ticket_use_gate
-from sclite.bundles import REVIEW_BUNDLE_REQUIRED_FILES, materialize_review_bundle
 from sclite.integrity import build_artifact_chain_manifest
 
 
@@ -96,75 +93,3 @@ def test_review_bundle_transition_blocks_cross_host_bundle() -> None:
     assert decision.allowed is False
     assert decision.reason_code == "lifecycle_blocked"
     assert decision.blockers
-
-
-def _host_pipeline_data() -> dict:
-    return {
-        "run_id": "govengine-current-lifecycle",
-        "created_at": "2026-05-23T00:00:00+00:00",
-        "settings": {"runtime_mode": "demo"},
-        "policy_gate": {"pass": True, "reason": "public-safe"},
-        "auditor": {"owner_gate": False, "constraints": {}},
-        "prepared_execution_spec": {
-            "target": "https://example.com",
-            "target_host": "example.com",
-            "target_in_scope": True,
-            "action_type": "single_probe",
-            "resolved_tool": "curl",
-            "normalized_args": ["https://example.com"],
-            "execution_plan": [{"tool": "curl", "args": ["https://example.com"]}],
-        },
-        "approved_execution_spec": {
-            "target": "https://example.com",
-            "target_host": "example.com",
-            "target_in_scope": True,
-            "resolved_tool": "curl",
-            "normalized_args": ["https://example.com"],
-            "execution_plan": [{"tool": "curl", "args": ["https://example.com"]}],
-            "approval": {"decision": "approve", "approval_source": "auditor"},
-            "execution_truth": {
-                "artifact_type": "approved_execution_spec",
-                "execution_plan": [{"tool": "curl", "args": ["https://example.com"]}],
-            },
-        },
-        "engine": {
-            "status": "dry-run",
-            "returncode": 0,
-            "execution_source": "dry_run",
-            "planned_commands": [["curl", "https://example.com"]],
-            "executed_commands": [],
-        },
-    }
-
-
-def test_current_lifecycle_builds_scoped_ticket_and_receipt_bounded_evidence(tmp_path) -> None:
-    artifacts = build_current_lifecycle_artifacts(_host_pipeline_data())
-    ticket = artifacts["execution_ticket.json"]
-
-    assert ticket["schema_version"] == "v0.3"
-    assert ticket["ticket_profile"] == "scoped_execution_ticket"
-    assert "legacy_v0_1_descriptor" not in artifacts["policy_decision.v0.2.json"]
-    gate = validate_scoped_ticket_use_gate(
-        execution_ticket=ticket,
-        execution_contract=artifacts["execution_contract.json"],
-        execution_receipt=artifacts["execution_receipt.v0.2.json"],
-        evidence_contract=artifacts["evidence_contract.json"],
-    )
-    assert gate["status"] == "passed"
-
-    bundle = materialize_review_bundle(
-        tmp_path / "review-bundle",
-        {
-            "intent_contract": artifacts["intent_contract.json"],
-            "policy_decision": artifacts["policy_decision.v0.2.json"],
-            "execution_contract": artifacts["execution_contract.json"],
-            "execution_ticket": ticket,
-            "execution_receipt": artifacts["execution_receipt.v0.2.json"],
-            "evidence_contract": artifacts["evidence_contract.json"],
-        },
-        chain_id="govengine-current-lifecycle",
-        created_at="2026-05-23T00:00:00+00:00",
-        generated_at="2026-05-23T00:00:00+00:00",
-    )
-    assert set(REVIEW_BUNDLE_REQUIRED_FILES) <= set(bundle["summary"]["review_bundle_files"])
-    assert bundle["verdict"] == "pass"

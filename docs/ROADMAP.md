@@ -2,8 +2,8 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current source baseline: `govengine==0.10.2a0` (`0.10.2-alpha`), depending on `sclite-core>=0.7.0a0,<0.8`.
-Current public PyPI alpha release: `govengine==0.10.2a0`.
+Current source baseline: `govengine==0.11.0a0` (`0.11.0-alpha`), depending on `sclite-core>=0.8.0a0,<0.9`.
+Current PyPI publication target: `govengine==0.11.0a0` after release gates pass.
 
 ## Architecture thesis
 
@@ -357,12 +357,15 @@ Delivered in `0.10.2-alpha`:
 - source/package truth moves to `0.10.2a0` and consumes the curated
   `sclite-core>=0.7.0a0,<0.8` review-lifecycle surface;
 - `govengine.sclite_adapter.build_current_lifecycle_artifacts()` constructs a
-  scoped `execution_ticket.v0.3` lifecycle for host runtimes to package into a
-  SCLite review bundle;
+  scoped `execution_ticket.v0.3` lifecycle as a transitional host-compatibility
+  assembly seam for consumers that package a SCLite review bundle;
 - current lifecycle policy output no longer embeds the legacy v0.1 descriptor;
   legacy adapter functions remain compatibility-only during migration;
 - SCLite still owns lifecycle verification, review-bundle materialization, and
   review verdicts; GovEngine acquires no runtime, carrier, or trust authority.
+- Ravenclaw now routes its active public proof generation through its
+  host-owned `engine/security_contract_layer.py` projection rather than
+  importing GovEngine lifecycle assembly as its publisher boundary.
 
 Definition of done:
 
@@ -384,6 +387,9 @@ Next `0.10.x` consolidation work:
 4. improve host conformance and proof tests before adding a new contract family;
 5. keep Tecrax as a dry-run/local-fixture pressure test, not a reason to import
    infrastructure semantics into the kernel.
+6. retire the Ravenclaw-shaped lifecycle compatibility assembly only in an
+   explicit package/API change after downstream current-proof validation and
+   SCLite legacy-retirement work agree.
 
 Success criteria for the consolidation line:
 
@@ -399,6 +405,8 @@ Success criteria for the consolidation line:
 
 ### 0.11.x — Host conformance before new kernel breadth
 
+Status: `0.11.0-alpha` boundary candidate implemented.
+
 Goal: decide whether GovEngine needs a new neutral contract from evidence
 across hosts, not from Ravenclaw convenience alone.
 
@@ -410,6 +418,17 @@ Near-term candidate work:
   if Ravenclaw can consume neutral surfaces and its own profile code directly;
 - missing negative tests discovered by Ravenclaw runtime adoption or by the
   Tecrax local-fixture path.
+
+Delivered in `0.11.0-alpha`:
+
+- source/package truth moves to `0.11.0a0` and consumes
+  `sclite-core>=0.8.0a0,<0.9`;
+- the Ravenclaw-shaped `govengine.sclite_adapter` projection is removed after
+  Ravenclaw moved current lifecycle generation to its host-owned projection;
+- GovEngine retains neutral SCLite lifecycle/review result mapping and ticket
+  gates, without taking artifact publication or domain-runtime ownership;
+- validators reject reintroduction of the removed host-shaped projection as a
+  current GovEngine boundary.
 
 Extraction entry criteria:
 

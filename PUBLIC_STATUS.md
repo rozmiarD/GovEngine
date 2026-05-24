@@ -7,10 +7,10 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Source version: `0.10.2a0`.
-- Public release label: `0.10.2-alpha`.
-- Current PyPI alpha release: `0.10.2a0`.
-- SCLite integration: present through helper seams via `sclite-core>=0.7.0a0,<0.8`.
+- Source version: `0.11.0a0`.
+- Public release label: `0.11.0-alpha`.
+- PyPI publication target: `0.11.0a0` after release gates pass.
+- SCLite integration: present through helper seams via `sclite-core>=0.8.0a0,<0.9`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.
 - Event model: initial `govengine.events` envelopes define transport-neutral governance metadata without raw prompts, credentials, live commands, carrier payloads, or scheduling claims.
@@ -27,16 +27,16 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
 - Core artifact governance boundaries: initial portable dataclasses for artifact descriptors/envelopes/state, governance context, transition decisions, and execution prerequisites.
-- SCLite lifecycle/review bridge: descriptor/state/transition mapping, current scoped-ticket lifecycle projection, and review-bundle verdict mapping that delegate verification and review semantics to SCLite.
+- SCLite lifecycle/review bridge: neutral descriptor/state/transition and review-bundle verdict mapping delegate verification and review semantics to SCLite. Ravenclaw owns lifecycle artifact projection from its runtime payloads and its public proof generation.
 - Artifact lifecycle controller: initial transition policy/gate/controller for ordered lifecycle transitions and blocker/next-action reporting.
-- Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, transition-decision helpers, and unreleased deterministic demo signer/verifier ports without PKI/key ownership.
+- Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, transition-decision helpers, and published deterministic demo signer/verifier fixture ports without PKI/key ownership.
 - Controlled execution gate: initial dry-run-only execution gate and default `DryRunRunner`; live requests are blocked by default.
 - Public surface registry: tested `govengine.surfaces` metadata separates neutral artifact-governance core, planning-contracts core, admission-policy core, evidence-review core, domain-profile SDK, runtime contract proofs, controlled-execution core, and optional security-profile helpers.
 - Security profile: action/tool/scope/policy/signal helpers are available through the optional `govengine.security_profile` facade for host-facing discovery, not as the neutral core.
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: `0.10.2a0` is the current alpha package line; later uploads still require the standard release checklist and operator approval.
+- PyPI publication: `0.11.0a0` remains a candidate until the standard release checklist and operator-approved upload complete.
 
 ## What is public-safe today
 
