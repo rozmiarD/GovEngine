@@ -49,6 +49,7 @@ def test_current_public_docs_do_not_reintroduce_pre_alpha_maturity_claims() -> N
     stale_markers = ('currently pre-alpha', 'current pre-alpha', 'pre-alpha form')
     for relative in (
         'README.md',
+        'CONTRIBUTING.md',
         'PUBLIC_STATUS.md',
         'SECURITY.md',
         'docs/ARCHITECTURE.md',
@@ -66,4 +67,18 @@ def test_public_truth_validator_rejects_stale_current_roadmap_baseline() -> None
         validator._assert_roadmap_current_release_truth(
             '## Current implemented baseline: 0.10.x alpha\n'
             'GovEngine stays on the 0.10 alpha stabilization line.\n'
+        )
+
+
+def test_public_truth_validator_rejects_validation_history_before_current_gate() -> None:
+    validator = _load_validator()
+
+    with pytest.raises(AssertionError, match='current_gate_not_before_history'):
+        validator._assert_validation_current_gate_precedes_history(
+            '## Historical validation records\n'
+            'Historical expected result for the published `0.1.7` source line:\n'
+            '## Current source-line gate\n'
+            'Expected result for the current `0.11.0a0` source line\n'
+            'not the active gate\n',
+            '0.11.0a0',
         )

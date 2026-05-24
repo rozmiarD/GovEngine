@@ -40,6 +40,7 @@ STATUS_MARKERS = {
 
 CURRENT_ALPHA_DOCS = (
     'README.md',
+    'CONTRIBUTING.md',
     'PUBLIC_STATUS.md',
     'SECURITY.md',
     'docs/ARCHITECTURE.md',
@@ -146,6 +147,20 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
     _assert_contains('docs/ROADMAP.md', roadmap, 'GovEngine stays on the `0.11.x`')
 
 
+def _assert_validation_current_gate_precedes_history(validation: str, version: str) -> None:
+    current_heading = '## Current source-line gate'
+    historical_heading = '## Historical validation records'
+    current_expectation = f'Expected result for the current `{version}` source line'
+    current_pos = validation.find(current_heading)
+    historical_pos = validation.find(historical_heading)
+    expectation_pos = validation.find(current_expectation)
+    if min(current_pos, historical_pos, expectation_pos) < 0:
+        raise AssertionError('docs/VALIDATION.md:missing_current_or_historical_section')
+    if not current_pos < expectation_pos < historical_pos:
+        raise AssertionError('docs/VALIDATION.md:current_gate_not_before_history')
+    _assert_contains('docs/VALIDATION.md', validation, 'not the active gate')
+
+
 def main() -> int:
     project = _pyproject()['project']
     version = str(project['version'])
@@ -160,6 +175,7 @@ def main() -> int:
     readme = _read('README.md')
     roadmap = _read('docs/ROADMAP.md')
     public_status = _read('PUBLIC_STATUS.md')
+    contributing = _read('CONTRIBUTING.md')
     publishing = _read('PUBLISHING.md')
     validation = _read('docs/VALIDATION.md')
     api_boundary = _read('docs/API_BOUNDARY.md')
@@ -171,6 +187,10 @@ def main() -> int:
     _assert_contains('README.md', readme, release_label)
     _assert_contains('README.md', readme, dependency)
     _assert_readme_package_truth(readme, version)
+    _assert_contains('README.md', readme, '## License and provenance')
+    _assert_contains('README.md', readme, 'originating Ravenclaw contribution lineage')
+    _assert_contains('README.md', readme, 'package maintainer')
+    _assert_contains('CONTRIBUTING.md', contributing, f'alpha (`{release_label}`)')
     _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`')
     _assert_contains('docs/ROADMAP.md', roadmap, dependency)
     _assert_roadmap_current_release_truth(roadmap)
@@ -179,6 +199,7 @@ def main() -> int:
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
     _assert_contains('docs/VALIDATION.md', validation, f'current `{version}` source line')
+    _assert_validation_current_gate_precedes_history(validation, version)
     if (ROOT / 'govengine/sclite_adapter.py').exists():
         raise AssertionError('govengine/sclite_adapter.py:retired_host_projection_present')
     _assert_contains('PUBLIC_STATUS.md', public_status, 'Ravenclaw owns lifecycle artifact projection from its runtime payloads')

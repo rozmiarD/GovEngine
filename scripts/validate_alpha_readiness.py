@@ -87,6 +87,7 @@ def main() -> int:
         _read(path)
         for path in (
             'README.md',
+            'CONTRIBUTING.md',
             'PUBLIC_STATUS.md',
             'SECURITY.md',
             'PUBLISHING.md',

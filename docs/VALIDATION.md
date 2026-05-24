@@ -12,16 +12,11 @@ python -m pip check
 
 GitHub Actions source validation installs the current SCLite source line before the editable GovEngine test dependency set. That keeps coordinated prerelease CI independent of package-index propagation timing; clean wheel and PyPI install gates below still validate the published dependency chain.
 
-Historical expected result for the published `0.1.7` source line:
+## Current source-line gate
 
-- standalone pytest suite passes (`72 passed` in the `0.1.7` source tree);
-- package dependencies are consistent;
-- `python -m build` creates `govengine-0.1.7` sdist/wheel artifacts;
-- `python -m twine check dist/*` passes for the release artifacts;
-- clean wheel install reports `govengine.__version__ == 0.1.7`, distribution version `0.1.7`, import checks for the artifact-governance, surface-registry, security-profile facade, and SCLite review-bundle bridge modules pass, and `pip check` is clean;
-- clean install from PyPI with `govengine==0.1.7` reports `govengine.__version__ == 0.1.7`, distribution version `0.1.7`, `sclite-core==0.5.1`, SCLite review-bundle bridge checks pass, and `pip check` is clean;
-- no Ravenclaw runtime or Logdash process is started;
-- demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness; scoped-ticket use-gate tests prove SCLite receipt/evidence bounds delegation, and review-bundle tests prove GovEngine delegates pass/fail verdicts to SCLite `0.5.1`, not live runtime enforcement.
+Only this section states current validation expectations. The versioned
+sections under **Historical validation records** are retained release evidence,
+not the active gate.
 
 Expected result for the current `0.11.0a0` source line (`0.11.0-alpha`):
 
@@ -40,6 +35,19 @@ Expected result for the current `0.11.0a0` source line (`0.11.0-alpha`):
   `govengine.sclite_adapter` is absent because Ravenclaw owns projection from
   its runtime payloads to public SCLite lifecycle artifacts;
 - no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced.
+
+## Historical validation records
+
+Historical expected result for the published `0.1.7` source line:
+
+- standalone pytest suite passes (`72 passed` in the `0.1.7` source tree);
+- package dependencies are consistent;
+- `python -m build` creates `govengine-0.1.7` sdist/wheel artifacts;
+- `python -m twine check dist/*` passes for the release artifacts;
+- clean wheel install reports `govengine.__version__ == 0.1.7`, distribution version `0.1.7`, import checks for the artifact-governance, surface-registry, security-profile facade, and SCLite review-bundle bridge modules pass, and `pip check` is clean;
+- clean install from PyPI with `govengine==0.1.7` reports `govengine.__version__ == 0.1.7`, distribution version `0.1.7`, `sclite-core==0.5.1`, SCLite review-bundle bridge checks pass, and `pip check` is clean;
+- no Ravenclaw runtime or Logdash process is started;
+- demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness; scoped-ticket use-gate tests prove SCLite receipt/evidence bounds delegation, and review-bundle tests prove GovEngine delegates pass/fail verdicts to SCLite `0.5.1`, not live runtime enforcement.
 
 Historical expected result for the 0.2 kernel-boundary line:
 
