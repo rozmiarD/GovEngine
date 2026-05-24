@@ -58,14 +58,16 @@ Purpose:
 Modules:
 
 - `govengine.contracts.execution`
-- `govengine.sclite_adapter`
 - `govengine.sclite_contracts`
 
 Purpose:
 
 - shape execution contracts and approval payloads;
 - redact prepared execution specs for auditor/reviewer surfaces;
-- bridge GovEngine helpers to SCLite lifecycle artifacts.
+- map SCLite lifecycle/review results into neutral GovEngine state and transition decisions.
+
+Lifecycle artifact projection from a host runtime payload is host-owned;
+Ravenclaw implements its projection outside this kernel.
 
 ### 4. Execution helper / runner protocol layer
 

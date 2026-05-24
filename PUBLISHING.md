@@ -16,7 +16,7 @@ GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for futu
 
 ## PyPI release notes
 
-- SCLite is published as the PyPI distribution `sclite-core`; the current GovEngine `0.10.x` alpha source line depends on `sclite-core>=0.7.0a0,<0.8`.
+- SCLite is published as the PyPI distribution `sclite-core`; the current GovEngine `0.11.x` alpha source line depends on `sclite-core>=0.8.0a0,<0.9`.
 - Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
 - `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
 - `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.
@@ -34,6 +34,7 @@ GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for futu
 - `0.10.0-alpha` is the alpha-readiness line: package metadata, build/install validation, public truth, runtime proof fixtures, and Ravenclaw downstream compatibility checks are aligned. It does not add carrier adapters, credentials, schedulers, storage, live execution, production readiness, public tags, or PyPI upload without operator approval.
 - `0.10.1-alpha` is the SCLite 0.6 alpha sync line: dependency truth, public status, validators, and downstream compatibility checks move to `sclite-core>=0.6.0a0,<0.7` without expanding GovEngine's runtime ownership.
 - `0.10.2-alpha` is the SCLite 0.7 surface-collapse sync line: it adds a scoped-ticket lifecycle projection for active review-bundle consumers while SCLite retains artifact/review verdict ownership.
+- `0.11.0-alpha` consumes the SCLite 0.8 retired-legacy surface and removes the Ravenclaw-shaped lifecycle projection from GovEngine after Ravenclaw takes ownership of that mapping.
 - API stability and non-claims should remain explicit because this is pre-1.0.
 
 ## Release order

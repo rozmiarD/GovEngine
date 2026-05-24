@@ -39,7 +39,7 @@ def _tuple(values: Iterable[str]) -> Tuple[str, ...]:
 def artifact_governance_surface() -> GovSurface:
     return GovSurface(
         name='artifact_governance_core',
-        status='pre_alpha_tested',
+        status='alpha_tested',
         modules=_tuple((
             'govengine.core',
             'govengine.boundary',
@@ -67,7 +67,7 @@ def artifact_governance_surface() -> GovSurface:
 def controlled_execution_surface() -> GovSurface:
     return GovSurface(
         name='controlled_execution_core',
-        status='pre_alpha_dry_run_default',
+        status='alpha_dry_run_default',
         modules=_tuple((
             'govengine.execution.approved_spec',
             'govengine.execution.ticket_gate',
@@ -102,7 +102,7 @@ def controlled_execution_surface() -> GovSurface:
 def planning_contracts_surface() -> GovSurface:
     return GovSurface(
         name='planning_contracts_core',
-        status='pre_alpha_tested',
+        status='alpha_tested',
         modules=_tuple((
             'govengine.planning',
         )),
@@ -122,7 +122,7 @@ def planning_contracts_surface() -> GovSurface:
 def admission_policy_surface() -> GovSurface:
     return GovSurface(
         name='admission_policy_core',
-        status='pre_alpha_tested',
+        status='alpha_tested',
         modules=_tuple((
             'govengine.admission',
         )),
@@ -142,7 +142,7 @@ def admission_policy_surface() -> GovSurface:
 def evidence_review_surface() -> GovSurface:
     return GovSurface(
         name='evidence_review_core',
-        status='pre_alpha_tested',
+        status='alpha_tested',
         modules=_tuple((
             'govengine.review',
         )),
@@ -162,7 +162,7 @@ def evidence_review_surface() -> GovSurface:
 def domain_profile_sdk_surface() -> GovSurface:
     return GovSurface(
         name='domain_profile_sdk',
-        status='pre_alpha_contract_only',
+        status='alpha_contract_only',
         modules=_tuple((
             'govengine.profiles',
         )),
@@ -185,7 +185,7 @@ def domain_profile_sdk_surface() -> GovSurface:
 def runtime_contract_proofs_surface() -> GovSurface:
     return GovSurface(
         name='runtime_contract_proofs',
-        status='pre_alpha_contract_examples',
+        status='alpha_contract_examples',
         modules=_tuple((
             'govengine.contract_proofs',
         )),
@@ -207,7 +207,7 @@ def runtime_contract_proofs_surface() -> GovSurface:
 def security_profile_surface() -> GovSurface:
     return GovSurface(
         name='security_profile_helpers',
-        status='pre_alpha_optional_profile',
+        status='alpha_optional_profile',
         modules=_tuple((
             'govengine.action_schema',
             'govengine.action_validators',

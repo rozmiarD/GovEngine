@@ -23,7 +23,6 @@ def test_public_modules_import() -> None:
         'govengine.action_compiler',
         'govengine.tool_registry',
         'govengine.sclite_contracts',
-        'govengine.sclite_adapter',
         'govengine.signing',
         'govengine.state_index',
         'govengine.state_machine',

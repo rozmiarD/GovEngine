@@ -28,6 +28,7 @@ def test_public_surface_index_names_core_before_optional_profile() -> None:
         'security_profile_helpers',
     ]
     assert surfaces[-1].optional_profile is True
+    assert all(surface.status.startswith('alpha_') for surface in surfaces)
 
 
 def test_security_profile_is_explicitly_optional_and_does_not_own_core_gates() -> None:

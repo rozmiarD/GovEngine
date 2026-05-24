@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.10.2a0'
+__version__ = '0.11.0a0'
 
 from .admission import (
     GovAdmissionDecision,

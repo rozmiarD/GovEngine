@@ -23,7 +23,7 @@ Historical expected result for the published `0.1.7` source line:
 - no Ravenclaw runtime or Logdash process is started;
 - demo signer/verifier tests prove deterministic descriptor-digest binding and tamper rejection, not production identity or PKI readiness; scoped-ticket use-gate tests prove SCLite receipt/evidence bounds delegation, and review-bundle tests prove GovEngine delegates pass/fail verdicts to SCLite `0.5.1`, not live runtime enforcement.
 
-Expected result for the current `0.10.2a0` source line (`0.10.2-alpha`):
+Expected result for the current `0.11.0a0` source line (`0.11.0-alpha`):
 
 - full pytest passes in the source tree;
 - `python -m pip check` is clean;
@@ -36,6 +36,9 @@ Expected result for the current `0.10.2a0` source line (`0.10.2-alpha`):
 - package build and clean wheel-install smoke checks pass before any tag or upload;
 - Ravenclaw public downstream validation passes against the local alpha package line, using explicit runtime paths such as `RAVENCLAW_REPORTS_DIR`, `RAVENCLAW_TMP_DIR`, `RAVENCLAW_LOGDASH_DB`, and `RAVENCLAW_PIPELINE_CONFIG` when the checkout should remain clean/read-only;
 - neutral core surfaces do not import optional security-profile helper modules at runtime;
+- public surface status markers are alpha-labelled and
+  `govengine.sclite_adapter` is absent because Ravenclaw owns projection from
+  its runtime payloads to public SCLite lifecycle artifacts;
 - no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced.
 
 Historical expected result for the 0.2 kernel-boundary line:

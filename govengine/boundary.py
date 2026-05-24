@@ -180,7 +180,7 @@ class BoundaryReport:
     profiles: tuple[DomainProfileContract, ...] = field(default_factory=tuple)
     profile_conformance: tuple[DomainProfileConformance, ...] = field(default_factory=tuple)
     surfaces: tuple[Mapping[str, Any], ...] = field(default_factory=tuple)
-    status: str = 'pre_alpha_boundary_declared'
+    status: str = 'alpha_boundary_declared'
     schema_version: str = 'v0.1'
 
     def as_dict(self) -> dict[str, Any]:

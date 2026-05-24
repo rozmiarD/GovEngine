@@ -4,6 +4,12 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## 0.11.0-alpha - Host projection removal and SCLite 0.8 sync
+
+- Promotes source/package truth to `0.11.0a0` / `0.11.0-alpha` with `sclite-core>=0.8.0a0,<0.9`.
+- Removes `govengine.sclite_adapter`, the transitional Ravenclaw-shaped lifecycle assembly seam, after Ravenclaw moved public lifecycle projection into its own runtime boundary.
+- Retains neutral lifecycle/review result mapping and validates that host-owned projection does not re-enter GovEngine core.
+
 ## 0.10.2-alpha - SCLite 0.7 lifecycle surface sync
 
 - Promoted source/package truth to `0.10.2a0` / `0.10.2-alpha` with `sclite-core>=0.7.0a0,<0.8`.

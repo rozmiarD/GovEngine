@@ -17,6 +17,11 @@ GovEngine owns reusable governed-execution services. Its public surface should s
 `govengine.profiles.validate_profile_conformance()` checks contract-only domain profile declarations without granting domain taxonomy, carrier adapter, credential, product UX, or live-execution ownership.
 `govengine.contract_proofs.validate_runtime_contract_proof()` checks public-safe multi-profile contract proof fixtures without granting adapter, credential, scheduler, storage, live-execution, or new OODA ownership.
 
+Host-owned lifecycle projection is outside GovEngine. Ravenclaw maps its
+runtime payloads into SCLite artifacts and owns its public proof projection;
+GovEngine retains only neutral SCLite descriptor/state/transition and
+review-bundle verdict mapping while SCLite owns lifecycle/review verification.
+
 ## Public surface groups
 
 ### Artifact-governance core
