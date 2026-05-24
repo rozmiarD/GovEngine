@@ -1,11 +1,24 @@
 from __future__ import annotations
 
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = ROOT / 'scripts' / 'validate_public_truth.py'
+
+
+def _load_validator():
+    spec = importlib.util.spec_from_file_location('govengine_validate_public_truth', SCRIPT)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_public_truth_validator_passes() -> None:
@@ -44,3 +57,13 @@ def test_current_public_docs_do_not_reintroduce_pre_alpha_maturity_claims() -> N
     ):
         text = (ROOT / relative).read_text(encoding='utf-8').lower()
         assert not any(marker in text for marker in stale_markers), relative
+
+
+def test_public_truth_validator_rejects_stale_current_roadmap_baseline() -> None:
+    validator = _load_validator()
+
+    with pytest.raises(AssertionError, match='stale_current_roadmap_claim'):
+        validator._assert_roadmap_current_release_truth(
+            '## Current implemented baseline: 0.10.x alpha\n'
+            'GovEngine stays on the 0.10 alpha stabilization line.\n'
+        )

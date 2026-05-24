@@ -62,9 +62,10 @@ Runtimes own UX/integration.
 SCLite owns proof/review artifacts.
 ```
 
-## Current implemented baseline: 0.10.x alpha
+## Current published baseline: 0.11.x alpha
 
-The current `0.10.x` alpha line proves the first useful kernel shape:
+The current `0.11.x` alpha line retains the first useful kernel shape and
+removes the former host-shaped lifecycle projection:
 
 - artifact-governance and SCLite lifecycle/review bridge helpers;
 - kernel/profile/runtime/SCLite boundary reports and conformance checks;
@@ -76,6 +77,8 @@ The current `0.10.x` alpha line proves the first useful kernel shape:
 - optional `govengine.security_profile` helper facade for Ravenclaw-derived security helpers;
 - public truth validation for version/dependency/status/API-boundary drift.
 - package-build, clean wheel-install, and Ravenclaw public downstream compatibility checks for the alpha source line.
+- explicit host ownership of Ravenclaw lifecycle projection after removal of
+  `govengine.sclite_adapter` from the neutral package surface.
 
 This is alpha, not stable. The next roadmap should not be a file move from Ravenclaw into GovEngine. It should remain contract-first extraction: define neutral contracts, add GovEngine tests, add host compatibility wrappers, then thin host code only after behavior is preserved.
 
@@ -373,7 +376,7 @@ Definition of done:
 - no PyPI upload or public tag is performed without explicit operator approval;
 - carrier adapters, credentials, schedulers, storage, live execution, and production readiness remain out of scope.
 
-Next `0.10.x` consolidation work:
+Historical `0.10.x` consolidation decisions carried into `0.11.x`:
 
 1. keep the neutral public surface index stable while alpha consumers exercise
    the current kernel from SCLite fixtures and Ravenclaw projections;
@@ -389,7 +392,7 @@ Next `0.10.x` consolidation work:
    infrastructure semantics into the kernel.
 6. retire the Ravenclaw-shaped lifecycle compatibility assembly only in an
    explicit package/API change after downstream current-proof validation and
-   SCLite legacy-retirement work agree.
+   SCLite legacy-retirement work agree; this was delivered in `0.11.0-alpha`.
 
 Success criteria for the consolidation line:
 
@@ -444,8 +447,8 @@ Success criteria:
 
 - a new public surface is added only with a neutral owner, a public boundary
   statement, negative tests, and consumer validation;
-- if no candidate meets the entry criteria, GovEngine stays on the 0.10 alpha
-  stabilization line instead of inventing a feature wave;
+- if no candidate meets the entry criteria, GovEngine stays on the `0.11.x`
+  alpha stabilization line instead of inventing a feature wave;
 - GovEngine remains a deterministic governed-runtime kernel while SCLite owns
   proof/review artifacts and Ravenclaw owns security runtime meaning.
 

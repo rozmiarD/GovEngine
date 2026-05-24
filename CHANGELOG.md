@@ -4,6 +4,12 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## Unreleased
+
+- Corrects roadmap current-baseline wording after the published `0.11.0-alpha`
+  boundary release and adds public-truth coverage against regressing to the
+  superseded `0.10` current-line claim.
+
 ## 0.11.0-alpha - Host projection removal and SCLite 0.8 sync
 
 - Published the alpha package as `govengine==0.11.0a0` on PyPI.
