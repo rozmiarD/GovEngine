@@ -133,6 +133,19 @@ def _assert_alpha_maturity_truth(paths: Iterable[str]) -> None:
     _assert_contains('docs/API_BOUNDARY.md', _read('docs/API_BOUNDARY.md'), 'current alpha public surface set')
 
 
+def _assert_roadmap_current_release_truth(roadmap: str) -> None:
+    stale_markers = (
+        '## Current implemented baseline: 0.10.x alpha',
+        'GovEngine stays on the 0.10 alpha stabilization line',
+    )
+    for marker in stale_markers:
+        if marker in roadmap:
+            raise AssertionError(f'docs/ROADMAP.md:stale_current_roadmap_claim:{marker}')
+    _assert_contains('docs/ROADMAP.md', roadmap, '## Current published baseline: 0.11.x alpha')
+    _assert_contains('docs/ROADMAP.md', roadmap, 'The current `0.11.x` alpha line')
+    _assert_contains('docs/ROADMAP.md', roadmap, 'GovEngine stays on the `0.11.x`')
+
+
 def main() -> int:
     project = _pyproject()['project']
     version = str(project['version'])
@@ -160,6 +173,7 @@ def main() -> int:
     _assert_readme_package_truth(readme, version)
     _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`')
     _assert_contains('docs/ROADMAP.md', roadmap, dependency)
+    _assert_roadmap_current_release_truth(roadmap)
     _assert_contains('PUBLIC_STATUS.md', public_status, f'Source version: `{version}`.')
     _assert_contains('PUBLIC_STATUS.md', public_status, f'Public release label: `{release_label}`.')
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
