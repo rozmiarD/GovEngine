@@ -14,8 +14,19 @@ python -m venv .venv
 python -m pip install --upgrade pip
 python -m pip install -e '.[dev]'
 python -m pytest -q
-python -m pip check
 ```
+
+For dependency-consistency and readiness validation, run the clean installed-package gate from a new virtual environment path:
+
+```bash
+python scripts/validate_clean_package_install.py \
+  --venv /tmp/govengine-clean-source \
+  --dev \
+  --sclite-source /path/to/SCLite \
+  --no-editable
+```
+
+Do not treat `pip check` from a broad system interpreter as GovEngine release evidence; it reports every unrelated package installed in that interpreter.
 
 ## Change rules
 

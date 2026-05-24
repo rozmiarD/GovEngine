@@ -161,6 +161,17 @@ def _assert_validation_current_gate_precedes_history(validation: str, version: s
     _assert_contains('docs/VALIDATION.md', validation, 'not the active gate')
 
 
+def _assert_clean_pip_check_guidance(contributing: str, validation: str, publishing: str) -> None:
+    current_validation = validation.split('## Historical validation records', 1)[0]
+    for path, text in (
+        ('CONTRIBUTING.md', contributing),
+        ('docs/VALIDATION.md', current_validation),
+        ('PUBLISHING.md', publishing),
+    ):
+        if re.search(r'(?m)^python -m pip check\s*$', text):
+            raise AssertionError(f'{path}:unscoped_pip_check_guidance')
+
+
 def main() -> int:
     project = _pyproject()['project']
     version = str(project['version'])
@@ -182,6 +193,7 @@ def main() -> int:
     sclite_integration = _read('docs/SCLITE_INTEGRATION.md')
     domain_profile = _read('docs/DOMAIN_PROFILE_CONTRACT.md')
     workflow = _read('.github/workflows/pytest.yml')
+    clean_install_script = _read('scripts/validate_clean_package_install.py')
 
     _assert_contains('README.md', readme, f'alpha {version}')
     _assert_contains('README.md', readme, release_label)
@@ -191,6 +203,7 @@ def main() -> int:
     _assert_contains('README.md', readme, 'originating Ravenclaw contribution lineage')
     _assert_contains('README.md', readme, 'package maintainer')
     _assert_contains('CONTRIBUTING.md', contributing, f'alpha (`{release_label}`)')
+    _assert_contains('CONTRIBUTING.md', contributing, 'scripts/validate_clean_package_install.py')
     _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`')
     _assert_contains('docs/ROADMAP.md', roadmap, dependency)
     _assert_roadmap_current_release_truth(roadmap)
@@ -198,8 +211,16 @@ def main() -> int:
     _assert_contains('PUBLIC_STATUS.md', public_status, f'Public release label: `{release_label}`.')
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
+    _assert_contains('PUBLISHING.md', publishing, 'scripts/validate_clean_package_install.py')
+    _assert_contains('PUBLISHING.md', publishing, '--no-editable')
     _assert_contains('docs/VALIDATION.md', validation, f'current `{version}` source line')
+    _assert_contains('docs/VALIDATION.md', validation, 'scripts/validate_clean_package_install.py')
+    _assert_contains('docs/VALIDATION.md', validation, '--no-editable')
+    _assert_contains('docs/VALIDATION.md', validation, 'broad system interpreter is not')
     _assert_validation_current_gate_precedes_history(validation, version)
+    _assert_clean_pip_check_guidance(contributing, validation, publishing)
+    _assert_contains('scripts/validate_clean_package_install.py', clean_install_script, "'-m', 'pip', 'check'")
+    _assert_contains('scripts/validate_clean_package_install.py', clean_install_script, 'venv_already_exists_choose_new_path')
     if (ROOT / 'govengine/sclite_adapter.py').exists():
         raise AssertionError('govengine/sclite_adapter.py:retired_host_projection_present')
     _assert_contains('PUBLIC_STATUS.md', public_status, 'Ravenclaw owns lifecycle artifact projection from its runtime payloads')
@@ -219,7 +240,7 @@ def main() -> int:
     _assert_contains('.github/workflows/pytest.yml', workflow, 'package-dry-run:')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'rm -rf dist build *.egg-info')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python -m twine check dist/*')
-    _assert_contains('.github/workflows/pytest.yml', workflow, 'python -m pip check')
+    _assert_contains('.github/workflows/pytest.yml', workflow, '/tmp/govengine-wheel-smoke/bin/python -m pip check')
 
     documented = _documented_surface_names(api_boundary)
     if documented != surface_names:

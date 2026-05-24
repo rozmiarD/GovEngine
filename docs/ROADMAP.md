@@ -372,7 +372,7 @@ Delivered in `0.10.2-alpha`:
 
 Definition of done:
 
-- `scripts/validate_public_truth.py`, `scripts/validate_alpha_readiness.py`, full pytest, `pip check`, build, wheel install smoke, and Ravenclaw public validation all pass;
+- `scripts/validate_public_truth.py`, `scripts/validate_alpha_readiness.py`, full pytest, `pip check` in an isolated install environment, build, wheel install smoke, and Ravenclaw public validation all pass;
 - no PyPI upload or public tag is performed without explicit operator approval;
 - carrier adapters, credentials, schedulers, storage, live execution, and production readiness remain out of scope.
 

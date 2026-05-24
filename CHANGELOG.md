@@ -13,6 +13,8 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   current validation gate precede archived release evidence, and documents why
   extracted Ravenclaw copyright attribution coexists with GovEngine package
   maintainer metadata.
+- Adds a clean installed-package validation gate and removes active guidance to
+  use a dependency-polluted system interpreter for `pip check` evidence.
 
 ## 0.11.0-alpha - Host projection removal and SCLite 0.8 sync
 
