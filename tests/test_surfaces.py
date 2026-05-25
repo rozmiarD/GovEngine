@@ -9,12 +9,11 @@ from govengine.surfaces import (
     planning_contracts_surface,
     public_surface_index,
     runtime_contract_proofs_surface,
-    security_profile_surface,
     surface_by_name,
 )
 
 
-def test_public_surface_index_names_core_before_optional_profile() -> None:
+def test_public_surface_index_contains_neutral_core_only() -> None:
     surfaces = public_surface_index()
 
     assert [surface.name for surface in surfaces] == [
@@ -25,21 +24,9 @@ def test_public_surface_index_names_core_before_optional_profile() -> None:
         'domain_profile_sdk',
         'runtime_contract_proofs',
         'controlled_execution_core',
-        'security_profile_helpers',
     ]
-    assert surfaces[-1].optional_profile is True
+    assert all(surface.optional_profile is False for surface in surfaces)
     assert all(surface.status.startswith('alpha_') for surface in surfaces)
-
-
-def test_security_profile_is_explicitly_optional_and_does_not_own_core_gates() -> None:
-    profile = security_profile_surface()
-
-    assert profile.optional_profile is True
-    assert 'govengine.action_schema' in profile.modules
-    assert 'govengine.policy.gateway' in profile.modules
-    assert 'govengine.core' not in profile.modules
-    assert 'govengine.execution.gate' not in profile.modules
-    assert any('authorization' in claim for claim in profile.non_claims)
 
 
 def test_core_surfaces_keep_live_execution_and_adapter_non_claims() -> None:

@@ -2,6 +2,8 @@
 
 GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for future releases without overstating maturity.
 
+Current source candidate: `govengine==0.12.0a0` (`0.12.0-alpha`) with `sclite-core>=0.8.0a0,<0.9`. Published PyPI baseline remains `govengine==0.11.0a0` until candidate validation is complete and release is explicitly approved.
+
 ## Preflight
 
 - [ ] For maintainer releases from the operator-controlled publish tree, effective git identity is `0x505badc0de <32790662+rozmiarD@users.noreply.github.com>`; external contributors use their own GitHub-associated identity.
@@ -10,7 +12,7 @@ GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for futu
 - [ ] `python scripts/validate_public_truth.py` passes.
 - [ ] `python scripts/validate_alpha_readiness.py` passes for alpha source lines.
 - [ ] `python -m pytest -q` passes.
-- [ ] `python scripts/validate_clean_package_install.py --venv /tmp/govengine-clean-release --dev --sclite-source /path/to/SCLite --no-editable` passes from a new virtual environment path.
+- [ ] `python scripts/validate_clean_package_install.py --venv /tmp/govengine-clean-release --dev --sclite-source /path/to/SCLite --no-editable` passes from a new virtual environment path, including its isolated installed-package retirement smoke.
 - [ ] Build artifacts are generated from a clean tree.
 - [ ] No generated `build/`, `dist/`, `*.egg-info`, caches, private state, or Ravenclaw workspace files are committed unless intentionally package metadata.
 
@@ -35,6 +37,7 @@ GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for futu
 - `0.10.1-alpha` is the SCLite 0.6 alpha sync line: dependency truth, public status, validators, and downstream compatibility checks move to `sclite-core>=0.6.0a0,<0.7` without expanding GovEngine's runtime ownership.
 - `0.10.2-alpha` is the SCLite 0.7 surface-collapse sync line: it adds a scoped-ticket lifecycle projection for active review-bundle consumers while SCLite retains artifact/review verdict ownership.
 - `0.11.0-alpha` consumes the SCLite 0.8 retired-legacy surface and removes the Ravenclaw-shaped lifecycle projection from GovEngine after Ravenclaw takes ownership of that mapping.
+- `0.12.0-alpha` is the candidate API-narrowing line that removes the Ravenclaw-derived optional security facade and helper modules while preserving the neutral kernel surfaces.
 - API stability and non-claims should remain explicit because this is pre-1.0.
 
 ## Release order

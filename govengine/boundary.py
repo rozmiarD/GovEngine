@@ -56,7 +56,6 @@ ALLOWED_PROFILE_CONSUMES = (
     'govengine_evidence_review_core',
     'govengine_domain_profile_sdk',
     'govengine_controlled_execution_core',
-    'govengine_security_profile_helpers',
     'sclite_lifecycle_artifacts',
     'sclite_review_bundles',
 )
@@ -220,7 +219,6 @@ def ravenclaw_profile_contract() -> DomainProfileContract:
             'govengine_admission_policy_core',
             'govengine_evidence_review_core',
             'govengine_controlled_execution_core',
-            'govengine_security_profile_helpers',
             'sclite_review_bundles',
         ),
         non_claims=(

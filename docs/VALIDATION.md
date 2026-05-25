@@ -26,10 +26,11 @@ python scripts/validate_clean_package_install.py \
 ```
 
 This is the canonical local `pip check` gate: the script installs GovEngine
-and the selected SCLite source into a disposable virtual environment before
-running validators, tests, and `pip check`. A broad system interpreter is not
-a release-readiness environment because unrelated installed tools can make its
-dependency set inconsistent.
+and the selected SCLite source into a disposable virtual environment, performs
+an isolated installed-package smoke that rejects the retired security modules,
+then runs validators, tests, and `pip check`. A broad system interpreter is not
+a release-readiness environment because unrelated installed tools can make
+its dependency set inconsistent.
 
 ## Current source-line gate
 
@@ -37,10 +38,10 @@ Only this section states current validation expectations. The versioned
 sections under **Historical validation records** are retained release evidence,
 not the active gate.
 
-Expected result for the current `0.11.0a0` source line (`0.11.0-alpha`):
+Expected result for the current `0.12.0a0` source line (`0.12.0-alpha`):
 
 - full pytest passes in the source tree;
-- `scripts/validate_clean_package_install.py` passes and runs `pip check` inside its newly created virtual environment;
+- `scripts/validate_clean_package_install.py` passes, rejects retired module paths from the installed artifact, and runs `pip check` inside its newly created virtual environment;
 - `python scripts/validate_public_truth.py` passes;
 - `python scripts/validate_alpha_readiness.py` passes;
 - import smoke checks include `govengine.contract_proofs`, `govengine.profiles`, `govengine.review`, `govengine.execution.supervision`, `govengine.admission`, `govengine.planning`, `govengine.runtime_shell`, and `govengine.scope_ports`;
@@ -49,7 +50,7 @@ Expected result for the current `0.11.0a0` source line (`0.11.0-alpha`):
 - runtime contract proof fixtures pass for Ravenclaw and Tecrax without adapter, credential, scheduler, storage, live-execution, or new OODA claims;
 - package build and clean wheel-install smoke checks pass before any tag or upload;
 - Ravenclaw public downstream validation passes against the local alpha package line, using explicit runtime paths such as `RAVENCLAW_REPORTS_DIR`, `RAVENCLAW_TMP_DIR`, `RAVENCLAW_LOGDASH_DB`, and `RAVENCLAW_PIPELINE_CONFIG` when the checkout should remain clean/read-only;
-- neutral core surfaces do not import optional security-profile helper modules at runtime;
+- retired security facade/module paths are absent and cannot re-enter the neutral public surface index;
 - public surface status markers are alpha-labelled and
   `govengine.sclite_adapter` is absent because Ravenclaw owns projection from
   its runtime payloads to public SCLite lifecycle artifacts;
@@ -146,12 +147,10 @@ Historical expected result for the `0.6.0` release line:
 Current tests cover:
 
 - public module imports;
-- action compilation;
 - dry-run result assembly;
 - neutral scope helpers;
 - approved execution spec and ticket helper shapes;
 - OODA decision outcomes and runner-control receipt shape;
-- signal, analysis, and confirmation-evidence policy contract helpers;
 - SCLite lifecycle verifier seam availability;
 - current scoped-ticket lifecycle construction and SCLite review-bundle materialization compatibility;
 - SCLite review-bundle bridge pass/fail mapping for packaged GovEngine integration fixtures;
@@ -160,8 +159,8 @@ Current tests cover:
 - signing/trust bridge decisions and deterministic demo signer/verifier ports without PKI/key ownership;
 - dry-run-only execution gates and default `DryRunRunner` behavior;
 - deconfliction/change-order and artifact state-index summaries;
-- public surface registry separation between artifact-governance core, planning contracts, admission-policy contracts, controlled-execution core, and optional security-profile helpers;
-- optional `govengine.security_profile` facade grouping, JSON-safe index output, allowlisted lazy imports, and boundary assertions;
+- public surface registry containing only the neutral artifact-governance, planning, admission-policy, evidence-review, profile, proof, and controlled-execution groups;
+- negative regression checks rejecting the retired `govengine.security_profile` facade and Ravenclaw-derived security module paths;
 - kernel/profile/runtime/SCLite boundary contracts, boundary report, and domain-profile conformance checks;
 - deterministic orchestration handoff records without scheduler, UI, adapter, credential, or live-execution authority;
 - transport-neutral governance event metadata without raw prompt, credential, live-command, carrier-delivery, or schedule payloads;

@@ -28,7 +28,6 @@ Current boundary work allows profiles to consume:
 - `govengine_evidence_review_core`;
 - `govengine_domain_profile_sdk`;
 - `govengine_controlled_execution_core`;
-- `govengine_security_profile_helpers`;
 - `sclite_lifecycle_artifacts`;
 - `sclite_review_bundles`.
 
@@ -50,7 +49,7 @@ These remain outside profile ownership even when a profile has runtime code that
 
 ## Ravenclaw Compatibility
 
-The built-in Ravenclaw profile contract identifies Ravenclaw as a security-research host profile. It owns campaign/runtime semantics and Logdash/operator workflow language, while consuming GovEngine admission-policy, controlled-execution, and optional security-profile helpers plus SCLite review bundles.
+The built-in Ravenclaw profile contract identifies Ravenclaw as a security-research host profile. It owns campaign/runtime semantics and Logdash/operator workflow language, while consuming neutral GovEngine admission-policy and controlled-execution surfaces plus SCLite review bundles.
 
 The `ravenclaw_security_profile()` SDK fixture is narrower than Ravenclaw itself: it declares security-research resource types, task families, planning stages, policy hooks, dry-run runner profile, and receipt-bounded evidence expectations. It does not make GovEngine own Ravenclaw finding taxonomy, Logdash, campaign UX, or target-test authorization.
 

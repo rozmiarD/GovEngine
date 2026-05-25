@@ -6,6 +6,15 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Promotes the source candidate to `0.12.0a0` / `0.12.0-alpha` while the
+  published PyPI baseline remains `govengine==0.11.0a0` pending downstream
+  validation and explicit release approval.
+- Removes the optional `security_profile_helpers` surface, its
+  `govengine.security_profile` facade, and Ravenclaw-derived action, tool,
+  policy, scope, signal, analysis, and confirmation helper modules.
+- Retains neutral scope ports, review, planning, admission, runtime/control,
+  supervision, profile, proof, and SCLite integration boundaries and adds
+  negative tests against reintroducing the retired facade.
 - Corrects roadmap current-baseline wording after the published `0.11.0-alpha`
   boundary release and adds public-truth coverage against regressing to the
   superseded `0.10` current-line claim.

@@ -2,8 +2,8 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current source baseline: `govengine==0.11.0a0` (`0.11.0-alpha`), depending on `sclite-core>=0.8.0a0,<0.9`.
-Current PyPI package release: `govengine==0.11.0a0` is published.
+Current source baseline: `govengine==0.12.0a0` (`0.12.0-alpha`), depending on `sclite-core>=0.8.0a0,<0.9`.
+Published PyPI baseline remains `govengine==0.11.0a0` until the candidate passes downstream validation and receives explicit release approval.
 
 ## Architecture thesis
 
@@ -62,10 +62,11 @@ Runtimes own UX/integration.
 SCLite owns proof/review artifacts.
 ```
 
-## Current published baseline: 0.11.x alpha
+## Current source candidate: 0.12.x alpha
 
-The current `0.11.x` alpha line retains the first useful kernel shape and
-removes the former host-shaped lifecycle projection:
+The current `0.12.x` alpha candidate retains the neutral kernel shape, removes
+the former host-shaped lifecycle projection, and retires the Ravenclaw-derived
+optional security facade:
 
 - artifact-governance and SCLite lifecycle/review bridge helpers;
 - kernel/profile/runtime/SCLite boundary reports and conformance checks;
@@ -73,8 +74,7 @@ removes the former host-shaped lifecycle projection:
 - contract-only domain profile SDK declarations and Ravenclaw/Tecrax conformance fixtures;
 - runtime contract proof fixtures showing Ravenclaw and Tecrax over the same neutral GovEngine/SCLite contract flow;
 - dry-run/default-deny execution posture with no default live subprocess backend;
-- public surface registry separating neutral core, contract-only domain profile SDK, and optional security-profile helpers;
-- optional `govengine.security_profile` helper facade for Ravenclaw-derived security helpers;
+- public surface registry limited to neutral core, contract-only domain profile SDK, and proof surfaces;
 - public truth validation for version/dependency/status/API-boundary drift.
 - package-build, clean wheel-install, and Ravenclaw public downstream compatibility checks for the alpha source line.
 - explicit host ownership of Ravenclaw lifecycle projection after removal of
@@ -82,15 +82,12 @@ removes the former host-shaped lifecycle projection:
 
 This is alpha, not stable. The next roadmap should not be a file move from Ravenclaw into GovEngine. It should remain contract-first extraction: define neutral contracts, add GovEngine tests, add host compatibility wrappers, then thin host code only after behavior is preserved.
 
-The next alpha hygiene gate is narrower than a new feature wave: neutral public
-surfaces must not embed Ravenclaw host context or `RAVENCLAW_*` configuration
-assumptions. The optional `security_profile_helpers` surface is compatibility
-scaffolding for Ravenclaw-derived helpers and should contract over time as
-profile-owned tool, policy, and UX semantics settle in their runtime. Its
-planner-profile environment default is now the neutral `GOVENGINE_TOOL_PROFILES`;
-the old Ravenclaw-named variable remains only as a compatibility fallback. New
-neutral extraction should land in the typed core/profile surfaces only when the
-code and a second host prove it there.
+The active alpha hygiene gate requires neutral public surfaces to stay free of
+Ravenclaw host context and domain security helper imports. The former
+`security_profile_helpers` compatibility surface is removed in this candidate;
+profile-owned tool, policy, and UX semantics remain in Ravenclaw. New neutral
+extraction should land in typed core/profile surfaces only when the code and a
+second host prove it there.
 
 ## Version roadmap
 

@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.11.0a0'
+__version__ = '0.12.0a0'
 
 from .admission import (
     GovAdmissionDecision,
@@ -127,8 +127,7 @@ from .runtime_shell import (
     validate_runtime_snapshot,
     validate_scheduler_tick,
 )
-from .scope import FunctionalScopePort
-from .scope_ports import GovScopePort
+from .scope_ports import FunctionalScopePort, GovScopePort
 from .signing import DemoDigestSigner, DemoDigestVerifier, SignatureEnvelope, SigningPolicy, TrustPolicy, VerificationResult, demo_sign_and_verify
 from .state_index import ArtifactStateIndex
 from .state_machine import (
@@ -139,21 +138,12 @@ from .state_machine import (
     validate_state_transition,
 )
 from .state_store import GovStateStore
-from .security_profile import (
-    SecurityProfileGroup,
-    assert_security_profile_boundary,
-    import_security_profile_module,
-    security_profile_groups,
-    security_profile_index,
-    security_profile_module_names,
-)
 from .surfaces import (
     GovSurface,
     admission_policy_surface,
     domain_profile_sdk_surface,
     public_surface_index,
     runtime_contract_proofs_surface,
-    security_profile_surface,
 )
 
 __all__ = [
@@ -222,7 +212,6 @@ __all__ = [
     'ProfileConformanceReport',
     'ResourceTypeRegistry',
     'RuntimeContractProof',
-    'SecurityProfileGroup',
     'RunnerProfileDeclaration',
     'TaskFamilyRegistry',
     'FunctionalScopePort',
@@ -248,13 +237,11 @@ __all__ = [
     'control_action_from_host_action',
     'demo_sign_and_verify',
     'apply_state_transition',
-    'assert_security_profile_boundary',
     'boundary_surface_index',
     'domain_profile_conformance',
     'domain_profile_sdk_surface',
     'governance_contract_vocabulary',
     'host_compat_context',
-    'import_security_profile_module',
     'kernel_boundary_contract',
     'kernel_boundary_report',
     'known_profile_contracts',
@@ -268,10 +255,6 @@ __all__ = [
     'ravenclaw_security_profile',
     'runner_lease_from_request',
     'runtime_contract_proofs_surface',
-    'security_profile_groups',
-    'security_profile_index',
-    'security_profile_module_names',
-    'security_profile_surface',
     'supervision_plan_from_runner_request',
     'tecrax_contract_proof',
     'tecrax_infra_ops_profile',
@@ -337,6 +320,3 @@ def __getattr__(name: str):
             'verify_lifecycle_manifest': verify_lifecycle_manifest,
         }[name]
     raise AttributeError(name)
-
-
-from .action_schema import *  # noqa: F401,F403,E402

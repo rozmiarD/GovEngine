@@ -2,7 +2,7 @@
 
 GovEngine owns reusable governed-execution services. Its public surface should stay carrier-neutral and SCLite-aware.
 
-`govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current alpha public surface set. It separates the neutral artifact-governance core, planning contracts, admission/policy contracts, evidence review, domain-profile SDK, runtime contract proofs, controlled-execution core, and optional security-profile helpers. `govengine.security_profile.security_profile_index()` is the tested compatibility facade for hosts that still need the optional Ravenclaw-derived helper set through one entrypoint without treating it as neutral core.
+`govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current alpha public surface set. It contains the neutral artifact-governance core, planning contracts, admission/policy contracts, evidence review, domain-profile SDK, runtime contract proofs, and controlled-execution core. The `0.12.0-alpha` candidate removes the prior Ravenclaw-derived optional security facade; domain security behavior belongs in the host runtime.
 `govengine.boundary.kernel_boundary_report()` is the tested machine-readable 0.2 boundary report. It combines the kernel/profile/runtime/SCLite ownership contract, known domain-profile contracts such as Ravenclaw, and the current public surface index.
 `govengine.boundary.validate_domain_profile_conformance()` checks that a domain profile does not claim forbidden ownership and consumes only known GovEngine/SCLite surfaces.
 `govengine.orchestration.validate_orchestration_step()` checks deterministic orchestration handoff records without granting agent-loop, scheduler, UI, carrier, credential, or live-execution authority.
@@ -94,24 +94,6 @@ Neutral controlled-execution modules:
 
 Claim: approved-spec, execution-ticket, command-shape, runner receipt, runner supervision, OODA, orchestration handoff, event envelope, control-decision, runtime-shell projection, and dry-run-only execution-gate helpers. Non-claims: raw-intent execution, default live subprocess execution, live backend ownership, scanner/campaign execution ownership, protocol adapter ownership, runtime storage ownership, or scheduler ownership.
 
-### Optional security-profile helpers
-
-Security-oriented helpers are explicit optional profile modules, not the neutral artifact-governance core:
-
-- `govengine.action_schema`
-- `govengine.action_validators`
-- `govengine.action_compiler`
-- `govengine.capability_recipes`
-- `govengine.tool_registry`
-- `govengine.semantic_loss_policy`
-- `govengine.policy.*`
-- `govengine.scope`
-- `govengine.contracts.signal`
-- `govengine.contracts.analysis`
-- `govengine.contracts.evidence_policy`
-
-Claim: compatibility-only public-safe helpers for Ravenclaw-derived bounded action/tool/scope/policy/signal behavior while this host-originated surface is narrowed. The `govengine.security_profile` facade groups these helpers into `action_tooling`, `policy_scope`, and `review_contracts`, and exposes allowlisted lazy imports for those modules only. It is not a neutral SDK target for new GovEngine extraction. Non-claims: live exploit/scanner capability, authorization to test targets, bug-bounty campaign orchestration, Logdash/Ravenclaw runtime ownership, or OpenClaw/MCP/A2A adapter ownership.
-
 ## Owns
 
 GovEngine owns:
@@ -129,18 +111,11 @@ GovEngine owns:
 - `govengine.contract_proofs` — public-safe runtime contract proof fixtures and neutral governance vocabulary over existing contracts without adapter, credential, scheduler, storage, live-execution, domain runtime, or new OODA ownership.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
 - `govengine.signing` — signature envelopes, signing/trust policy objects, host-provided signer/verifier ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
-- `govengine.security_profile` — optional compatibility facade for bounded helper discovery, grouped metadata, allowlisted lazy imports, and boundary assertions.
-- `govengine.action_schema` — optional security-profile action type/capability constants and limits.
-- `govengine.action_validators` — optional security-profile action/probe shape validation.
-- `govengine.action_compiler` — optional security-profile action spec lowering into execution plans.
-- `govengine.capability_recipes` — optional security-profile capability and recipe resolution.
-- `govengine.semantic_loss_policy` — optional security-profile semantic-loss classification/gates.
-- `govengine.policy.*` — optional security-profile policy core and gateway helpers.
-- `govengine.contracts.*` — execution-contract shaping/redaction helpers plus optional security-profile signal, analysis, and confirmation-evidence policy contracts.
+- `govengine.contracts.execution` — execution-contract shaping and redaction helpers.
 - `govengine.execution.*` — approved-spec, ticket, command-shape, dry-run helpers, and controlled execution gates that keep live backends disabled by default.
 - `govengine.orchestration` — deterministic orchestration handoff contracts without scheduler, UI, adapter, credential, or live-execution authority.
 - `govengine.events` — transport-neutral governance event metadata and envelope validation without scheduler, carrier, credential, or command payload authority.
-- `govengine.scope` — optional security-profile scope helpers and `GovScopePort`.
+- `govengine.scope_ports` — neutral scope-port protocol and host extraction helper used by controlled-execution contracts.
 - `govengine.state_store` — neutral JSON state helper primitives.
 - `govengine.sclite_*` — explicit integration seams with SCLite, including descriptor/status/transition mapping that delegates lifecycle verification and review-bundle verdicts to SCLite.
 
@@ -150,7 +125,7 @@ GovEngine consumes:
 
 - SCLite schemas, lifecycle helpers, review-bundle helpers, and verification surfaces;
 - host-provided filesystem/context paths;
-- host-provided policy/scope/tool registry data.
+- host-provided inputs required by neutral runtime ports and contracts.
 
 ## Does not own
 

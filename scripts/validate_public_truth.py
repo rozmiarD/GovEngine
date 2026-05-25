@@ -14,7 +14,8 @@ from govengine import __version__ as package_version  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '0.11.0-alpha'
+EXPECTED_RELEASE_LABEL = '0.12.0-alpha'
+PUBLISHED_VERSION = '0.11.0a0'
 
 SURFACE_HEADINGS = {
     'Artifact-governance core': 'artifact_governance_core',
@@ -24,7 +25,6 @@ SURFACE_HEADINGS = {
     'Domain-profile SDK': 'domain_profile_sdk',
     'Runtime contract proofs': 'runtime_contract_proofs',
     'Controlled-execution core': 'controlled_execution_core',
-    'Optional security-profile helpers': 'security_profile_helpers',
 }
 
 STATUS_MARKERS = {
@@ -35,7 +35,6 @@ STATUS_MARKERS = {
     'domain_profile_sdk': 'Domain profile SDK',
     'runtime_contract_proofs': 'Runtime contract proofs',
     'controlled_execution_core': 'Controlled execution gate',
-    'security_profile_helpers': 'Security profile',
 }
 
 CURRENT_ALPHA_DOCS = (
@@ -103,9 +102,9 @@ def _assert_no_current_stale_status(paths: Iterable[str], version: str) -> None:
 
 
 def _assert_readme_package_truth(readme: str, version: str) -> None:
-    release_url = f'https://pypi.org/project/govengine/{version}/'
-    badge = f'package-govengine%20{version}-blueviolet.svg'
-    install_command = f'python -m pip install govengine=={version}'
+    release_url = f'https://pypi.org/project/govengine/{PUBLISHED_VERSION}/'
+    badge = f'source-govengine%20{version}-blueviolet.svg'
+    install_command = f'python -m pip install govengine=={PUBLISHED_VERSION}'
     forbidden_dynamic_badges = (
         'img.shields.io/pypi/v/govengine',
         'label=package%3A%20govengine',
@@ -142,9 +141,9 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
     for marker in stale_markers:
         if marker in roadmap:
             raise AssertionError(f'docs/ROADMAP.md:stale_current_roadmap_claim:{marker}')
-    _assert_contains('docs/ROADMAP.md', roadmap, '## Current published baseline: 0.11.x alpha')
-    _assert_contains('docs/ROADMAP.md', roadmap, 'The current `0.11.x` alpha line')
-    _assert_contains('docs/ROADMAP.md', roadmap, 'GovEngine stays on the `0.11.x`')
+    _assert_contains('docs/ROADMAP.md', roadmap, '## Current source candidate: 0.12.x alpha')
+    _assert_contains('docs/ROADMAP.md', roadmap, 'The current `0.12.x` alpha candidate')
+    _assert_contains('docs/ROADMAP.md', roadmap, 'Published PyPI baseline remains `govengine==0.11.0a0`')
 
 
 def _assert_validation_current_gate_precedes_history(validation: str, version: str) -> None:
@@ -195,20 +194,21 @@ def main() -> int:
     workflow = _read('.github/workflows/pytest.yml')
     clean_install_script = _read('scripts/validate_clean_package_install.py')
 
-    _assert_contains('README.md', readme, f'alpha {version}')
+    _assert_contains('README.md', readme, f'alpha candidate {version}')
     _assert_contains('README.md', readme, release_label)
     _assert_contains('README.md', readme, dependency)
     _assert_readme_package_truth(readme, version)
     _assert_contains('README.md', readme, '## License and provenance')
     _assert_contains('README.md', readme, 'originating Ravenclaw contribution lineage')
     _assert_contains('README.md', readme, 'package maintainer')
-    _assert_contains('CONTRIBUTING.md', contributing, f'alpha (`{release_label}`)')
+    _assert_contains('CONTRIBUTING.md', contributing, f'alpha candidate (`{release_label}`)')
     _assert_contains('CONTRIBUTING.md', contributing, 'scripts/validate_clean_package_install.py')
     _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`')
     _assert_contains('docs/ROADMAP.md', roadmap, dependency)
     _assert_roadmap_current_release_truth(roadmap)
-    _assert_contains('PUBLIC_STATUS.md', public_status, f'Source version: `{version}`.')
-    _assert_contains('PUBLIC_STATUS.md', public_status, f'Public release label: `{release_label}`.')
+    _assert_contains('PUBLIC_STATUS.md', public_status, f'Source candidate version: `{version}`.')
+    _assert_contains('PUBLIC_STATUS.md', public_status, f'Candidate release label: `{release_label}`.')
+    _assert_contains('PUBLIC_STATUS.md', public_status, f'PyPI package: `govengine=={PUBLISHED_VERSION}` remains the published current alpha package.')
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
     _assert_contains('PUBLISHING.md', publishing, 'scripts/validate_clean_package_install.py')
@@ -223,6 +223,26 @@ def main() -> int:
     _assert_contains('scripts/validate_clean_package_install.py', clean_install_script, 'venv_already_exists_choose_new_path')
     if (ROOT / 'govengine/sclite_adapter.py').exists():
         raise AssertionError('govengine/sclite_adapter.py:retired_host_projection_present')
+    retired_modules = (
+        'security_profile.py',
+        'action_schema.py',
+        'action_validators.py',
+        'action_compiler.py',
+        'capability_recipes.py',
+        'tool_registry.py',
+        'semantic_loss_policy.py',
+        'scope.py',
+        'policy/core.py',
+        'policy/gateway.py',
+        'contracts/signal.py',
+        'contracts/analysis.py',
+        'contracts/evidence_policy.py',
+    )
+    for relative in retired_modules:
+        if (ROOT / 'govengine' / relative).exists():
+            raise AssertionError(f'govengine/{relative}:retired_security_module_present')
+    if 'security_profile_helpers' in surface_names:
+        raise AssertionError('security_profile_helpers:retired_surface_present')
     _assert_contains('PUBLIC_STATUS.md', public_status, 'Ravenclaw owns lifecycle artifact projection from its runtime payloads')
     _assert_contains('docs/API_BOUNDARY.md', api_boundary, 'Host-owned lifecycle projection is outside GovEngine')
     _assert_contains('docs/SCLITE_INTEGRATION.md', sclite_integration, 'Host-owned artifact projection is outside GovEngine')
