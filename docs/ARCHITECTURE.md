@@ -117,4 +117,4 @@ forbidden: GovEngine -> Logdash/OpenClaw/MCP/A2A adapters
 
 ## Current maturity
 
-The package currently covers dry-run-safe helpers and neutral contract gates. The `0.12.0-alpha` candidate removes former Ravenclaw-derived security helper modules rather than treating them as kernel capabilities. GovEngine is not yet a complete orchestrator/scheduler/supervisor stack and does not claim production execution safety on its own.
+The package currently covers dry-run-safe helpers and neutral contract gates. The published `0.12.0-alpha` line removes former Ravenclaw-derived security helper modules rather than treating them as kernel capabilities. GovEngine is not yet a complete orchestrator/scheduler/supervisor stack and does not claim production execution safety on its own.

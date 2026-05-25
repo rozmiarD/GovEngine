@@ -93,3 +93,34 @@ def test_public_truth_validator_rejects_unscoped_current_pip_check_guidance() ->
             '## Current source-line gate\n',
             'clean release guidance\n',
         )
+
+
+def test_public_truth_validator_rejects_published_line_candidate_drift(monkeypatch: pytest.MonkeyPatch) -> None:
+    validator = _load_validator()
+
+    def fake_read(path: str) -> str:
+        if path == 'README.md':
+            return 'The `0.12` candidate removes the old facade.'
+        return ''
+
+    monkeypatch.setattr(validator, '_read', fake_read)
+
+    with pytest.raises(AssertionError, match='published_line_candidate_drift:0.12_candidate_readme'):
+        validator._assert_no_published_line_candidate_drift(('README.md',))
+
+
+def test_public_truth_validator_rejects_stale_publishing_dependency_line(monkeypatch: pytest.MonkeyPatch) -> None:
+    validator = _load_validator()
+
+    def fake_read(path: str) -> str:
+        if path == 'PUBLISHING.md':
+            return (
+                'the published GovEngine `0.11.x` alpha package line depends on '
+                '`sclite-core>=0.8.0a0,<0.9`'
+            )
+        return ''
+
+    monkeypatch.setattr(validator, '_read', fake_read)
+
+    with pytest.raises(AssertionError, match='published_line_candidate_drift:stale_publishing_dependency_line'):
+        validator._assert_no_published_line_candidate_drift(('PUBLISHING.md',))

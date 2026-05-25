@@ -171,6 +171,24 @@ def _assert_clean_pip_check_guidance(contributing: str, validation: str, publish
             raise AssertionError(f'{path}:unscoped_pip_check_guidance')
 
 
+def _assert_no_published_line_candidate_drift(paths: Iterable[str]) -> None:
+    forbidden = (
+        ('0.12_candidate_readme', '`0.12` candidate'),
+        ('0.12_alpha_candidate', '`0.12.0-alpha` candidate'),
+        ('alpha_candidate_contributing', 'alpha candidate (`0.12.0-alpha`)'),
+        ('candidate_api_narrowing_line', 'candidate API-narrowing line'),
+        (
+            'stale_publishing_dependency_line',
+            'published GovEngine `0.11.x` alpha package line depends on `sclite-core>=0.8.0a0,<0.9`',
+        ),
+    )
+    for path in paths:
+        text = _read(path)
+        for reason, marker in forbidden:
+            if marker in text:
+                raise AssertionError(f'{path}:published_line_candidate_drift:{reason}')
+
+
 def main() -> int:
     project = _pyproject()['project']
     version = str(project['version'])
@@ -201,7 +219,7 @@ def main() -> int:
     _assert_contains('README.md', readme, '## License and provenance')
     _assert_contains('README.md', readme, 'originating Ravenclaw contribution lineage')
     _assert_contains('README.md', readme, 'package maintainer')
-    _assert_contains('CONTRIBUTING.md', contributing, f'alpha candidate (`{release_label}`)')
+    _assert_contains('CONTRIBUTING.md', contributing, f'alpha package (`{release_label}`)')
     _assert_contains('CONTRIBUTING.md', contributing, 'scripts/validate_clean_package_install.py')
     _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`')
     _assert_contains('docs/ROADMAP.md', roadmap, dependency)
@@ -219,6 +237,13 @@ def main() -> int:
     _assert_contains('docs/VALIDATION.md', validation, 'broad system interpreter is not')
     _assert_validation_current_gate_precedes_history(validation, version)
     _assert_clean_pip_check_guidance(contributing, validation, publishing)
+    _assert_no_published_line_candidate_drift((
+        'README.md',
+        'CONTRIBUTING.md',
+        'PUBLISHING.md',
+        'docs/ARCHITECTURE.md',
+        'docs/API_BOUNDARY.md',
+    ))
     _assert_contains('scripts/validate_clean_package_install.py', clean_install_script, "'-m', 'pip', 'check'")
     _assert_contains('scripts/validate_clean_package_install.py', clean_install_script, 'venv_already_exists_choose_new_path')
     if (ROOT / 'govengine/sclite_adapter.py').exists():
