@@ -18,6 +18,7 @@ def test_public_modules_import() -> None:
         'govengine.execution_backend',
         'govengine.sclite_contracts',
         'govengine.signing',
+        'govengine.replay',
         'govengine.state_index',
         'govengine.state_machine',
         'govengine.contracts.execution',

@@ -38,13 +38,13 @@ Only this section states current validation expectations. The versioned
 sections under **Historical validation records** are retained release evidence,
 not the active gate.
 
-Expected result for the current `0.12.0a0` source line (`0.12.0-alpha`):
+Expected result for the current `0.12.1a0` source line (`0.12.1-alpha`):
 
 - full pytest passes in the source tree;
 - `scripts/validate_clean_package_install.py` passes, rejects retired module paths from the installed artifact, and runs `pip check` inside its newly created virtual environment;
 - `python scripts/validate_public_truth.py` passes;
 - `python scripts/validate_alpha_readiness.py` passes;
-- import smoke checks include `govengine.contract_proofs`, `govengine.profiles`, `govengine.review`, `govengine.execution.supervision`, `govengine.admission`, `govengine.planning`, `govengine.runtime_shell`, and `govengine.scope_ports`;
+- import smoke checks include `govengine.contract_proofs`, `govengine.profiles`, `govengine.review`, `govengine.replay`, `govengine.execution.supervision`, `govengine.admission`, `govengine.planning`, `govengine.runtime_shell`, and `govengine.scope_ports`;
 - the public surface registry and `docs/API_BOUNDARY.md` agree on the exact public surfaces;
 - profile SDK fixture conformance passes for Ravenclaw and Tecrax without adapter, credential, product UX, or live-execution claims;
 - runtime contract proof fixtures pass for Ravenclaw and Tecrax without adapter, credential, scheduler, storage, live-execution, or new OODA claims;

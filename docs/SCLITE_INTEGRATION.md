@@ -44,6 +44,8 @@ GovEngine currently provides helpers around the runtime-facing parts of that lif
 - approved-spec and execution-ticket checks;
 - dry-run result assembly;
 - integration seams for SCLite verification;
+- guarded-root replay checks for optional SCLite `kernel_guard_hmac_v1`
+  sidecars after SCLite has verified the HMAC guard;
 - review-bundle verdict mapping through SCLite `0.8.0a0` review surfaces, preserving the review-bundle contract.
 
 Host-owned artifact projection is outside GovEngine. A runtime such as
@@ -52,7 +54,14 @@ neutral GovEngine gates and SCLite review/verification services.
 
 ## What GovEngine does not replace
 
-GovEngine does not replace SCLite schemas, lifecycle verification, artifact integrity checks, Scope Fidelity checks, or review-bundle verdict semantics. Those stay in SCLite.
+GovEngine does not replace SCLite schemas, lifecycle verification, artifact
+integrity checks, Kernel Guard HMAC verification, Scope Fidelity checks, or
+review-bundle verdict semantics. Those stay in SCLite.
+
+GovEngine's replay helper records observed guarded roots (`root_tag`,
+`chain_id`, ticket/run id, and `key_id`) through a host-supplied state store so
+a runtime can reject reuse in require-fresh mode. It does not store HMAC keys,
+verify tags, or make public PKI claims.
 
 GovEngine also does not execute live targets by itself. A host runtime such as Ravenclaw remains responsible for concrete execution adapters, artifact persistence, operator approval UX, and public snapshot/demo publishing.
 

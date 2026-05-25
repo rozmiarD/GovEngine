@@ -17,6 +17,7 @@ class ReasonCode(str, Enum):
     POLICY_DENIED = "policy_denied"
     SIGNATURE_REQUIRED = "signature_required"
     TRUST_DENIED = "trust_denied"
+    REPLAY_DETECTED = "replay_detected"
     RUNNER_PROFILE_DENIED = "runner_profile_denied"
     EXECUTION_DISABLED = "execution_disabled"
     RAW_INTENT_REJECTED = "raw_intent_rejected"

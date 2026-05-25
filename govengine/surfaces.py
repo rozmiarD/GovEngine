@@ -49,15 +49,17 @@ def artifact_governance_surface() -> GovSurface:
             'govengine.state_index',
             'govengine.state_machine',
             'govengine.state_store',
+            'govengine.replay',
         )),
         claim=(
             'Portable kernel/profile boundary, artifact descriptor/state/transition, '
-            'SCLite lifecycle bridge, signing/trust decision, deconfliction, state-machine, and state-index helpers.'
+            'SCLite lifecycle bridge, signing/trust decision, guarded-root replay checks, deconfliction, state-machine, and state-index helpers.'
         ),
         non_claims=_tuple((
             'SCLite schema/canonicalization ownership',
             'PKI/key-store ownership',
             'raw artifact storage ownership',
+            'SCLite Kernel Guard HMAC verification ownership',
             'workflow scheduling or event bus ownership',
         )),
     )

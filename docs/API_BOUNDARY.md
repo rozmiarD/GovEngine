@@ -8,6 +8,7 @@ GovEngine owns reusable governed-execution services. Its public surface should s
 `govengine.orchestration.validate_orchestration_step()` checks deterministic orchestration handoff records without granting agent-loop, scheduler, UI, carrier, credential, or live-execution authority.
 `govengine.events.validate_event_envelope()` checks transport-neutral governance event metadata without accepting raw prompts, credentials, live commands, carrier payloads, or scheduling claims.
 `govengine.state_machine.validate_state_transition()` checks neutral run-state transitions without accepting runtime storage, scheduler, credential, command, or live-execution claims.
+`govengine.replay.record_guard_replay()` checks and records SCLite Kernel Guard root tags through a host-supplied state store without verifying HMAC tags, storing keys, or replacing SCLite guard verification.
 `govengine.control.validate_control_decision()` checks deterministic between-step control decisions and delegates legal state changes to the state machine without accepting raw prompts, commands, schedulers, runtime storage, delivery, or live-execution claims.
 `govengine.runtime_shell.validate_runtime_snapshot()` checks host-provided control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without accepting raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 `govengine.planning.validate_task_contract()` and `validate_plan_intent_contract()` check neutral planner-to-runtime handoff shapes without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
@@ -36,8 +37,9 @@ Neutral core modules:
 - `govengine.deconfliction`
 - `govengine.state_index`
 - `govengine.state_store`
+- `govengine.replay`
 
-Claim: portable kernel/profile boundary contracts, artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, PKI/key-store ownership, raw artifact storage ownership, workflow scheduler ownership.
+Claim: portable kernel/profile boundary contracts, artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, guarded-root replay checks, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, SCLite Kernel Guard HMAC verification ownership, PKI/key-store ownership, raw artifact storage ownership, workflow scheduler ownership.
 
 ### Planning-contracts core
 
@@ -117,6 +119,7 @@ GovEngine owns:
 - `govengine.events` — transport-neutral governance event metadata and envelope validation without scheduler, carrier, credential, or command payload authority.
 - `govengine.scope_ports` — neutral scope-port protocol and host extraction helper used by controlled-execution contracts.
 - `govengine.state_store` — neutral JSON state helper primitives.
+- `govengine.replay` — guarded SCLite root replay records and fresh/replayed decisions over host-supplied JSON state without HMAC verification, key storage, runtime storage ownership, or replay policy beyond the supplied store.
 - `govengine.sclite_*` — explicit integration seams with SCLite, including descriptor/status/transition mapping that delegates lifecycle verification and review-bundle verdicts to SCLite.
 
 ## Consumes

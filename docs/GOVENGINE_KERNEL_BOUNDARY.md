@@ -9,6 +9,7 @@ GovEngine owns portable mechanics that can be reused across profiles:
 - artifact-governance boundary objects and transition decisions;
 - controlled-execution gates and runner request/receipt envelopes;
 - policy, trust, OODA, and SCLite lifecycle bridge decisions;
+- replay decisions for already-verified guarded SCLite roots;
 - public surface metadata for boundary review;
 - kernel/profile/runtime/SCLite ownership reports.
 
@@ -41,6 +42,7 @@ The kernel boundary deliberately excludes:
 - live target authorization;
 - scanner or exploit execution;
 - credential or key-store ownership;
+- SCLite Kernel Guard HMAC verification;
 - carrier adapter ownership;
 - Ravenclaw, Tecrax, or other product UX ownership;
 - SCLite schema or canonicalization authority.

@@ -6,7 +6,13 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-- No unreleased changes.
+- Advances the source line to `0.12.1a0` / `0.12.1-alpha` without a tag or
+  PyPI upload.
+- Adds `govengine.replay`, a neutral guarded-root replay store helper for
+  already-verified SCLite `kernel_guard_hmac_v1` sidecars. The helper records
+  `root_tag`, `chain_id`, ticket/run id, and `key_id` through host-supplied
+  JSON state and can reject repeat roots in require-fresh mode without owning
+  HMAC verification, key storage, runtime storage, or public PKI semantics.
 
 ## 0.12.0-alpha - Security facade retirement
 
