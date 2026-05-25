@@ -7,8 +7,8 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Source/package version: `0.12.0a0`.
-- Release label: `0.12.0-alpha`.
+- Source/package version: `0.12.1a0`.
+- Release label: `0.12.1-alpha`.
 - PyPI package: `govengine==0.12.0a0` is the published current alpha package.
 - SCLite integration: present through helper seams via `sclite-core>=0.8.0a0,<0.9`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
@@ -28,11 +28,15 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - OODA safety loop: deterministic between-step decision contract.
 - Core artifact governance boundaries: initial portable dataclasses for artifact descriptors/envelopes/state, governance context, transition decisions, and execution prerequisites.
 - SCLite lifecycle/review bridge: neutral descriptor/state/transition and review-bundle verdict mapping delegate verification and review semantics to SCLite. Ravenclaw owns lifecycle artifact projection from its runtime payloads and its public proof generation.
+- Guard replay helper: `govengine.replay` records observed SCLite Kernel Guard
+  roots through host-supplied JSON state so runtimes can reject repeated
+  `root_tag` values in require-fresh mode without moving HMAC verification,
+  key storage, or runtime storage into GovEngine.
 - Artifact lifecycle controller: initial transition policy/gate/controller for ordered lifecycle transitions and blocker/next-action reporting.
 - Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, transition-decision helpers, and published deterministic demo signer/verifier fixture ports without PKI/key ownership.
 - Controlled execution gate: initial dry-run-only execution gate and default `DryRunRunner`; live requests are blocked by default.
 - Public surface registry: tested `govengine.surfaces` metadata contains only neutral artifact-governance core, planning-contracts core, admission-policy core, evidence-review core, domain-profile SDK, runtime contract proofs, and controlled-execution core surfaces.
-- Security profile retirement: the `0.12.0a0` alpha package removes the former optional Ravenclaw-derived facade and helper modules; security-domain behavior remains host-owned.
+- Security profile retirement: the published `0.12.0a0` alpha package removes the former optional Ravenclaw-derived facade and helper modules; security-domain behavior remains host-owned.
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
@@ -56,6 +60,8 @@ GovEngine can be reviewed as a small Python package for:
 - runner request/receipt shapes;
 - OODA decision objects;
 - SCLite lifecycle/review integration boundaries and status/verdict mapping into portable GovEngine state/transition objects.
+- guarded-root replay decisions for already-verified SCLite Kernel Guard
+  sidecars, using host-supplied state.
 - runtime-shell control/queue/snapshot projection objects for hosts that need to map their own state/control UI into a neutral reviewable shape.
 
 ## What is not claimed
