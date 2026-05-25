@@ -1,7 +1,7 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Source: govengine 0.12.0a0](https://img.shields.io/badge/source-govengine%200.12.0a0-blueviolet.svg)](https://pypi.org/project/govengine/0.11.0a0/)
+[![Package: govengine 0.12.0a0](https://img.shields.io/badge/source-govengine%200.12.0a0-blueviolet.svg)](https://pypi.org/project/govengine/0.12.0a0/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Dependency: SCLite >=0.8.0a0](https://img.shields.io/badge/dependency-SCLite%20%3E%3D0.8.0a0-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
@@ -70,18 +70,17 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 
 ## Current status
 
-GovEngine source is an **alpha candidate 0.12.0a0 (`0.12.0-alpha`)**. It keeps the neutral artifact-governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review, profile, and proof surfaces while removing the former optional security-profile facade and Ravenclaw-derived helper modules. The active dependency line is `sclite-core>=0.8.0a0,<0.9`. The published PyPI baseline remains `govengine==0.11.0a0` until this candidate passes downstream validation and an upload is explicitly approved.
+GovEngine is an **alpha package 0.12.0a0 (`0.12.0-alpha`)**. It keeps the neutral artifact-governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review, profile, and proof surfaces while removing the former optional security-profile facade and Ravenclaw-derived helper modules. The active dependency line is `sclite-core>=0.8.0a0,<0.9`. The current published PyPI package is `govengine==0.12.0a0`.
 
 ## Installation
 
 Install the currently published public alpha package from PyPI with an exact version pin:
 
 ```bash
-python -m pip install govengine==0.11.0a0
+python -m pip install govengine==0.12.0a0
 ```
 
 GovEngine depends on the PyPI distribution `sclite-core` while preserving the Python import package `sclite`.
-The `0.12.0a0` candidate is source-only until a release is explicitly approved.
 
 For local development:
 
