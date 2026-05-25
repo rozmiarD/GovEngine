@@ -15,7 +15,7 @@ from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_
 from govengine.surfaces import public_surface_index  # noqa: E402
 
 EXPECTED_RELEASE_LABEL = '0.12.0-alpha'
-PUBLISHED_VERSION = '0.11.0a0'
+PUBLISHED_VERSION = '0.12.0a0'
 
 SURFACE_HEADINGS = {
     'Artifact-governance core': 'artifact_governance_core',
@@ -141,9 +141,9 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
     for marker in stale_markers:
         if marker in roadmap:
             raise AssertionError(f'docs/ROADMAP.md:stale_current_roadmap_claim:{marker}')
-    _assert_contains('docs/ROADMAP.md', roadmap, '## Current source candidate: 0.12.x alpha')
-    _assert_contains('docs/ROADMAP.md', roadmap, 'The current `0.12.x` alpha candidate')
-    _assert_contains('docs/ROADMAP.md', roadmap, 'Published PyPI baseline remains `govengine==0.11.0a0`')
+    _assert_contains('docs/ROADMAP.md', roadmap, '## Current 0.12.x alpha line')
+    _assert_contains('docs/ROADMAP.md', roadmap, 'The current `0.12.x` alpha line')
+    _assert_contains('docs/ROADMAP.md', roadmap, 'Published PyPI baseline is `govengine==0.12.0a0`')
 
 
 def _assert_validation_current_gate_precedes_history(validation: str, version: str) -> None:
@@ -194,7 +194,7 @@ def main() -> int:
     workflow = _read('.github/workflows/pytest.yml')
     clean_install_script = _read('scripts/validate_clean_package_install.py')
 
-    _assert_contains('README.md', readme, f'alpha candidate {version}')
+    _assert_contains('README.md', readme, f'alpha package {version}')
     _assert_contains('README.md', readme, release_label)
     _assert_contains('README.md', readme, dependency)
     _assert_readme_package_truth(readme, version)
@@ -206,9 +206,9 @@ def main() -> int:
     _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`')
     _assert_contains('docs/ROADMAP.md', roadmap, dependency)
     _assert_roadmap_current_release_truth(roadmap)
-    _assert_contains('PUBLIC_STATUS.md', public_status, f'Source candidate version: `{version}`.')
-    _assert_contains('PUBLIC_STATUS.md', public_status, f'Candidate release label: `{release_label}`.')
-    _assert_contains('PUBLIC_STATUS.md', public_status, f'PyPI package: `govengine=={PUBLISHED_VERSION}` remains the published current alpha package.')
+    _assert_contains('PUBLIC_STATUS.md', public_status, f'Source/package version: `{version}`.')
+    _assert_contains('PUBLIC_STATUS.md', public_status, f'Release label: `{release_label}`.')
+    _assert_contains('PUBLIC_STATUS.md', public_status, f'PyPI package: `govengine=={PUBLISHED_VERSION}` is the published current alpha package.')
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
     _assert_contains('PUBLISHING.md', publishing, 'scripts/validate_clean_package_install.py')

@@ -3,7 +3,7 @@
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
 Current source baseline: `govengine==0.12.0a0` (`0.12.0-alpha`), depending on `sclite-core>=0.8.0a0,<0.9`.
-Published PyPI baseline remains `govengine==0.11.0a0` until the candidate passes downstream validation and receives explicit release approval.
+Published PyPI baseline is `govengine==0.12.0a0`.
 
 ## Architecture thesis
 
@@ -62,9 +62,9 @@ Runtimes own UX/integration.
 SCLite owns proof/review artifacts.
 ```
 
-## Current source candidate: 0.12.x alpha
+## Current 0.12.x alpha line
 
-The current `0.12.x` alpha candidate retains the neutral kernel shape, removes
+The current `0.12.x` alpha line retains the neutral kernel shape, removes
 the former host-shaped lifecycle projection, and retires the Ravenclaw-derived
 optional security facade:
 
@@ -84,7 +84,7 @@ This is alpha, not stable. The next roadmap should not be a file move from Raven
 
 The active alpha hygiene gate requires neutral public surfaces to stay free of
 Ravenclaw host context and domain security helper imports. The former
-`security_profile_helpers` compatibility surface is removed in this candidate;
+`security_profile_helpers` compatibility surface is removed in this line;
 profile-owned tool, policy, and UX semantics remain in Ravenclaw. New neutral
 extraction should land in typed core/profile surfaces only when the code and a
 second host prove it there.
