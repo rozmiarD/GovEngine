@@ -8,7 +8,7 @@
 
 GovEngine is a carrier-agnostic deterministic governed-runtime kernel for portable artifact governance and policy-gated controlled execution.
 
-It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, dry-run result assembly, and neutral runtime/control projections. Security-domain action, tool, scope, and signal behavior is host-owned; the `0.12` candidate removes the former Ravenclaw-derived compatibility helpers.
+It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, dry-run result assembly, and neutral runtime/control projections. Security-domain action, tool, scope, and signal behavior is host-owned; the published `0.12` alpha line removes the former Ravenclaw-derived compatibility helpers.
 
 
 ## Why it exists

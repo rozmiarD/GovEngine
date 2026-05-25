@@ -26,6 +26,8 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   maintainer metadata.
 - Adds a clean installed-package validation gate and removes active guidance to
   use a dependency-polluted system interpreter for `pip check` evidence.
+- Corrects post-publication drift that still described the published `0.12`
+  alpha line as a candidate and mechanically guards that active wording.
 
 ## 0.11.0-alpha - Host projection removal and SCLite 0.8 sync
 
