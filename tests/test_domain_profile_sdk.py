@@ -26,7 +26,7 @@ def test_ravenclaw_security_profile_is_contract_only_and_conformant() -> None:
     assert payload['profile']['name'] == 'ravenclaw-security'
     assert payload['profile']['runner_profiles'][0]['mode'] == 'dry_run'
     assert payload['profile']['runner_profiles'][0]['live_enabled'] is False
-    assert 'govengine_security_profile_helpers' in payload['profile']['consumes']
+    assert 'govengine_security_profile_helpers' not in payload['profile']['consumes']
     assert 'govengine_domain_profile_sdk' in payload['profile']['consumes']
     assert 'Does not grant live execution authority.' in payload['profile']['non_claims']
 

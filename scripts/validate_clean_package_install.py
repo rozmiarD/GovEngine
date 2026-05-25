@@ -11,6 +11,50 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
+INSTALLED_SURFACE_SMOKE = """\
+import importlib.util
+from importlib.resources import files
+import govengine
+from govengine import public_surface_index
+
+expected = [
+    'artifact_governance_core',
+    'planning_contracts_core',
+    'admission_policy_core',
+    'evidence_review_core',
+    'domain_profile_sdk',
+    'runtime_contract_proofs',
+    'controlled_execution_core',
+]
+retired = [
+    'govengine.sclite_adapter',
+    'govengine.security_profile',
+    'govengine.scope',
+    'govengine.action_schema',
+    'govengine.action_validators',
+    'govengine.action_compiler',
+    'govengine.capability_recipes',
+    'govengine.tool_registry',
+    'govengine.semantic_loss_policy',
+    'govengine.policy.core',
+    'govengine.policy.gateway',
+    'govengine.contracts.signal',
+    'govengine.contracts.analysis',
+    'govengine.contracts.evidence_policy',
+]
+def absent(module):
+    try:
+        return importlib.util.find_spec(module) is None
+    except ModuleNotFoundError:
+        return True
+
+assert govengine.__version__ == '0.12.0a0'
+assert [surface.name for surface in public_surface_index()] == expected
+assert all(absent(module) for module in retired)
+assert not files('govengine').joinpath('capability_recipes.yaml').is_file()
+assert not files('govengine').joinpath('tool_registry.yaml').is_file()
+print('installed_surface_smoke_ok:govengine==0.12.0a0:surfaces=7')
+"""
 
 
 def _run(command: list[str], *, cwd: Path = ROOT, dry_run: bool = False) -> dict[str, Any]:
@@ -60,6 +104,7 @@ def build_plan(
     commands.append([venv_python, *install])
     commands.extend(
         [
+            [venv_python, '-I', '-c', INSTALLED_SURFACE_SMOKE],
             [venv_python, 'scripts/validate_public_truth.py'],
             [venv_python, 'scripts/validate_alpha_readiness.py'],
         ]

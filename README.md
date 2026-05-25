@@ -1,14 +1,14 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.11.0a0](https://img.shields.io/badge/package-govengine%200.11.0a0-blueviolet.svg)](https://pypi.org/project/govengine/0.11.0a0/)
+[![Source: govengine 0.12.0a0](https://img.shields.io/badge/source-govengine%200.12.0a0-blueviolet.svg)](https://pypi.org/project/govengine/0.11.0a0/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Dependency: SCLite >=0.8.0a0](https://img.shields.io/badge/dependency-SCLite%20%3E%3D0.8.0a0-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
 GovEngine is a carrier-agnostic deterministic governed-runtime kernel for portable artifact governance and policy-gated controlled execution.
 
-It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, dry-run result assembly, and neutral runtime/control projections. Security-oriented action/tool/scope/signal helpers remain available as optional Ravenclaw-derived compatibility helpers, not as the neutral core itself.
+It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, dry-run result assembly, and neutral runtime/control projections. Security-domain action, tool, scope, and signal behavior is host-owned; the `0.12` candidate removes the former Ravenclaw-derived compatibility helpers.
 
 
 ## Why it exists
@@ -39,8 +39,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 
 ## What GovEngine includes now
 
-- a public surface registry that separates neutral artifact-governance core, controlled-execution core, and optional security-profile helpers;
-- an explicit `govengine.security_profile` compatibility facade for optional Ravenclaw-derived helper discovery;
+- a public surface registry covering neutral artifact-governance, planning, admission/policy, evidence-review, domain-profile, runtime-proof, and controlled-execution surfaces;
 - serializable kernel/profile/runtime/SCLite boundary contracts and a machine-readable boundary report;
 - execution-contract shaping/redaction helpers;
 - artifact descriptor/state/transition boundary helpers;
@@ -55,7 +54,6 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 - neutral runtime-shell contracts for host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata;
 - neutral planning contracts for task, plan-intent, and planner-port handoffs;
 - neutral admission, policy, approval, and audit contracts for host runtime gates;
-- optional compatibility helpers for action schema/validation/compilation, capability recipes, tool registry, semantic-loss policy, scope checks, policy gateway, and signal/analysis/evidence-confirmation contracts;
 - explicit SCLite integration seams;
 - focused standalone pytest coverage and GitHub Actions CI.
 
@@ -72,17 +70,18 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 
 ## Current status
 
-GovEngine is an **alpha 0.11.0a0 (`0.11.0-alpha`) kernel package release**. The package is published, importable, tested, package-buildable, and validated against the Ravenclaw public downstream contract surface. The active dependency line is `sclite-core>=0.8.0a0,<0.9`. The `0.11.x` line contains neutral artifact governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review contracts, a minimal contract-only Domain Profile SDK, and runtime contract proof fixtures plus optional security-profile helpers. It removes the Ravenclaw-shaped lifecycle assembly module: SCLite retains artifact/review ownership and Ravenclaw owns its lifecycle projection and public proof. Historical lines through `0.10.2-alpha` are documented in `CHANGELOG.md`; current status docs should treat `0.11.0a0` as the published alpha package line.
+GovEngine source is an **alpha candidate 0.12.0a0 (`0.12.0-alpha`)**. It keeps the neutral artifact-governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review, profile, and proof surfaces while removing the former optional security-profile facade and Ravenclaw-derived helper modules. The active dependency line is `sclite-core>=0.8.0a0,<0.9`. The published PyPI baseline remains `govengine==0.11.0a0` until this candidate passes downstream validation and an upload is explicitly approved.
 
 ## Installation
 
-Install the current public alpha package from PyPI with an exact version pin:
+Install the currently published public alpha package from PyPI with an exact version pin:
 
 ```bash
 python -m pip install govengine==0.11.0a0
 ```
 
 GovEngine depends on the PyPI distribution `sclite-core` while preserving the Python import package `sclite`.
+The `0.12.0a0` candidate is source-only until a release is explicitly approved.
 
 For local development:
 
@@ -96,9 +95,8 @@ python -m pytest -q
 ## Minimal smoke example
 
 ```python
-from govengine import public_surface_index, security_profile_index
-from govengine.action_compiler import compile_action_spec
-from govengine.execution.runner import legacy_action_spec_dry_run_result
+from govengine import public_surface_index
+from govengine.execution.runner import approved_spec_dry_run_result
 
 assert [surface.name for surface in public_surface_index()] == [
     "artifact_governance_core",
@@ -108,20 +106,16 @@ assert [surface.name for surface in public_surface_index()] == [
     "domain_profile_sdk",
     "runtime_contract_proofs",
     "controlled_execution_core",
-    "security_profile_helpers",
 ]
-assert security_profile_index()["entrypoint"] == "govengine.security_profile"
 
-compiled = compile_action_spec({
-    "action_type": "single_probe",
-    "capability": "http_probe",
-    "tool": "curl",
-    "args": ["https://example.com"],
-})
-
-receipt = legacy_action_spec_dry_run_result(
-    compiled_action=compiled,
-    planned_commands=[["curl", "https://example.com"]],
+receipt = approved_spec_dry_run_result(
+    approved_execution_spec={
+        "action_type": "bounded_request",
+        "capability": "fixture_review",
+        "resolved_tool": "fixture",
+        "execution_mode": "dry_run",
+    },
+    planned_commands=[["fixture", "review"]],
 )
 assert receipt["status"] == "dry-run"
 ```

@@ -7,9 +7,9 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Source version: `0.11.0a0`.
-- Public release label: `0.11.0-alpha`.
-- PyPI package: `govengine==0.11.0a0` is the published current alpha package.
+- Source candidate version: `0.12.0a0`.
+- Candidate release label: `0.12.0-alpha`.
+- PyPI package: `govengine==0.11.0a0` remains the published current alpha package.
 - SCLite integration: present through helper seams via `sclite-core>=0.8.0a0,<0.9`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.
@@ -31,12 +31,12 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Artifact lifecycle controller: initial transition policy/gate/controller for ordered lifecycle transitions and blocker/next-action reporting.
 - Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, transition-decision helpers, and published deterministic demo signer/verifier fixture ports without PKI/key ownership.
 - Controlled execution gate: initial dry-run-only execution gate and default `DryRunRunner`; live requests are blocked by default.
-- Public surface registry: tested `govengine.surfaces` metadata separates neutral artifact-governance core, planning-contracts core, admission-policy core, evidence-review core, domain-profile SDK, runtime contract proofs, controlled-execution core, and optional security-profile helpers.
-- Security profile: action/tool/scope/policy/signal helpers are available through the optional `govengine.security_profile` facade for host-facing discovery, not as the neutral core.
+- Public surface registry: tested `govengine.surfaces` metadata contains only neutral artifact-governance core, planning-contracts core, admission-policy core, evidence-review core, domain-profile SDK, runtime contract proofs, and controlled-execution core surfaces.
+- Security profile retirement: the `0.12.0a0` source candidate removes the former optional Ravenclaw-derived facade and helper modules; security-domain behavior remains host-owned.
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: `govengine==0.11.0a0` is published; alpha/pre-1.0 boundaries remain in force.
+- PyPI publication: `govengine==0.11.0a0` remains published; `0.12.0a0` is a source candidate pending validation and explicit release approval.
 
 ## What is public-safe today
 
@@ -52,13 +52,9 @@ GovEngine can be reviewed as a small Python package for:
 - neutral planning/task contract validators for hosts that need a planner-to-runtime handoff without moving domain planning semantics into GovEngine;
 - contract-only domain profile declarations and conformance reports for Ravenclaw and a Tecrax dry-run/local-fixture skeleton;
 - public-safe runtime contract proof fixtures that show Ravenclaw and Tecrax using the same neutral GovEngine/SCLite contract flow;
-- a security-profile facade that groups optional action/tooling, policy/scope, and review-contract helpers behind one tested entrypoint;
-- governed action/spec validation helpers as optional security-profile helpers;
-- policy and scope helper seams as optional security-profile helpers;
 - execution-ticket and approved-spec validation helpers;
 - runner request/receipt shapes;
 - OODA decision objects;
-- signal, analysis, and evidence-confirmation contracts extracted from Ravenclaw;
 - SCLite lifecycle/review integration boundaries and status/verdict mapping into portable GovEngine state/transition objects.
 - runtime-shell control/queue/snapshot projection objects for hosts that need to map their own state/control UI into a neutral reviewable shape.
 

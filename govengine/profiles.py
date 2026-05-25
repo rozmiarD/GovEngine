@@ -243,7 +243,7 @@ def validate_profile_conformance(value: Mapping[str, Any] | DomainProfile) -> Pr
 def ravenclaw_security_profile() -> DomainProfile:
     return DomainProfile(
         name='ravenclaw-security',
-        version='0.11.0a0',
+        version='0.12.0a0',
         owner='ravenclaw',
         resource_types=ResourceTypeRegistry(('host', 'url', 'endpoint', 'web_app')),
         task_families=TaskFamilyRegistry(('recon', 'authz', 'idor', 'workflow', 'content_discovery', 'tls_assessment')),
@@ -271,7 +271,7 @@ def ravenclaw_security_profile() -> DomainProfile:
                 claim_types=('execution_truth', 'bounded_security_finding'),
             ),
         ),
-        consumes=DEFAULT_CONSUMES + ('govengine_security_profile_helpers',),
+        consumes=DEFAULT_CONSUMES,
         owns=('domain_taxonomy', 'domain_policy_meaning', 'domain_tool_semantics', 'domain_evidence_expectations'),
         non_claims=(
             'Does not make GovEngine own Ravenclaw finding taxonomy.',
@@ -284,7 +284,7 @@ def ravenclaw_security_profile() -> DomainProfile:
 def tecrax_infra_ops_profile() -> DomainProfile:
     return DomainProfile(
         name='tecrax-infra-ops',
-        version='0.11.0a0',
+        version='0.12.0a0',
         owner='tecrax',
         resource_types=ResourceTypeRegistry(('server', 'service', 'container', 'firewall', 'switch', 'vm', 'backup_job')),
         task_families=TaskFamilyRegistry(('inspect', 'diagnose', 'propose_change', 'dry_run_change', 'verify_fixture', 'rollback_plan')),

@@ -10,24 +10,6 @@ For the current extraction, the host/domain runtime is Ravenclaw. A future infra
 
 ## Layers
 
-### 1. Action layer
-
-Modules:
-
-- `govengine.action_schema`
-- `govengine.action_validators`
-- `govengine.action_compiler`
-- `govengine.capability_recipes`
-- `govengine.semantic_loss_policy`
-
-Purpose:
-
-- validate action shape;
-- normalize action type and capability;
-- resolve recipes and tool choices;
-- compile caller intent into a bounded execution plan;
-- classify semantic loss before execution planning drifts too far from request shape.
-
 ### 0. Kernel/profile boundary layer
 
 Module:
@@ -40,20 +22,20 @@ Purpose:
 - let hosts declare domain-profile ownership without claiming GovEngine core, SCLite authority, live execution authority, credentials, or carrier adapter ownership;
 - provide a tested Ravenclaw profile contract as the current host-profile example.
 
-### 2. Policy layer
+### 1. Admission and review contract layer
 
 Modules:
 
-- `govengine.policy.core`
-- `govengine.policy.gateway`
+- `govengine.admission`
+- `govengine.review`
 
 Purpose:
 
-- normalize policy decisions;
-- evaluate action specs against tool/scope/aggression style constraints;
-- keep policy checks structured and testable instead of prompt-only.
+- validate neutral admission, policy-decision, approval, audit, evidence, and
+  review records;
+- keep security-domain policy meaning and evidence taxonomy in the host runtime.
 
-### 3. Contract layer
+### 2. Contract layer
 
 Modules:
 
@@ -69,7 +51,7 @@ Purpose:
 Lifecycle artifact projection from a host runtime payload is host-owned;
 Ravenclaw implements its projection outside this kernel.
 
-### 4. Execution helper / runner protocol layer
+### 3. Execution helper / runner protocol layer
 
 Modules:
 
@@ -92,24 +74,23 @@ Purpose:
 
 Important: live subprocess execution is not owned by GovEngine yet. The runner protocol prepares and records bounded execution shape; host adapters still own concrete IO/subprocess behavior.
 
-### 5. Host context layer
+### 4. Host context and scope-port layer
 
 Modules:
 
 - `govengine.context`
-- `govengine.scope`
+- `govengine.scope_ports`
 - `govengine.state_store`
-- `govengine.tool_registry`
 
 Purpose:
 
-- let a host runtime provide paths, scope, and state surfaces explicitly;
-- retain `host_compat_context()` only for optional package-in-place helper
-  compatibility while hosts move to explicit path/context injection;
+- let a host runtime provide paths, neutral scope-port behavior, and state surfaces explicitly;
+- retain `host_compat_context()` for package-in-place context injection while
+  hosts migrate independently of retired security-domain helpers;
 - avoid hard dependencies on Ravenclaw internals;
 - support standalone import and package testing.
 
-### 6. OODA safety/control layer
+### 5. OODA safety/control layer
 
 Module:
 
@@ -136,4 +117,4 @@ forbidden: GovEngine -> Logdash/OpenClaw/MCP/A2A adapters
 
 ## Current maturity
 
-The package currently covers dry-run-safe helpers and contract/policy seams. It is not yet a complete orchestrator/scheduler/supervisor stack and does not claim production execution safety on its own. The roadmap moves toward that kernel through neutral contracts, profile adapters, and negative-tested execution gates rather than mechanical migration of Ravenclaw files.
+The package currently covers dry-run-safe helpers and neutral contract gates. The `0.12.0-alpha` candidate removes former Ravenclaw-derived security helper modules rather than treating them as kernel capabilities. GovEngine is not yet a complete orchestrator/scheduler/supervisor stack and does not claim production execution safety on its own.

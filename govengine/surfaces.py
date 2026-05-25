@@ -10,8 +10,7 @@ class GovSurface:
 
     The registry is intentionally descriptive rather than dynamic import magic.
     It gives hosts and reviewers a compact, testable map of which modules belong
-    to the neutral artifact-governance core and which modules are optional
-    security-profile helpers retained for Ravenclaw-style hosts.
+    to the neutral governed-runtime kernel.
     """
 
     name: str
@@ -204,40 +203,6 @@ def runtime_contract_proofs_surface() -> GovSurface:
     )
 
 
-def security_profile_surface() -> GovSurface:
-    return GovSurface(
-        name='security_profile_helpers',
-        status='alpha_optional_profile',
-        modules=_tuple((
-            'govengine.action_schema',
-            'govengine.action_validators',
-            'govengine.action_compiler',
-            'govengine.capability_recipes',
-            'govengine.tool_registry',
-            'govengine.semantic_loss_policy',
-            'govengine.policy.core',
-            'govengine.policy.gateway',
-            'govengine.scope',
-            'govengine.contracts.signal',
-            'govengine.contracts.analysis',
-            'govengine.contracts.evidence_policy',
-        )),
-        claim=(
-            'Optional compatibility surface for Ravenclaw-derived '
-            'action/tool/scope/policy/signal helpers that remain public-safe '
-            'while their host-owned domain semantics are narrowed or retired.'
-        ),
-        non_claims=_tuple((
-            'live exploit/scanner capability',
-            'authorization to test targets',
-            'bug-bounty campaign orchestration',
-            'Logdash or Ravenclaw runtime ownership',
-            'OpenClaw/MCP/A2A adapter ownership',
-        )),
-        optional_profile=True,
-    )
-
-
 def public_surface_index() -> Tuple[GovSurface, ...]:
     return (
         artifact_governance_surface(),
@@ -247,7 +212,6 @@ def public_surface_index() -> Tuple[GovSurface, ...]:
         domain_profile_sdk_surface(),
         runtime_contract_proofs_surface(),
         controlled_execution_surface(),
-        security_profile_surface(),
     )
 
 
