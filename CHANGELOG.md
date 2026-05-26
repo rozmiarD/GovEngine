@@ -6,13 +6,18 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-- Advances the source line to `0.12.1a0` / `0.12.1-alpha` without a tag or
+- Advances the source line to `0.12.1a1` / `0.12.1-alpha.1` without a tag or
   PyPI upload.
 - Adds `govengine.replay`, a neutral guarded-root replay store helper for
   already-verified SCLite `kernel_guard_hmac_v1` sidecars. The helper records
   `root_tag`, `chain_id`, ticket/run id, and `key_id` through host-supplied
   JSON state and can reject repeat roots in require-fresh mode without owning
   HMAC verification, key storage, runtime storage, or public PKI semantics.
+- Adds `verify_guard_and_record_replay()`, the high-level runtime-consumable
+  guarded-bundle flow: SCLite guarded-strict verification first, then
+  GovEngine replay-store recording. The controlled-execution gate can now
+  require `guarded + replay-fresh` for runtime-consumable bundles while keeping
+  review-only bundles on the existing review path.
 
 ## 0.12.0-alpha - Security facade retirement
 

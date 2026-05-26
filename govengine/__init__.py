@@ -5,7 +5,7 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
-__version__ = '0.12.1a0'
+__version__ = '0.12.1a1'
 
 from .admission import (
     GovAdmissionDecision,
@@ -115,12 +115,14 @@ from .review import (
     validate_review_result,
 )
 from .replay import (
+    GuardedBundleRuntimeDecision,
     GuardReplayDecision,
     GuardReplayRecord,
     evaluate_guard_replay,
     guard_replay_record_from_guard,
     record_guard_replay,
     record_guard_replay_file,
+    verify_guard_and_record_replay,
 )
 from .runtime_shell import (
     GovControlAction,
@@ -207,6 +209,7 @@ __all__ = [
     'GovRunState',
     'GovRuntimeSnapshot',
     'GovSchedulerTick',
+    'GuardedBundleRuntimeDecision',
     'GuardReplayDecision',
     'GuardReplayRecord',
     'GovSurface',
@@ -267,6 +270,7 @@ __all__ = [
     'ravenclaw_security_profile',
     'record_guard_replay',
     'record_guard_replay_file',
+    'verify_guard_and_record_replay',
     'runner_lease_from_request',
     'runtime_contract_proofs_surface',
     'supervision_plan_from_runner_request',

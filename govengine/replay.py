@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -92,6 +93,47 @@ class GuardReplayDecision:
         }
 
 
+@dataclass(frozen=True)
+class GuardedBundleRuntimeDecision:
+    """Combined guarded verification plus replay-freshness runtime decision."""
+
+    status: str
+    verification_status: str
+    replay_status: str
+    root_chain_digest: str = ""
+    guard_root_tag: str = ""
+    chain_id: str = ""
+    key_id: str = ""
+    ticket_id: str = ""
+    run_id: str = ""
+    blocker: str = ""
+    next_action: str = ""
+    verification: Mapping[str, Any] = field(default_factory=dict)
+    replay_decision: GuardReplayDecision | None = None
+
+    @property
+    def allowed(self) -> bool:
+        return self.status == "allowed" and self.verification_status == "passed" and self.replay_status == "fresh"
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "allowed": self.allowed,
+            "verification_status": self.verification_status,
+            "replay_status": self.replay_status,
+            "root_chain_digest": self.root_chain_digest,
+            "guard_root_tag": self.guard_root_tag,
+            "chain_id": self.chain_id,
+            "key_id": self.key_id,
+            "ticket_id": self.ticket_id,
+            "run_id": self.run_id,
+            "blocker": self.blocker,
+            "next_action": self.next_action,
+            "verification": dict(self.verification),
+            "replay_decision": self.replay_decision.as_dict() if self.replay_decision else None,
+        }
+
+
 def guard_replay_record_from_guard(
     guard: Mapping[str, Any],
     *,
@@ -113,6 +155,151 @@ def guard_replay_record_from_guard(
         "observed_at": observed_at or _utc_now(),
         "metadata": dict(metadata or {}),
     })
+
+
+def _load_json_object(path: Path, *, label: str) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise GovApiError(f"invalid_{label}_json_root")
+    return value
+
+
+def _ticket_id_from_manifest(manifest_path: Path, manifest: Mapping[str, Any]) -> str:
+    base = manifest_path.parent
+    entries = manifest.get("entries")
+    if not isinstance(entries, list):
+        return ""
+    for entry in entries:
+        if not isinstance(entry, Mapping) or entry.get("role") != "execution_ticket":
+            continue
+        rel_path = str(entry.get("path") or "")
+        if not rel_path:
+            return ""
+        ticket_path = (base / rel_path).resolve()
+        try:
+            ticket_path.relative_to(base.resolve())
+        except ValueError:
+            return ""
+        try:
+            ticket = _load_json_object(ticket_path, label="execution_ticket")
+        except Exception:
+            return ""
+        return str(ticket.get("ticket_id") or "")
+    return ""
+
+
+def verify_guard_and_record_replay(
+    manifest_path: Path | str,
+    *,
+    guard_path: Path | str,
+    key: str | bytes,
+    store: GovStateStore,
+    require_fresh: bool = True,
+    strict_lifecycle: bool = True,
+    ticket_id: str = "",
+    run_id: str = "",
+    observed_at: str | None = None,
+    replay_store_key: str = DEFAULT_GUARD_REPLAY_STORE_KEY,
+    metadata: Mapping[str, Any] | None = None,
+) -> GuardedBundleRuntimeDecision:
+    """Verify a guarded SCLite bundle and record replay freshness.
+
+    Runtime-consumable bundles must use the fail-closed SCLite secure profile:
+    strict lifecycle, artifact-chain verification, and kernel_guard_hmac_v1.
+    GovEngine records freshness; SCLite verifies the guard. This function does
+    not own keys, perform PKI, or store raw artifacts.
+    """
+
+    if not strict_lifecycle:
+        return GuardedBundleRuntimeDecision(
+            status="blocked",
+            verification_status="failed",
+            replay_status="not_checked",
+            blocker="strict_lifecycle_required_for_runtime_consumable_guard",
+            next_action="rerun_with_strict_lifecycle",
+        )
+
+    manifest = Path(manifest_path).resolve()
+    guard = Path(guard_path).resolve()
+    try:
+        from sclite.secure import verify_secure_bundle
+    except Exception as exc:  # pragma: no cover - depends on installed SCLite line
+        return GuardedBundleRuntimeDecision(
+            status="blocked",
+            verification_status="failed",
+            replay_status="not_checked",
+            blocker="sclite_secure_profile_unavailable",
+            next_action="install_sclite_with_kernel_guard_secure_profile",
+            verification={"error": str(exc)},
+        )
+
+    try:
+        verification = verify_secure_bundle(
+            manifest,
+            guard_path=guard,
+            key=key,
+            root=manifest.parent,
+            validate_schemas=True,
+            strict_jsonschema=False,
+        )
+        guard_payload = _load_json_object(guard, label="kernel_guard")
+        manifest_payload = _load_json_object(manifest, label="artifact_chain_manifest")
+    except Exception as exc:
+        return GuardedBundleRuntimeDecision(
+            status="blocked",
+            verification_status="failed",
+            replay_status="not_checked",
+            blocker=f"guard_verification_failed:{exc}",
+            next_action="reject_or_review_unguarded_bundle",
+        )
+
+    resolved_ticket_id = ticket_id or _ticket_id_from_manifest(manifest, manifest_payload)
+    record = guard_replay_record_from_guard(
+        guard_payload,
+        ticket_id=resolved_ticket_id,
+        run_id=run_id,
+        observed_at=observed_at,
+        metadata={
+            "root_chain_digest": verification.get("root_chain_digest", ""),
+            "secure_profile": verification.get("secure_profile", ""),
+            **dict(metadata or {}),
+        },
+    )
+    replay = record_guard_replay(
+        store,
+        record,
+        key=replay_store_key,
+        require_fresh=require_fresh,
+    )
+    if not replay.allowed or replay.replay_status != "fresh":
+        return GuardedBundleRuntimeDecision(
+            status="blocked",
+            verification_status="passed",
+            replay_status=replay.replay_status,
+            root_chain_digest=str(verification.get("root_chain_digest") or ""),
+            guard_root_tag=record.root_tag,
+            chain_id=record.chain_id,
+            key_id=record.key_id,
+            ticket_id=record.ticket_id,
+            run_id=record.run_id,
+            blocker=replay.blocker or "guarded_root_not_fresh",
+            next_action=replay.next_action or "reject_or_review_replayed_guarded_bundle",
+            verification=verification,
+            replay_decision=replay,
+        )
+    return GuardedBundleRuntimeDecision(
+        status="allowed",
+        verification_status="passed",
+        replay_status="fresh",
+        root_chain_digest=str(verification.get("root_chain_digest") or ""),
+        guard_root_tag=record.root_tag,
+        chain_id=record.chain_id,
+        key_id=record.key_id,
+        ticket_id=record.ticket_id,
+        run_id=record.run_id,
+        verification=verification,
+        replay_decision=replay,
+    )
 
 
 def _empty_store() -> dict[str, Any]:
