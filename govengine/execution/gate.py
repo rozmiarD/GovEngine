@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from typing import Any, Mapping
 
 from govengine.core import ExecutionPrerequisites, GovernanceContext, ReasonCode, TransitionDecision
@@ -118,6 +118,37 @@ class ExecutionGate:
                 runner_profile=gate_input.runner_profile.name,
                 metadata={"runner_profile": gate_input.runner_profile.as_dict(), "gate_input": gate_input.as_dict()},
             ),
+        )
+
+    def evaluate_runtime_consumable(
+        self,
+        gate_input: ExecutionGateInput,
+        *,
+        guarded_bundle_decision: Mapping[str, Any],
+        live: bool = False,
+    ) -> TransitionDecision:
+        """Evaluate an execution gate with a verified GovEngine replay decision.
+
+        Runtime-consumable SCLite bundles must enter the gate through the
+        guarded+fresh decision produced by `verify_guard_and_record_replay()`.
+        This method keeps that mapping explicit instead of requiring hosts to
+        hand-copy replay fields into `ExecutionGateInput`.
+        """
+
+        guarded_status = str(
+            guarded_bundle_decision.get("verification_status")
+            or guarded_bundle_decision.get("status")
+            or ""
+        )
+        replay_status = str(guarded_bundle_decision.get("replay_status") or "")
+        return self.evaluate(
+            replace(
+                gate_input,
+                runtime_consumable_bundle=True,
+                guarded_bundle_status=guarded_status,
+                replay_status=replay_status,
+            ),
+            live=live,
         )
 
 

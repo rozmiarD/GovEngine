@@ -44,6 +44,35 @@ def test_execution_gate_allows_runtime_consumable_guarded_fresh_bundle() -> None
     assert decision.to_state == "runner_allowed_dry_run"
 
 
+def test_execution_gate_maps_guarded_runtime_decision_to_admission() -> None:
+    decision = ExecutionGate().evaluate_runtime_consumable(
+        _gate_input(),
+        guarded_bundle_decision={
+            "status": "allowed",
+            "verification_status": "passed",
+            "replay_status": "fresh",
+        },
+    )
+
+    assert decision.allowed is True
+    assert decision.to_state == "runner_allowed_dry_run"
+
+
+def test_execution_gate_blocks_runtime_decision_without_fresh_guard() -> None:
+    decision = ExecutionGate().evaluate_runtime_consumable(
+        _gate_input(),
+        guarded_bundle_decision={
+            "status": "blocked",
+            "verification_status": "passed",
+            "replay_status": "replayed",
+        },
+    )
+
+    assert decision.allowed is False
+    assert decision.reason_code == "replay_detected"
+    assert "missing_or_replayed_guarded_root" in decision.blockers
+
+
 def test_execution_gate_blocks_runtime_consumable_unguarded_bundle() -> None:
     decision = ExecutionGate().evaluate(_gate_input(runtime_consumable_bundle=True))
 

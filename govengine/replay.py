@@ -30,6 +30,7 @@ class GuardReplayRecord:
     root_tag: str
     chain_id: str
     key_id: str
+    root_chain_digest: str = ""
     ticket_id: str = ""
     run_id: str = ""
     guard_profile: str = "kernel_guard_hmac_v1"
@@ -53,6 +54,7 @@ class GuardReplayRecord:
             root_tag=root_tag,
             chain_id=chain_id,
             key_id=key_id,
+            root_chain_digest=str(raw.get("root_chain_digest") or ""),
             ticket_id=str(raw.get("ticket_id") or ""),
             run_id=str(raw.get("run_id") or ""),
             guard_profile=str(raw.get("guard_profile") or raw.get("profile") or "kernel_guard_hmac_v1"),
@@ -149,6 +151,7 @@ def guard_replay_record_from_guard(
         "root_tag": raw.get("root_tag"),
         "chain_id": raw.get("chain_id"),
         "key_id": raw.get("key_id"),
+        "root_chain_digest": raw.get("root_chain_digest") or (metadata or {}).get("root_chain_digest") or "",
         "guard_profile": raw.get("profile") or "kernel_guard_hmac_v1",
         "ticket_id": ticket_id,
         "run_id": run_id,
@@ -196,6 +199,7 @@ def verify_guard_and_record_replay(
     store: GovStateStore,
     require_fresh: bool = True,
     strict_lifecycle: bool = True,
+    strict_jsonschema: bool = False,
     ticket_id: str = "",
     run_id: str = "",
     observed_at: str | None = None,
@@ -240,7 +244,7 @@ def verify_guard_and_record_replay(
             key=key,
             root=manifest.parent,
             validate_schemas=True,
-            strict_jsonschema=False,
+            strict_jsonschema=strict_jsonschema,
         )
         guard_payload = _load_json_object(guard, label="kernel_guard")
         manifest_payload = _load_json_object(manifest, label="artifact_chain_manifest")
@@ -335,9 +339,41 @@ def evaluate_guard_replay(
     *,
     require_fresh: bool = True,
 ) -> GuardReplayDecision:
-    """Evaluate whether a guarded root tag has already been observed."""
+    """Evaluate whether a guarded bundle has already been observed.
+
+    `root_tag` alone is not enough freshness for runtime use: the same
+    artifact-chain payload can be re-guarded with new nonces, producing a new
+    root tag. When available, GovEngine therefore keys replay on the semantic
+    payload binding `(root_chain_digest, ticket_id|chain_id, key_id)` and keeps
+    root-tag matching as a compatibility fallback for older records.
+    """
 
     for prior in prior_records:
+        semantic_scope = record.ticket_id or record.chain_id
+        prior_semantic_scope = prior.ticket_id or prior.chain_id
+        semantic_replay = (
+            bool(record.root_chain_digest)
+            and bool(prior.root_chain_digest)
+            and record.root_chain_digest == prior.root_chain_digest
+            and semantic_scope == prior_semantic_scope
+            and record.key_id == prior.key_id
+        )
+        if semantic_replay:
+            if require_fresh:
+                return GuardReplayDecision(
+                    status="blocked",
+                    replay_status="replayed",
+                    record=record,
+                    first_seen=prior,
+                    blocker=f"replayed_guarded_payload:{record.root_chain_digest}",
+                    next_action="reject_or_review_replayed_guarded_bundle",
+                )
+            return GuardReplayDecision(
+                status="allowed",
+                replay_status="seen",
+                record=record,
+                first_seen=prior,
+            )
         if prior.root_tag == record.root_tag:
             if require_fresh:
                 return GuardReplayDecision(
