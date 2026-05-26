@@ -127,6 +127,7 @@ def _install_fake_sclite_secure(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def _write_guarded_bundle(tmp_path: Path, *, root_tag: str = "tag-1") -> tuple[Path, Path]:
+    tmp_path.mkdir(parents=True, exist_ok=True)
     ticket_path = tmp_path / "execution_ticket.json"
     ticket_path.write_text(json.dumps({"ticket_id": "ticket-1"}) + "\n", encoding="utf-8")
     manifest_path = tmp_path / "artifact_chain_manifest.json"
@@ -165,7 +166,24 @@ def test_verify_guard_and_record_replay_allows_first_use_and_blocks_second(tmp_p
     assert second.allowed is False
     assert second.status == "blocked"
     assert second.replay_status == "replayed"
-    assert second.blocker.startswith("replayed_guard_root:")
+    assert second.blocker.startswith("replayed_guarded_payload:")
+
+
+def test_verify_guard_and_record_replay_blocks_reguarded_same_payload(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _install_fake_sclite_secure(monkeypatch)
+    first_manifest, first_guard = _write_guarded_bundle(tmp_path / "first", root_tag="tag-1")
+    second_manifest, second_guard = _write_guarded_bundle(tmp_path / "second", root_tag="tag-2")
+    store = MemoryStore()
+
+    first = verify_guard_and_record_replay(first_manifest, guard_path=first_guard, key="secret", store=store)
+    second = verify_guard_and_record_replay(second_manifest, guard_path=second_guard, key="secret", store=store)
+
+    assert first.allowed is True
+    assert first.replay_status == "fresh"
+    assert second.allowed is False
+    assert second.replay_status == "replayed"
+    assert second.guard_root_tag == "tag-2"
+    assert second.blocker.startswith("replayed_guarded_payload:")
 
 
 def test_verify_guard_and_record_replay_requires_strict_lifecycle(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

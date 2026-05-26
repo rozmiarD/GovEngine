@@ -4,6 +4,16 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## Unreleased
+
+- Tightens guarded-bundle replay freshness from root-tag-only matching to
+  semantic payload matching over `root_chain_digest`, ticket/chain scope, and
+  `key_id`, so re-guarding the same payload with fresh nonces does not bypass
+  replay detection.
+- Adds an explicit execution-gate entry point for runtime-consumable guarded
+  bundle decisions produced by `verify_guard_and_record_replay()`, avoiding
+  hand-mapped guarded/fresh status fields at the host boundary.
+
 ## 0.12.1-alpha.1 - Guarded-bundle replay gate
 
 - Publishes `0.12.1a1` / `0.12.1-alpha.1` as the guarded-bundle replay gate
