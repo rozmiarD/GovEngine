@@ -35,6 +35,9 @@ class ExecutionGateInput:
     execution_ticket_status: str
     trust_decision_status: str
     runner_profile: RunnerProfile = field(default_factory=RunnerProfile)
+    runtime_consumable_bundle: bool = False
+    guarded_bundle_status: str = "not_required"
+    replay_status: str = "not_required"
 
     def prerequisites(self) -> ExecutionPrerequisites:
         return ExecutionPrerequisites(
@@ -54,6 +57,9 @@ class ExecutionGateInput:
             "execution_ticket_status": self.execution_ticket_status,
             "trust_decision_status": self.trust_decision_status,
             "runner_profile": self.runner_profile.as_dict(),
+            "runtime_consumable_bundle": self.runtime_consumable_bundle,
+            "guarded_bundle_status": self.guarded_bundle_status,
+            "replay_status": self.replay_status,
         }
 
 
@@ -67,6 +73,29 @@ class ExecutionGate:
 
     def evaluate(self, gate_input: ExecutionGateInput, *, live: bool = False) -> TransitionDecision:
         decision = gate_input.prerequisites().transition_decision(live=live)
+        guarded_blockers: list[str] = []
+        if gate_input.runtime_consumable_bundle:
+            if gate_input.guarded_bundle_status not in {"passed", "ok", "allowed"}:
+                guarded_blockers.append("missing_or_invalid_kernel_guard")
+            if gate_input.replay_status != "fresh":
+                guarded_blockers.append("missing_or_replayed_guarded_root")
+        if guarded_blockers:
+            return TransitionDecision(
+                status="blocked",
+                reason_code=ReasonCode.REPLAY_DETECTED.value if gate_input.replay_status == "replayed" else ReasonCode.SIGNATURE_REQUIRED.value,
+                from_state="execution_gated",
+                to_state="runner_allowed_live" if live else "runner_allowed_dry_run",
+                blockers=tuple((*decision.blockers, *guarded_blockers)),
+                next_actions=(
+                    *decision.next_actions,
+                    "verify_guarded_strict_bundle",
+                    "record_guard_replay_freshness",
+                ),
+                context=GovernanceContext(
+                    runner_profile=gate_input.runner_profile.name,
+                    metadata={"runner_profile": gate_input.runner_profile.as_dict(), "gate_input": gate_input.as_dict()},
+                ),
+            )
         if decision.allowed:
             return TransitionDecision(
                 status="allowed",

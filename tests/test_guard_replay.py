@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import json
+import sys
+import types
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -12,6 +16,7 @@ from govengine.replay import (
     guard_replay_record_from_guard,
     record_guard_replay,
     record_guard_replay_file,
+    verify_guard_and_record_replay,
 )
 
 
@@ -102,3 +107,78 @@ def test_record_guard_replay_file_round_trip(tmp_path) -> None:
     assert record_guard_replay_file(path, first).allowed is True
     assert record_guard_replay_file(path, second).allowed is False
     assert "tag-1" in path.read_text(encoding="utf-8")
+
+
+def _install_fake_sclite_secure(monkeypatch: pytest.MonkeyPatch) -> None:
+    module = types.ModuleType("sclite.secure")
+
+    def verify_secure_bundle(manifest_path, *, guard_path, key, root, validate_schemas, strict_jsonschema):
+        return {
+            "status": "passed",
+            "secure_profile": "guarded-strict",
+            "root_chain_digest": "root-digest-1",
+            "guard_root_tag": json.loads(Path(guard_path).read_text(encoding="utf-8"))["root_tag"],
+            "key_id": "key-20260525",
+            "replay_status": "not_checked",
+        }
+
+    module.verify_secure_bundle = verify_secure_bundle
+    monkeypatch.setitem(sys.modules, "sclite.secure", module)
+
+
+def _write_guarded_bundle(tmp_path: Path, *, root_tag: str = "tag-1") -> tuple[Path, Path]:
+    ticket_path = tmp_path / "execution_ticket.json"
+    ticket_path.write_text(json.dumps({"ticket_id": "ticket-1"}) + "\n", encoding="utf-8")
+    manifest_path = tmp_path / "artifact_chain_manifest.json"
+    manifest_path.write_text(
+        json.dumps({
+            "chain_id": "chain-1",
+            "entries": [{"role": "execution_ticket", "path": "execution_ticket.json"}],
+        }) + "\n",
+        encoding="utf-8",
+    )
+    guard_path = tmp_path / "kernel_guard_manifest.json"
+    guard_path.write_text(
+        json.dumps({
+            "profile": "kernel_guard_hmac_v1",
+            "root_tag": root_tag,
+            "chain_id": "chain-1",
+            "key_id": "key-20260525",
+        }) + "\n",
+        encoding="utf-8",
+    )
+    return manifest_path, guard_path
+
+
+def test_verify_guard_and_record_replay_allows_first_use_and_blocks_second(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _install_fake_sclite_secure(monkeypatch)
+    manifest_path, guard_path = _write_guarded_bundle(tmp_path)
+    store = MemoryStore()
+
+    first = verify_guard_and_record_replay(manifest_path, guard_path=guard_path, key="secret", store=store)
+    second = verify_guard_and_record_replay(manifest_path, guard_path=guard_path, key="secret", store=store)
+
+    assert first.allowed is True
+    assert first.verification_status == "passed"
+    assert first.replay_status == "fresh"
+    assert first.ticket_id == "ticket-1"
+    assert second.allowed is False
+    assert second.status == "blocked"
+    assert second.replay_status == "replayed"
+    assert second.blocker.startswith("replayed_guard_root:")
+
+
+def test_verify_guard_and_record_replay_requires_strict_lifecycle(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _install_fake_sclite_secure(monkeypatch)
+    manifest_path, guard_path = _write_guarded_bundle(tmp_path)
+
+    decision = verify_guard_and_record_replay(
+        manifest_path,
+        guard_path=guard_path,
+        key="secret",
+        store=MemoryStore(),
+        strict_lifecycle=False,
+    )
+
+    assert decision.allowed is False
+    assert decision.blocker == "strict_lifecycle_required_for_runtime_consumable_guard"

@@ -14,7 +14,7 @@ from govengine import __version__ as package_version  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '0.12.1-alpha'
+EXPECTED_RELEASE_LABEL = '0.12.1-alpha.1'
 PUBLISHED_VERSION = '0.12.0a0'
 
 SURFACE_HEADINGS = {
@@ -175,9 +175,9 @@ def _assert_no_published_line_candidate_drift(paths: Iterable[str]) -> None:
     forbidden = (
         ('0.12_candidate_readme', '`0.12` candidate'),
         ('0.12_alpha_candidate', '`0.12.0-alpha` candidate'),
-        ('0.12_1_alpha_candidate', '`0.12.1-alpha` candidate'),
+        ('0.12_1_alpha_candidate', '`0.12.1-alpha.1` candidate'),
         ('alpha_candidate_contributing', 'alpha candidate (`0.12.0-alpha`)'),
-        ('alpha_12_1_candidate_contributing', 'alpha candidate (`0.12.1-alpha`)'),
+        ('alpha_12_1_candidate_contributing', 'alpha candidate (`0.12.1-alpha.1`)'),
         ('candidate_api_narrowing_line', 'candidate API-narrowing line'),
         (
             'stale_publishing_dependency_line',

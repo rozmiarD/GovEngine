@@ -38,7 +38,7 @@ Only this section states current validation expectations. The versioned
 sections under **Historical validation records** are retained release evidence,
 not the active gate.
 
-Expected result for the current `0.12.1a0` source line (`0.12.1-alpha`):
+Expected result for the current `0.12.1a1` source line (`0.12.1-alpha.1`):
 
 - full pytest passes in the source tree;
 - `scripts/validate_clean_package_install.py` passes, rejects retired module paths from the installed artifact, and runs `pip check` inside its newly created virtual environment;
@@ -54,6 +54,10 @@ Expected result for the current `0.12.1a0` source line (`0.12.1-alpha`):
 - public surface status markers are alpha-labelled and
   `govengine.sclite_adapter` is absent because Ravenclaw owns projection from
   its runtime payloads to public SCLite lifecycle artifacts;
+- guarded-bundle runtime flow tests prove first use of a verified SCLite guard
+  can be recorded as fresh and a second use of the same `root_tag` is blocked;
+- runtime-consumable execution-gate tests require guarded-strict verification
+  plus replay-fresh status before a bundle can be consumed for execution;
 - no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced.
 
 ## Historical validation records
@@ -158,6 +162,8 @@ Current tests cover:
 - lifecycle transition gates and blocker/next-action reporting;
 - signing/trust bridge decisions and deterministic demo signer/verifier ports without PKI/key ownership;
 - dry-run-only execution gates and default `DryRunRunner` behavior;
+- guarded runtime decision assembly and replay freshness for already verified
+  SCLite Kernel Guard roots;
 - deconfliction/change-order and artifact state-index summaries;
 - public surface registry containing only the neutral artifact-governance, planning, admission-policy, evidence-review, profile, proof, and controlled-execution groups;
 - negative regression checks rejecting the retired `govengine.security_profile` facade and Ravenclaw-derived security module paths;

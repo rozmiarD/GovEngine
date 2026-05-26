@@ -1,7 +1,7 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.12.1a0](https://img.shields.io/badge/source-govengine%200.12.1a0-blueviolet.svg)](https://pypi.org/project/govengine/0.12.0a0/)
+[![Package: govengine 0.12.1a1](https://img.shields.io/badge/source-govengine%200.12.1a1-blueviolet.svg)](https://pypi.org/project/govengine/0.12.0a0/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Dependency: SCLite >=0.8.0a0](https://img.shields.io/badge/dependency-SCLite%20%3E%3D0.8.0a0-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
@@ -45,6 +45,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 - artifact descriptor/state/transition boundary helpers;
 - SCLite lifecycle status bridge and lightweight lifecycle transition gate/controller;
 - guarded-root replay checks for already-verified SCLite Kernel Guard sidecars;
+- high-level guarded-strict verification plus replay-fresh runtime decisions;
 - artifact deconfliction/change-order helpers and lightweight state-index summaries;
 - signature/trust policy bridge helpers with host-provided signer/verifier ports and deterministic demo ports for fixtures;
 - approved-spec and execution-ticket validation helpers;
@@ -71,7 +72,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 
 ## Current status
 
-GovEngine is an **alpha package 0.12.1a0 (`0.12.1-alpha`)**. It keeps the neutral artifact-governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review, profile, and proof surfaces while removing the former optional security-profile facade and Ravenclaw-derived helper modules. The active dependency line is `sclite-core>=0.8.0a0,<0.9`. The current published PyPI package is `govengine==0.12.0a0`.
+GovEngine is an **alpha package 0.12.1a1 (`0.12.1-alpha.1`)**. It keeps the neutral artifact-governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review, profile, and proof surfaces while removing the former optional security-profile facade and Ravenclaw-derived helper modules. The active dependency line is `sclite-core>=0.8.0a0,<0.9`. The current published PyPI package is `govengine==0.12.0a0`.
 
 ## Installation
 
@@ -150,6 +151,6 @@ replace or reassign the originating copyright notice.
 
 ## Safety boundary
 
-GovEngine should preserve deterministic governance over prompt-only behavior. GovEngine must never execute directly from raw intent: execution requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, and allowed runner profile.
+GovEngine should preserve deterministic governance over prompt-only behavior. GovEngine must never execute directly from raw intent: execution requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, and allowed runner profile. When a SCLite bundle is runtime-consumable, the execution gate also requires a guarded-strict SCLite verification result and replay-fresh GovEngine decision; review-only bundles can remain on weaker review/integrity postures without becoming execution authority.
 
 `DryRunRunner`/dry-run behavior remains the default. Live execution backends are disabled by default; any future `LocalSubprocessRunner` must be optional, policy-enabled, negative-tested, and never the default. Controlled execution depends on lifecycle gates and signing/trust gates, with Ravenclaw retaining the concrete runtime adapter until reviewed. Demo signing helpers are fixture ports only: they bind a deterministic signature to an artifact digest for tests/reviewer demos and must not be presented as cryptographic identity, PKI, CA, KMS, or trust-store support.

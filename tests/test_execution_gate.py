@@ -33,6 +33,38 @@ def test_execution_gate_allows_complete_dry_run_prerequisites() -> None:
     assert decision.context.runner_profile == "dry-run"
 
 
+def test_execution_gate_allows_runtime_consumable_guarded_fresh_bundle() -> None:
+    decision = ExecutionGate().evaluate(_gate_input(
+        runtime_consumable_bundle=True,
+        guarded_bundle_status="passed",
+        replay_status="fresh",
+    ))
+
+    assert decision.allowed is True
+    assert decision.to_state == "runner_allowed_dry_run"
+
+
+def test_execution_gate_blocks_runtime_consumable_unguarded_bundle() -> None:
+    decision = ExecutionGate().evaluate(_gate_input(runtime_consumable_bundle=True))
+
+    assert decision.allowed is False
+    assert decision.reason_code == "signature_required"
+    assert "missing_or_invalid_kernel_guard" in decision.blockers
+    assert "missing_or_replayed_guarded_root" in decision.blockers
+
+
+def test_execution_gate_blocks_runtime_consumable_replayed_bundle() -> None:
+    decision = ExecutionGate().evaluate(_gate_input(
+        runtime_consumable_bundle=True,
+        guarded_bundle_status="passed",
+        replay_status="replayed",
+    ))
+
+    assert decision.allowed is False
+    assert decision.reason_code == "replay_detected"
+    assert "missing_or_replayed_guarded_root" in decision.blockers
+
+
 def test_execution_gate_rejects_raw_intent_missing_contract() -> None:
     decision = ExecutionGate().evaluate(_gate_input(has_prepared_execution_contract=False))
 
