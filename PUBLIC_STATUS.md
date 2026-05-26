@@ -9,8 +9,8 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - GitHub Actions: pytest on supported Python versions.
 - Source/package version: `0.12.1a1`.
 - Release label: `0.12.1-alpha.1`.
-- PyPI package: `govengine==0.12.0a0` is the published current alpha package.
-- SCLite integration: present through helper seams via `sclite-core>=0.8.0a0,<0.9`.
+- PyPI package: `govengine==0.12.1a1` is the published current alpha package.
+- SCLite integration: present through helper seams via `sclite-core>=0.8.0b2,<0.9`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.
 - Event model: initial `govengine.events` envelopes define transport-neutral governance metadata without raw prompts, credentials, live commands, carrier payloads, or scheduling claims.
@@ -23,7 +23,7 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Domain profile SDK: `govengine.profiles` defines contract-only domain profile declarations, registries, fixture profiles, and conformance reports without domain taxonomy ownership, adapters, credentials, live execution, or product UX.
 - Runtime contract proofs: `govengine.contract_proofs` defines public-safe Ravenclaw/Tecrax proof fixtures and neutral governance vocabulary over existing GovEngine contracts without adapters, credentials, live execution, schedulers, storage, or new OODA surface.
 - Public truth gate: `scripts/validate_public_truth.py` checks version/dependency/status/surface consistency across package metadata and public docs.
-- Alpha readiness gate: `scripts/validate_alpha_readiness.py` checks package metadata, alpha classifier, runtime proof fixtures, neutral vocabulary, and public-surface non-claims before the alpha source line can be tagged or uploaded.
+- Alpha readiness gate: `scripts/validate_alpha_readiness.py` checks package metadata, alpha classifier, runtime proof fixtures, neutral vocabulary, and public-surface non-claims before alpha releases.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
 - Core artifact governance boundaries: initial portable dataclasses for artifact descriptors/envelopes/state, governance context, transition decisions, and execution prerequisites.
@@ -43,7 +43,7 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `govengine==0.12.0a0`.
+- PyPI publication: completed through `govengine==0.12.1a1`.
 
 ## What is public-safe today
 

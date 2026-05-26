@@ -10,7 +10,7 @@ GovEngine answers: **how does a runtime prepare, check, and consume those artifa
 `pyproject.toml` depends on the published SCLite package distribution:
 
 ```toml
-sclite-core>=0.8.0a0,<0.9
+sclite-core>=0.8.0b2,<0.9
 ```
 
 The PyPI distribution name is `sclite-core`; the Python import package remains `sclite`.
@@ -49,7 +49,7 @@ GovEngine currently provides helpers around the runtime-facing parts of that lif
 - `verify_guard_and_record_replay()`, a high-level adapter that verifies the
   SCLite guarded-strict profile and then records replay freshness for one
   runtime-consumable decision;
-- review-bundle verdict mapping through SCLite `0.8.0a0` review surfaces, preserving the review-bundle contract.
+- review-bundle verdict mapping through SCLite `0.8.0b2` review and guarded-strict surfaces, preserving the review-bundle contract.
 
 Host-owned artifact projection is outside GovEngine. A runtime such as
 Ravenclaw constructs its domain-shaped lifecycle artifacts before consuming

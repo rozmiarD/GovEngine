@@ -2,7 +2,7 @@
 
 GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for future releases without overstating maturity.
 
-Current release line: `govengine==0.12.0a0` (`0.12.0-alpha`) with `sclite-core>=0.8.0a0,<0.9`.
+Current release line: `govengine==0.12.1a1` (`0.12.1-alpha.1`) with `sclite-core>=0.8.0b2,<0.9`.
 
 ## Preflight
 
@@ -10,7 +10,7 @@ Current release line: `govengine==0.12.0a0` (`0.12.0-alpha`) with `sclite-core>=
 - [ ] Published Git history is preserved: no force-push, history rewrite, date rewrite, or tag rewrite to fix authorship/contribution graphs. Use corrective commits instead.
 - [ ] `CHANGELOG.md`, `PUBLIC_STATUS.md`, `README.md`, `docs/VALIDATION.md`, `docs/ROADMAP.md`, `docs/API_BOUNDARY.md`, `govengine/surfaces.py`, and `pyproject.toml` agree on version/status and claim only tested behavior.
 - [ ] `python scripts/validate_public_truth.py` passes.
-- [ ] `python scripts/validate_alpha_readiness.py` passes for alpha source lines.
+- [ ] `python scripts/validate_alpha_readiness.py` passes for alpha release lines.
 - [ ] `python -m pytest -q` passes.
 - [ ] `python scripts/validate_clean_package_install.py --venv /tmp/govengine-clean-release --dev --sclite-source /path/to/SCLite --no-editable` passes from a new virtual environment path, including its isolated installed-package retirement smoke.
 - [ ] Build artifacts are generated from a clean tree.
@@ -18,7 +18,7 @@ Current release line: `govengine==0.12.0a0` (`0.12.0-alpha`) with `sclite-core>=
 
 ## PyPI release notes
 
-- SCLite is published as the PyPI distribution `sclite-core`; the published GovEngine `0.12.x` alpha package line depends on `sclite-core>=0.8.0a0,<0.9`.
+- SCLite is published as the PyPI distribution `sclite-core`; the published GovEngine `0.12.x` alpha package line depends on `sclite-core>=0.8.0b2,<0.9`.
 - Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
 - `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
 - `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.
@@ -38,6 +38,7 @@ Current release line: `govengine==0.12.0a0` (`0.12.0-alpha`) with `sclite-core>=
 - `0.10.2-alpha` is the SCLite 0.7 surface-collapse sync line: it adds a scoped-ticket lifecycle projection for active review-bundle consumers while SCLite retains artifact/review verdict ownership.
 - `0.11.0-alpha` consumes the SCLite 0.8 retired-legacy surface and removes the Ravenclaw-shaped lifecycle projection from GovEngine after Ravenclaw takes ownership of that mapping.
 - `0.12.0-alpha` is the published API-narrowing line that removes the Ravenclaw-derived optional security facade and helper modules while preserving the neutral kernel surfaces.
+- `0.12.1-alpha.1` is the guarded-bundle runtime gate line: it consumes SCLite `0.8.0-beta`, composes guarded-strict verification with replay freshness, and requires guarded+fresh status for runtime-consumable execution gates.
 - API stability and non-claims should remain explicit because this is pre-1.0.
 
 ## Release order
