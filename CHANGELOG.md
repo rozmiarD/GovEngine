@@ -4,10 +4,10 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
-## Unreleased
+## 0.12.1-alpha.1 - Guarded-bundle replay gate
 
-- Advances the source line to `0.12.1a1` / `0.12.1-alpha.1` without a tag or
-  PyPI upload.
+- Publishes `0.12.1a1` / `0.12.1-alpha.1` as the guarded-bundle replay gate
+  line over `sclite-core>=0.8.0b2,<0.9`.
 - Adds `govengine.replay`, a neutral guarded-root replay store helper for
   already-verified SCLite `kernel_guard_hmac_v1` sidecars. The helper records
   `root_tag`, `chain_id`, ticket/run id, and `key_id` through host-supplied

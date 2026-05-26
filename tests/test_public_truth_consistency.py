@@ -77,8 +77,8 @@ def test_public_truth_validator_rejects_validation_history_before_current_gate()
         validator._assert_validation_current_gate_precedes_history(
             '## Historical validation records\n'
             'Historical expected result for the published `0.1.7` source line:\n'
-            '## Current source-line gate\n'
-            'Expected result for the current `0.12.1a1` source line\n'
+            '## Current package-line gate\n'
+            'Expected result for the current `0.12.1a1` package line\n'
             'not the active gate\n',
             '0.12.1a1',
         )
@@ -90,7 +90,7 @@ def test_public_truth_validator_rejects_unscoped_current_pip_check_guidance() ->
     with pytest.raises(AssertionError, match='unscoped_pip_check_guidance'):
         validator._assert_clean_pip_check_guidance(
             'python -m pip check\n',
-            '## Current source-line gate\n',
+            '## Current package-line gate\n',
             'clean release guidance\n',
         )
 

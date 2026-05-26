@@ -15,7 +15,7 @@ from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_
 from govengine.surfaces import public_surface_index  # noqa: E402
 
 EXPECTED_RELEASE_LABEL = '0.12.1-alpha.1'
-PUBLISHED_VERSION = '0.12.0a0'
+PUBLISHED_VERSION = '0.12.1a1'
 
 SURFACE_HEADINGS = {
     'Artifact-governance core': 'artifact_governance_core',
@@ -103,7 +103,7 @@ def _assert_no_current_stale_status(paths: Iterable[str], version: str) -> None:
 
 def _assert_readme_package_truth(readme: str, version: str) -> None:
     release_url = f'https://pypi.org/project/govengine/{PUBLISHED_VERSION}/'
-    badge = f'source-govengine%20{version}-blueviolet.svg'
+    badge = f'package-govengine%20{version}-blueviolet.svg'
     install_command = f'python -m pip install govengine=={PUBLISHED_VERSION}'
     forbidden_dynamic_badges = (
         'img.shields.io/pypi/v/govengine',
@@ -143,13 +143,13 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
             raise AssertionError(f'docs/ROADMAP.md:stale_current_roadmap_claim:{marker}')
     _assert_contains('docs/ROADMAP.md', roadmap, '## Current 0.12.x alpha line')
     _assert_contains('docs/ROADMAP.md', roadmap, 'The current `0.12.x` alpha line')
-    _assert_contains('docs/ROADMAP.md', roadmap, 'Published PyPI baseline is `govengine==0.12.0a0`')
+    _assert_contains('docs/ROADMAP.md', roadmap, f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`')
 
 
 def _assert_validation_current_gate_precedes_history(validation: str, version: str) -> None:
-    current_heading = '## Current source-line gate'
+    current_heading = '## Current package-line gate'
     historical_heading = '## Historical validation records'
-    current_expectation = f'Expected result for the current `{version}` source line'
+    current_expectation = f'Expected result for the current `{version}` package line'
     current_pos = validation.find(current_heading)
     historical_pos = validation.find(historical_heading)
     expectation_pos = validation.find(current_expectation)
@@ -223,7 +223,7 @@ def main() -> int:
     _assert_contains('README.md', readme, 'package maintainer')
     _assert_contains('CONTRIBUTING.md', contributing, f'alpha package (`{release_label}`)')
     _assert_contains('CONTRIBUTING.md', contributing, 'scripts/validate_clean_package_install.py')
-    _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`')
+    _assert_contains('docs/ROADMAP.md', roadmap, f'Current package baseline: `govengine=={version}`')
     _assert_contains('docs/ROADMAP.md', roadmap, dependency)
     _assert_roadmap_current_release_truth(roadmap)
     _assert_contains('PUBLIC_STATUS.md', public_status, f'Source/package version: `{version}`.')
@@ -233,7 +233,7 @@ def main() -> int:
     _assert_contains('PUBLISHING.md', publishing, dependency)
     _assert_contains('PUBLISHING.md', publishing, 'scripts/validate_clean_package_install.py')
     _assert_contains('PUBLISHING.md', publishing, '--no-editable')
-    _assert_contains('docs/VALIDATION.md', validation, f'current `{version}` source line')
+    _assert_contains('docs/VALIDATION.md', validation, f'current `{version}` package line')
     _assert_contains('docs/VALIDATION.md', validation, 'scripts/validate_clean_package_install.py')
     _assert_contains('docs/VALIDATION.md', validation, '--no-editable')
     _assert_contains('docs/VALIDATION.md', validation, 'broad system interpreter is not')

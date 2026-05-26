@@ -11,7 +11,7 @@ python scripts/validate_public_truth.py
 python scripts/validate_alpha_readiness.py
 ```
 
-GitHub Actions source validation installs the current SCLite source line before the editable GovEngine test dependency set. That keeps coordinated prerelease CI independent of package-index propagation timing; clean wheel and PyPI install gates below still validate the published dependency chain.
+GitHub Actions source validation may install the current SCLite source line before the editable GovEngine test dependency set during coordinated prerelease waves. For this release line, clean wheel and PyPI install gates validate the published dependency chain.
 
 ## Clean installed-package gate
 
@@ -32,13 +32,13 @@ then runs validators, tests, and `pip check`. A broad system interpreter is not
 a release-readiness environment because unrelated installed tools can make
 its dependency set inconsistent.
 
-## Current source-line gate
+## Current package-line gate
 
 Only this section states current validation expectations. The versioned
 sections under **Historical validation records** are retained release evidence,
 not the active gate.
 
-Expected result for the current `0.12.1a1` source line (`0.12.1-alpha.1`):
+Expected result for the current `0.12.1a1` package line (`0.12.1-alpha.1`):
 
 - full pytest passes in the source tree;
 - `scripts/validate_clean_package_install.py` passes, rejects retired module paths from the installed artifact, and runs `pip check` inside its newly created virtual environment;
