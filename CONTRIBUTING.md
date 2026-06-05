@@ -1,6 +1,6 @@
 # Contributing to GovEngine
 
-GovEngine is an alpha package (`0.12.1-alpha.1`) governed-runtime kernel. Contributions should preserve the package boundary:
+GovEngine is an alpha package (`0.12.2-alpha`) governed-runtime kernel. Contributions should preserve the package boundary:
 
 ```text
 Ravenclaw -> GovEngine -> SCLite
