@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "govengine"
-version = "0.12.1a1"
+version = "0.12.2a0"
 description = "Carrier-agnostic artifact governance and controlled-execution services that consume SCLite contract lifecycle artifacts."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -24,7 +24,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-  "sclite-core>=0.8.0b2,<0.9",
+  "sclite-core>=1.0.1,<1.1",
 ]
 
 [project.urls]

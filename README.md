@@ -1,7 +1,7 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.12.1a1](https://img.shields.io/badge/package-govengine%200.12.1a1-blueviolet.svg)](https://pypi.org/project/govengine/0.12.1a1/)
+[![Package: govengine 0.12.2a0](https://img.shields.io/badge/package-govengine%200.12.2a0-blueviolet.svg)](https://pypi.org/project/govengine/0.12.1a1/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Dependency: SCLite >=0.8.0b2](https://img.shields.io/badge/dependency-SCLite%20%3E%3D0.8.0b2-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
@@ -72,7 +72,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 
 ## Current status
 
-GovEngine is an **alpha package 0.12.1a1 (`0.12.1-alpha.1`)**. It keeps the neutral artifact-governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review, profile, and proof surfaces while removing the former optional security-profile facade and Ravenclaw-derived helper modules. The active dependency line is `sclite-core>=0.8.0b2,<0.9`. The current published PyPI package is `govengine==0.12.1a1`.
+GovEngine is an **alpha package 0.12.2a0 (`0.12.2-alpha`)**. It keeps the neutral artifact-governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review, profile, and proof surfaces while removing the former optional security-profile facade and Ravenclaw-derived helper modules. The active source dependency line is `sclite-core>=1.0.1,<1.1`. The current published PyPI package remains `govengine==0.12.1a1` until downstream Ravenclaw validation is clean.
 
 ## Installation
 
