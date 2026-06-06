@@ -78,6 +78,25 @@ Expected result for the current `0.12.2a0` package line (`0.12.2-alpha`):
   replay claims, audit entries, target contact, or live execution authority;
 - no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced.
 
+## Operator/runbook docs gate
+
+Docs that change the governed-runtime MVP operator path should preserve the
+truth in [GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md):
+admission is a decision record, SCLite owns proof/review authority, trust and
+keys are host-owned ports, replay/audit persistence is host-owned beyond local
+adapters, dry-run remains the default runner path, and live execution remains
+disabled unless a future host adapter satisfies the runner safety spec.
+
+Use these checks for operator/runbook-only updates:
+
+```bash
+python scripts/validate_public_truth.py
+python scripts/validate_alpha_readiness.py
+python -m pytest tests/ -q
+ruff check .
+git diff --check
+```
+
 ## Historical validation records
 
 Historical expected result for the published `0.1.7` source line:

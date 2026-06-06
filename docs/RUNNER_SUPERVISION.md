@@ -38,6 +38,9 @@ record or digest is supplied, and treats ticket digests as SCLite/host-provided
 references. The verifier is not live execution authority and does not store raw
 evidence.
 
+The full operator-facing dry-run/default-safe path is summarized in
+[GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md).
+
 ## Live Runner Safety Specification
 
 GovEngine does not provide a live subprocess runner in this stage. This section

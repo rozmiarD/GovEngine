@@ -100,6 +100,9 @@ policy/ticket/trust gates pass
 
 A deterministic dry-run example for this path is documented in
 [GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md](GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md).
+The operator sequence that combines those checks with trust ports, runner
+profile selection, receipt obligation, and evidence/review binding is
+documented in [GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md).
 
 GovEngine then keeps the runtime-consumption evidence chain bounded:
 
