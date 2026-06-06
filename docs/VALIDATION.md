@@ -73,6 +73,9 @@ Expected result for the current `0.12.2a0` package line (`0.12.2-alpha`):
 - audit-ledger tests require append/read/verify contracts, GovEngine-owned
   digest binding, and JSONL development hash-chain continuity without
   production persistence claims;
+- inspect-only admission workflow tests must validate and summarize
+  `RuntimeAdmissionResult` records without creating runner requests, receipts,
+  replay claims, audit entries, target contact, or live execution authority;
 - no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced.
 
 ## Historical validation records

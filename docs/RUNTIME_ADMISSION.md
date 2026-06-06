@@ -86,6 +86,12 @@ The receipt/admission/ticket binding design is documented in
 existing dry-run `GovRunnerReceipt` shape. It is a review contract, not an
 execution grant.
 
+The inspect-only operator workflow is documented in
+[INSPECT_ONLY_ADMISSION_WORKFLOW.md](INSPECT_ONLY_ADMISSION_WORKFLOW.md). It
+defines a future read-only admission-record inspection surface that validates
+and summarizes `RuntimeAdmissionResult` records without creating runner
+requests, receipts, replay claims, audit entries, or live execution authority.
+
 ## Gate Semantics
 
 The result is fail-closed:
@@ -167,7 +173,9 @@ The next implementation tasks should:
 2. keep live backend support disabled by default;
 3. keep serialization bounded and deterministic enough for later digest/signing
    work;
-4. document any host-owned input that GovEngine validates but does not produce.
+4. implement the inspect-only admission workflow from
+   [INSPECT_ONLY_ADMISSION_WORKFLOW.md](INSPECT_ONLY_ADMISSION_WORKFLOW.md);
+5. document any host-owned input that GovEngine validates but does not produce.
 
 The result should be usable by future receipt, audit-ledger, replay-store,
 inspect-only, and optional runner tasks, but it must not claim production
