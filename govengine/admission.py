@@ -90,6 +90,42 @@ RUNNER_RUNTIME_ACTIONS = {
     'runner_profile_not_allowed': 'select_allowed_runner_profile',
     'live_backend_disabled': 'use_dry_run_or_select_host_enabled_live_profile',
 }
+ADMISSION_ARTIFACT_INPUTS = (
+    'prepared_execution_contract',
+    'policy_decision',
+    'execution_ticket',
+    'trust_decision',
+    'sclite_guarded_strict',
+    'replay_freshness',
+    'runner_profile',
+    'receipt_obligation',
+)
+ADMISSION_REF_KEYS = (
+    'admission_id',
+    'artifact_id',
+    'artifact_ref',
+    'chain_id',
+    'decision_id',
+    'id',
+    'path',
+    'policy_id',
+    'profile',
+    'receipt_id',
+    'ref',
+    'request_id',
+    'runner_profile',
+    'ticket_id',
+    'verifier_id',
+)
+ADMISSION_DIGEST_KEYS = (
+    'admission_digest',
+    'artifact_digest',
+    'binds_digest',
+    'digest',
+    'root_chain_digest',
+    'sha256',
+    'ticket_digest',
+)
 
 FORBIDDEN_ADMISSION_METADATA_KEYS = (
     'raw_intent',
@@ -502,6 +538,19 @@ def compose_runtime_admission_result(
     receipt_summary = _runtime_signal(receipt_obligation)
     guarded_summary = _runtime_signal(sclite_guarded_strict)
     replay_summary = _runtime_signal(replay_freshness)
+    artifact_ref_summary = _normalize_admission_artifact_refs_from_summaries(
+        {
+            'prepared_execution_contract': prepared_summary,
+            'policy_decision': policy_summary,
+            'execution_ticket': ticket_summary,
+            'trust_decision': trust_summary,
+            'sclite_guarded_strict': guarded_summary,
+            'replay_freshness': replay_summary,
+            'runner_profile': runner_summary,
+            'receipt_obligation': receipt_summary,
+        },
+        explicit_refs=artifact_refs,
+    )
 
     has_prepared_contract = not _explicit_false(prepared_summary, 'allowed') and _status_in(
         _signal_status(prepared_summary, ('status', 'contract_status')),
@@ -598,9 +647,41 @@ def compose_runtime_admission_result(
         replay_freshness=replay_summary,
         runner_profile=runner.as_dict(),
         receipt_obligation=receipt_summary,
-        artifact_refs=_metadata(artifact_refs),
+        artifact_refs=artifact_ref_summary,
         metadata=_metadata(metadata),
     ))
+
+
+def normalize_admission_artifact_refs(
+    *,
+    prepared_execution_contract: Mapping[str, Any] | Any | None = None,
+    policy_decision: Mapping[str, Any] | Any | None = None,
+    execution_ticket: Mapping[str, Any] | Any | None = None,
+    trust_decision: Mapping[str, Any] | Any | None = None,
+    sclite_guarded_strict: Mapping[str, Any] | Any | None = None,
+    replay_freshness: Mapping[str, Any] | Any | None = None,
+    runner_profile: Mapping[str, Any] | Any | None = None,
+    receipt_obligation: Mapping[str, Any] | Any | None = None,
+    artifact_refs: Mapping[str, Any] | Any | None = None,
+) -> dict[str, Any]:
+    """Return bounded references/digests for admission review.
+
+    This helper normalizes existing GovEngine-owned reference fields. It does
+    not compute content digests and does not claim SCLite canonicalization or
+    artifact-chain authority.
+    """
+
+    summaries = {
+        'prepared_execution_contract': _artifact_reference_signal(prepared_execution_contract),
+        'policy_decision': _artifact_reference_signal(policy_decision),
+        'execution_ticket': _artifact_reference_signal(execution_ticket),
+        'trust_decision': _artifact_reference_signal(trust_decision),
+        'sclite_guarded_strict': _artifact_reference_signal(sclite_guarded_strict),
+        'replay_freshness': _artifact_reference_signal(replay_freshness),
+        'runner_profile': _artifact_reference_signal(runner_profile),
+        'receipt_obligation': _artifact_reference_signal(receipt_obligation),
+    }
+    return _normalize_admission_artifact_refs_from_summaries(summaries, explicit_refs=artifact_refs)
 
 
 def admission_decision_from_host_gate(
@@ -672,6 +753,66 @@ def _runtime_signal(value: Any) -> dict[str, Any]:
         if isinstance(payload, Mapping):
             return _metadata(payload)
     raise GovApiError('invalid_runtime_admission_signal')
+
+
+def _artifact_reference_signal(value: Any) -> dict[str, Any]:
+    if value is None:
+        return {}
+    if isinstance(value, Mapping):
+        return _json_safe_mapping(value)
+    as_dict = getattr(value, 'as_dict', None)
+    if callable(as_dict):
+        payload = as_dict()
+        if isinstance(payload, Mapping):
+            return _json_safe_mapping(payload)
+    raise GovApiError('invalid_admission_artifact_refs')
+
+
+def _normalize_admission_artifact_refs_from_summaries(
+    summaries: Mapping[str, Mapping[str, Any]],
+    *,
+    explicit_refs: Mapping[str, Any] | Any | None,
+) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    for role in ADMISSION_ARTIFACT_INPUTS:
+        bounded = _bounded_artifact_reference(summaries.get(role) or {})
+        if bounded:
+            out[role] = bounded
+    explicit = _bounded_artifact_reference(_artifact_reference_signal(explicit_refs))
+    if explicit:
+        out['explicit'] = explicit
+    return out
+
+
+def _bounded_artifact_reference(payload: Mapping[str, Any]) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for key in sorted(str(item) for item in payload):
+        if key in FORBIDDEN_ADMISSION_METADATA_KEYS:
+            continue
+        value = payload.get(key)
+        if not _is_bounded_scalar(value):
+            continue
+        item = str(value).strip()
+        if not item:
+            continue
+        if key in ADMISSION_DIGEST_KEYS:
+            out[key] = _normalize_digest_reference(item)
+        elif key in ADMISSION_REF_KEYS:
+            out[key] = item
+    return out
+
+
+def _is_bounded_scalar(value: Any) -> bool:
+    return isinstance(value, (str, int, float)) and not isinstance(value, bool)
+
+
+def _normalize_digest_reference(value: str) -> str:
+    item = value.strip()
+    if item.lower().startswith('sha256:'):
+        return 'sha256:' + item.split(':', 1)[1].strip().lower()
+    if len(item) == 64 and all(char in '0123456789abcdefABCDEF' for char in item):
+        return 'sha256:' + item.lower()
+    return item
 
 
 def _signal_status(payload: Mapping[str, Any], keys: tuple[str, ...]) -> str:

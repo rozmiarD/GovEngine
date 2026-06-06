@@ -16,6 +16,7 @@ from govengine import (
     validate_policy_decision,
     validate_runtime_admission_result,
 )
+from govengine.admission import normalize_admission_artifact_refs
 from govengine.api import GovApiError
 
 
@@ -259,6 +260,68 @@ def test_compose_runtime_admission_result_allows_complete_dry_run_chain() -> Non
     assert result.reason_code == 'all_required_gates_passed'
     assert result.runner_profile['name'] == 'dry-run'
     assert result.receipt_obligation['required'] is True
+
+
+def test_normalize_admission_artifact_refs_is_deterministic_and_bounded() -> None:
+    raw_digest = 'A' * 64
+
+    first = normalize_admission_artifact_refs(
+        execution_ticket={
+            'raw_payload': {'command': 'must-not-appear'},
+            'ticket_id': 'ticket-1',
+            'sha256': raw_digest,
+        },
+        artifact_refs={
+            'raw_output': 'full stdout must not be carried',
+            'path': 'artifacts/admission.json',
+            'admission_digest': 'SHA256:' + ('B' * 64),
+        },
+    )
+    second = normalize_admission_artifact_refs(
+        artifact_refs={
+            'admission_digest': 'SHA256:' + ('B' * 64),
+            'path': 'artifacts/admission.json',
+            'raw_output': 'full stdout must not be carried',
+        },
+        execution_ticket={
+            'sha256': raw_digest,
+            'ticket_id': 'ticket-1',
+            'raw_payload': {'command': 'must-not-appear'},
+        },
+    )
+
+    assert first == second
+    assert first == {
+        'execution_ticket': {
+            'sha256': 'sha256:' + ('a' * 64),
+            'ticket_id': 'ticket-1',
+        },
+        'explicit': {
+            'admission_digest': 'sha256:' + ('b' * 64),
+            'path': 'artifacts/admission.json',
+        },
+    }
+    assert 'raw_payload' not in repr(first)
+    assert 'raw_output' not in repr(first)
+    assert 'command' not in repr(first)
+
+
+def test_compose_runtime_admission_result_populates_bounded_artifact_refs() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        artifact_refs={
+            'raw_output': 'full stdout must not be carried',
+            'admission_digest': 'C' * 64,
+        },
+    ))
+
+    assert result.allowed is True
+    assert result.artifact_refs['prepared_execution_contract']['digest'] == 'sha256:contract'
+    assert result.artifact_refs['policy_decision']['policy_id'] == 'policy-1'
+    assert result.artifact_refs['execution_ticket']['ticket_id'] == 'ticket-1'
+    assert result.artifact_refs['execution_ticket']['digest'] == 'sha256:ticket'
+    assert result.artifact_refs['trust_decision']['verifier_id'] == 'fixture'
+    assert result.artifact_refs['explicit'] == {'admission_digest': 'sha256:' + ('c' * 64)}
+    assert 'raw_output' not in repr(result.artifact_refs)
 
 
 def test_compose_runtime_admission_result_allows_guarded_fresh_runtime_bundle() -> None:
