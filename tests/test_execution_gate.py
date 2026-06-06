@@ -96,6 +96,19 @@ def test_execution_gate_blocks_runtime_consumable_replayed_bundle() -> None:
     assert "missing_or_replayed_guarded_root" in decision.blockers
 
 
+@pytest.mark.parametrize("replay_status", ("stale", "expired"))
+def test_execution_gate_blocks_runtime_consumable_stale_replay(replay_status: str) -> None:
+    decision = ExecutionGate().evaluate(_gate_input(
+        runtime_consumable_bundle=True,
+        guarded_bundle_status="passed",
+        replay_status=replay_status,
+    ))
+
+    assert decision.allowed is False
+    assert decision.reason_code == "replay_detected"
+    assert "missing_or_replayed_guarded_root" in decision.blockers
+
+
 def test_execution_gate_rejects_raw_intent_missing_contract() -> None:
     decision = ExecutionGate().evaluate(_gate_input(has_prepared_execution_contract=False))
 
