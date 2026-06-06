@@ -14,7 +14,7 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 
 | Stability | Source | Exports | Boundary note |
 | --- | --- | --- | --- |
-| alpha | govengine.admission | `AuditLedgerAppendResult`, `AuditLedgerEntry`, `AuditLedgerPort`, `AuditLedgerVerificationResult`, `GovAdmissionDecision`, `GovApprovalRequest`, `GovAuditRecord`, `GovPolicyDecision`, `RuntimeAdmissionResult`, `admission_decision_from_host_gate`, `compose_runtime_admission_result`, `normalize_admission_artifact_refs`, `validate_admission_decision`, `validate_approval_request`, `validate_audit_record`, `validate_audit_ledger_append_result`, `validate_audit_ledger_entry`, `validate_audit_ledger_verification_result`, `validate_policy_decision`, `validate_runtime_admission_result` | Neutral admission/policy/runtime-admission records, bounded audit-ledger port contracts, bounded reference normalization, and gate-summary composition only; host owns policy meaning, approval workflow, live backend behavior, audit persistence/concurrency, raw evidence storage, SCLite canonicalization, and production trust/key boundaries. |
+| alpha | govengine.admission | `AuditLedgerAppendResult`, `AuditLedgerEntry`, `AuditLedgerPort`, `AuditLedgerVerificationResult`, `GovAdmissionDecision`, `GovApprovalRequest`, `GovAuditRecord`, `GovPolicyDecision`, `JsonlAuditLedgerAdapter`, `RuntimeAdmissionResult`, `admission_decision_from_host_gate`, `audit_ledger_entry_digest`, `compose_runtime_admission_result`, `normalize_admission_artifact_refs`, `validate_admission_decision`, `validate_approval_request`, `validate_audit_record`, `validate_audit_ledger_append_result`, `validate_audit_ledger_entry`, `validate_audit_ledger_verification_result`, `validate_policy_decision`, `validate_runtime_admission_result` | Neutral admission/policy/runtime-admission records, bounded audit-ledger port contracts, a JSONL hash-chain development adapter, bounded reference normalization, and gate-summary composition only; host owns policy meaning, approval workflow, live backend behavior, production audit persistence/concurrency, raw evidence storage, SCLite canonicalization, and production trust/key boundaries. |
 | alpha | govengine.api | `GovApiError`, `GovApiResult` | Lightweight result/error helpers. |
 | alpha | govengine.boundary | `BoundaryReport`, `DomainProfileConformance`, `DomainProfileContract`, `KernelBoundary`, `boundary_surface_index`, `domain_profile_conformance`, `kernel_boundary_contract`, `kernel_boundary_report`, `known_profile_contracts`, `ravenclaw_profile_contract`, `validate_domain_profile_contract`, `validate_domain_profile_conformance` | Kernel/profile/runtime/SCLite ownership contracts; Ravenclaw contract remains fixture/profile metadata. |
 | alpha | govengine.context | `GovEngineContext`, `GovEnginePaths`, `host_compat_context`, `ravenclaw_context` | Host path/context records; Ravenclaw context remains compatibility fixture metadata. |
@@ -47,7 +47,7 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 Current summary:
 
 - stable exports: 0
-- alpha exports: 174
+- alpha exports: 176
 - fixture exports: 4
 - deprecated exports: 0
 - internal-exposed exports: 0

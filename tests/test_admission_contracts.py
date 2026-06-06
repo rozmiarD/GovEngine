@@ -11,8 +11,10 @@ from govengine import (
     GovApprovalRequest,
     GovAuditRecord,
     GovPolicyDecision,
+    JsonlAuditLedgerAdapter,
     RuntimeAdmissionResult,
     admission_decision_from_host_gate,
+    audit_ledger_entry_digest,
     compose_runtime_admission_result,
     validate_admission_decision,
     validate_approval_request,
@@ -267,6 +269,58 @@ def test_audit_ledger_contracts_reject_unsafe_or_incomplete_boundaries() -> None
             'last_entry_id': 'ledger-entry-1',
             'last_entry_digest': 'sha256:ledger-entry-1',
         })
+
+
+def test_jsonl_audit_ledger_adapter_appends_reads_and_verifies(tmp_path) -> None:
+    ledger = JsonlAuditLedgerAdapter(tmp_path / 'audit-ledger.jsonl')
+    first = validate_audit_record({
+        'record_id': 'audit-1',
+        'record_type': 'admission_decision',
+        'subject_ref': 'sha256:runtime-admission',
+        'decision_ref': 'runtime-admission-1',
+    })
+    second = validate_audit_record({
+        'record_id': 'audit-2',
+        'record_type': 'policy_decision',
+        'subject_ref': 'sha256:policy-subject',
+        'decision_ref': 'policy-1',
+    })
+
+    first_append = ledger.append(first, record_digest='sha256:audit-1', event_digest='sha256:event-1')
+    second_append = ledger.append(second, record_digest='sha256:audit-2', event_digest='sha256:event-2')
+    entries = ledger.read()
+    verification = ledger.verify(entries)
+
+    assert first_append.status == 'appended'
+    assert second_append.status == 'appended'
+    assert len(entries) == 2
+    assert entries[0].previous_entry_digest == ''
+    assert entries[1].previous_entry_digest == first_append.entry_digest
+    assert entries[0].entry_digest == audit_ledger_entry_digest(entries[0])
+    assert entries[1].entry_digest == audit_ledger_entry_digest(entries[1])
+    assert ledger.read(after_entry_id=entries[0].entry_id) == (entries[1],)
+    assert verification.status == 'verified'
+    assert verification.verified is True
+    assert verification.last_entry_digest == second_append.entry_digest
+
+
+def test_jsonl_audit_ledger_adapter_rejects_wrong_previous_digest(tmp_path) -> None:
+    ledger = JsonlAuditLedgerAdapter(tmp_path / 'audit-ledger.jsonl')
+    record = validate_audit_record({
+        'record_id': 'audit-1',
+        'record_type': 'approval_request',
+        'subject_ref': 'sha256:approval',
+        'decision_ref': 'approval-1',
+    })
+
+    first = ledger.append(record, record_digest='sha256:audit-1')
+    rejected = ledger.append(record, record_digest='sha256:audit-1b', previous_entry_digest='sha256:not-current')
+
+    assert first.status == 'appended'
+    assert rejected.status == 'rejected'
+    assert rejected.reason_code == 'audit_ledger_previous_digest_mismatch'
+    assert rejected.blockers == ('audit_ledger_previous_digest_mismatch',)
+    assert len(ledger.read()) == 1
 
 
 def test_runtime_admission_result_allows_bounded_gate_summaries() -> None:
