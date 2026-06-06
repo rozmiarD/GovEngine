@@ -59,6 +59,32 @@ TICKET_RUNTIME_ACTIONS = {
     'execution_ticket_failed': 'revalidate_execution_ticket',
     'unknown_execution_ticket_status': 'obtain_valid_execution_ticket',
 }
+TRUST_RUNTIME_BLOCKERS = {
+    'denied': 'trust_decision_denied',
+    'deny': 'trust_decision_denied',
+    'untrusted': 'trust_decision_denied',
+    'not_trusted': 'trust_decision_denied',
+    'trust_status_not_allowed': 'trust_decision_denied',
+    'failed': 'trust_verification_failed',
+    'failure': 'trust_verification_failed',
+    'error': 'trust_verification_failed',
+    'signature_value_mismatch': 'trust_verification_failed',
+    'unsupported_signature_mode': 'trust_verification_failed',
+    'signature_digest_mismatch': 'signature_digest_mismatch',
+    'digest_mismatch': 'signature_digest_mismatch',
+    'signer_not_allowed': 'trust_signer_not_allowed',
+    'unknown_signer': 'trust_signer_not_allowed',
+    'wrong_signer': 'trust_signer_not_allowed',
+    'wrong_key': 'trust_verification_failed',
+}
+TRUST_RUNTIME_ACTIONS = {
+    'missing_or_invalid_trust_decision': 'verify_trust_decision',
+    'trust_decision_denied': 'obtain_trusted_verification',
+    'trust_verification_failed': 'rerun_trust_verification',
+    'signature_digest_mismatch': 'rebind_or_reissue_signature',
+    'trust_signer_not_allowed': 'use_allowed_signer_or_update_trust_policy',
+    'unknown_trust_decision_status': 'obtain_valid_trust_decision',
+}
 
 FORBIDDEN_ADMISSION_METADATA_KEYS = (
     'raw_intent',
@@ -517,6 +543,14 @@ def compose_runtime_admission_result(
             'approve_execution_ticket',
             TICKET_RUNTIME_ACTIONS[ticket_blocker],
         )
+    trust_blocker = _trust_runtime_blocker(trust_status)
+    if trust_blocker:
+        blockers = _replace_or_append(blockers, 'missing_or_invalid_trust_decision', trust_blocker)
+        required_next_actions = _replace_or_append(
+            required_next_actions,
+            'verify_trust_decision',
+            TRUST_RUNTIME_ACTIONS[trust_blocker],
+        )
 
     if not _receipt_obligation_required(receipt_summary):
         blockers.append('receipt_obligation_required')
@@ -525,8 +559,10 @@ def compose_runtime_admission_result(
     blockers_tuple = _dedupe(blockers)
     actions_tuple = _dedupe(required_next_actions)
     allowed = gate_decision.allowed and not blockers_tuple
-    reason_code = 'all_required_gates_passed' if allowed else policy_blocker or ticket_blocker or (
-        gate_decision.reason_code if not gate_decision.allowed else blockers_tuple[0]
+    reason_code = 'all_required_gates_passed' if allowed else (
+        policy_blocker or ticket_blocker or trust_blocker or (
+            gate_decision.reason_code if not gate_decision.allowed else blockers_tuple[0]
+        )
     )
     status = 'allowed' if allowed else _policy_runtime_status(policy_status)
 
@@ -651,6 +687,9 @@ def _ticket_signal_status(payload: Mapping[str, Any]) -> str:
 def _trust_signal_status(payload: Mapping[str, Any]) -> str:
     if not payload:
         return 'missing'
+    reason_code = _signal_status(payload, ('reason_code', 'blocker', 'error_code'))
+    if reason_code in TRUST_RUNTIME_BLOCKERS:
+        return reason_code
     if 'trusted' in payload:
         return 'trusted' if _bool_value(payload.get('trusted'), default=False) else 'denied'
     return _signal_status(payload, ('trust_status', 'status', 'verification_status')) or 'unknown'
@@ -684,6 +723,14 @@ def _ticket_runtime_blocker(ticket_status: str) -> str:
     if ticket_status == 'missing':
         return 'missing_or_invalid_execution_ticket'
     return TICKET_RUNTIME_BLOCKERS.get(ticket_status, 'unknown_execution_ticket_status')
+
+
+def _trust_runtime_blocker(trust_status: str) -> str:
+    if trust_status in {'trusted', 'passed', 'ok'}:
+        return ''
+    if trust_status == 'missing':
+        return 'missing_or_invalid_trust_decision'
+    return TRUST_RUNTIME_BLOCKERS.get(trust_status, 'unknown_trust_decision_status')
 
 
 def _replace_or_append(values: Iterable[Any], old: str, new: str) -> list[str]:

@@ -383,6 +383,63 @@ def test_compose_runtime_admission_result_blocks_invalid_ticket_states(
     assert expected_action in result.required_next_actions
 
 
+@pytest.mark.parametrize(
+    ('trust_decision', 'expected_blocker', 'expected_action'),
+    (
+        (None, 'missing_or_invalid_trust_decision', 'verify_trust_decision'),
+        (
+            {'trusted': False, 'verifier_id': 'fixture'},
+            'trust_decision_denied',
+            'obtain_trusted_verification',
+        ),
+        (
+            {
+                'status': 'failed',
+                'reason_code': 'signature_value_mismatch',
+                'verifier_id': 'fixture',
+            },
+            'trust_verification_failed',
+            'rerun_trust_verification',
+        ),
+        (
+            {
+                'status': 'failed',
+                'reason_code': 'signature_digest_mismatch',
+                'verifier_id': 'fixture',
+            },
+            'signature_digest_mismatch',
+            'rebind_or_reissue_signature',
+        ),
+        (
+            {
+                'status': 'failed',
+                'reason_code': 'signer_not_allowed',
+                'verifier_id': 'fixture',
+            },
+            'trust_signer_not_allowed',
+            'use_allowed_signer_or_update_trust_policy',
+        ),
+        (
+            {'trust_status': 'maybe', 'verifier_id': 'fixture'},
+            'unknown_trust_decision_status',
+            'obtain_valid_trust_decision',
+        ),
+    ),
+)
+def test_compose_runtime_admission_result_blocks_invalid_trust_states(
+    trust_decision,
+    expected_blocker,
+    expected_action,
+) -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(trust_decision=trust_decision))
+
+    assert result.allowed is False
+    assert result.status == 'blocked'
+    assert result.reason_code == expected_blocker
+    assert expected_blocker in result.blockers
+    assert expected_action in result.required_next_actions
+
+
 def test_compose_runtime_admission_result_blocks_replayed_runtime_bundle() -> None:
     result = compose_runtime_admission_result(**_runtime_admission_inputs(
         runtime_consumable=True,
