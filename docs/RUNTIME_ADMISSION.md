@@ -49,6 +49,9 @@ The admission result composes existing GovEngine and SCLite-facing signals:
   ticket, and admission references it must bind.
 - `artifact_refs`: bounded references or digests for inputs. Raw payloads,
   targets, credentials, and noisy logs stay outside the admission record.
+  `normalize_admission_artifact_refs()` exposes those bounded review references
+  as alpha API by normalizing existing IDs, refs, paths, and digest strings; it
+  does not compute content digests or redefine SCLite canonicalization.
 
 ## Output Shape
 
@@ -134,7 +137,9 @@ The first implementation is additive and backward-compatible:
    consistency;
 3. `compose_runtime_admission_result()` composes bounded gate summaries into the
    record;
-4. existing helpers remain unchanged.
+4. `normalize_admission_artifact_refs()` is exposed as an alpha bounded-reference
+   helper for admission review output;
+5. existing helpers remain unchanged.
 
 The next implementation tasks should:
 

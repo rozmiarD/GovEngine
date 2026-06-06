@@ -73,3 +73,24 @@ def test_host_compat_context_keeps_ravenclaw_alias_compatible(tmp_path) -> None:
     assert host.repo_root == ravenclaw.repo_root == tmp_path.resolve()
     assert host.profile == 'host_compat'
     assert ravenclaw.profile == 'ravenclaw'
+
+
+def test_runtime_admission_public_surface_smoke() -> None:
+    from govengine import RuntimeAdmissionResult, normalize_admission_artifact_refs
+
+    refs = normalize_admission_artifact_refs(
+        execution_ticket={'ticket_id': 'ticket-1', 'sha256': 'A' * 64},
+        artifact_refs={'raw_output': 'must stay out', 'admission_digest': 'B' * 64},
+    )
+    result = RuntimeAdmissionResult(
+        admission_id='admission-1',
+        subject_ref='sha256:subject',
+        status='allowed',
+        allowed=True,
+        reason_code='all_required_gates_passed',
+        artifact_refs=refs,
+    )
+
+    assert refs['execution_ticket']['sha256'] == 'sha256:' + ('a' * 64)
+    assert refs['explicit']['admission_digest'] == 'sha256:' + ('b' * 64)
+    assert 'raw_output' not in repr(result.as_dict()['artifact_refs'])
