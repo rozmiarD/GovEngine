@@ -165,9 +165,10 @@ GovEngine must never execute directly from raw intent. Execution requires all of
 The governed-runtime MVP exposes those inputs through the canonical runtime
 admission contract described in
 [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). `RuntimeAdmissionResult` carries
-bounded blockers, next actions, and artifact references. The next composition
-helper should populate it from gate evidence for hosts and reviewers; the record
-does not grant live execution authority by itself.
+bounded blockers, next actions, and artifact references.
+`compose_runtime_admission_result()` populates it from bounded gate evidence for
+hosts and reviewers; the record does not grant live execution authority by
+itself.
 
 Before any execution backend moves into GovEngine:
 

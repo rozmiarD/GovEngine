@@ -12,6 +12,8 @@ POLICY_DECISIONS = ('allow', 'deny', 'defer', 'require_approval', 'dry_run_only'
 APPROVAL_STATES = ('not_required', 'requested', 'approved', 'denied', 'expired', 'cancelled')
 AUDIT_RECORD_TYPES = ('admission_decision', 'policy_decision', 'approval_request', 'operator_review')
 RUNTIME_ADMISSION_STATUSES = ('allowed', 'blocked', 'dry_run_only', 'needs_review', 'record_only')
+PREPARED_EXECUTION_CONTRACT_STATUSES = ('prepared', 'passed', 'ok', 'allowed')
+RECEIPT_OBLIGATION_STATUSES = ('required', 'passed', 'ok')
 
 FORBIDDEN_ADMISSION_METADATA_KEYS = (
     'raw_intent',
@@ -275,7 +277,7 @@ class RuntimeAdmissionResult:
             admission_id=admission_id,
             subject_ref=subject_ref,
             status=status,
-            allowed=bool(raw.get('allowed', status == 'allowed')),
+            allowed=_bool_value(raw.get('allowed'), default=status == 'allowed'),
             reason_code=str(raw.get('reason_code') or status).strip() or status,
             blockers=_tuple(raw.get('blockers') or ()),
             required_next_actions=_tuple(raw.get('required_next_actions') or ()),
@@ -390,6 +392,103 @@ def validate_runtime_admission_result(value: Mapping[str, Any] | RuntimeAdmissio
     return item
 
 
+def compose_runtime_admission_result(
+    *,
+    admission_id: str,
+    subject_ref: str,
+    prepared_execution_contract: Mapping[str, Any] | Any | None,
+    policy_decision: Mapping[str, Any] | Any | None,
+    execution_ticket: Mapping[str, Any] | Any | None,
+    trust_decision: Mapping[str, Any] | Any | None,
+    runner_profile: Mapping[str, Any] | Any | None,
+    receipt_obligation: Mapping[str, Any] | Any | None,
+    sclite_guarded_strict: Mapping[str, Any] | Any | None = None,
+    replay_freshness: Mapping[str, Any] | Any | None = None,
+    runtime_consumable: bool = False,
+    live: bool = False,
+    artifact_refs: Mapping[str, Any] | None = None,
+    metadata: Mapping[str, Any] | None = None,
+) -> RuntimeAdmissionResult:
+    """Compose bounded gate summaries into the canonical runtime admission.
+
+    The helper consumes decisions produced by existing GovEngine/SCLite-aware
+    gates. It does not validate SCLite tickets, verify signatures, record
+    replay state, store raw evidence, or execute live work.
+    """
+
+    from govengine.execution.gate import ExecutionGate, ExecutionGateInput, RunnerProfile
+
+    prepared_summary = _runtime_signal(prepared_execution_contract)
+    policy_summary = _runtime_signal(policy_decision)
+    ticket_summary = _runtime_signal(execution_ticket)
+    trust_summary = _runtime_signal(trust_decision)
+    runner_summary = _runtime_signal(runner_profile)
+    receipt_summary = _runtime_signal(receipt_obligation)
+    guarded_summary = _runtime_signal(sclite_guarded_strict)
+    replay_summary = _runtime_signal(replay_freshness)
+
+    has_prepared_contract = not _explicit_false(prepared_summary, 'allowed') and _status_in(
+        _signal_status(prepared_summary, ('status', 'contract_status')),
+        PREPARED_EXECUTION_CONTRACT_STATUSES,
+    )
+    policy_status = _policy_signal_status(policy_summary)
+    ticket_status = _ticket_signal_status(ticket_summary)
+    trust_status = _trust_signal_status(trust_summary)
+    guarded_status = _signal_status(guarded_summary, ('verification_status', 'guarded_status', 'status'))
+    replay_status = _signal_status(replay_summary, ('replay_status', 'status')) or _signal_status(guarded_summary, ('replay_status',))
+
+    runner = RunnerProfile(
+        name=str(runner_summary.get('name') or runner_summary.get('profile') or '').strip() or 'missing',
+        allowed=_bool_value(runner_summary.get('allowed'), default=False),
+        live_backend_enabled=_bool_value(runner_summary.get('live_backend_enabled'), default=False),
+        metadata=_metadata(runner_summary.get('metadata')),
+    )
+    gate_input = ExecutionGateInput(
+        has_prepared_execution_contract=has_prepared_contract,
+        policy_decision_status=policy_status or 'missing',
+        execution_ticket_status=ticket_status or 'missing',
+        trust_decision_status=trust_status or 'missing',
+        runner_profile=runner,
+        runtime_consumable_bundle=bool(runtime_consumable),
+        guarded_bundle_status=guarded_status or 'missing',
+        replay_status=replay_status or 'missing',
+    )
+    gate_decision = ExecutionGate().evaluate(gate_input, live=live)
+    blockers = list(gate_decision.blockers)
+    required_next_actions = list(gate_decision.next_actions)
+
+    if not _receipt_obligation_required(receipt_summary):
+        blockers.append('receipt_obligation_required')
+        required_next_actions.append('require_runner_receipt_obligation')
+
+    blockers_tuple = _dedupe(blockers)
+    actions_tuple = _dedupe(required_next_actions)
+    allowed = gate_decision.allowed and not blockers_tuple
+    reason_code = 'all_required_gates_passed' if allowed else (
+        gate_decision.reason_code if not gate_decision.allowed else blockers_tuple[0]
+    )
+
+    return validate_runtime_admission_result(RuntimeAdmissionResult(
+        admission_id=admission_id,
+        subject_ref=subject_ref,
+        status='allowed' if allowed else 'blocked',
+        allowed=allowed,
+        reason_code=reason_code,
+        blockers=blockers_tuple,
+        required_next_actions=actions_tuple,
+        prepared_execution_contract=prepared_summary,
+        policy_decision=policy_summary,
+        execution_ticket=ticket_summary,
+        trust_decision=trust_summary,
+        sclite_guarded_strict=guarded_summary,
+        replay_freshness=replay_summary,
+        runner_profile=runner.as_dict(),
+        receipt_obligation=receipt_summary,
+        artifact_refs=_metadata(artifact_refs),
+        metadata=_metadata(metadata),
+    ))
+
+
 def admission_decision_from_host_gate(
     *,
     decision_id: str,
@@ -431,6 +530,95 @@ def _strict_enum(value: Any, allowed: tuple[str, ...], field_name: str) -> str:
     if normalized not in allowed:
         raise GovApiError(f'unknown_{field_name}:{normalized or "missing"}')
     return normalized
+
+
+def _bool_value(value: Any, *, default: bool = False) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {'true', '1', 'yes', 'y'}:
+            return True
+        if normalized in {'false', '0', 'no', 'n'}:
+            return False
+        raise GovApiError(f'invalid_boolean:{normalized or "missing"}')
+    return bool(value)
+
+
+def _runtime_signal(value: Any) -> dict[str, Any]:
+    if value is None:
+        return {}
+    if isinstance(value, Mapping):
+        return _metadata(value)
+    as_dict = getattr(value, 'as_dict', None)
+    if callable(as_dict):
+        payload = as_dict()
+        if isinstance(payload, Mapping):
+            return _metadata(payload)
+    raise GovApiError('invalid_runtime_admission_signal')
+
+
+def _signal_status(payload: Mapping[str, Any], keys: tuple[str, ...]) -> str:
+    for key in keys:
+        value = payload.get(key)
+        if value is not None:
+            return str(value).strip().lower()
+    return ''
+
+
+def _policy_signal_status(payload: Mapping[str, Any]) -> str:
+    if not payload:
+        return 'missing'
+    if 'allowed' in payload:
+        return 'allowed' if _bool_value(payload.get('allowed'), default=False) else 'denied'
+    return _signal_status(payload, ('decision', 'status', 'outcome', 'policy_decision_status')) or 'unknown'
+
+
+def _ticket_signal_status(payload: Mapping[str, Any]) -> str:
+    if not payload:
+        return 'missing'
+    if 'allowed' in payload and not _bool_value(payload.get('allowed'), default=False):
+        return 'denied'
+    status = _signal_status(payload, ('status', 'approval_status', 'ticket_status'))
+    approval = payload.get('approval') if isinstance(payload.get('approval'), Mapping) else {}
+    return status or _signal_status(approval, ('status',)) or 'unknown'
+
+
+def _trust_signal_status(payload: Mapping[str, Any]) -> str:
+    if not payload:
+        return 'missing'
+    if 'trusted' in payload:
+        return 'trusted' if _bool_value(payload.get('trusted'), default=False) else 'denied'
+    return _signal_status(payload, ('trust_status', 'status', 'verification_status')) or 'unknown'
+
+
+def _status_in(value: str, allowed: tuple[str, ...]) -> bool:
+    return value in allowed
+
+
+def _explicit_false(payload: Mapping[str, Any], key: str) -> bool:
+    return key in payload and not _bool_value(payload.get(key), default=False)
+
+
+def _receipt_obligation_required(payload: Mapping[str, Any]) -> bool:
+    if not payload:
+        return False
+    if _bool_value(payload.get('required'), default=False):
+        return True
+    return _status_in(_signal_status(payload, ('status', 'obligation_status')), RECEIPT_OBLIGATION_STATUSES)
+
+
+def _dedupe(values: Iterable[Any]) -> tuple[str, ...]:
+    seen: set[str] = set()
+    out: list[str] = []
+    for value in values:
+        item = str(value).strip()
+        if item and item not in seen:
+            seen.add(item)
+            out.append(item)
+    return tuple(out)
 
 
 def _tuple(values: Iterable[Any]) -> tuple[str, ...]:

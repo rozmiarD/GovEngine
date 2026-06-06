@@ -9,6 +9,7 @@ from govengine import (
     GovPolicyDecision,
     RuntimeAdmissionResult,
     admission_decision_from_host_gate,
+    compose_runtime_admission_result,
     validate_admission_decision,
     validate_approval_request,
     validate_audit_record,
@@ -232,3 +233,88 @@ def test_runtime_admission_result_rejects_raw_payloads_and_unknown_status() -> N
             'allowed': False,
             'blockers': ['unknown_status'],
         })
+
+
+def _runtime_admission_inputs(**overrides):
+    values = {
+        'admission_id': 'runtime-admission-composed-1',
+        'subject_ref': 'sha256:prepared-contract',
+        'prepared_execution_contract': {'status': 'prepared', 'digest': 'sha256:contract'},
+        'policy_decision': {'decision': 'allow', 'policy_id': 'policy-1'},
+        'execution_ticket': {'status': 'passed', 'ticket_id': 'ticket-1', 'digest': 'sha256:ticket'},
+        'trust_decision': {'status': 'passed', 'trust_status': 'trusted', 'verifier_id': 'fixture'},
+        'runner_profile': {'name': 'dry-run', 'allowed': True, 'live_backend_enabled': False},
+        'receipt_obligation': {'required': True, 'binds': ['admission', 'ticket']},
+        'artifact_refs': {'admission_digest': 'sha256:admission'},
+    }
+    values.update(overrides)
+    return values
+
+
+def test_compose_runtime_admission_result_allows_complete_dry_run_chain() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs())
+
+    assert result.allowed is True
+    assert result.status == 'allowed'
+    assert result.reason_code == 'all_required_gates_passed'
+    assert result.runner_profile['name'] == 'dry-run'
+    assert result.receipt_obligation['required'] is True
+
+
+def test_compose_runtime_admission_result_allows_guarded_fresh_runtime_bundle() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        runtime_consumable=True,
+        sclite_guarded_strict={'status': 'allowed', 'verification_status': 'passed'},
+        replay_freshness={'status': 'allowed', 'replay_status': 'fresh'},
+    ))
+
+    assert result.allowed is True
+    assert result.sclite_guarded_strict['verification_status'] == 'passed'
+    assert result.replay_freshness['replay_status'] == 'fresh'
+
+
+def test_compose_runtime_admission_result_blocks_missing_policy() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(policy_decision=None))
+
+    assert result.allowed is False
+    assert result.status == 'blocked'
+    assert 'missing_or_invalid_policy_decision' in result.blockers
+    assert 'obtain_policy_decision' in result.required_next_actions
+
+
+def test_compose_runtime_admission_result_honors_explicit_policy_denial() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        policy_decision={'decision': 'allow', 'allowed': False, 'policy_id': 'policy-1'},
+    ))
+
+    assert result.allowed is False
+    assert 'missing_or_invalid_policy_decision' in result.blockers
+
+
+def test_compose_runtime_admission_result_blocks_replayed_runtime_bundle() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        runtime_consumable=True,
+        sclite_guarded_strict={'status': 'allowed', 'verification_status': 'passed'},
+        replay_freshness={'status': 'blocked', 'replay_status': 'replayed'},
+    ))
+
+    assert result.allowed is False
+    assert result.reason_code == 'replay_detected'
+    assert 'missing_or_replayed_guarded_root' in result.blockers
+
+
+def test_compose_runtime_admission_result_requires_receipt_obligation() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(receipt_obligation=None))
+
+    assert result.allowed is False
+    assert result.reason_code == 'receipt_obligation_required'
+    assert result.blockers == ('receipt_obligation_required',)
+    assert 'require_runner_receipt_obligation' in result.required_next_actions
+
+
+def test_compose_runtime_admission_result_keeps_live_disabled_by_default() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(live=True))
+
+    assert result.allowed is False
+    assert result.reason_code == 'execution_disabled'
+    assert 'live_backend_disabled' in result.blockers

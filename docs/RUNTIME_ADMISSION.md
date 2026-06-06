@@ -132,16 +132,17 @@ The first implementation is additive and backward-compatible:
 1. `RuntimeAdmissionResult` exists as the core record;
 2. `validate_runtime_admission_result()` enforces basic status/allowed/blocker
    consistency;
-3. existing helpers remain unchanged.
+3. `compose_runtime_admission_result()` composes bounded gate summaries into the
+   record;
+4. existing helpers remain unchanged.
 
 The next implementation tasks should:
 
-1. add a pure composition helper with deterministic blocker ordering;
-2. add negative tests for each missing or failed gate;
-3. keep live backend support disabled by default;
-4. keep serialization bounded and deterministic enough for later digest/signing
+1. add focused negative tests for each missing or failed gate;
+2. keep live backend support disabled by default;
+3. keep serialization bounded and deterministic enough for later digest/signing
    work;
-5. document any host-owned input that GovEngine validates but does not produce.
+4. document any host-owned input that GovEngine validates but does not produce.
 
 The result should be usable by future receipt, audit-ledger, replay-store,
 inspect-only, and optional runner tasks, but it must not claim production
