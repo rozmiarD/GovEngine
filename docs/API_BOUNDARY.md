@@ -162,11 +162,13 @@ GovEngine must never execute directly from raw intent. Execution requires all of
 4. valid signature/trust decision;
 5. allowed runner profile.
 
-The governed-runtime MVP should expose those inputs through a canonical
-`RuntimeAdmissionResult` / `GovernedExecutionAdmission` style record with
-bounded blockers, next actions, and artifact references. That record composes
-the gate evidence for hosts and reviewers; it does not grant live execution
-authority by itself.
+The governed-runtime MVP should expose those inputs through the canonical
+runtime admission contract described in
+[RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). The future
+`RuntimeAdmissionResult` / `GovernedExecutionAdmission` style record should
+carry bounded blockers, next actions, and artifact references. That record
+composes the gate evidence for hosts and reviewers; it does not grant live
+execution authority by itself.
 
 Before any execution backend moves into GovEngine:
 
