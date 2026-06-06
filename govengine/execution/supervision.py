@@ -216,6 +216,8 @@ def validate_runner_receipt_for_request(
     item = receipt if isinstance(receipt, GovRunnerReceipt) else _receipt_from_mapping(receipt)
     if item.request_id != request.request_id:
         raise GovApiError('runner_receipt_request_mismatch')
+    if item.binding.present and item.binding.request_id and item.binding.request_id != request.request_id:
+        raise GovApiError('runner_receipt_binding_request_mismatch')
     requested_indices = {step.index for step in request.steps}
     result_indices = {result.index for result in item.step_results}
     if not result_indices <= requested_indices:
@@ -290,6 +292,7 @@ def _receipt_from_mapping(value: Mapping[str, Any]) -> GovRunnerReceipt:
             if isinstance(item, Mapping)
         ),
         control_decisions=tuple(dict(item) for item in list(raw.get('control_decisions') or ()) if isinstance(item, Mapping)),
+        binding=raw.get('binding') if isinstance(raw.get('binding'), Mapping) else {},
     )
 
 

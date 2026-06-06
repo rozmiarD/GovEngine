@@ -5,6 +5,7 @@ import pytest
 from govengine.api import GovApiError
 from govengine.execution.runner_protocol import (
     GovRunnerReceipt,
+    GovRunnerReceiptBinding,
     GovRunnerStepResult,
     dry_run_runner_receipt,
     runner_request_from_approved_spec,
@@ -109,6 +110,47 @@ def test_supervision_receipt_must_match_request_steps() -> None:
 
     with pytest.raises(GovApiError, match='runner_receipt_step_mismatch'):
         validate_runner_receipt_for_request(request, receipt)
+
+
+def test_supervision_preserves_receipt_binding_from_mapping() -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id='run-bound', dry_run=True)
+    receipt = validate_runner_receipt_for_request(request, {
+        'status': 'dry-run',
+        'request_id': 'run-bound',
+        'source': 'approved_execution_spec',
+        'reason_code': 'dry_run_requested',
+        'step_results': [{'index': 0, 'status': 'dry-run'}],
+        'binding': {
+            'admission_id': 'admission-1',
+            'admission_digest': 'sha256:admission',
+            'ticket_id': 'ticket-1',
+            'ticket_digest': 'sha256:ticket',
+            'request_id': 'run-bound',
+            'receipt_id': 'receipt-1',
+        },
+    })
+
+    assert isinstance(receipt.binding, GovRunnerReceiptBinding)
+    assert receipt.as_dict()['binding']['admission_id'] == 'admission-1'
+    assert receipt.as_dict()['binding']['ticket_id'] == 'ticket-1'
+
+
+def test_supervision_rejects_receipt_binding_request_mismatch() -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id='run-bound', dry_run=True)
+
+    with pytest.raises(GovApiError, match='runner_receipt_binding_request_mismatch'):
+        validate_runner_receipt_for_request(request, {
+            'status': 'dry-run',
+            'request_id': 'run-bound',
+            'source': 'approved_execution_spec',
+            'reason_code': 'dry_run_requested',
+            'step_results': [{'index': 0, 'status': 'dry-run'}],
+            'binding': {
+                'admission_id': 'admission-1',
+                'ticket_id': 'ticket-1',
+                'request_id': 'wrong-request',
+            },
+        })
 
 
 def test_supervision_rejects_forbidden_metadata_claims() -> None:
