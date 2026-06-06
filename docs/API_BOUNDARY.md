@@ -114,7 +114,7 @@ GovEngine owns:
 - `govengine.profiles` — contract-only domain profile declarations, registries, fixture profiles, and conformance reports without domain taxonomy, product UX, credential, adapter, or live-execution ownership.
 - `govengine.contract_proofs` — public-safe runtime contract proof fixtures and neutral governance vocabulary over existing contracts without adapter, credential, scheduler, storage, live-execution, domain runtime, or new OODA ownership.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
-- `govengine.signing` — signature envelopes, signed GovEngine-owned record envelopes, signing/trust policy objects, GovEngine-owned record serialization/digest helpers, host-provided signer/verifier ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
+- `govengine.signing` — signature envelopes, signed GovEngine-owned record envelopes, signing/trust policy objects, GovEngine-owned record serialization/digest helpers, host-provided signer/verifier/key-resolver/trust-store ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
 - `govengine.contracts.execution` — execution-contract shaping and redaction helpers.
 - `govengine.execution.*` — approved-spec, ticket, command-shape, dry-run helpers, and controlled execution gates that keep live backends disabled by default.
 - `govengine.orchestration` — deterministic orchestration handoff contracts without scheduler, UI, adapter, credential, or live-execution authority.
@@ -164,6 +164,13 @@ payload reference and signer metadata. Verification still uses a host-provided
 rotation, revocation, KMS, CA, or key storage. `demo_sign_govengine_record()` is
 fixture-only and uses the same deterministic demo digest-binding convention as
 `DemoDigestSigner`.
+
+`KeyResolutionRequest`, `KeyResolutionResult`, `KeyResolverPort`,
+`TrustStoreDecision`, and `TrustStorePort` are host-neutral trust port contracts.
+They carry signer IDs, key references, trust-anchor references, statuses, and
+bounded metadata only. They reject obvious private key material or credential
+fields at the GovEngine boundary; actual key lookup, trust anchors, revocation,
+rotation, CA/KMS behavior, and policy meaning stay host-owned.
 
 ## Execution backend rule
 

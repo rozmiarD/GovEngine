@@ -11,6 +11,18 @@ from govengine.api import GovApiError, require_mapping
 from govengine.core import ArtifactDescriptor, GovernanceContext, ReasonCode, TransitionDecision
 
 INTEGRITY_ONLY_SIGNATURE_MODES = {"", "integrity_only", "not_signed_integrity_only"}
+FORBIDDEN_TRUST_MATERIAL_KEYS = {
+    "api_key",
+    "credential",
+    "credentials",
+    "key_material",
+    "passphrase",
+    "password",
+    "pem",
+    "private_key",
+    "secret",
+    "token",
+}
 
 
 @dataclass(frozen=True)
@@ -79,6 +91,133 @@ class TrustPolicy:
 
     def as_dict(self) -> dict[str, Any]:
         return {"allowed_trust_statuses": list(self.allowed_trust_statuses)}
+
+
+@dataclass(frozen=True)
+class KeyResolutionRequest:
+    """Host-neutral request to resolve a signer key reference.
+
+    GovEngine only asks for a reference. Key storage, key material, KMS, CA,
+    rotation, and revocation remain host-owned.
+    """
+
+    signer_id: str
+    purpose: str = ""
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        signer_id = str(self.signer_id or "").strip()
+        if not signer_id:
+            raise GovApiError("missing_signer_id")
+        metadata = _bounded_trust_metadata(self.metadata)
+        object.__setattr__(self, "signer_id", signer_id)
+        object.__setattr__(self, "purpose", str(self.purpose or ""))
+        object.__setattr__(self, "metadata", metadata)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "signer_id": self.signer_id,
+            "purpose": self.purpose,
+            "metadata": dict(self.metadata),
+        }
+
+
+@dataclass(frozen=True)
+class KeyResolutionResult:
+    """Host-neutral key reference result without key material."""
+
+    status: str
+    signer_id: str
+    key_ref: str = ""
+    reason_code: str = ReasonCode.OK.value
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        signer_id = str(self.signer_id or "").strip()
+        if not signer_id:
+            raise GovApiError("missing_signer_id")
+        metadata = _bounded_trust_metadata(self.metadata)
+        object.__setattr__(self, "status", str(self.status or "unknown"))
+        object.__setattr__(self, "signer_id", signer_id)
+        object.__setattr__(self, "key_ref", str(self.key_ref or ""))
+        object.__setattr__(self, "reason_code", str(self.reason_code or ReasonCode.OK.value))
+        object.__setattr__(self, "metadata", metadata)
+
+    @classmethod
+    def from_mapping(cls, value: Mapping[str, Any]) -> "KeyResolutionResult":
+        raw = require_mapping(value, reason_code="invalid_key_resolution_result")
+        _reject_forbidden_trust_material(raw)
+        metadata = raw.get("metadata") if isinstance(raw.get("metadata"), Mapping) else {}
+        return cls(
+            status=str(raw.get("status") or ""),
+            signer_id=str(raw.get("signer_id") or ""),
+            key_ref=str(raw.get("key_ref") or raw.get("public_key_ref") or ""),
+            reason_code=str(raw.get("reason_code") or ReasonCode.OK.value),
+            metadata=dict(metadata),
+        )
+
+    @property
+    def resolved(self) -> bool:
+        return self.status in {"resolved", "passed", "ok"} and bool(self.key_ref)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "resolved": self.resolved,
+            "signer_id": self.signer_id,
+            "key_ref": self.key_ref,
+            "reason_code": self.reason_code,
+            "metadata": dict(self.metadata),
+        }
+
+
+@dataclass(frozen=True)
+class TrustStoreDecision:
+    """Host-neutral trust-store decision without owning the trust store."""
+
+    status: str
+    signer_id: str
+    trust_anchor_ref: str = ""
+    reason_code: str = ReasonCode.OK.value
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        signer_id = str(self.signer_id or "").strip()
+        if not signer_id:
+            raise GovApiError("missing_signer_id")
+        metadata = _bounded_trust_metadata(self.metadata)
+        object.__setattr__(self, "status", str(self.status or "unknown"))
+        object.__setattr__(self, "signer_id", signer_id)
+        object.__setattr__(self, "trust_anchor_ref", str(self.trust_anchor_ref or ""))
+        object.__setattr__(self, "reason_code", str(self.reason_code or ReasonCode.OK.value))
+        object.__setattr__(self, "metadata", metadata)
+
+    @classmethod
+    def from_mapping(cls, value: Mapping[str, Any]) -> "TrustStoreDecision":
+        raw = require_mapping(value, reason_code="invalid_trust_store_decision")
+        _reject_forbidden_trust_material(raw)
+        metadata = raw.get("metadata") if isinstance(raw.get("metadata"), Mapping) else {}
+        return cls(
+            status=str(raw.get("status") or raw.get("trust_status") or ""),
+            signer_id=str(raw.get("signer_id") or ""),
+            trust_anchor_ref=str(raw.get("trust_anchor_ref") or raw.get("anchor_ref") or ""),
+            reason_code=str(raw.get("reason_code") or ReasonCode.OK.value),
+            metadata=dict(metadata),
+        )
+
+    @property
+    def trusted(self) -> bool:
+        return self.status in {"trusted", "passed", "ok"} and bool(self.trust_anchor_ref)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "trusted": self.trusted,
+            "signer_id": self.signer_id,
+            "trust_anchor_ref": self.trust_anchor_ref,
+            "reason_code": self.reason_code,
+            "metadata": dict(self.metadata),
+        }
 
 
 @dataclass(frozen=True)
@@ -293,6 +432,18 @@ def _validate_govengine_record_digest(record_digest: str) -> str:
     return digest
 
 
+def _bounded_trust_metadata(value: Mapping[str, Any] | None) -> dict[str, Any]:
+    metadata = value if isinstance(value, Mapping) else {}
+    _reject_forbidden_trust_material(metadata)
+    return dict(metadata)
+
+
+def _reject_forbidden_trust_material(value: Mapping[str, Any]) -> None:
+    for key in value:
+        if str(key).lower() in FORBIDDEN_TRUST_MATERIAL_KEYS:
+            raise GovApiError("forbidden_trust_material")
+
+
 def _canonical_record_value(value: Any) -> Any:
     if is_dataclass(value) and not isinstance(value, type):
         return _canonical_record_value(asdict(value))
@@ -440,6 +591,20 @@ class VerifierPort(Protocol):
     """Host-provided verifier port. GovEngine core must not own PKI."""
 
     def verify(self, descriptor: ArtifactDescriptor, signature: SignatureEnvelope) -> VerificationResult:
+        ...
+
+
+class KeyResolverPort(Protocol):
+    """Host-provided key resolver. GovEngine receives references, not keys."""
+
+    def resolve_key(self, request: KeyResolutionRequest) -> KeyResolutionResult:
+        ...
+
+
+class TrustStorePort(Protocol):
+    """Host-provided trust store. GovEngine does not store trust anchors."""
+
+    def lookup_signer(self, signer_id: str, *, purpose: str = "") -> TrustStoreDecision:
         ...
 
 

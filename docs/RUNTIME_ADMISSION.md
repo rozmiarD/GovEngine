@@ -125,6 +125,8 @@ them:
 - `govengine.signing` for signature/trust decisions, host verifier ports, and
   deterministic GovEngine-owned admission/receipt record digests and signed
   record envelopes;
+- `govengine.signing` key-resolver and trust-store ports for host-owned signer
+  key references and trust-anchor decisions;
 - `govengine.replay` for guarded SCLite replay freshness;
 - `govengine.execution.runner_protocol` and `govengine.execution.supervision`
   for runner request, receipt, and profile boundaries;
@@ -147,7 +149,10 @@ The first implementation is additive and backward-compatible:
 6. `SignedArtifact` binds a GovEngine-owned record digest to signer metadata
    and a payload reference while leaving production verification to
    host-provided verifier ports;
-7. existing helpers remain unchanged.
+7. key-resolver and trust-store port records carry references and decisions
+   only, not private key material, credentials, KMS, CA, or trust-anchor
+   storage;
+8. existing helpers remain unchanged.
 
 The next implementation tasks should:
 

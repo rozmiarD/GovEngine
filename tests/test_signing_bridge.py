@@ -11,11 +11,16 @@ from govengine.core import ArtifactDescriptor
 from govengine.signing import (
     DemoDigestSigner,
     DemoDigestVerifier,
+    KeyResolutionRequest,
+    KeyResolutionResult,
+    KeyResolverPort,
     SigningPolicy,
     SigningRequest,
     SignatureEnvelope,
     SignedArtifact,
     TrustPolicy,
+    TrustStoreDecision,
+    TrustStorePort,
     VerificationResult,
     canonical_govengine_record,
     demo_sign_and_verify,
@@ -214,6 +219,74 @@ def test_demo_sign_and_verify_helper_has_no_pki_claim() -> None:
     assert signing.signature.metadata["demo_only"] is True
     assert verification.metadata["demo_only"] is True
     assert signing.signature.algorithm == "demo-sha256-digest-binding"
+
+
+def test_key_resolver_and_trust_store_ports_carry_references_only() -> None:
+    class FixtureResolver:
+        def resolve_key(self, request: KeyResolutionRequest) -> KeyResolutionResult:
+            return KeyResolutionResult(
+                status="resolved",
+                signer_id=request.signer_id,
+                key_ref="host-key://owner-demo/current",
+                metadata={"purpose": request.purpose},
+            )
+
+    class FixtureTrustStore:
+        def lookup_signer(self, signer_id: str, *, purpose: str = "") -> TrustStoreDecision:
+            return TrustStoreDecision(
+                status="trusted",
+                signer_id=signer_id,
+                trust_anchor_ref="host-trust://anchors/demo",
+                metadata={"purpose": purpose},
+            )
+
+    resolver: KeyResolverPort = FixtureResolver()
+    trust_store: TrustStorePort = FixtureTrustStore()
+
+    key_result = resolver.resolve_key(KeyResolutionRequest(signer_id="owner-demo", purpose="admission"))
+    trust_result = trust_store.lookup_signer("owner-demo", purpose="admission")
+
+    assert key_result.resolved is True
+    assert key_result.as_dict()["key_ref"] == "host-key://owner-demo/current"
+    assert "key_material" not in key_result.as_dict()
+    assert trust_result.trusted is True
+    assert trust_result.as_dict()["trust_anchor_ref"] == "host-trust://anchors/demo"
+
+
+def test_key_resolution_result_rejects_private_key_material() -> None:
+    with pytest.raises(GovApiError, match="forbidden_trust_material"):
+        KeyResolutionResult.from_mapping({
+            "status": "resolved",
+            "signer_id": "owner-demo",
+            "key_ref": "host-key://owner-demo/current",
+            "private_key": "must-not-cross-boundary",
+        })
+
+
+def test_trust_store_decision_rejects_secret_metadata() -> None:
+    with pytest.raises(GovApiError, match="forbidden_trust_material"):
+        TrustStoreDecision.from_mapping({
+            "status": "trusted",
+            "signer_id": "owner-demo",
+            "trust_anchor_ref": "host-trust://anchors/demo",
+            "metadata": {"token": "must-not-cross-boundary"},
+        })
+
+
+def test_key_resolution_request_rejects_api_key_metadata() -> None:
+    with pytest.raises(GovApiError, match="forbidden_trust_material"):
+        KeyResolutionRequest(signer_id="owner-demo", metadata={"api_key": "must-not-cross-boundary"})
+
+
+def test_trust_store_decision_unknown_signer_is_not_trusted() -> None:
+    decision = TrustStoreDecision.from_mapping({
+        "status": "unknown",
+        "signer_id": "unknown",
+        "reason_code": "unknown_signer",
+    })
+
+    assert decision.trusted is False
+    assert decision.reason_code == "unknown_signer"
 
 
 def test_canonical_govengine_record_serializes_mapping_deterministically() -> None:
