@@ -83,7 +83,9 @@ helper. The helper composes prepared execution contract status, policy
 decision, execution ticket status, trust decision, guarded-strict SCLite
 verification when runtime-consumable, GovEngine replay freshness, runner
 profile, receipt obligation, blockers, next actions, and bounded artifact
-references into that record.
+references into that record. `normalize_admission_artifact_refs()` is an alpha
+helper for bounded review references and existing digest strings; it does not
+compute content digests or claim SCLite canonicalization.
 
 This roadmap does not make intent execution authority. It keeps profile/domain
 policy meaning, production identity, key management, operator authorization,

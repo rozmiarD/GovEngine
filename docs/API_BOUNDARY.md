@@ -168,7 +168,9 @@ admission contract described in
 bounded blockers, next actions, and artifact references.
 `compose_runtime_admission_result()` populates it from bounded gate evidence for
 hosts and reviewers; the record does not grant live execution authority by
-itself.
+itself. `normalize_admission_artifact_refs()` is an alpha helper for bounded
+review references and existing digest strings only; it does not compute content
+digests and does not claim SCLite canonicalization authority.
 
 Before any execution backend moves into GovEngine:
 
