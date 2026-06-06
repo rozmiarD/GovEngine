@@ -41,7 +41,7 @@ Neutral core modules:
 - `govengine.state_store`
 - `govengine.replay`
 
-Claim: portable kernel/profile boundary contracts, artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, guarded-root replay checks, guarded-bundle runtime decision assembly, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, SCLite Kernel Guard HMAC verification ownership, PKI/key-store ownership, raw artifact storage ownership, workflow scheduler ownership.
+Claim: portable kernel/profile boundary contracts, artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, GovEngine-owned record serialization/digests, guarded-root replay checks, guarded-bundle runtime decision assembly, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, SCLite Kernel Guard HMAC verification ownership, PKI/key-store ownership, raw artifact storage ownership, workflow scheduler ownership.
 
 ### Planning-contracts core
 
@@ -114,7 +114,7 @@ GovEngine owns:
 - `govengine.profiles` — contract-only domain profile declarations, registries, fixture profiles, and conformance reports without domain taxonomy, product UX, credential, adapter, or live-execution ownership.
 - `govengine.contract_proofs` — public-safe runtime contract proof fixtures and neutral governance vocabulary over existing contracts without adapter, credential, scheduler, storage, live-execution, domain runtime, or new OODA ownership.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
-- `govengine.signing` — signature envelopes, signing/trust policy objects, host-provided signer/verifier ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
+- `govengine.signing` — signature envelopes, signing/trust policy objects, GovEngine-owned record serialization/digest helpers, host-provided signer/verifier ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
 - `govengine.contracts.execution` — execution-contract shaping and redaction helpers.
 - `govengine.execution.*` — approved-spec, ticket, command-shape, dry-run helpers, and controlled execution gates that keep live backends disabled by default.
 - `govengine.orchestration` — deterministic orchestration handoff contracts without scheduler, UI, adapter, credential, or live-execution authority.
@@ -149,6 +149,13 @@ GovEngine must not own Ravenclaw-specific runtime/application concerns:
 ## Demo signing fixture rule
 
 `DemoDigestSigner`, `DemoDigestVerifier`, and `demo_sign_and_verify` are test/reviewer helpers. They create deterministic digest-bound demo signatures so hosts can exercise the `SignerPort`/`VerifierPort` contract and inspect trust decisions without bringing real keys into GovEngine. They are not cryptographic identity proof, not a CA/KMS/key-store, and not a replacement for a host-owned production verifier. Hosts that need real signatures must provide their own signer/verifier ports and trust policy.
+
+`canonical_govengine_record()` and `govengine_record_digest()` are alpha helpers
+for GovEngine-owned records such as admission and future receipt envelopes.
+They require a `govengine.*` record type for mappings, auto-scope GovEngine
+dataclasses, and return deterministic JSON or `sha256:` digests. They do not
+canonicalize SCLite records, verify SCLite artifact chains, store raw evidence,
+or provide identity, PKI, KMS, CA, or key-store behavior.
 
 ## Execution backend rule
 

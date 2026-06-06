@@ -1,16 +1,24 @@
 from __future__ import annotations
 
+import json
+from math import nan
+
+import pytest
+
 from govengine import compose_runtime_admission_result
+from govengine.api import GovApiError
 from govengine.core import ArtifactDescriptor
 from govengine.signing import (
     DemoDigestSigner,
     DemoDigestVerifier,
-    SigningRequest,
-    demo_sign_and_verify,
-    SignatureEnvelope,
     SigningPolicy,
+    SigningRequest,
+    SignatureEnvelope,
     TrustPolicy,
     VerificationResult,
+    canonical_govengine_record,
+    demo_sign_and_verify,
+    govengine_record_digest,
     signature_envelope_from_artifact,
     signature_transition_decision,
 )
@@ -202,3 +210,66 @@ def test_demo_sign_and_verify_helper_has_no_pki_claim() -> None:
     assert signing.signature.metadata["demo_only"] is True
     assert verification.metadata["demo_only"] is True
     assert signing.signature.algorithm == "demo-sha256-digest-binding"
+
+
+def test_canonical_govengine_record_serializes_mapping_deterministically() -> None:
+    first = canonical_govengine_record(
+        {"status": "allowed", "blockers": [], "subject": {"b": 2, "a": 1}},
+        record_type="govengine.admission.RuntimeAdmissionResult",
+    )
+    second = canonical_govengine_record(
+        {"subject": {"a": 1, "b": 2}, "blockers": [], "status": "allowed"},
+        record_type="govengine.admission.RuntimeAdmissionResult",
+    )
+
+    assert first == second
+    payload = json.loads(first)
+    assert payload["owner"] == "govengine"
+    assert payload["record_type"] == "govengine.admission.RuntimeAdmissionResult"
+    assert payload["record"]["subject"] == {"a": 1, "b": 2}
+
+
+def test_govengine_record_digest_changes_when_owned_record_changes() -> None:
+    record = {"status": "allowed", "reason_code": "ok"}
+    mutated = {"status": "blocked", "reason_code": "missing_policy"}
+
+    first = govengine_record_digest(record, record_type="govengine.admission.RuntimeAdmissionResult")
+    second = govengine_record_digest(mutated, record_type="govengine.admission.RuntimeAdmissionResult")
+
+    assert first.startswith("sha256:")
+    assert second.startswith("sha256:")
+    assert first != second
+
+
+def test_govengine_record_digest_can_scope_govengine_dataclasses() -> None:
+    descriptor = _descriptor()
+
+    digest = govengine_record_digest(descriptor)
+
+    assert digest.startswith("sha256:")
+
+
+def test_canonical_govengine_record_rejects_non_govengine_record_type() -> None:
+    with pytest.raises(GovApiError, match="invalid_govengine_record_type"):
+        canonical_govengine_record({"schema": "external"}, record_type="sclite.review.Bundle")
+
+
+def test_canonical_govengine_record_requires_type_for_mappings() -> None:
+    with pytest.raises(GovApiError, match="missing_govengine_record_type"):
+        canonical_govengine_record({"status": "allowed"})
+
+
+def test_canonical_govengine_record_rejects_non_finite_float() -> None:
+    with pytest.raises(GovApiError, match="unsupported_govengine_record_value"):
+        canonical_govengine_record(
+            {"status": "allowed", "score": nan},
+            record_type="govengine.admission.RuntimeAdmissionResult",
+        )
+
+
+def test_canonical_govengine_record_rejects_non_string_mapping_keys() -> None:
+    with pytest.raises(GovApiError, match="unsupported_govengine_record_key"):
+        canonical_govengine_record(
+            {"status": "allowed", 1: "colliding-key"},
+            record_type="govengine.admission.RuntimeAdmissionResult",
+        )
