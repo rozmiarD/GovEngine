@@ -46,6 +46,8 @@ GovEngine currently provides helpers around the runtime-facing parts of that lif
 - integration seams for SCLite verification;
 - guarded-root replay checks for optional SCLite `kernel_guard_hmac_v1`
   sidecars after SCLite has verified the HMAC guard;
+- `ReplayClaimStore`, a host-neutral claim-once replay freshness port, plus an
+  in-memory development adapter for deterministic local smoke tests;
 - `verify_guard_and_record_replay()`, a high-level adapter that verifies the
   SCLite guarded-strict profile and then records replay freshness for one
   runtime-consumable decision;
@@ -65,6 +67,13 @@ GovEngine's replay helper records observed guarded roots (`root_tag`,
 `chain_id`, ticket/run id, and `key_id`) through a host-supplied state store so
 a runtime can reject reuse in require-fresh mode. It does not store HMAC keys,
 verify tags, or make public PKI claims.
+
+Production replay freshness should be exposed to GovEngine through a
+claim-once adapter: the first claim for a guarded root or guarded payload can be
+accepted, and later claims for the same replay key must be rejected by the
+host-owned atomic store. `InMemoryReplayClaimStore` is deterministic but
+development-only. `record_guard_replay_file()` remains a local JSON helper and
+is not a production atomic store, database, or concurrency boundary.
 
 Runtime-consumable artifacts should use this posture:
 

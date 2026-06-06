@@ -53,7 +53,7 @@ def artifact_governance_surface() -> GovSurface:
         )),
         claim=(
             'Portable kernel/profile boundary, artifact descriptor/state/transition, '
-            'SCLite lifecycle bridge, signing/trust decision, guarded-root replay checks, guarded-bundle runtime decisions, deconfliction, state-machine, and state-index helpers.'
+            'SCLite lifecycle bridge, signing/trust decision, guarded-root replay checks, claim-once replay-store port, guarded-bundle runtime decisions, deconfliction, state-machine, and state-index helpers.'
         ),
         non_claims=_tuple((
             'SCLite schema/canonicalization ownership',

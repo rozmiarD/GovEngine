@@ -14,6 +14,8 @@ from govengine.api import GovApiError
 from govengine.replay import (
     evaluate_guard_replay,
     guard_replay_record_from_guard,
+    InMemoryReplayClaimStore,
+    ReplayClaimStore,
     record_guard_replay,
     record_guard_replay_file,
     verify_guard_and_record_replay,
@@ -120,6 +122,45 @@ def test_record_guard_replay_can_run_in_observe_only_mode() -> None:
 
     assert decision.allowed is True
     assert decision.replay_status == "seen"
+
+
+def test_replay_claim_store_claim_once_records_fresh_record() -> None:
+    store = InMemoryReplayClaimStore()
+    record = guard_replay_record_from_guard(_guard("tag-1"), observed_at="2026-05-25T21:00:00+00:00")
+
+    port: ReplayClaimStore = store
+    decision = port.claim_once(record)
+
+    assert decision.allowed is True
+    assert decision.replay_status == "fresh"
+    assert store.records == (record,)
+
+
+def test_replay_claim_store_claim_once_blocks_replayed_record() -> None:
+    store = InMemoryReplayClaimStore()
+    first = guard_replay_record_from_guard(_guard("tag-1"), observed_at="2026-05-25T21:00:00+00:00")
+    replayed = guard_replay_record_from_guard(_guard("tag-1"), observed_at="2026-05-25T21:01:00+00:00")
+
+    first_decision = store.claim_once(first)
+    replay_decision = store.claim_once(replayed)
+
+    assert first_decision.replay_status == "fresh"
+    assert replay_decision.allowed is False
+    assert replay_decision.replay_status == "replayed"
+    assert replay_decision.first_seen == first
+    assert len(store.records) == 1
+
+
+def test_replay_claim_store_observe_only_does_not_append_seen_record() -> None:
+    first = guard_replay_record_from_guard(_guard("tag-1"), observed_at="2026-05-25T21:00:00+00:00")
+    replayed = guard_replay_record_from_guard(_guard("tag-1"), observed_at="2026-05-25T21:01:00+00:00")
+    store = InMemoryReplayClaimStore((first,))
+
+    decision = store.claim_once(replayed, require_fresh=False)
+
+    assert decision.allowed is True
+    assert decision.replay_status == "seen"
+    assert store.records == (first,)
 
 
 def test_record_guard_replay_file_round_trip(tmp_path) -> None:
