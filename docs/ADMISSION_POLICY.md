@@ -65,4 +65,7 @@ previous-digest, and entry-digest continuity.
 GovEngine does not choose a production database, lock, clock, transaction
 isolation level, retention policy, concurrency model, or deletion policy. The
 JSONL adapter is development-only and should not be treated as production
-persistence.
+persistence. Its verification is intentionally limited to local smoke evidence:
+one-field tamper, missing lines, malformed JSONL, and chain restarts are
+detected as failed or invalid local chains, but recovery, retention,
+concurrency, and trusted reconstruction remain host-owned.
