@@ -257,6 +257,12 @@ Historical planned work items:
 - `DryRunRunner` as default;
 - optional `LocalSubprocessRunner`, disabled by default and policy-enabled only.
 
+Current readiness: `evaluate_local_subprocess_runner_readiness()` returns
+`not_applicable` for the optional `LocalSubprocessRunner` until host-owned live
+profile authorization, cwd/env allowlist enforcement, output limit/digest
+handling, and redaction policy are implemented and tested. GovEngine must keep
+`DryRunRunner` as the only owned runner behavior while that gate is not ready.
+
 Required guardrails:
 
 - no execution from raw intent;

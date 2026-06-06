@@ -82,3 +82,35 @@ A future live runner must be rejected unless all of these conditions are true:
 These requirements are deliberately stricter than the current
 `GovSupervisionPlan` record. The record expresses the neutral plan shape; the
 host live adapter must satisfy the full checklist before it can run anything.
+
+## Local Subprocess Runner Readiness
+
+`evaluate_local_subprocess_runner_readiness()` is the bounded readiness gate for
+the optional `LocalSubprocessRunner` roadmap step. It is not a runner, does not
+start subprocesses, and does not grant execution authority.
+
+Current stage decision: `not_applicable`.
+
+Implemented evidence:
+
+- runtime admission, execution ticket, trust, guarded-strict, replay freshness,
+  runner profile, and receipt-obligation signals can be composed before a
+  runtime request;
+- runner requests are derived from approved execution specs, not raw intent;
+- dry-run remains the default runner posture;
+- live requests remain blocked unless a host explicitly enables a live backend;
+- runner receipts can bind admission, ticket, request, status, and digests.
+
+Missing prerequisites before a live local runner can be added:
+
+- host-owned live runner profile authorization policy;
+- enforced cwd allowlist semantics beyond the neutral `cwd_policy` shape;
+- enforced environment allowlist semantics beyond the neutral `env_policy`
+  shape;
+- maximum-output enforcement and output digest contract for live outcomes;
+- redaction policy/hook before any output excerpt can be emitted.
+
+Therefore GE-032 must not add a live subprocess backend unless this readiness
+gate becomes `ready` through tested, host-neutral prerequisites. The safe path is
+to keep `DryRunRunner` as the only GovEngine-owned runner behavior and treat any
+live adapter as future host-owned work.

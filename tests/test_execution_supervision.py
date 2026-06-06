@@ -18,6 +18,9 @@ from govengine.execution.runner_protocol import (
 from govengine.execution.supervision import (
     GovRunnerLease,
     GovSupervisionPlan,
+    LOCAL_SUBPROCESS_RUNNER_REQUIRED_PREREQUISITES,
+    LocalSubprocessRunnerReadiness,
+    evaluate_local_subprocess_runner_readiness,
     runner_lease_from_request,
     supervision_plan_from_runner_request,
     validate_runner_receipt_binding,
@@ -314,6 +317,52 @@ def test_supervision_rejects_forbidden_metadata_claims() -> None:
         runner_lease_from_request(request, metadata={'storage_path': '/tmp/lease.db'})
 
 
+def test_local_subprocess_runner_readiness_is_not_applicable_by_default() -> None:
+    readiness = evaluate_local_subprocess_runner_readiness()
+
+    assert isinstance(readiness, LocalSubprocessRunnerReadiness)
+    assert readiness.status == 'not_applicable'
+    assert readiness.ready is False
+    assert readiness.reason_code == 'local_subprocess_runner_prerequisites_incomplete'
+    assert readiness.missing_prerequisites == (
+        'live_runner_profile_enabled',
+        'cwd_allowlist_enforced',
+        'env_allowlist_enforced',
+        'max_output_enforced',
+        'output_digests_recorded',
+        'redaction_policy_available',
+    )
+    assert 'missing:redaction_policy_available' in readiness.blockers
+    assert 'keep_dry_run_runner_default' in readiness.required_next_actions
+    assert 'no_subprocess_backend' in readiness.non_claims
+    assert 'docs/RUNNER_SUPERVISION.md#live-runner-safety-specification' in readiness.evidence_refs
+
+
+def test_local_subprocess_runner_readiness_can_only_be_ready_when_all_prerequisites_are_satisfied() -> None:
+    readiness = evaluate_local_subprocess_runner_readiness(
+        satisfied_prerequisites=LOCAL_SUBPROCESS_RUNNER_REQUIRED_PREREQUISITES,
+        evidence_refs=('tests/fixture',),
+    )
+
+    assert readiness.status == 'ready'
+    assert readiness.ready is True
+    assert readiness.reason_code == 'local_subprocess_runner_prerequisites_satisfied'
+    assert readiness.missing_prerequisites == ()
+    assert readiness.blockers == ()
+    assert readiness.evidence_refs == ('tests/fixture',)
+
+
+def test_local_subprocess_runner_readiness_is_exported_from_top_level_package() -> None:
+    import govengine
+
+    readiness = govengine.evaluate_local_subprocess_runner_readiness()
+
+    assert isinstance(readiness, govengine.LocalSubprocessRunnerReadiness)
+    assert readiness.ready is False
+    assert 'LocalSubprocessRunnerReadiness' in govengine.__all__
+    assert 'evaluate_local_subprocess_runner_readiness' in govengine.__all__
+
+
 def test_runner_supervision_docs_define_live_runner_safety_spec() -> None:
     text = Path('docs/RUNNER_SUPERVISION.md').read_text(encoding='utf-8')
     section = ' '.join(text.split('## Live Runner Safety Specification', 1)[1].split())
@@ -341,6 +390,27 @@ def test_runner_supervision_docs_define_live_runner_safety_spec() -> None:
         'blocked, timed out, interrupted, failed, and dry-run outcomes',
         'SCLite remains the proof/review artifact authority',
         'host-owned',
+    )
+
+    for marker in required_markers:
+        assert marker in section
+
+
+def test_runner_supervision_docs_record_local_runner_readiness_decision() -> None:
+    text = Path('docs/RUNNER_SUPERVISION.md').read_text(encoding='utf-8')
+    section = ' '.join(text.split('## Local Subprocess Runner Readiness', 1)[1].split())
+
+    required_markers = (
+        'evaluate_local_subprocess_runner_readiness()',
+        'not_applicable',
+        'does not grant execution authority',
+        'host-owned live runner profile authorization policy',
+        'enforced cwd allowlist semantics',
+        'enforced environment allowlist semantics',
+        'maximum-output enforcement',
+        'redaction policy/hook',
+        'GE-032 must not add a live subprocess backend',
+        'DryRunRunner',
     )
 
     for marker in required_markers:

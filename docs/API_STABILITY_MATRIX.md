@@ -24,7 +24,7 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 | alpha | govengine.deconfliction | `ArtifactChangeOrder`, `ArtifactConflict`, `ConflictDetector` | Digest/state conflict helpers only. |
 | alpha | govengine.events | `EventEnvelope`, `GovEvent`, `validate_event_envelope`, `validate_gov_event` | Transport-neutral event metadata; no carrier payload authority. |
 | alpha | govengine.execution.gate | `DryRunRunner`, `ExecutionGate`, `ExecutionGateInput`, `RunnerProfile` | Dry-run/default-deny execution gate helpers; no live backend ownership. |
-| alpha | govengine.execution.supervision | `GovRunnerLease`, `GovSupervisionDecision`, `GovSupervisionPlan`, `runner_lease_from_request`, `supervision_plan_from_runner_request`, `validate_runner_lease`, `validate_runner_receipt_binding`, `validate_runner_receipt_for_request`, `validate_supervised_runner_request`, `validate_supervision_decision`, `validate_supervision_plan` | Runner request, lease, supervision, and receipt boundary helpers. |
+| alpha | govengine.execution.supervision | `GovRunnerLease`, `GovSupervisionDecision`, `GovSupervisionPlan`, `LocalSubprocessRunnerReadiness`, `evaluate_local_subprocess_runner_readiness`, `runner_lease_from_request`, `supervision_plan_from_runner_request`, `validate_runner_lease`, `validate_runner_receipt_binding`, `validate_runner_receipt_for_request`, `validate_supervised_runner_request`, `validate_supervision_decision`, `validate_supervision_plan` | Runner request, lease, supervision, readiness, and receipt boundary helpers; live subprocess execution remains not applicable until the missing host-owned safety prerequisites are closed. |
 | alpha | govengine.execution_backend | `CommandResult`, `GovExecutionBackend` | Host-neutral backend protocol/result helpers. |
 | alpha | govengine.lifecycle | `ArtifactLifecycleController`, `TransitionGate`, `TransitionPolicy` | Lightweight lifecycle gate/controller helpers; SCLite remains lifecycle authority. |
 | alpha | govengine.ooda | `GovObservation`, `GovOodaController`, `GovOodaDecision`, `GovOrientation` | Neutral OODA records/controller; no scheduler or agent framework ownership. |
@@ -47,7 +47,7 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 Current summary:
 
 - stable exports: 0
-- alpha exports: 178
+- alpha exports: 180
 - fixture exports: 4
 - deprecated exports: 0
 - internal-exposed exports: 0
