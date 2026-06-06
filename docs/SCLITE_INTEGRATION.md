@@ -75,6 +75,24 @@ replay fresh in GovEngine
 policy/ticket/trust gates pass
 ```
 
+GovEngine then keeps the runtime-consumption evidence chain bounded:
+
+```text
+RuntimeAdmissionResult
+  -> SCLite execution ticket / guarded verification reference
+  -> GovRunnerRequest
+  -> GovRunnerReceipt
+  -> GovEvidenceClaim / GovReviewResult references
+```
+
+`validate_runner_receipt_binding()` checks the GovEngine-owned admission,
+request, and receipt references plus SCLite/host ticket references. It compares
+SCLite ticket ids or digests only as bounded references; SCLite still owns
+ticket schema, canonicalization, guarded verification, artifact-chain
+verification, and review-bundle authority. `validate_evidence_review_chain()`
+then checks receipt/evidence/review references and receipt status bounds
+without storing raw evidence or re-deciding SCLite review verdicts.
+
 Review-only bundles may remain `integrity_only` or `strict_lifecycle`, but a
 runtime-consumable execution ticket must not be accepted from `validate-chain`
 alone.
