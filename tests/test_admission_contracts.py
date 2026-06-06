@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 import subprocess
 import sys
@@ -946,3 +947,72 @@ def test_inspect_runtime_admission_rejects_forbidden_raw_runtime_data(tmp_path) 
     assert result.stdout == ''
     assert 'runtime_admission_inspect_error: forbidden_admission_metadata:raw_output' in result.stderr
     assert 'do-not-print' not in result.stderr
+
+
+def test_inspect_runtime_admission_text_output_is_deterministic_and_bounded(tmp_path) -> None:
+    payload = RuntimeAdmissionResult(
+        admission_id='inspect-allowed-1',
+        subject_ref='sha256:subject',
+        status='allowed',
+        allowed=True,
+        reason_code='allowed',
+        receipt_obligation={'required': True, 'binds': ['admission', 'ticket']},
+        artifact_refs={
+            'admission_digest': 'sha256:' + ('a' * 64),
+            'path': 'artifacts/runtime-admission.json',
+        },
+    ).as_dict()
+    path = _write_runtime_admission(tmp_path, payload)
+
+    first = _run_inspect(path)
+    second = _run_inspect(path)
+
+    expected = (
+        'Runtime admission: inspect-allowed-1\n'
+        'status: allowed\n'
+        'allowed: true\n'
+        'reason_code: allowed\n'
+        'blockers:\n'
+        '- none\n'
+        'required_next_actions:\n'
+        '- none\n'
+        'receipt_obligation: required\n'
+        'artifact_refs: 2 bounded refs\n'
+        'execution: not performed\n'
+    )
+    assert first.returncode == 0
+    assert second.returncode == 0
+    assert first.stdout == expected
+    assert second.stdout == expected
+    assert first.stderr == ''
+    assert 'artifact_refs_detail' not in first.stdout
+    assert 'sha256:' + ('a' * 64) not in first.stdout
+
+
+def test_inspect_runtime_admission_script_does_not_import_live_backend_surfaces() -> None:
+    tree = ast.parse(INSPECT_ADMISSION_SCRIPT.read_text(encoding='utf-8'))
+    imported_modules: set[str] = set()
+    imported_names: set[str] = set()
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported_modules.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            if node.module:
+                imported_modules.add(node.module)
+            imported_names.update(alias.name for alias in node.names)
+
+    assert imported_modules.isdisjoint({
+        'os',
+        'socket',
+        'subprocess',
+        'urllib',
+        'urllib.request',
+        'requests',
+        'govengine.execution',
+        'govengine.execution.runner',
+        'govengine.execution.runner_protocol',
+        'govengine.execution.supervision',
+    })
+    assert 'DryRunRunner' not in imported_names
+    assert 'LocalSubprocessRunner' not in imported_names
