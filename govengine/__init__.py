@@ -8,6 +8,10 @@ import time.
 __version__ = '0.12.2a0'
 
 from .admission import (
+    AuditLedgerAppendResult,
+    AuditLedgerEntry,
+    AuditLedgerPort,
+    AuditLedgerVerificationResult,
     GovAdmissionDecision,
     GovApprovalRequest,
     GovAuditRecord,
@@ -19,6 +23,9 @@ from .admission import (
     validate_admission_decision,
     validate_approval_request,
     validate_audit_record,
+    validate_audit_ledger_append_result,
+    validate_audit_ledger_entry,
+    validate_audit_ledger_verification_result,
     validate_policy_decision,
     validate_runtime_admission_result,
 )
@@ -182,6 +189,10 @@ from .surfaces import (
 )
 
 __all__ = [
+    'AuditLedgerAppendResult',
+    'AuditLedgerEntry',
+    'AuditLedgerPort',
+    'AuditLedgerVerificationResult',
     'CapabilityDeclaration',
     'CommandResult',
     'BoundaryReport',
@@ -318,6 +329,9 @@ __all__ = [
     'validate_admission_decision',
     'validate_approval_request',
     'validate_audit_record',
+    'validate_audit_ledger_append_result',
+    'validate_audit_ledger_entry',
+    'validate_audit_ledger_verification_result',
     'validate_domain_profile',
     'validate_domain_profile_contract',
     'validate_domain_profile_conformance',

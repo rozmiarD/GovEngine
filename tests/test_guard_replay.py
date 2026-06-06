@@ -12,7 +12,6 @@ import pytest
 from govengine import compose_runtime_admission_result
 from govengine.api import GovApiError
 from govengine.replay import (
-    GuardReplayRecord,
     evaluate_guard_replay,
     guard_replay_record_from_guard,
     record_guard_replay,

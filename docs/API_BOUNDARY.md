@@ -14,7 +14,7 @@ The top-level export stability classification lives in [API_STABILITY_MATRIX.md]
 `govengine.control.validate_control_decision()` checks deterministic between-step control decisions and delegates legal state changes to the state machine without accepting raw prompts, commands, schedulers, runtime storage, delivery, or live-execution claims.
 `govengine.runtime_shell.validate_runtime_snapshot()` checks host-provided control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without accepting raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 `govengine.planning.validate_task_contract()` and `validate_plan_intent_contract()` check neutral planner-to-runtime handoff shapes without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
-`govengine.admission.validate_admission_decision()`, `validate_policy_decision()`, `validate_approval_request()`, `validate_audit_record()`, and `validate_runtime_admission_result()` check neutral runtime gate records without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
+`govengine.admission.validate_admission_decision()`, `validate_policy_decision()`, `validate_approval_request()`, `validate_audit_record()`, `validate_audit_ledger_entry()`, `validate_audit_ledger_append_result()`, `validate_audit_ledger_verification_result()`, and `validate_runtime_admission_result()` check neutral runtime gate and audit-ledger port records without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 `govengine.execution.supervision.validate_supervised_runner_request()`,
 `validate_runner_receipt_for_request()`, and
 `validate_runner_receipt_binding()` check approved-spec runner supervision,
@@ -61,7 +61,7 @@ Neutral admission-policy modules:
 
 - `govengine.admission`
 
-Claim: neutral admission-decision, runtime-admission, policy-decision, approval-request, and audit-record validators that hosts can use for runtime gate review. Non-claims: domain policy meaning ownership, operator approval workflow ownership, audit storage or retention ownership, raw target/prompt ownership, queue/scheduler/storage ownership, protocol adapter ownership, command authority, or live execution.
+Claim: neutral admission-decision, runtime-admission, policy-decision, approval-request, audit-record, and audit-ledger port validators that hosts can use for runtime gate and audit-chain review. Non-claims: domain policy meaning ownership, operator approval workflow ownership, audit storage, retention, production locking, or concurrency ownership, raw target/prompt ownership, queue/scheduler/storage ownership, protocol adapter ownership, command authority, or live execution.
 
 ### Evidence-review core
 
@@ -113,7 +113,7 @@ GovEngine owns:
 - `govengine.control` — deterministic between-step control decisions that can apply validated in-memory state transitions without storage, scheduler, delivery, command, or live-execution authority.
 - `govengine.runtime_shell` — neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, scheduler, delivery, command, credential, carrier, or live-execution authority.
 - `govengine.planning` — neutral task-contract, plan-intent, and planner-port validators without planner implementation, raw target/prompt, queue/scheduler/storage, command, credential, adapter, or live-execution authority.
-- `govengine.admission` — neutral admission-decision, runtime-admission, policy-decision, approval-request, and audit-record validators without domain policy meaning, approval workflow, audit storage, command, credential, adapter, or live-execution authority.
+- `govengine.admission` — neutral admission-decision, runtime-admission, policy-decision, approval-request, audit-record, and audit-ledger port validators without domain policy meaning, approval workflow, audit storage/concurrency, command, credential, adapter, or live-execution authority.
 - `govengine.review` — neutral evidence-requirement, evidence-claim, evidence-qualification, review-result, and evidence-review-chain validators without SCLite review verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage, command, credential, adapter, or live-execution authority.
 - `govengine.profiles` — contract-only domain profile declarations, registries, fixture profiles, and conformance reports without domain taxonomy, product UX, credential, adapter, or live-execution ownership.
 - `govengine.contract_proofs` — public-safe runtime contract proof fixtures and neutral governance vocabulary over existing contracts without adapter, credential, scheduler, storage, live-execution, domain runtime, or new OODA ownership.
