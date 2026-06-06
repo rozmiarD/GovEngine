@@ -39,6 +39,51 @@ FORBIDDEN_SUPERVISION_METADATA_KEYS = (
     'url',
 )
 
+LOCAL_SUBPROCESS_RUNNER_REQUIRED_PREREQUISITES = (
+    'runtime_admission_allowed',
+    'approved_execution_ticket',
+    'valid_trust_decision',
+    'guarded_strict_when_runtime_consumable',
+    'replay_freshness_claimed',
+    'live_runner_profile_enabled',
+    'receipt_obligation_bound',
+    'argv_only_steps',
+    'cwd_allowlist_enforced',
+    'env_allowlist_enforced',
+    'positive_timeout_required',
+    'max_output_enforced',
+    'output_digests_recorded',
+    'redaction_policy_available',
+    'bounded_receipt_for_all_outcomes',
+)
+
+LOCAL_SUBPROCESS_RUNNER_SATISFIED_PREREQUISITES = (
+    'runtime_admission_allowed',
+    'approved_execution_ticket',
+    'valid_trust_decision',
+    'guarded_strict_when_runtime_consumable',
+    'replay_freshness_claimed',
+    'receipt_obligation_bound',
+    'argv_only_steps',
+    'positive_timeout_required',
+    'bounded_receipt_for_all_outcomes',
+)
+
+LOCAL_SUBPROCESS_RUNNER_MISSING_PREREQUISITES = tuple(
+    item
+    for item in LOCAL_SUBPROCESS_RUNNER_REQUIRED_PREREQUISITES
+    if item not in LOCAL_SUBPROCESS_RUNNER_SATISFIED_PREREQUISITES
+)
+
+LOCAL_SUBPROCESS_RUNNER_READINESS_EVIDENCE = (
+    'docs/RUNNER_SUPERVISION.md#live-runner-safety-specification',
+    'govengine.execution.gate.ExecutionGate',
+    'govengine.execution.gate.DryRunRunner',
+    'govengine.execution.supervision.GovSupervisionPlan',
+    'tests/test_execution_gate.py',
+    'tests/test_execution_supervision.py',
+)
+
 
 @dataclass(frozen=True)
 class GovRunnerLease:
@@ -161,6 +206,97 @@ class GovSupervisionDecision:
         out = asdict(self)
         out['metadata'] = dict(self.metadata)
         return out
+
+
+@dataclass(frozen=True)
+class LocalSubprocessRunnerReadiness:
+    """Deterministic feature-gate result for an optional local live runner.
+
+    This record is not execution authority. It only explains whether the
+    current GovEngine kernel has enough host-neutral safety prerequisites to
+    justify adding an optional live subprocess adapter.
+    """
+
+    status: str
+    ready: bool
+    reason_code: str
+    blockers: tuple[str, ...] = ()
+    required_next_actions: tuple[str, ...] = ()
+    satisfied_prerequisites: tuple[str, ...] = ()
+    missing_prerequisites: tuple[str, ...] = ()
+    evidence_refs: tuple[str, ...] = ()
+    non_claims: tuple[str, ...] = (
+        'no_live_execution_authority',
+        'no_subprocess_backend',
+        'no_pki_kms_or_key_store_ownership',
+        'no_sclite_canonicalization_ownership',
+        'no_raw_evidence_storage_ownership',
+    )
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            'status': self.status,
+            'ready': self.ready,
+            'reason_code': self.reason_code,
+            'blockers': list(self.blockers),
+            'required_next_actions': list(self.required_next_actions),
+            'satisfied_prerequisites': list(self.satisfied_prerequisites),
+            'missing_prerequisites': list(self.missing_prerequisites),
+            'evidence_refs': list(self.evidence_refs),
+            'non_claims': list(self.non_claims),
+        }
+
+
+def evaluate_local_subprocess_runner_readiness(
+    *,
+    satisfied_prerequisites: tuple[str, ...] | None = None,
+    evidence_refs: tuple[str, ...] | None = None,
+) -> LocalSubprocessRunnerReadiness:
+    """Return the current safe-readiness decision for a local live runner.
+
+    The default reflects repository truth for this stage: GovEngine has a
+    runtime admission chain, dry-run gate, receipt binding, replay checks, and
+    a live-runner safety spec, but it still lacks enough enforced host-owned
+    runner policy to add an in-core `LocalSubprocessRunner`.
+    """
+
+    satisfied = _dedupe(
+        satisfied_prerequisites
+        if satisfied_prerequisites is not None
+        else LOCAL_SUBPROCESS_RUNNER_SATISFIED_PREREQUISITES
+    )
+    missing = tuple(
+        item
+        for item in LOCAL_SUBPROCESS_RUNNER_REQUIRED_PREREQUISITES
+        if item not in satisfied
+    )
+    evidence = _dedupe(
+        evidence_refs
+        if evidence_refs is not None
+        else LOCAL_SUBPROCESS_RUNNER_READINESS_EVIDENCE
+    )
+    if missing:
+        return LocalSubprocessRunnerReadiness(
+            status='not_applicable',
+            ready=False,
+            reason_code='local_subprocess_runner_prerequisites_incomplete',
+            blockers=tuple(f'missing:{item}' for item in missing),
+            required_next_actions=(
+                'keep_dry_run_runner_default',
+                'defer_local_subprocess_runner_to_follow_up',
+                'implement_host_owned_live_runner_policy_before_any_live_backend',
+            ),
+            satisfied_prerequisites=satisfied,
+            missing_prerequisites=missing,
+            evidence_refs=evidence,
+        )
+    return LocalSubprocessRunnerReadiness(
+        status='ready',
+        ready=True,
+        reason_code='local_subprocess_runner_prerequisites_satisfied',
+        satisfied_prerequisites=satisfied,
+        evidence_refs=evidence,
+    )
 
 
 def validate_runner_lease(value: Mapping[str, Any] | GovRunnerLease) -> GovRunnerLease:
@@ -337,6 +473,15 @@ def _reject_forbidden_metadata(value: Mapping[str, Any]) -> None:
     reason = _find_forbidden_key(value)
     if reason:
         raise GovApiError(f'forbidden_supervision_metadata:{reason}')
+
+
+def _dedupe(values: tuple[str, ...]) -> tuple[str, ...]:
+    out: list[str] = []
+    for value in values:
+        item = str(value or '').strip()
+        if item and item not in out:
+            out.append(item)
+    return tuple(out)
 
 
 def _find_forbidden_key(value: Any) -> str:
