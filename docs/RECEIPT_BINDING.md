@@ -78,14 +78,17 @@ evidence storage and do not replace SCLite review bundles.
 
 ## Compatibility With Current Receipts
 
-`GovRunnerReceipt` currently records `status`, `request_id`, `source`,
-`reason_code`, step results, and compact control decisions. That shape remains
-valid for dry-run/default-safe execution helpers.
+`GovRunnerReceipt` records `status`, `request_id`, `source`, `reason_code`,
+step results, and compact control decisions. It can now carry an optional
+bounded `binding` envelope with admission, ticket, request, receipt, output
+digest, and evidence references. Receipts without binding remain valid for
+current dry-run/default-safe execution helpers, but later verifier work should
+require binding before treating a receipt as runtime evidence.
 
 Receipt binding should be additive:
 
 1. keep existing dry-run receipt constructors working;
-2. add a future binding helper or envelope around existing receipts;
+2. use the optional binding envelope around existing receipts;
 3. require `receipt_obligation.binds` from `RuntimeAdmissionResult` before a
    receipt can be treated as runtime evidence;
 4. preserve bounded `step_results` and digest-only output references;
