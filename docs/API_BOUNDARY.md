@@ -61,7 +61,7 @@ Neutral admission-policy modules:
 
 - `govengine.admission`
 
-Claim: neutral admission-decision, runtime-admission, policy-decision, approval-request, audit-record, and audit-ledger port validators that hosts can use for runtime gate and audit-chain review. Non-claims: domain policy meaning ownership, operator approval workflow ownership, audit storage, retention, production locking, or concurrency ownership, raw target/prompt ownership, queue/scheduler/storage ownership, protocol adapter ownership, command authority, or live execution.
+Claim: neutral admission-decision, runtime-admission, policy-decision, approval-request, audit-record, audit-ledger port validators, and a JSONL hash-chain development adapter that hosts can use for runtime gate and audit-chain review. Non-claims: domain policy meaning ownership, operator approval workflow ownership, production audit storage, retention, locking, or concurrency ownership, raw target/prompt ownership, queue/scheduler/storage ownership, protocol adapter ownership, command authority, or live execution.
 
 ### Evidence-review core
 
@@ -113,7 +113,7 @@ GovEngine owns:
 - `govengine.control` — deterministic between-step control decisions that can apply validated in-memory state transitions without storage, scheduler, delivery, command, or live-execution authority.
 - `govengine.runtime_shell` — neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, scheduler, delivery, command, credential, carrier, or live-execution authority.
 - `govengine.planning` — neutral task-contract, plan-intent, and planner-port validators without planner implementation, raw target/prompt, queue/scheduler/storage, command, credential, adapter, or live-execution authority.
-- `govengine.admission` — neutral admission-decision, runtime-admission, policy-decision, approval-request, audit-record, and audit-ledger port validators without domain policy meaning, approval workflow, audit storage/concurrency, command, credential, adapter, or live-execution authority.
+- `govengine.admission` — neutral admission-decision, runtime-admission, policy-decision, approval-request, audit-record, audit-ledger port validators, and JSONL hash-chain development adapter without domain policy meaning, approval workflow, production audit storage/concurrency, command, credential, protocol adapter, or live-execution authority.
 - `govengine.review` — neutral evidence-requirement, evidence-claim, evidence-qualification, review-result, and evidence-review-chain validators without SCLite review verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage, command, credential, adapter, or live-execution authority.
 - `govengine.profiles` — contract-only domain profile declarations, registries, fixture profiles, and conformance reports without domain taxonomy, product UX, credential, adapter, or live-execution ownership.
 - `govengine.contract_proofs` — public-safe runtime contract proof fixtures and neutral governance vocabulary over existing contracts without adapter, credential, scheduler, storage, live-execution, domain runtime, or new OODA ownership.

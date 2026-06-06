@@ -21,6 +21,8 @@ deliver carrier messages, hold credentials, or execute tools.
   for a host-owned audit ledger.
 - `AuditLedgerPort` defines the neutral append/read/verify adapter contract
   without providing production persistence.
+- `JsonlAuditLedgerAdapter` is a development-only JSONL hash-chain adapter for
+  local smoke validation.
 
 ## Boundary
 
@@ -54,8 +56,13 @@ The port separates record validation from persistence by requiring adapters to:
 - verify a sequence and return `AuditLedgerVerificationResult`.
 
 GovEngine validates ids, sequence numbers, digest references, append outcomes,
-verification outcomes, blockers, and forbidden metadata. GovEngine does not
-choose a database, file path, lock, clock, transaction isolation level,
-retention policy, production concurrency model, or deletion policy. GE-024 may
-add a JSONL hash-chain development adapter on top of this port, but production
-persistence remains host-owned.
+verification outcomes, blockers, and forbidden metadata. `audit_ledger_entry_digest()`
+clears the self-referential `entry_digest` field before computing a GovEngine-owned
+record digest. `JsonlAuditLedgerAdapter` writes one canonical JSON object per
+line, links each entry to the previous entry digest, and verifies sequence,
+previous-digest, and entry-digest continuity.
+
+GovEngine does not choose a production database, lock, clock, transaction
+isolation level, retention policy, concurrency model, or deletion policy. The
+JSONL adapter is development-only and should not be treated as production
+persistence.

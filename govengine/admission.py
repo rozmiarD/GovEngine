@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Any, Iterable, Mapping, Protocol
 
 from govengine.api import GovApiError, require_mapping
@@ -531,6 +533,117 @@ class AuditLedgerPort(Protocol):
         ...
 
 
+class JsonlAuditLedgerAdapter:
+    """Development JSONL hash-chain adapter for bounded audit ledger entries.
+
+    This adapter is for local development and smoke validation. It is not a
+    production persistence, locking, retention, or concurrency implementation.
+    """
+
+    def __init__(self, path: str | Path) -> None:
+        self.path = Path(path)
+
+    def append(
+        self,
+        record: GovAuditRecord,
+        *,
+        record_digest: str,
+        event_digest: str = '',
+        previous_entry_digest: str = '',
+    ) -> AuditLedgerAppendResult:
+        checked_record = validate_audit_record(record)
+        existing = self.read()
+        expected_previous = existing[-1].entry_digest if existing else ''
+        supplied_previous = str(previous_entry_digest or '').strip()
+        if supplied_previous and supplied_previous != expected_previous:
+            return AuditLedgerAppendResult(
+                status='rejected',
+                reason_code='audit_ledger_previous_digest_mismatch',
+                blockers=('audit_ledger_previous_digest_mismatch',),
+            )
+        sequence = len(existing)
+        entry = AuditLedgerEntry(
+            entry_id=f'audit-ledger-entry-{sequence + 1}',
+            sequence=sequence,
+            record=checked_record,
+            record_digest=record_digest,
+            event_digest=event_digest,
+            previous_entry_digest=expected_previous,
+            metadata={'adapter': 'jsonl_hash_chain_dev', 'storage': 'development_only'},
+        )
+        digest = audit_ledger_entry_digest(entry)
+        stored = AuditLedgerEntry(**{**entry.as_dict(), 'entry_digest': digest})
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        with self.path.open('a', encoding='utf-8') as handle:
+            handle.write(json.dumps(stored.as_dict(), ensure_ascii=True, sort_keys=True, separators=(',', ':')))
+            handle.write('\n')
+        return AuditLedgerAppendResult(
+            status='appended',
+            entry_id=stored.entry_id,
+            sequence=stored.sequence,
+            entry_digest=stored.entry_digest,
+        )
+
+    def read(self, *, after_entry_id: str = '', limit: int = 100) -> tuple[AuditLedgerEntry, ...]:
+        if limit < 1:
+            raise GovApiError('invalid_audit_ledger_read_limit')
+        if not self.path.exists():
+            return ()
+        entries: list[AuditLedgerEntry] = []
+        seen_after = not after_entry_id
+        with self.path.open('r', encoding='utf-8') as handle:
+            for line_number, line in enumerate(handle, start=1):
+                text = line.strip()
+                if not text:
+                    continue
+                try:
+                    raw = json.loads(text)
+                except json.JSONDecodeError as exc:
+                    raise GovApiError(f'invalid_audit_ledger_jsonl:{line_number}') from exc
+                entry = validate_audit_ledger_entry(raw)
+                if not seen_after:
+                    seen_after = entry.entry_id == after_entry_id
+                    continue
+                entries.append(entry)
+                if len(entries) >= limit:
+                    break
+        return tuple(entries)
+
+    def verify(self, entries: Iterable[AuditLedgerEntry]) -> AuditLedgerVerificationResult:
+        checked = tuple(validate_audit_ledger_entry(entry) for entry in entries)
+        if not checked:
+            return AuditLedgerVerificationResult(status='empty', verified=False, checked_entries=0, reason_code='empty')
+        previous_digest = ''
+        for index, entry in enumerate(checked):
+            if entry.sequence != index:
+                return _audit_ledger_failed(
+                    checked,
+                    reason_code='audit_ledger_sequence_mismatch',
+                    blocker='audit_ledger_sequence_mismatch',
+                )
+            if entry.previous_entry_digest != previous_digest:
+                return _audit_ledger_failed(
+                    checked,
+                    reason_code='audit_ledger_previous_digest_mismatch',
+                    blocker='audit_ledger_previous_digest_mismatch',
+                )
+            if entry.entry_digest != audit_ledger_entry_digest(entry):
+                return _audit_ledger_failed(
+                    checked,
+                    reason_code='audit_ledger_entry_digest_mismatch',
+                    blocker='audit_ledger_entry_digest_mismatch',
+                )
+            previous_digest = entry.entry_digest
+        last = checked[-1]
+        return AuditLedgerVerificationResult(
+            status='verified',
+            verified=True,
+            checked_entries=len(checked),
+            last_entry_id=last.entry_id,
+            last_entry_digest=last.entry_digest,
+        )
+
+
 @dataclass(frozen=True)
 class RuntimeAdmissionResult:
     """Canonical runtime admission record.
@@ -718,6 +831,21 @@ def validate_audit_ledger_verification_result(
         raise GovApiError('audit_ledger_empty_with_entries')
     _reject_forbidden_metadata(item.metadata)
     return item
+
+
+def audit_ledger_entry_digest(value: Mapping[str, Any] | AuditLedgerEntry) -> str:
+    """Return the GovEngine-owned digest for an audit ledger entry.
+
+    The self-referential `entry_digest` field is cleared before digesting. This
+    does not canonicalize SCLite artifacts or raw evidence.
+    """
+
+    item = value if isinstance(value, AuditLedgerEntry) else AuditLedgerEntry.from_mapping(value)
+    payload = item.as_dict()
+    payload['entry_digest'] = ''
+    from govengine.signing import govengine_record_digest
+
+    return govengine_record_digest(payload, record_type='govengine.admission.AuditLedgerEntry')
 
 
 def validate_runtime_admission_result(value: Mapping[str, Any] | RuntimeAdmissionResult) -> RuntimeAdmissionResult:
@@ -1201,6 +1329,24 @@ def _dedupe(values: Iterable[Any]) -> tuple[str, ...]:
             seen.add(item)
             out.append(item)
     return tuple(out)
+
+
+def _audit_ledger_failed(
+    entries: tuple[AuditLedgerEntry, ...],
+    *,
+    reason_code: str,
+    blocker: str,
+) -> AuditLedgerVerificationResult:
+    last = entries[-1] if entries else None
+    return AuditLedgerVerificationResult(
+        status='failed',
+        verified=False,
+        checked_entries=len(entries),
+        last_entry_id=last.entry_id if last else '',
+        last_entry_digest=last.entry_digest if last else '',
+        reason_code=reason_code,
+        blockers=(blocker,),
+    )
 
 
 def _tuple(values: Iterable[Any]) -> tuple[str, ...]:

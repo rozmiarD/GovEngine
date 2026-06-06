@@ -64,6 +64,9 @@ Expected result for the current `0.12.2a0` package line (`0.12.2-alpha`):
   result to reference the expected receipt, admission, qualification, and
   receipt-status bounds without storing raw evidence or replacing SCLite
   review-bundle verdict authority;
+- audit-ledger tests require append/read/verify contracts, GovEngine-owned
+  digest binding, and JSONL development hash-chain continuity without
+  production persistence claims;
 - no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced.
 
 ## Historical validation records
@@ -185,6 +188,8 @@ Current tests cover:
 - receipt/evidence chain validators over admission, runner request, receipt,
   evidence claim, and optional review-result references without raw evidence
   storage, SCLite canonicalization ownership, or live execution authority.
+- JSONL hash-chain development audit adapter without production storage,
+  locking, retention, concurrency, raw evidence, or live execution authority.
 
 Historical expected result for the `0.7.0` release line:
 
