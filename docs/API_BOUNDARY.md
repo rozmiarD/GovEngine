@@ -2,6 +2,8 @@
 
 GovEngine owns reusable governed-execution services. Its public surface should stay carrier-neutral and SCLite-aware.
 
+The top-level export stability classification lives in [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md). It covers the current `govengine.__all__` surface and is guarded by tests so new public exports require an explicit stability decision.
+
 `govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current alpha public surface set. It contains the neutral artifact-governance core, planning contracts, admission/policy contracts, evidence review, domain-profile SDK, runtime contract proofs, and controlled-execution core. The published `0.12.0-alpha` line removes the prior Ravenclaw-derived optional security facade; domain security behavior belongs in the host runtime.
 `govengine.boundary.kernel_boundary_report()` is the tested machine-readable 0.2 boundary report. It combines the kernel/profile/runtime/SCLite ownership contract, known domain-profile contracts such as Ravenclaw, and the current public surface index.
 `govengine.boundary.validate_domain_profile_conformance()` checks that a domain profile does not claim forbidden ownership and consumes only known GovEngine/SCLite surfaces.
