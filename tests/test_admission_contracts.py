@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -29,6 +32,9 @@ from govengine import (
 )
 from govengine.admission import normalize_admission_artifact_refs
 from govengine.api import GovApiError
+
+ROOT = Path(__file__).resolve().parents[1]
+INSPECT_ADMISSION_SCRIPT = ROOT / 'scripts' / 'inspect_runtime_admission.py'
 
 
 def test_admission_decision_models_host_gate_without_raw_target_or_command() -> None:
@@ -869,3 +875,74 @@ def test_compose_runtime_admission_result_blocks_live_even_with_complete_guarded
     assert 'missing_or_invalid_kernel_guard' not in result.blockers
     assert 'missing_or_replayed_guarded_root' not in result.blockers
     assert 'use_dry_run_or_select_host_enabled_live_profile' in result.required_next_actions
+
+
+def _write_runtime_admission(tmp_path, payload: dict) -> Path:
+    path = tmp_path / 'runtime-admission.json'
+    path.write_text(json.dumps(payload, sort_keys=True), encoding='utf-8')
+    return path
+
+
+def _run_inspect(path: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(INSPECT_ADMISSION_SCRIPT), str(path), *args],
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+
+
+def test_inspect_runtime_admission_prints_compact_allowed_output(tmp_path) -> None:
+    path = _write_runtime_admission(tmp_path, compose_runtime_admission_result(**_runtime_admission_inputs()).as_dict())
+
+    result = _run_inspect(path)
+
+    assert result.returncode == 0
+    assert result.stderr == ''
+    assert 'Runtime admission: runtime-admission-composed-1' in result.stdout
+    assert 'status: allowed' in result.stdout
+    assert 'allowed: true' in result.stdout
+    assert 'blockers:\n- none' in result.stdout
+    assert 'required_next_actions:\n- none' in result.stdout
+    assert 'receipt_obligation: required' in result.stdout
+    assert 'execution: not performed' in result.stdout
+
+
+def test_inspect_runtime_admission_prints_blockers_and_next_actions(tmp_path) -> None:
+    admission = compose_runtime_admission_result(**_runtime_admission_inputs(policy_decision=None))
+    path = _write_runtime_admission(tmp_path, admission.as_dict())
+
+    result = _run_inspect(path, '--format', 'json')
+
+    assert result.returncode == 0
+    payload = json.loads(result.stdout)
+    assert payload['status'] == 'blocked'
+    assert payload['allowed'] is False
+    assert payload['reason_code'] == 'missing_or_invalid_policy_decision'
+    assert payload['blockers'] == ['missing_or_invalid_policy_decision']
+    assert 'obtain_policy_decision' in payload['required_next_actions']
+    assert payload['execution'] == 'not performed'
+
+
+def test_inspect_runtime_admission_fails_closed_for_malformed_input(tmp_path) -> None:
+    path = tmp_path / 'runtime-admission.json'
+    path.write_text('{not-json', encoding='utf-8')
+
+    result = _run_inspect(path)
+
+    assert result.returncode == 2
+    assert result.stdout == ''
+    assert 'runtime_admission_inspect_error: runtime_admission_json_invalid' in result.stderr
+
+
+def test_inspect_runtime_admission_rejects_forbidden_raw_runtime_data(tmp_path) -> None:
+    payload = compose_runtime_admission_result(**_runtime_admission_inputs()).as_dict()
+    payload['metadata'] = {'raw_output': 'do-not-print'}
+    path = _write_runtime_admission(tmp_path, payload)
+
+    result = _run_inspect(path)
+
+    assert result.returncode == 2
+    assert result.stdout == ''
+    assert 'runtime_admission_inspect_error: forbidden_admission_metadata:raw_output' in result.stderr
+    assert 'do-not-print' not in result.stderr
