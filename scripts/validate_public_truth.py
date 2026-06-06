@@ -15,7 +15,7 @@ from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_
 from govengine.surfaces import public_surface_index  # noqa: E402
 
 EXPECTED_RELEASE_LABEL = '0.12.2-alpha'
-PUBLISHED_VERSION = '0.12.1a1'
+PUBLISHED_VERSION = '0.12.2a0'
 
 SURFACE_HEADINGS = {
     'Artifact-governance core': 'artifact_governance_core',
