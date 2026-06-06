@@ -124,3 +124,38 @@ def test_public_truth_validator_rejects_stale_publishing_dependency_line(monkeyp
 
     with pytest.raises(AssertionError, match='published_line_candidate_drift:stale_publishing_dependency_line'):
         validator._assert_no_published_line_candidate_drift(('PUBLISHING.md',))
+
+
+def test_public_truth_validator_tracks_current_mvp_surface_docs() -> None:
+    validator = _load_validator()
+
+    validator._assert_mvp_surface_docs({
+        'docs/RUNTIME_ADMISSION.md': ('RuntimeAdmissionResult', 'Intent is not execution authority.'),
+        'docs/RECEIPT_BINDING.md': ('GovRunnerReceiptBinding', 'validate_runner_receipt_binding()'),
+        'docs/EVIDENCE_REVIEW.md': ('validate_evidence_review_chain()',),
+        'docs/ADMISSION_POLICY.md': ('AuditLedgerPort', 'JsonlAuditLedgerAdapter'),
+        'docs/SCLITE_INTEGRATION.md': ('ReplayClaimStore', 'claim-once adapter'),
+        'docs/RUNNER_SUPERVISION.md': ('Live Runner Safety Specification', 'LocalSubprocessRunner'),
+        'docs/DOCUMENTATION_HYGIENE.md': ('docs/roadmaps/local/',),
+    })
+
+
+def test_public_truth_validator_rejects_missing_mvp_surface_doc_marker(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    validator = _load_validator()
+
+    def fake_read(path: str) -> str:
+        if path == 'docs/RUNTIME_ADMISSION.md':
+            return 'RuntimeAdmissionResult without the core invariant.'
+        return ''
+
+    monkeypatch.setattr(validator, '_read', fake_read)
+
+    with pytest.raises(AssertionError, match='docs/RUNTIME_ADMISSION.md:missing:Intent is not execution authority'):
+        validator._assert_mvp_surface_docs({
+            'docs/RUNTIME_ADMISSION.md': (
+                'RuntimeAdmissionResult',
+                'Intent is not execution authority.',
+            ),
+        })
