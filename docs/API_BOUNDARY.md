@@ -45,7 +45,7 @@ Neutral core modules:
 - `govengine.state_store`
 - `govengine.replay`
 
-Claim: portable kernel/profile boundary contracts, artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, GovEngine-owned record serialization/digests/signed envelopes, guarded-root replay checks, guarded-bundle runtime decision assembly, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, SCLite Kernel Guard HMAC verification ownership, PKI/key-store ownership, raw artifact storage ownership, workflow scheduler ownership.
+Claim: portable kernel/profile boundary contracts, artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, GovEngine-owned record serialization/digests/signed envelopes, guarded-root replay checks, claim-once replay-store port shapes, guarded-bundle runtime decision assembly, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, SCLite Kernel Guard HMAC verification ownership, PKI/key-store ownership, raw artifact storage ownership, production replay persistence/atomicity ownership, workflow scheduler ownership.
 
 ### Planning-contracts core
 

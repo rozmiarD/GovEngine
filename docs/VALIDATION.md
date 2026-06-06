@@ -59,6 +59,9 @@ Expected result for the current `0.12.2a0` package line (`0.12.2-alpha`):
 - replay claim-store tests prove the development claim-once port records the
   first fresh claim and rejects or observes repeated claims without claiming
   production persistence or concurrency ownership;
+- replay documentation distinguishes host-owned atomic production stores from
+  `InMemoryReplayClaimStore` and `record_guard_replay_file()` development
+  helpers;
 - runtime-consumable execution-gate tests require guarded-strict verification
   plus replay-fresh status before a bundle can be consumed for execution;
 - runner receipt binding tests require admission, ticket, request, receipt,

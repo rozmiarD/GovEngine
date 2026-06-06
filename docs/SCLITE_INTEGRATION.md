@@ -78,6 +78,17 @@ Replay matching prefers the guarded payload digest plus ticket or chain scope
 and key id. The root-tag compatibility fallback is scoped by `chain_id` and
 `key_id` so unrelated domains or key namespaces do not collide.
 
+Replay-store responsibilities are split deliberately:
+
+- GovEngine owns the bounded replay record, decision, and claim-once port
+  shapes.
+- SCLite owns guarded bundle and Kernel Guard verification before replay is
+  considered.
+- `InMemoryReplayClaimStore` and `record_guard_replay_file()` are local
+  development helpers for tests and smoke evidence only.
+- Hosts own atomic production persistence, locking, transaction isolation,
+  multi-process concurrency, retention, deletion policy, and recovery.
+
 Runtime-consumable artifacts should use this posture:
 
 ```text
