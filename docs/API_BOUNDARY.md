@@ -198,6 +198,13 @@ itself. `normalize_admission_artifact_refs()` is an alpha helper for bounded
 review references and existing digest strings only; it does not compute content
 digests and does not claim SCLite canonicalization authority.
 
+The operator-facing path that ties admission, trust ports, guarded SCLite
+verification, replay freshness, runner profile, receipt obligation, and
+evidence/review binding together is documented in
+[GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md). That
+runbook is descriptive; it does not add a new public API surface or execution
+backend.
+
 Before any execution backend moves into GovEngine:
 
 1. lifecycle gates and signing/trust gates must be explicit;

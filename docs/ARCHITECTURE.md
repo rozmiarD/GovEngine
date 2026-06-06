@@ -8,6 +8,29 @@ host runtime -> GovEngine -> SCLite
 
 For the current extraction, the host/domain runtime is Ravenclaw. A future infrastructure-operations runtime/profile is reserved as Tecrax. Later carriers may include OpenClaw, MCP/A2A-style transports, or other local harnesses, but GovEngine should not become a carrier-specific adapter or a domain product shell.
 
+## Governed-runtime MVP chain
+
+The current MVP path is documented for operators in
+[GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md). The short
+form is:
+
+```text
+intent
+  -> policy/admission
+  -> SCLite ticket or guarded verification reference
+  -> trust decision
+  -> replay freshness
+  -> runner profile
+  -> receipt obligation
+  -> RuntimeAdmissionResult
+  -> bounded request/receipt/evidence references
+```
+
+GovEngine owns the neutral mechanics that compose and validate this chain. It
+does not own domain policy meaning, operator approval workflow, production
+identity or keys, raw evidence storage, SCLite proof authority, or live backend
+execution.
+
 ## Layers
 
 ### 0. Kernel/profile boundary layer
@@ -117,4 +140,10 @@ forbidden: GovEngine -> Logdash/OpenClaw/MCP/A2A adapters
 
 ## Current maturity
 
-The package currently covers dry-run-safe helpers and neutral contract gates. The published `0.12.0-alpha` line removes former Ravenclaw-derived security helper modules rather than treating them as kernel capabilities. GovEngine is not yet a complete orchestrator/scheduler/supervisor stack and does not claim production execution safety on its own.
+The package currently covers dry-run-safe helpers and neutral contract gates.
+The published `0.12.2-alpha` line keeps the governed-runtime kernel MVP honest:
+canonical runtime admission, host-provided trust ports, receipt/evidence
+binding, audit/replay ports, inspect-only admission review, and runner safety
+documentation are alpha surfaces, not production execution claims. GovEngine is
+not a complete orchestrator, scheduler, supervisor stack, subprocess runner, or
+product shell and does not claim production execution safety on its own.

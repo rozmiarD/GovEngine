@@ -87,6 +87,12 @@ references into that record. `normalize_admission_artifact_refs()` is an alpha
 helper for bounded review references and existing digest strings; it does not
 compute content digests or claim SCLite canonicalization.
 
+The operator-facing MVP flow is documented in
+[`docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`](docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md).
+It ties admission, trust ports, guarded SCLite verification, replay freshness,
+runner profile, receipt obligation, and evidence/review binding into one
+inspectable dry-run/default-safe chain.
+
 This roadmap does not make intent execution authority. It keeps profile/domain
 policy meaning, production identity, key management, operator authorization,
 raw evidence storage, and live backend behavior host-owned until explicit
@@ -150,6 +156,11 @@ assert receipt["status"] == "dry-run"
 - [`docs/SCLITE_INTEGRATION.md`](docs/SCLITE_INTEGRATION.md) — how GovEngine consumes SCLite.
 - [`docs/API_BOUNDARY.md`](docs/API_BOUNDARY.md) — owned vs excluded surfaces.
 - [`docs/RUNTIME_ADMISSION.md`](docs/RUNTIME_ADMISSION.md) — canonical runtime admission contract direction.
+- [`docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`](docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md) — operator-facing governed-runtime MVP chain.
+- [`docs/ADMISSION_POLICY.md`](docs/ADMISSION_POLICY.md) — neutral admission, policy, approval, audit, and audit-ledger contracts.
+- [`docs/RECEIPT_BINDING.md`](docs/RECEIPT_BINDING.md) — admission/ticket/request/receipt binding design.
+- [`docs/EVIDENCE_REVIEW.md`](docs/EVIDENCE_REVIEW.md) — receipt-bounded evidence/review contract.
+- [`docs/RUNNER_SUPERVISION.md`](docs/RUNNER_SUPERVISION.md) — runner request, receipt, supervision, and live-runner safety boundaries.
 - [`docs/GOVENGINE_KERNEL_BOUNDARY.md`](docs/GOVENGINE_KERNEL_BOUNDARY.md) — kernel/profile/runtime/SCLite ownership split.
 - [`docs/DOMAIN_PROFILE_CONTRACT.md`](docs/DOMAIN_PROFILE_CONTRACT.md) — domain profile contract and conformance rules.
 - [`docs/ORCHESTRATOR_MODEL.md`](docs/ORCHESTRATOR_MODEL.md) — deterministic orchestration boundary and runtime non-claims.
