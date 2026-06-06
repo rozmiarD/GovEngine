@@ -326,6 +326,59 @@ def test_verify_guard_and_record_replay_requires_strict_lifecycle(tmp_path: Path
     assert decision.blocker == "strict_lifecycle_required_for_runtime_consumable_guard"
 
 
+def test_guarded_fresh_runtime_admission_example_composes_allowed_dry_run(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_fake_sclite_secure(monkeypatch)
+    manifest_path, guard_path = _write_guarded_bundle(tmp_path)
+    guarded = verify_guard_and_record_replay(
+        manifest_path,
+        guard_path=guard_path,
+        key="fixture-secret",
+        store=MemoryStore(),
+        observed_at="2026-06-06T20:00:00+00:00",
+        run_id="dry-run-1",
+    )
+
+    admission = compose_runtime_admission_result(**_runtime_admission_inputs(
+        admission_id="runtime-admission-guarded-fresh-example",
+        runtime_consumable=True,
+        sclite_guarded_strict=guarded.as_dict(),
+        replay_freshness=guarded.as_dict(),
+        runner_profile={"name": "dry-run", "allowed": True, "live_backend_enabled": False},
+        receipt_obligation={"required": True, "binds": ["admission", "ticket"]},
+        artifact_refs={
+            "sclite_guarded_strict": {
+                "guard_root_tag": guarded.guard_root_tag,
+                "root_chain_digest": guarded.root_chain_digest,
+            },
+            "execution_ticket": {
+                "ticket_id": guarded.ticket_id,
+            },
+        },
+    ))
+
+    assert guarded.allowed is True
+    assert guarded.verification_status == "passed"
+    assert guarded.replay_status == "fresh"
+    assert admission.allowed is True
+    assert admission.status == "allowed"
+    assert admission.reason_code == "all_required_gates_passed"
+    assert admission.sclite_guarded_strict["verification_status"] == "passed"
+    assert admission.replay_freshness["replay_status"] == "fresh"
+    assert admission.runner_profile == {
+        "allowed": True,
+        "live_backend_enabled": False,
+        "metadata": {},
+        "name": "dry-run",
+    }
+    assert admission.receipt_obligation == {"binds": ["admission", "ticket"], "required": True}
+    assert admission.sclite_guarded_strict["guard_root_tag"] == "tag-1"
+    assert admission.artifact_refs["sclite_guarded_strict"]["root_chain_digest"] == guarded.root_chain_digest
+    assert admission.artifact_refs["execution_ticket"]["ticket_id"] == "ticket-1"
+
+
 @pytest.mark.parametrize(
     "guarded_decision",
     (

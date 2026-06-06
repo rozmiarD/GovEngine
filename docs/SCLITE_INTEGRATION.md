@@ -98,6 +98,9 @@ replay fresh in GovEngine
 policy/ticket/trust gates pass
 ```
 
+A deterministic dry-run example for this path is documented in
+[GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md](GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md).
+
 GovEngine then keeps the runtime-consumption evidence chain bounded:
 
 ```text
