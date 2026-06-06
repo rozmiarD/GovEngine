@@ -133,3 +133,14 @@ The implementation task should add tests proving:
 - output states that execution was not performed;
 - no live backend is imported or invoked.
 
+## Implementation Status
+
+The initial inspect-only surface is implemented as:
+
+```bash
+python scripts/inspect_runtime_admission.py path/to/runtime-admission.json
+```
+
+The script validates a single JSON `RuntimeAdmissionResult`, emits compact text
+by default, supports bounded JSON output, exits with code 2 for malformed or
+unsafe inputs, and always reports `execution: not performed`.
