@@ -52,6 +52,17 @@ def _runtime_admission_inputs(**overrides):
     return values
 
 
+def _signed_runtime_record() -> tuple[dict[str, str], SignedArtifact]:
+    record = {"status": "allowed", "reason_code": "ok"}
+    signed = demo_sign_govengine_record(
+        record,
+        record_type="govengine.admission.RuntimeAdmissionResult",
+        payload_ref="artifact://admission/runtime-1",
+        signer_id="owner-demo",
+    )
+    return record, signed
+
+
 def test_signature_envelope_from_artifact_preserves_integrity_only_mode() -> None:
     envelope = signature_envelope_from_artifact({
         "signature": {
@@ -168,6 +179,22 @@ def test_demo_digest_verifier_rejects_tampered_digest() -> None:
 
     assert verification.status == "failed"
     assert verification.reason_code == "signature_digest_mismatch"
+
+
+def test_demo_digest_verifier_rejects_unsupported_signature_mode() -> None:
+    verification = DemoDigestVerifier(allowed_signer_ids=("owner-demo",)).verify(
+        _descriptor(),
+        SignatureEnvelope(
+            mode="detached_signature",
+            signer_id="owner-demo",
+            signature="host-signature",
+            binds_digest="sha256:ticket",
+        ),
+    )
+
+    assert verification.status == "failed"
+    assert verification.trust_status == "denied"
+    assert verification.reason_code == "unsupported_signature_mode"
 
 
 def test_runtime_admission_blocks_digest_mismatch_verification_result() -> None:
@@ -393,6 +420,21 @@ def test_verify_signed_govengine_record_uses_host_verifier_port() -> None:
     assert verification.trusted is True
 
 
+def test_verify_signed_govengine_record_rejects_one_field_tamper() -> None:
+    record, signed = _signed_runtime_record()
+    tampered = {**record, "reason_code": "policy_denied"}
+
+    verification = verify_signed_govengine_record(
+        tampered,
+        signed,
+        verifier=DemoDigestVerifier(allowed_signer_ids=("owner-demo",)),
+    )
+
+    assert verification.status == "failed"
+    assert verification.trust_status == "denied"
+    assert verification.reason_code == "signed_record_digest_mismatch"
+
+
 def test_verify_signed_govengine_record_rejects_tampered_record() -> None:
     record = {"status": "allowed", "reason_code": "ok"}
     signed = demo_sign_govengine_record(
@@ -411,6 +453,67 @@ def test_verify_signed_govengine_record_rejects_tampered_record() -> None:
     assert verification.status == "failed"
     assert verification.reason_code == "signed_record_digest_mismatch"
     assert verification.metadata["payload_ref"] == "artifact://admission/runtime-1"
+
+
+def test_verify_signed_govengine_record_rejects_wrong_signer() -> None:
+    record, signed = _signed_runtime_record()
+
+    verification = verify_signed_govengine_record(
+        record,
+        signed,
+        verifier=DemoDigestVerifier(allowed_signer_ids=("another-owner",)),
+    )
+
+    assert verification.status == "failed"
+    assert verification.trust_status == "denied"
+    assert verification.reason_code == "signer_not_allowed"
+
+
+def test_verify_signed_govengine_record_rejects_tampered_signature_value() -> None:
+    record, signed = _signed_runtime_record()
+    payload = signed.as_dict()
+    payload["signature"]["signature"] = "demo:not-the-original-signature"
+
+    verification = verify_signed_govengine_record(
+        record,
+        SignedArtifact.from_mapping(payload),
+        verifier=DemoDigestVerifier(allowed_signer_ids=("owner-demo",)),
+    )
+
+    assert verification.status == "failed"
+    assert verification.trust_status == "denied"
+    assert verification.reason_code == "signature_value_mismatch"
+
+
+def test_signature_transition_blocks_unknown_signer_trust_decision() -> None:
+    decision = signature_transition_decision(
+        _descriptor(),
+        signature=SignatureEnvelope(
+            mode="detached_signature",
+            signer_id="unknown",
+            signature="sig",
+            binds_digest="sha256:ticket",
+        ),
+        verification=VerificationResult(status="failed", trust_status="unknown", reason_code="unknown_signer"),
+        signing_policy=SigningPolicy(require_signature=True),
+        trust_policy=TrustPolicy(allowed_trust_statuses=("trusted",)),
+    )
+
+    assert decision.allowed is False
+    assert "trust_status_not_allowed" in decision.blockers
+    assert decision.context.trust_decision["reason_code"] == "unknown_signer"
+
+
+def test_key_resolution_wrong_key_status_is_not_resolved() -> None:
+    result = KeyResolutionResult.from_mapping({
+        "status": "wrong_key",
+        "signer_id": "owner-demo",
+        "key_ref": "host-key://owner-demo/old",
+        "reason_code": "wrong_key",
+    })
+
+    assert result.resolved is False
+    assert result.reason_code == "wrong_key"
 
 
 def test_signed_artifact_from_record_requires_payload_ref() -> None:
