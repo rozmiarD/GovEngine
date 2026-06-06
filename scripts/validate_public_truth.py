@@ -4,7 +4,7 @@ import re
 import sys
 import tomllib
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Mapping
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -46,6 +46,57 @@ CURRENT_ALPHA_DOCS = (
     'docs/API_BOUNDARY.md',
     'docs/ROADMAP.md',
 )
+
+MVP_SURFACE_DOC_MARKERS = {
+    'docs/RUNTIME_ADMISSION.md': (
+        'RuntimeAdmissionResult',
+        'Intent is not execution authority.',
+        'missing policy blocks',
+        'missing receipt obligation blocks',
+        'production\nruntime readiness',
+    ),
+    'docs/RECEIPT_BINDING.md': (
+        'GovRunnerReceiptBinding',
+        'validate_runner_receipt_binding()',
+        'A receipt without admission and ticket bindings is not runtime evidence.',
+        'store raw evidence, or\nenable live execution',
+    ),
+    'docs/EVIDENCE_REVIEW.md': (
+        'validate_evidence_review_chain()',
+        'admission -> receipt -> evidence -> review',
+        'does not store raw evidence',
+        'evaluate SCLite review-bundle verdicts',
+        'stores raw evidence, or grants live execution authority',
+    ),
+    'docs/ADMISSION_POLICY.md': (
+        'AuditLedgerPort',
+        'JsonlAuditLedgerAdapter',
+        'development-only JSONL hash-chain adapter',
+        'does not choose a production database',
+        'concurrency',
+    ),
+    'docs/SCLITE_INTEGRATION.md': (
+        'ReplayClaimStore',
+        'claim-once adapter',
+        'GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md',
+        'validate_runner_receipt_binding()',
+        'validate_evidence_review_chain()',
+    ),
+    'docs/RUNNER_SUPERVISION.md': (
+        'Live Runner Safety Specification',
+        'GovEngine does not provide a live subprocess runner in this stage.',
+        'live_backend_enabled',
+        'LocalSubprocessRunner',
+        'Current stage decision: `not_applicable`.',
+    ),
+    'docs/DOCUMENTATION_HYGIENE.md': (
+        'docs/roadmaps/ge-governed-runtime-kernel-mvp-seed-manifest.json',
+        'Removing those files mid-roadmap would break the current',
+        '.signposter-local/',
+        'docs/roadmaps/local/',
+        'Returning to mainline: next task is GE-039',
+    ),
+}
 
 
 def _read(path: str) -> str:
@@ -191,6 +242,13 @@ def _assert_no_published_line_candidate_drift(paths: Iterable[str]) -> None:
                 raise AssertionError(f'{path}:published_line_candidate_drift:{reason}')
 
 
+def _assert_mvp_surface_docs(markers: Mapping[str, Iterable[str]] = MVP_SURFACE_DOC_MARKERS) -> None:
+    for path, expected_markers in markers.items():
+        text = _read(path)
+        for marker in expected_markers:
+            _assert_contains(path, text, marker)
+
+
 def main() -> int:
     project = _pyproject()['project']
     version = str(project['version'])
@@ -239,6 +297,7 @@ def main() -> int:
     _assert_contains('docs/VALIDATION.md', validation, 'broad system interpreter is not')
     _assert_validation_current_gate_precedes_history(validation, version)
     _assert_clean_pip_check_guidance(contributing, validation, publishing)
+    _assert_mvp_surface_docs()
     _assert_no_published_line_candidate_drift((
         'README.md',
         'CONTRIBUTING.md',
