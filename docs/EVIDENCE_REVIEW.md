@@ -24,3 +24,12 @@ claims are rejected in metadata.
 support execution-truth review, but it cannot support a live-vulnerability
 claim. SCLite remains the proof/review artifact authority; GovEngine only
 validates neutral review mechanics.
+
+`validate_evidence_review_chain()` verifies the bounded
+admission -> receipt -> evidence -> review references before a claim is treated
+as supported. It requires the evidence claim to reference the expected receipt,
+match the requirement subject, match the expected admission id or digest when
+provided, and stay within the receipt status bounds. When a neutral
+`GovReviewResult` is provided, the review must reference the computed or
+provided qualification. The helper does not store raw evidence and does not
+evaluate SCLite review-bundle verdicts.
