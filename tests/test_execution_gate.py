@@ -125,6 +125,30 @@ def test_execution_gate_blocks_live_by_default() -> None:
     assert "live_backend_disabled" in decision.blockers
 
 
+def test_execution_gate_blocks_live_profile_without_explicit_backend_enablement() -> None:
+    decision = ExecutionGate().evaluate(
+        _gate_input(runner_profile=RunnerProfile(name="local-live", allowed=True)),
+        live=True,
+    )
+
+    assert decision.allowed is False
+    assert decision.to_state == "runner_allowed_live"
+    assert decision.reason_code == "execution_disabled"
+    assert "live_backend_disabled" in decision.blockers
+    assert decision.context.metadata["runner_profile"]["live_backend_enabled"] is False
+
+
+def test_execution_gate_only_allows_live_when_profile_explicitly_enables_backend() -> None:
+    decision = ExecutionGate().evaluate(
+        _gate_input(runner_profile=RunnerProfile(name="local-live", allowed=True, live_backend_enabled=True)),
+        live=True,
+    )
+
+    assert decision.allowed is True
+    assert decision.to_state == "runner_allowed_live"
+    assert decision.context.metadata["runner_profile"]["live_backend_enabled"] is True
+
+
 @pytest.mark.parametrize(
     "ticket_status",
     ("missing", "invalid", "unapproved", "mismatch", "stale", "failed"),
@@ -172,3 +196,4 @@ def test_dry_run_runner_never_executes_live_request() -> None:
     assert receipt.status == "blocked"
     assert receipt.reason_code == "live_backend_disabled"
     assert receipt.step_results[0].reason_code == "live_backend_disabled"
+    assert receipt.control_decisions[0]["non_claim"] == "DryRunRunner never executes live requests"

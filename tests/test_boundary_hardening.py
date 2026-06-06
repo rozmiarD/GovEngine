@@ -117,3 +117,23 @@ def test_neutral_surfaces_keep_runtime_authority_as_non_claims() -> None:
             violations.append(f'{surface.name} -> {missing}')
 
     assert violations == []
+
+
+def test_public_docs_keep_live_backend_disabled_by_default_non_claims() -> None:
+    api_boundary = (ROOT / 'docs' / 'API_BOUNDARY.md').read_text(encoding='utf-8')
+    runner_supervision = (ROOT / 'docs' / 'RUNNER_SUPERVISION.md').read_text(encoding='utf-8')
+    validation = (ROOT / 'docs' / 'VALIDATION.md').read_text(encoding='utf-8')
+    combined = ' '.join(f'{api_boundary}\n{runner_supervision}\n{validation}'.split())
+
+    required_markers = (
+        'Live subprocess execution is intentionally absent',
+        'remains disabled by default',
+        'does not provide a live subprocess runner',
+        'not implementation permission',
+        'dry-run remains the default profile',
+        'live backend implementation remain host-owned',
+        'no live subprocess backend',
+    )
+
+    for marker in required_markers:
+        assert marker in combined

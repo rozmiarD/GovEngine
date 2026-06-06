@@ -122,6 +122,33 @@ def test_supervision_requires_receipts_and_blocks_live_backend_by_default() -> N
         })
 
 
+def test_supervision_live_request_requires_explicit_backend_enablement() -> None:
+    live_request = runner_request_from_approved_spec(_approved_spec(), request_id='run-live', dry_run=False)
+
+    with pytest.raises(GovApiError, match='live_backend_disabled'):
+        supervision_plan_from_runner_request(
+            live_request,
+            timeout_seconds=20,
+            cwd_policy='repo_root',
+            env_policy='allowlist',
+        )
+
+    plan = supervision_plan_from_runner_request(
+        live_request,
+        runner_profile='local-live',
+        live_backend_enabled=True,
+        timeout_seconds=20,
+        cwd_policy='repo_root',
+        env_policy='allowlist',
+        stdin_policy='bounded',
+    )
+
+    assert plan.dry_run is False
+    assert plan.live_backend_enabled is True
+    assert plan.receipt_required is True
+    assert validate_supervised_runner_request(live_request, plan) is live_request
+
+
 def test_supervision_receipt_must_match_request_steps() -> None:
     request = runner_request_from_approved_spec(_approved_spec(), request_id='run-1', dry_run=True)
     receipt = GovRunnerReceipt(

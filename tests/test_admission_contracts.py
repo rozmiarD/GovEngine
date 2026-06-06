@@ -850,3 +850,22 @@ def test_compose_runtime_admission_result_keeps_live_disabled_by_default() -> No
     assert result.reason_code == 'live_backend_disabled'
     assert 'live_backend_disabled' in result.blockers
     assert 'use_dry_run_or_select_host_enabled_live_profile' in result.required_next_actions
+
+
+def test_compose_runtime_admission_result_blocks_live_even_with_complete_guarded_chain_by_default() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        live=True,
+        runtime_consumable=True,
+        sclite_guarded_strict={'status': 'allowed', 'verification_status': 'passed'},
+        replay_freshness={'status': 'allowed', 'replay_status': 'fresh'},
+    ))
+
+    assert result.allowed is False
+    assert result.reason_code == 'live_backend_disabled'
+    assert result.runner_profile['live_backend_enabled'] is False
+    assert result.sclite_guarded_strict['verification_status'] == 'passed'
+    assert result.replay_freshness['replay_status'] == 'fresh'
+    assert result.blockers == ('live_backend_disabled',)
+    assert 'missing_or_invalid_kernel_guard' not in result.blockers
+    assert 'missing_or_replayed_guarded_root' not in result.blockers
+    assert 'use_dry_run_or_select_host_enabled_live_profile' in result.required_next_actions
