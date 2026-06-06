@@ -1,0 +1,1612 @@
+{
+  "version": "planner.v0.1",
+  "goal": "GE - GovEngine governed-runtime kernel MVP: compose runtime admission, trust, receipt/evidence, audit/replay, runner safety, inspect-only workflow, docs, validation, and Signposter lifecycle without live execution by default.",
+  "mode": "supervised",
+  "status": "draft",
+  "mutation_policy": "local-first; dry-run before apply; GitHub mutation only through guarded Signposter --apply; no upstream mutation; no package publish; no releases; no tags; no secrets/settings changes.",
+  "required_capabilities": [
+    "GovEngine work branch remains clean and synchronized before lifecycle work",
+    "Signposter planner validate/seed/next/run/status surfaces",
+    "Signposter issue/worktree/run/report/gate/pr/review/merge/integration/cleanup lifecycle surfaces",
+    "GitHub Issues enabled on ExatronOmega/GovEngine",
+    "CI must pass before merge",
+    "local validation commands from docs/VALIDATION.md"
+  ],
+  "issues": [
+    {
+      "key": "GE-001",
+      "title": "Refresh GovEngine repository and Signposter control-plane audit",
+      "body": "Purpose: Record the actual GovEngine repo, branch, remotes, local status, Signposter command surface, CI, tests, and audit inputs before implementation.\nConcrete scope: create a bounded audit note under docs/audits or docs/roadmaps summarizing baseline commands, Signposter capabilities, existing GovEngine modules, current validation policy, and blockers discovered during seed/lifecycle setup.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: deterministic audit worker.\nGate: gate:ci.\nRisk level: low.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python scripts/validate_alpha_readiness.py && python -m pytest tests/test_public_truth_consistency.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [],
+      "acceptance": [
+        "GE-001: concrete scope is delivered with bounded evidence.",
+        "GE-001: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-001: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-001: validation command succeeds: python scripts/validate_public_truth.py && python scripts/validate_alpha_readiness.py && python -m pytest tests/test_public_truth_consistency.py -q",
+        "GE-001: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "deterministic audit worker",
+      "gate": "gate:ci",
+      "actual_risk": "low",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-002",
+      "title": "Add API stability matrix for top-level exports",
+      "body": "Purpose: Make the broad alpha public API explicit before adding new runtime admission surfaces.\nConcrete scope: add a reviewable API stability matrix covering every name in govengine.__all__ or a justified grouped class of fixture exports; link it from API boundary docs; add drift coverage where practical.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_surfaces.py tests/test_boundary_hardening.py -q && python scripts/validate_public_truth.py",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-001"
+      ],
+      "acceptance": [
+        "GE-002: concrete scope is delivered with bounded evidence.",
+        "GE-002: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-002: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-002: validation command succeeds: python -m pytest tests/test_surfaces.py tests/test_boundary_hardening.py -q && python scripts/validate_public_truth.py",
+        "GE-002: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-003",
+      "title": "Align public truth with governed-runtime MVP direction",
+      "body": "Purpose: Keep public docs honest about alpha maturity and runtime admission as the next kernel target.\nConcrete scope: update README/PUBLIC_STATUS/ROADMAP/API boundary only where current truth and audit evidence require alignment; preserve non-production and no-live-backend claims.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: deterministic docs worker.\nGate: gate:ci.\nRisk level: low.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python scripts/validate_alpha_readiness.py",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-001",
+        "GE-002"
+      ],
+      "acceptance": [
+        "GE-003: concrete scope is delivered with bounded evidence.",
+        "GE-003: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-003: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-003: validation command succeeds: python scripts/validate_public_truth.py && python scripts/validate_alpha_readiness.py",
+        "GE-003: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "deterministic docs worker",
+      "gate": "gate:ci",
+      "actual_risk": "low",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-004",
+      "title": "Design canonical runtime admission result contract",
+      "body": "Purpose: Define RuntimeAdmissionResult or GovernedExecutionAdmission before implementation.\nConcrete scope: write a concise design artifact documenting inputs, outputs, reason codes, blockers, next actions, artifact refs/digests, receipt obligation, host-owned policy meaning, and SCLite-owned proof boundary.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python -m pytest tests/test_execution_gate.py tests/test_admission_contracts.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-001",
+        "GE-003"
+      ],
+      "acceptance": [
+        "GE-004: concrete scope is delivered with bounded evidence.",
+        "GE-004: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-004: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-004: validation command succeeds: python scripts/validate_public_truth.py && python -m pytest tests/test_execution_gate.py tests/test_admission_contracts.py -q",
+        "GE-004: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-005",
+      "title": "Implement runtime admission core record",
+      "body": "Purpose: Add the canonical machine-readable admission record without replacing existing gate helpers.\nConcrete scope: add a dataclass or equivalent record with status, allowed, reason_code, blockers, required_next_actions, artifact refs/digests, runner profile, receipt obligation, as_dict/from_mapping or validation helper as consistent with repo style.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: strong coding worker; governance contract change.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_admission_contracts.py tests/test_execution_gate.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-004"
+      ],
+      "acceptance": [
+        "GE-005: concrete scope is delivered with bounded evidence.",
+        "GE-005: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-005: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-005: validation command succeeds: python -m pytest tests/test_admission_contracts.py tests/test_execution_gate.py -q",
+        "GE-005: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "strong coding worker; governance contract change",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-006",
+      "title": "Compose admission from policy, ticket, trust, guard, replay, profile, and receipt signals",
+      "body": "Purpose: Make one helper consume the existing separate gate decisions and produce the canonical admission result.\nConcrete scope: compose prepared execution contract status, policy decision status, execution ticket status, trust decision, runtime-consumable guarded-strict status, replay freshness, runner profile, and receipt obligation; keep existing helpers backward compatible.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: strong coding worker; governance contract change.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_execution_gate.py tests/test_admission_contracts.py tests/test_core_abstractions.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-005"
+      ],
+      "acceptance": [
+        "GE-006: concrete scope is delivered with bounded evidence.",
+        "GE-006: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-006: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-006: validation command succeeds: python -m pytest tests/test_execution_gate.py tests/test_admission_contracts.py tests/test_core_abstractions.py -q",
+        "GE-006: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "strong coding worker; governance contract change",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-007",
+      "title": "Block missing and unknown policy in runtime admission",
+      "body": "Purpose: Prove unknown or missing policy cannot silently authorize runtime-consumable action.\nConcrete scope: add negative tests and implementation adjustments so missing policy, deny, defer, require approval, dry-run-only, and record-only statuses produce deterministic blocked or constrained admission outcomes as designed.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_admission_contracts.py tests/test_execution_gate.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-006"
+      ],
+      "acceptance": [
+        "GE-007: concrete scope is delivered with bounded evidence.",
+        "GE-007: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-007: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-007: validation command succeeds: python -m pytest tests/test_admission_contracts.py tests/test_execution_gate.py -q",
+        "GE-007: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-008",
+      "title": "Block missing or invalid execution ticket in runtime admission",
+      "body": "Purpose: Prove admission cannot proceed without a valid ticket signal.\nConcrete scope: add negative coverage for missing, invalid, unapproved, mismatched, stale, or failed execution ticket status at the admission composition boundary without duplicating SCLite ticket semantics.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_execution_helpers.py tests/test_execution_gate.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-006"
+      ],
+      "acceptance": [
+        "GE-008: concrete scope is delivered with bounded evidence.",
+        "GE-008: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-008: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-008: validation command succeeds: python -m pytest tests/test_execution_helpers.py tests/test_execution_gate.py -q",
+        "GE-008: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-009",
+      "title": "Block missing or invalid trust decision in runtime admission",
+      "body": "Purpose: Prove missing or invalid trust/signature decision blocks runtime admission when required.\nConcrete scope: add negative coverage for missing trust decision, untrusted signer, failed verification, digest mismatch, and unknown trust status through the canonical admission result.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_signing_bridge.py tests/test_execution_gate.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-006"
+      ],
+      "acceptance": [
+        "GE-009: concrete scope is delivered with bounded evidence.",
+        "GE-009: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-009: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-009: validation command succeeds: python -m pytest tests/test_signing_bridge.py tests/test_execution_gate.py -q",
+        "GE-009: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-010",
+      "title": "Block missing guarded-strict verification and replay freshness",
+      "body": "Purpose: Prove runtime-consumable SCLite bundles require guarded-strict and replay-fresh state.\nConcrete scope: extend admission tests to cover not-guarded, not-strict, failed guard verification, replayed root, and stale replay signals; keep review-only bundle posture distinct.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_guard_replay.py tests/test_execution_gate.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-006"
+      ],
+      "acceptance": [
+        "GE-010: concrete scope is delivered with bounded evidence.",
+        "GE-010: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-010: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-010: validation command succeeds: python -m pytest tests/test_guard_replay.py tests/test_execution_gate.py -q",
+        "GE-010: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-011",
+      "title": "Require runner profile and receipt obligation in admission",
+      "body": "Purpose: Make runner selection and receipt requirement explicit before a runner request is considered.\nConcrete scope: add admission fields and tests for missing runner profile, disallowed profile, live backend profile blocked by default, and missing receipt obligation.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_execution_gate.py tests/test_execution_supervision.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-006"
+      ],
+      "acceptance": [
+        "GE-011: concrete scope is delivered with bounded evidence.",
+        "GE-011: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-011: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-011: validation command succeeds: python -m pytest tests/test_execution_gate.py tests/test_execution_supervision.py -q",
+        "GE-011: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-012",
+      "title": "Add admission artifact reference and digest normalization",
+      "body": "Purpose: Make admission output reviewable without storing raw artifacts.\nConcrete scope: add bounded artifact reference/digest helpers for admission result inputs; avoid SCLite canonicalization claims; test deterministic ordering and omission of raw payloads.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_admission_contracts.py tests/test_api_hardening.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-005",
+        "GE-006"
+      ],
+      "acceptance": [
+        "GE-012: concrete scope is delivered with bounded evidence.",
+        "GE-012: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-012: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-012: validation command succeeds: python -m pytest tests/test_admission_contracts.py tests/test_api_hardening.py -q",
+        "GE-012: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-013",
+      "title": "Expose runtime admission public surface safely",
+      "body": "Purpose: Make the new admission result available without accidental API drift.\nConcrete scope: update __init__, public surface docs, standalone smoke, and API boundary matrix for the new runtime admission names; classify stability as alpha unless justified otherwise.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_standalone_smoke.py tests/test_surfaces.py tests/test_public_truth_consistency.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-002",
+        "GE-012"
+      ],
+      "acceptance": [
+        "GE-013: concrete scope is delivered with bounded evidence.",
+        "GE-013: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-013: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-013: validation command succeeds: python -m pytest tests/test_standalone_smoke.py tests/test_surfaces.py tests/test_public_truth_consistency.py -q",
+        "GE-013: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-014",
+      "title": "Add canonical digest helper for GovEngine-owned records",
+      "body": "Purpose: Provide deterministic serialization and digest for GovEngine-owned records only.\nConcrete scope: add a small helper for GovEngine-owned dataclass/mapping records; document that SCLite canonicalization and artifact-chain digests remain SCLite-owned.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_signing_bridge.py tests/test_api_hardening.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-005",
+        "GE-013"
+      ],
+      "acceptance": [
+        "GE-014: concrete scope is delivered with bounded evidence.",
+        "GE-014: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-014: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-014: validation command succeeds: python -m pytest tests/test_signing_bridge.py tests/test_api_hardening.py -q",
+        "GE-014: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-015",
+      "title": "Add signed GovEngine-owned record envelope",
+      "body": "Purpose: Bind GovEngine-owned record digest to signer metadata without claiming PKI.\nConcrete scope: add SignedArtifact or equivalent envelope for admission/receipt records with record digest, signer id, signature metadata, payload reference, and demo-only fixture support.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_signing_bridge.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-014"
+      ],
+      "acceptance": [
+        "GE-015: concrete scope is delivered with bounded evidence.",
+        "GE-015: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-015: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-015: validation command succeeds: python -m pytest tests/test_signing_bridge.py -q",
+        "GE-015: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-016",
+      "title": "Refine signer, verifier, key resolver, and trust store ports",
+      "body": "Purpose: Formalize minimal trust ports while keeping production key management host-owned.\nConcrete scope: add or refine host-neutral protocols for signer/verifier/key resolver/trust store as needed; keep demo ports labelled fixture-only; no key storage or KMS implementation.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_signing_bridge.py tests/test_boundary_hardening.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-015"
+      ],
+      "acceptance": [
+        "GE-016: concrete scope is delivered with bounded evidence.",
+        "GE-016: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-016: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-016: validation command succeeds: python -m pytest tests/test_signing_bridge.py tests/test_boundary_hardening.py -q",
+        "GE-016: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-017",
+      "title": "Add tamper, wrong signer, wrong key, and unknown signer tests",
+      "body": "Purpose: Prove signed GovEngine-owned records fail closed under strict trust policy.\nConcrete scope: add negative tests for one-field tamper, digest mismatch, wrong signer, unknown signer, wrong key/material signal, and unsupported signature mode.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_signing_bridge.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-015",
+        "GE-016"
+      ],
+      "acceptance": [
+        "GE-017: concrete scope is delivered with bounded evidence.",
+        "GE-017: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-017: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-017: validation command succeeds: python -m pytest tests/test_signing_bridge.py -q",
+        "GE-017: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-018",
+      "title": "Design receipt to admission and ticket binding",
+      "body": "Purpose: Define how runner receipts bind back to admission and execution ticket references.\nConcrete scope: write design notes for admission result ID/digest, ticket ID/digest, request ID, receipt ID, status, output digests, evidence refs, and compatibility with existing dry-run receipt shape.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_runner_protocol.py tests/test_execution_supervision.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-006",
+        "GE-017"
+      ],
+      "acceptance": [
+        "GE-018: concrete scope is delivered with bounded evidence.",
+        "GE-018: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-018: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-018: validation command succeeds: python -m pytest tests/test_runner_protocol.py tests/test_execution_supervision.py -q",
+        "GE-018: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-019",
+      "title": "Implement receipt admission and ticket binding fields",
+      "body": "Purpose: Prevent runner receipts from floating independently of admission and ticket evidence.\nConcrete scope: extend or wrap GovRunnerReceipt additively with admission/ticket/request binding fields and deterministic dict output; preserve existing dry-run receipts or provide compatibility helper.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_runner_protocol.py tests/test_execution_supervision.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-018"
+      ],
+      "acceptance": [
+        "GE-019: concrete scope is delivered with bounded evidence.",
+        "GE-019: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-019: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-019: validation command succeeds: python -m pytest tests/test_runner_protocol.py tests/test_execution_supervision.py -q",
+        "GE-019: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-020",
+      "title": "Add receipt binding verifier",
+      "body": "Purpose: Validate admission, ticket, request, and receipt references before evidence review.\nConcrete scope: add a helper that rejects wrong request ID, missing admission/ticket reference, wrong digest, mutated receipt, and mismatched receipt status where digest binding applies.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_runner_protocol.py tests/test_execution_supervision.py tests/test_execution_helpers.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-019"
+      ],
+      "acceptance": [
+        "GE-020: concrete scope is delivered with bounded evidence.",
+        "GE-020: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-020: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-020: validation command succeeds: python -m pytest tests/test_runner_protocol.py tests/test_execution_supervision.py tests/test_execution_helpers.py -q",
+        "GE-020: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-021",
+      "title": "Add evidence and review chain verifier",
+      "body": "Purpose: Bind admission to request, receipt, evidence claim, and review references without raw evidence storage.\nConcrete scope: add helper tests rejecting evidence without receipt, evidence tied to wrong receipt/admission, and overclaim beyond receipt status; keep SCLite review verdict authority delegated.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_review_contracts.py tests/test_execution_helpers.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-020"
+      ],
+      "acceptance": [
+        "GE-021: concrete scope is delivered with bounded evidence.",
+        "GE-021: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-021: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-021: validation command succeeds: python -m pytest tests/test_review_contracts.py tests/test_execution_helpers.py -q",
+        "GE-021: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-022",
+      "title": "Document receipt and evidence verification chain",
+      "body": "Purpose: Keep operator and host docs truthful after receipt/evidence binding lands.\nConcrete scope: update OODA receipt/evidence, evidence review, SCLite integration, validation, and API boundary docs with the implemented chain and non-claims.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: deterministic docs worker.\nGate: gate:ci.\nRisk level: low.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python -m pytest tests/test_boundary_docs.py tests/test_review_contracts.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-021"
+      ],
+      "acceptance": [
+        "GE-022: concrete scope is delivered with bounded evidence.",
+        "GE-022: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-022: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-022: validation command succeeds: python scripts/validate_public_truth.py && python -m pytest tests/test_boundary_docs.py tests/test_review_contracts.py -q",
+        "GE-022: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "deterministic docs worker",
+      "gate": "gate:ci",
+      "actual_risk": "low",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-023",
+      "title": "Design audit ledger port",
+      "body": "Purpose: Separate audit record shape from append-only audit storage responsibilities.\nConcrete scope: define AuditLedgerPort responsibilities, event digest inputs, append/read/verify contracts, concurrency non-claims, and production storage host ownership.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_admission_contracts.py tests/test_events.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-021"
+      ],
+      "acceptance": [
+        "GE-023: concrete scope is delivered with bounded evidence.",
+        "GE-023: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-023: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-023: validation command succeeds: python -m pytest tests/test_admission_contracts.py tests/test_events.py -q",
+        "GE-023: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-024",
+      "title": "Implement JSONL hash-chain development audit adapter",
+      "body": "Purpose: Provide a local development ledger adapter with tamper-evident semantics.\nConcrete scope: add a JSONL hash-chain dev adapter that appends bounded GovEngine-owned audit events and verifies chain continuity without production persistence claims.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_events.py tests/test_admission_contracts.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-023"
+      ],
+      "acceptance": [
+        "GE-024: concrete scope is delivered with bounded evidence.",
+        "GE-024: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-024: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-024: validation command succeeds: python -m pytest tests/test_events.py tests/test_admission_contracts.py -q",
+        "GE-024: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-025",
+      "title": "Add audit ledger tamper and deletion tests",
+      "body": "Purpose: Prove local development ledger verification detects changed or missing entries.\nConcrete scope: add tests for append verification, one-field tamper, line deletion, malformed JSONL, and chain restart behavior; document dev adapter limits.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_events.py tests/test_admission_contracts.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-024"
+      ],
+      "acceptance": [
+        "GE-025: concrete scope is delivered with bounded evidence.",
+        "GE-025: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-025: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-025: validation command succeeds: python -m pytest tests/test_events.py tests/test_admission_contracts.py -q",
+        "GE-025: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-026",
+      "title": "Add replay store claim-once port",
+      "body": "Purpose: Express production replay freshness as atomic claim-once semantics without owning a database.\nConcrete scope: add a ReplayClaimStore protocol or equivalent with claim_once semantics and a deterministic in-memory/dev adapter; keep current file helper documented separately if not atomic.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_guard_replay.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-010",
+        "GE-023"
+      ],
+      "acceptance": [
+        "GE-026: concrete scope is delivered with bounded evidence.",
+        "GE-026: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-026: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-026: validation command succeeds: python -m pytest tests/test_guard_replay.py -q",
+        "GE-026: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-027",
+      "title": "Add replay claim-once negative tests",
+      "body": "Purpose: Prove repeated replay key claims block deterministically.\nConcrete scope: test first claim allowed, second claim blocked, mismatched domain/key namespace separation, and adapter error reporting; keep concurrency production behavior host-owned.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_guard_replay.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-026"
+      ],
+      "acceptance": [
+        "GE-027: concrete scope is delivered with bounded evidence.",
+        "GE-027: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-027: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-027: validation command succeeds: python -m pytest tests/test_guard_replay.py -q",
+        "GE-027: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-028",
+      "title": "Document replay store production boundary",
+      "body": "Purpose: Prevent file/demo replay helpers from being mistaken for production atomic storage.\nConcrete scope: update SCLite integration, validation, and API boundary docs to distinguish dev file helpers from host-owned atomic production stores.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: deterministic docs worker.\nGate: gate:ci.\nRisk level: low.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python -m pytest tests/test_guard_replay.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-026",
+        "GE-027"
+      ],
+      "acceptance": [
+        "GE-028: concrete scope is delivered with bounded evidence.",
+        "GE-028: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-028: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-028: validation command succeeds: python scripts/validate_public_truth.py && python -m pytest tests/test_guard_replay.py -q",
+        "GE-028: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "deterministic docs worker",
+      "gate": "gate:ci",
+      "actual_risk": "low",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-029",
+      "title": "Add live runner safety specification",
+      "body": "Purpose: Define hard prerequisites before any live subprocess runner can exist.\nConcrete scope: update runner supervision docs with argv-only, no shell by default, cwd allowlist, env allowlist, timeout, max output, output digests, redaction hook, explicit live enablement, and receipt always emitted.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:review.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python -m pytest tests/test_execution_supervision.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-011",
+        "GE-020",
+        "GE-028"
+      ],
+      "acceptance": [
+        "GE-029: concrete scope is delivered with bounded evidence.",
+        "GE-029: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-029: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-029: validation command succeeds: python scripts/validate_public_truth.py && python -m pytest tests/test_execution_supervision.py -q",
+        "GE-029: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:review",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-030",
+      "title": "Strengthen live-backend-disabled default tests",
+      "body": "Purpose: Prove GovEngine still cannot execute live by default after admission and receipt changes.\nConcrete scope: add regression tests for DryRunRunner, ExecutionGate, runner supervision, runtime admission, and public docs non-claims showing live backend remains blocked unless explicitly enabled.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:review.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_execution_gate.py tests/test_execution_supervision.py tests/test_boundary_hardening.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-029"
+      ],
+      "acceptance": [
+        "GE-030: concrete scope is delivered with bounded evidence.",
+        "GE-030: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-030: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-030: validation command succeeds: python -m pytest tests/test_execution_gate.py tests/test_execution_supervision.py tests/test_boundary_hardening.py -q",
+        "GE-030: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:review",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-031",
+      "title": "Evaluate constrained LocalSubprocessRunner readiness",
+      "body": "Purpose: Decide from implemented prerequisites whether a live local runner belongs in this stage.\nConcrete scope: produce a bounded readiness artifact or test-backed feature gate; if prerequisites are incomplete, mark local runner implementation not-applicable with evidence and continue roadmap.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:review.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_execution_gate.py tests/test_execution_supervision.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-030"
+      ],
+      "acceptance": [
+        "GE-031: concrete scope is delivered with bounded evidence.",
+        "GE-031: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-031: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-031: validation command succeeds: python -m pytest tests/test_execution_gate.py tests/test_execution_supervision.py -q",
+        "GE-031: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:review",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-032",
+      "title": "Implement optional constrained local runner only if readiness passes",
+      "body": "Purpose: Add a disabled-by-default LocalSubprocessRunner only when all safety prerequisites are present.\nConcrete scope: if GE-031 says ready, implement argv-only, cwd/env allowlists, timeout, max output, output digests, redaction hook, explicit live flag, and bounded receipt; otherwise deliver not-applicable evidence artifact only.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:review.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_execution_gate.py tests/test_execution_supervision.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-031"
+      ],
+      "acceptance": [
+        "GE-032: concrete scope is delivered with bounded evidence.",
+        "GE-032: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-032: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-032: validation command succeeds: python -m pytest tests/test_execution_gate.py tests/test_execution_supervision.py -q",
+        "GE-032: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:review",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-033",
+      "title": "Add unsafe local runner negative tests",
+      "body": "Purpose: Prove any optional live runner rejects unsafe paths and remains disabled by default.\nConcrete scope: cover shell string rejection, out-of-scope cwd, unallowlisted env, missing timeout, output limit, redaction, and receipt emission, or assert not-applicable if no runner is implemented.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:review.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_execution_gate.py tests/test_execution_supervision.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-032"
+      ],
+      "acceptance": [
+        "GE-033: concrete scope is delivered with bounded evidence.",
+        "GE-033: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-033: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-033: validation command succeeds: python -m pytest tests/test_execution_gate.py tests/test_execution_supervision.py -q",
+        "GE-033: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:review",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-034",
+      "title": "Design inspect-only operator admission workflow",
+      "body": "Purpose: Expose operator visibility only after runtime admission records are stable.\nConcrete scope: define a script or CLI workflow that reads an admission record and prints compact allowed/blocked/blockers/next-actions output without executing live work.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python -m pytest tests/test_admission_contracts.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-013",
+        "GE-022"
+      ],
+      "acceptance": [
+        "GE-034: concrete scope is delivered with bounded evidence.",
+        "GE-034: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-034: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-034: validation command succeeds: python scripts/validate_public_truth.py && python -m pytest tests/test_admission_contracts.py -q",
+        "GE-034: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-035",
+      "title": "Implement inspect-only admission workflow",
+      "body": "Purpose: Let operators inspect admission results without granting execution authority.\nConcrete scope: add a small script or module entry helper that validates an admission record, emits deterministic compact output, redacts unsafe metadata, and never runs a backend.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_admission_contracts.py tests/test_api_hardening.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-034"
+      ],
+      "acceptance": [
+        "GE-035: concrete scope is delivered with bounded evidence.",
+        "GE-035: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-035: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-035: validation command succeeds: python -m pytest tests/test_admission_contracts.py tests/test_api_hardening.py -q",
+        "GE-035: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-036",
+      "title": "Add inspect workflow blocked and ready tests",
+      "body": "Purpose: Prove inspect-only output is deterministic, bounded, and non-mutating.\nConcrete scope: add tests for allowed admission, blocked admission, malformed input, forbidden metadata, and no live backend invocation.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_admission_contracts.py tests/test_api_hardening.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-035"
+      ],
+      "acceptance": [
+        "GE-036: concrete scope is delivered with bounded evidence.",
+        "GE-036: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-036: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-036: validation command succeeds: python -m pytest tests/test_admission_contracts.py tests/test_api_hardening.py -q",
+        "GE-036: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-037",
+      "title": "Add guarded-fresh runtime admission example",
+      "body": "Purpose: Provide a deterministic GovEngine/SCLite example for guarded-strict plus replay-fresh admission composition.\nConcrete scope: add docs or example test showing SCLite guarded verification signal, GovEngine replay freshness, admission composition, dry-run runner profile, and receipt obligation without credentials.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_guard_replay.py tests/test_execution_gate.py -q && python scripts/validate_public_truth.py",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-010",
+        "GE-036"
+      ],
+      "acceptance": [
+        "GE-037: concrete scope is delivered with bounded evidence.",
+        "GE-037: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-037: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-037: validation command succeeds: python -m pytest tests/test_guard_replay.py tests/test_execution_gate.py -q && python scripts/validate_public_truth.py",
+        "GE-037: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-038",
+      "title": "Add end-to-end governed-runtime smoke test",
+      "body": "Purpose: Prove the intended kernel chain works in one local deterministic flow.\nConcrete scope: add a smoke test covering intent surrogate, policy allow, prepared contract signal, ticket status, trust decision, guarded/replay signal where runtime-consumable, admission result, dry-run runner request, receipt binding, and evidence qualification.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest tests/test_standalone_smoke.py tests/test_execution_gate.py tests/test_review_contracts.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-020",
+        "GE-021",
+        "GE-037"
+      ],
+      "acceptance": [
+        "GE-038: concrete scope is delivered with bounded evidence.",
+        "GE-038: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-038: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-038: validation command succeeds: python -m pytest tests/test_standalone_smoke.py tests/test_execution_gate.py tests/test_review_contracts.py -q",
+        "GE-038: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-039",
+      "title": "Update validation and public truth gates for new MVP surfaces",
+      "body": "Purpose: Ensure docs validators and smoke tests track new admission/trust/receipt/ledger surfaces without overclaiming production readiness.\nConcrete scope: update scripts and tests only where new public truth needs drift protection; avoid string-only confidence for security semantics where structural tests exist.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python scripts/validate_alpha_readiness.py && python -m pytest tests/test_public_truth_consistency.py -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-013",
+        "GE-022",
+        "GE-028",
+        "GE-038"
+      ],
+      "acceptance": [
+        "GE-039: concrete scope is delivered with bounded evidence.",
+        "GE-039: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-039: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-039: validation command succeeds: python scripts/validate_public_truth.py && python scripts/validate_alpha_readiness.py && python -m pytest tests/test_public_truth_consistency.py -q",
+        "GE-039: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-040",
+      "title": "Run package and clean-install validation smoke",
+      "body": "Purpose: Prove the expanded alpha package still builds and imports cleanly.\nConcrete scope: run or update package smoke only as needed; keep no publish/no tag boundary; document exact local results and any environment-only gaps.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python -m pytest -q && python -m pip check",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-039"
+      ],
+      "acceptance": [
+        "GE-040: concrete scope is delivered with bounded evidence.",
+        "GE-040: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-040: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-040: validation command succeeds: python -m pytest -q && python -m pip check",
+        "GE-040: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-041",
+      "title": "Complete Signposter-managed low-risk lifecycle smoke for GovEngine",
+      "body": "Purpose: Prove GovEngine can be developed through the actual Signposter lifecycle on this target repo.\nConcrete scope: take one low-risk completed roadmap item through report, gate, PR, review, merge, integration, cleanup, and planner advance using Signposter surfaces; preserve bounded artifacts.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: standard coding worker; use stronger reasoning for governance ambiguity.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python -m pytest -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-001",
+        "GE-040"
+      ],
+      "acceptance": [
+        "GE-041: concrete scope is delivered with bounded evidence.",
+        "GE-041: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-041: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-041: validation command succeeds: python scripts/validate_public_truth.py && python -m pytest -q",
+        "GE-041: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "standard coding worker; use stronger reasoning for governance ambiguity",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-042",
+      "title": "Update operator docs and runbooks for governed-runtime MVP",
+      "body": "Purpose: Keep README, API boundary, architecture, SCLite integration, runner supervision, and validation docs aligned with code behavior.\nConcrete scope: document canonical admission, trust ports, receipt binding, audit/replay ports, runner safety, inspect-only workflow, and non-claims; no production readiness claims.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: deterministic docs worker.\nGate: gate:ci.\nRisk level: low.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python scripts/validate_alpha_readiness.py",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-038",
+        "GE-039"
+      ],
+      "acceptance": [
+        "GE-042: concrete scope is delivered with bounded evidence.",
+        "GE-042: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-042: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-042: validation command succeeds: python scripts/validate_public_truth.py && python scripts/validate_alpha_readiness.py",
+        "GE-042: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "deterministic docs worker",
+      "gate": "gate:ci",
+      "actual_risk": "low",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-043",
+      "title": "Perform final hardening audit over admission, trust, receipt, replay, runner, docs, and tests",
+      "body": "Purpose: Audit the roadmap implementation before final completion.\nConcrete scope: write bounded final hardening audit covering boundary correctness, dry-run safety, SCLite delegation, trust non-overclaim, receipt/evidence chain, audit ledger, replay semantics, runner safety, tests, package smoke, and CI evidence.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: strong reasoning audit worker.\nGate: gate:review.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python scripts/validate_alpha_readiness.py && python -m pytest -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-040",
+        "GE-041",
+        "GE-042"
+      ],
+      "acceptance": [
+        "GE-043: concrete scope is delivered with bounded evidence.",
+        "GE-043: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-043: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-043: validation command succeeds: python scripts/validate_public_truth.py && python scripts/validate_alpha_readiness.py && python -m pytest -q",
+        "GE-043: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "strong reasoning audit worker",
+      "gate": "gate:review",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-044",
+      "title": "Capture required side tasks from validation blockers",
+      "body": "Purpose: Keep the DAG honest if implementation discovers a real prerequisite gap.\nConcrete scope: review all blockers discovered during GE-001 through GE-043, add dependent side tasks only when required for safe completion, and document not-applicable decisions with evidence.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: strong reasoning audit worker.\nGate: gate:ci.\nRisk level: medium.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python -m pytest -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-043"
+      ],
+      "acceptance": [
+        "GE-044: concrete scope is delivered with bounded evidence.",
+        "GE-044: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-044: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-044: validation command succeeds: python scripts/validate_public_truth.py && python -m pytest -q",
+        "GE-044: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "strong reasoning audit worker",
+      "gate": "gate:ci",
+      "actual_risk": "medium",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    },
+    {
+      "key": "GE-045",
+      "title": "Final internal audit and next GovEngine roadmap recommendation",
+      "body": "Purpose: Close the governed-runtime kernel MVP stage with a strict final audit and next roadmap direction.\nConcrete scope: verify all GE tasks/issues/PRs/integrations/cleanup/CI are accounted for; summarize runtime admission, trust, receipt/evidence, audit/replay, runner safety, Signposter lifecycle, files changed, remaining risks, and next roadmap recommendation.\nNon-goals: no broad rewrite, no live backend enablement, no PKI/KMS ownership, no Ravenclaw/OpenClaw/MCP/A2A core dependency, no package publish.\nRoute/model: role:worker through Signposter lifecycle; expected tier: strong reasoning audit worker.\nGate: gate:review.\nRisk level: high.\nMutation boundary: dry-run first; GitHub mutation only through guarded Signposter --apply paths; no upstream mutation; no package publish; no tag creation.\nDone criteria: scoped implementation or audit artifact is complete, bounded, reviewed against the GovEngine host-neutral boundary, and ready for normal Signposter validation/report/PR/integration flow.\nValidation: python scripts/validate_public_truth.py && python scripts/validate_alpha_readiness.py && python -m pytest -q",
+      "phase": "build",
+      "risk": "low",
+      "role": "worker",
+      "area": "docs",
+      "depends_on": [
+        "GE-044"
+      ],
+      "acceptance": [
+        "GE-045: concrete scope is delivered with bounded evidence.",
+        "GE-045: host-neutral GovEngine/SCLite boundary is preserved.",
+        "GE-045: dry-run/default-safe behavior remains unchanged unless explicitly covered by tests.",
+        "GE-045: validation command succeeds: python scripts/validate_public_truth.py && python scripts/validate_alpha_readiness.py && python -m pytest -q",
+        "GE-045: no package publication, release, tag, upstream mutation, or secret change occurs."
+      ],
+      "stop_conditions": [
+        "targeted pytest fails",
+        "full pytest fails",
+        "public truth validation fails",
+        "CI fails",
+        "GitHub mutation is requested without --apply",
+        "execution backend is requested without explicit execution permission",
+        "PR body contains auto-close keywords",
+        "merge or integration plan is not ready",
+        "live subprocess execution would be enabled before prerequisites are complete"
+      ],
+      "allowed_mutations": [],
+      "model_tier": "strong reasoning audit worker",
+      "gate": "gate:review",
+      "actual_risk": "high",
+      "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
+    }
+  ]
+}
