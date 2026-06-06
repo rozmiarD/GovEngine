@@ -122,7 +122,8 @@ them:
 
 - `govengine.admission` for policy/admission/approval/audit record shapes;
 - `govengine.execution.ticket_gate` for execution-ticket checks;
-- `govengine.signing` for signature/trust decisions and host verifier ports;
+- `govengine.signing` for signature/trust decisions, host verifier ports, and
+  deterministic GovEngine-owned admission/receipt record digests;
 - `govengine.replay` for guarded SCLite replay freshness;
 - `govengine.execution.runner_protocol` and `govengine.execution.supervision`
   for runner request, receipt, and profile boundaries;
@@ -139,7 +140,10 @@ The first implementation is additive and backward-compatible:
    record;
 4. `normalize_admission_artifact_refs()` is exposed as an alpha bounded-reference
    helper for admission review output;
-5. existing helpers remain unchanged.
+5. `canonical_govengine_record()` and `govengine_record_digest()` provide a
+   GovEngine-owned record serialization/digest boundary for future
+   admission/receipt binding without canonicalizing SCLite artifacts;
+6. existing helpers remain unchanged.
 
 The next implementation tasks should:
 

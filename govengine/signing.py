@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+import json
+from dataclasses import asdict, dataclass, field, is_dataclass
 from hashlib import sha256
+from math import isfinite
 from typing import Any, Mapping, Protocol
 
 from govengine.api import GovApiError, require_mapping
@@ -129,6 +131,75 @@ class VerificationResult:
             "verifier_id": self.verifier_id,
             "metadata": dict(self.metadata),
         }
+
+
+def canonical_govengine_record(
+    record: Mapping[str, Any] | Any,
+    *,
+    record_type: str = "",
+    schema_version: str = "v1",
+) -> str:
+    """Serialize a GovEngine-owned record deterministically.
+
+    This helper is scoped to GovEngine-owned records only. It is not SCLite
+    canonicalization, artifact-chain verification, PKI, KMS, or a raw evidence
+    storage format.
+    """
+
+    resolved_type = _resolve_govengine_record_type(record, record_type=record_type)
+    envelope = {
+        "owner": "govengine",
+        "record_type": resolved_type,
+        "schema_version": str(schema_version or "v1"),
+        "record": _canonical_record_value(record),
+    }
+    return json.dumps(envelope, ensure_ascii=True, separators=(",", ":"), sort_keys=True)
+
+
+def govengine_record_digest(
+    record: Mapping[str, Any] | Any,
+    *,
+    record_type: str = "",
+    schema_version: str = "v1",
+    algorithm: str = "sha256",
+) -> str:
+    """Return a deterministic digest for a GovEngine-owned record."""
+
+    if algorithm != "sha256":
+        raise GovApiError("unsupported_govengine_record_digest_algorithm", algorithm)
+    payload = canonical_govengine_record(record, record_type=record_type, schema_version=schema_version)
+    return f"sha256:{sha256(payload.encode('utf-8')).hexdigest()}"
+
+
+def _resolve_govengine_record_type(record: Any, *, record_type: str) -> str:
+    explicit = str(record_type or "").strip()
+    if explicit:
+        if not explicit.startswith("govengine."):
+            raise GovApiError("invalid_govengine_record_type", "record_type must start with govengine.")
+        return explicit
+    if is_dataclass(record) and not isinstance(record, type):
+        cls = record.__class__
+        module = str(cls.__module__)
+        if module.startswith("govengine."):
+            return f"{module}.{cls.__name__}"
+    raise GovApiError("missing_govengine_record_type", "mapping records require an explicit govengine.* record_type")
+
+
+def _canonical_record_value(value: Any) -> Any:
+    if is_dataclass(value) and not isinstance(value, type):
+        return _canonical_record_value(asdict(value))
+    if isinstance(value, Mapping):
+        for key in value:
+            if not isinstance(key, str):
+                raise GovApiError("unsupported_govengine_record_key", type(key).__name__)
+        return {key: _canonical_record_value(value[key]) for key in sorted(value)}
+    if isinstance(value, (tuple, list)):
+        return [_canonical_record_value(item) for item in value]
+    if isinstance(value, float) and not isfinite(value):
+        raise GovApiError("unsupported_govengine_record_value", "non_finite_float")
+    if value is None or isinstance(value, (bool, int, float, str)):
+        return value
+    raise GovApiError("unsupported_govengine_record_value", type(value).__name__)
 
 
 

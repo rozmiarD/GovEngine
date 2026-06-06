@@ -142,7 +142,17 @@ from .runtime_shell import (
     validate_scheduler_tick,
 )
 from .scope_ports import FunctionalScopePort, GovScopePort
-from .signing import DemoDigestSigner, DemoDigestVerifier, SignatureEnvelope, SigningPolicy, TrustPolicy, VerificationResult, demo_sign_and_verify
+from .signing import (
+    DemoDigestSigner,
+    DemoDigestVerifier,
+    SignatureEnvelope,
+    SigningPolicy,
+    TrustPolicy,
+    VerificationResult,
+    canonical_govengine_record,
+    demo_sign_and_verify,
+    govengine_record_digest,
+)
 from .state_index import ArtifactStateIndex
 from .state_machine import (
     GovRunState,
@@ -258,11 +268,13 @@ __all__ = [
     'demo_sign_and_verify',
     'apply_state_transition',
     'boundary_surface_index',
+    'canonical_govengine_record',
     'domain_profile_conformance',
     'domain_profile_sdk_surface',
     'evaluate_guard_replay',
     'governance_contract_vocabulary',
     'guard_replay_record_from_guard',
+    'govengine_record_digest',
     'host_compat_context',
     'kernel_boundary_contract',
     'kernel_boundary_report',
