@@ -31,5 +31,9 @@ storage, operator authorization, live execution authority, and audit retention.
 
 Receipt binding across admission, execution ticket, runner request, receipt, and
 evidence references is defined in [RECEIPT_BINDING.md](RECEIPT_BINDING.md).
-That design is additive to the current dry-run receipt shape and must not be
-treated as live execution authority.
+`validate_runner_receipt_binding()` verifies the bounded binding before a
+receipt is treated as runtime evidence. It compares GovEngine-owned request and
+receipt digests, can compare an admission digest when a GovEngine admission
+record or digest is supplied, and treats ticket digests as SCLite/host-provided
+references. The verifier is not live execution authority and does not store raw
+evidence.

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 from govengine.api import GovApiError
@@ -8,6 +10,8 @@ from govengine.execution.runner_protocol import (
     GovRunnerReceiptBinding,
     GovRunnerStepResult,
     dry_run_runner_receipt,
+    runner_receipt_with_binding,
+    runner_request_digest,
     runner_request_from_approved_spec,
 )
 from govengine.execution.supervision import (
@@ -15,10 +19,15 @@ from govengine.execution.supervision import (
     GovSupervisionPlan,
     runner_lease_from_request,
     supervision_plan_from_runner_request,
+    validate_runner_receipt_binding,
     validate_runner_receipt_for_request,
     validate_supervised_runner_request,
     validate_supervision_plan,
 )
+
+
+ADMISSION_DIGEST = 'sha256:' + 'a' * 64
+TICKET_DIGEST = 'sha256:' + 'b' * 64
 
 
 def _approved_spec() -> dict:
@@ -34,6 +43,19 @@ def _approved_spec() -> dict:
             'execution_plan': [{'tool': 'curl', 'args': ['https://example.com/']}],
         },
     }
+
+
+def _bound_receipt(request):
+    return runner_receipt_with_binding(
+        dry_run_runner_receipt(request),
+        admission_id='admission-1',
+        admission_digest=ADMISSION_DIGEST,
+        ticket_id='ticket-1',
+        ticket_digest=TICKET_DIGEST,
+        request_digest=runner_request_digest(request),
+        receipt_id='receipt-1',
+        runner_profile='dry-run',
+    )
 
 
 def test_supervision_plan_and_lease_validate_dry_run_runner_request() -> None:
@@ -151,6 +173,107 @@ def test_supervision_rejects_receipt_binding_request_mismatch() -> None:
                 'request_id': 'wrong-request',
             },
         })
+
+
+def test_supervision_validates_receipt_binding_chain() -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id='run-bound', dry_run=True)
+    receipt = _bound_receipt(request)
+
+    validated = validate_runner_receipt_binding(
+        request,
+        receipt,
+        admission_id='admission-1',
+        admission_digest=ADMISSION_DIGEST,
+        ticket={'ticket_id': 'ticket-1', 'digest': TICKET_DIGEST},
+    )
+
+    assert validated is receipt
+    assert validated.binding.receipt_digest.startswith('sha256:')
+
+
+def test_supervision_validates_receipt_binding_from_mapping() -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id='run-bound', dry_run=True)
+    receipt = _bound_receipt(request)
+
+    validated = validate_runner_receipt_binding(
+        request,
+        receipt.as_dict(),
+        admission_id='admission-1',
+        admission_digest=ADMISSION_DIGEST,
+        ticket_id='ticket-1',
+        ticket_digest=TICKET_DIGEST,
+    )
+
+    assert validated.binding.receipt_digest == receipt.binding.receipt_digest
+
+
+def test_supervision_receipt_binding_requires_admission_and_ticket_refs() -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id='run-bound', dry_run=True)
+    receipt = _bound_receipt(request)
+
+    with pytest.raises(GovApiError, match='missing_runner_receipt_binding_admission_id'):
+        validate_runner_receipt_binding(request, replace(receipt, binding=replace(receipt.binding, admission_id='')))
+
+    with pytest.raises(GovApiError, match='missing_runner_receipt_binding_ticket_digest'):
+        validate_runner_receipt_binding(request, replace(receipt, binding=replace(receipt.binding, ticket_digest='')))
+
+
+def test_supervision_receipt_binding_rejects_wrong_digest_refs() -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id='run-bound', dry_run=True)
+    receipt = _bound_receipt(request)
+
+    with pytest.raises(GovApiError, match='runner_receipt_binding_admission_digest_mismatch'):
+        validate_runner_receipt_binding(
+            request,
+            receipt,
+            admission_digest='sha256:' + 'c' * 64,
+            ticket_digest=TICKET_DIGEST,
+        )
+
+    with pytest.raises(GovApiError, match='runner_receipt_binding_ticket_digest_mismatch'):
+        validate_runner_receipt_binding(
+            request,
+            receipt,
+            admission_digest=ADMISSION_DIGEST,
+            ticket_digest='sha256:' + 'd' * 64,
+        )
+
+    with pytest.raises(GovApiError, match='runner_receipt_binding_request_digest_mismatch'):
+        validate_runner_receipt_binding(
+            request,
+            replace(receipt, binding=replace(receipt.binding, request_digest='sha256:' + 'e' * 64)),
+            admission_digest=ADMISSION_DIGEST,
+            ticket_digest=TICKET_DIGEST,
+        )
+
+    with pytest.raises(GovApiError, match='runner_receipt_binding_receipt_digest_mismatch'):
+        validate_runner_receipt_binding(
+            request,
+            replace(receipt, binding=replace(receipt.binding, receipt_digest='sha256:' + 'f' * 64)),
+            admission_digest=ADMISSION_DIGEST,
+            ticket_digest=TICKET_DIGEST,
+        )
+
+
+def test_supervision_receipt_binding_rejects_mutated_status_and_missing_receipt_digest() -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id='run-bound', dry_run=True)
+    receipt = _bound_receipt(request)
+
+    with pytest.raises(GovApiError, match='runner_receipt_binding_status_mismatch'):
+        validate_runner_receipt_binding(
+            request,
+            replace(receipt, status='succeeded'),
+            admission_digest=ADMISSION_DIGEST,
+            ticket_digest=TICKET_DIGEST,
+        )
+
+    with pytest.raises(GovApiError, match='missing_runner_receipt_binding_receipt_digest'):
+        validate_runner_receipt_binding(
+            request,
+            replace(receipt, binding=replace(receipt.binding, receipt_digest='')),
+            admission_digest=ADMISSION_DIGEST,
+            ticket_digest=TICKET_DIGEST,
+        )
 
 
 def test_supervision_rejects_forbidden_metadata_claims() -> None:

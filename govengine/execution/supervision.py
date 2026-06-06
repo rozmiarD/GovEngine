@@ -4,7 +4,11 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping
 
 from govengine.api import GovApiError, require_mapping
-from govengine.execution.runner_protocol import GovRunnerReceipt, GovRunnerRequest
+from govengine.execution.runner_protocol import (
+    GovRunnerReceipt,
+    GovRunnerRequest,
+    validate_runner_receipt_binding as validate_runner_receipt_binding_record,
+)
 
 
 LEASE_STATES = ('active', 'released', 'expired', 'blocked')
@@ -223,6 +227,17 @@ def validate_runner_receipt_for_request(
     if not result_indices <= requested_indices:
         raise GovApiError('runner_receipt_step_mismatch')
     return item
+
+
+def validate_runner_receipt_binding(
+    request: GovRunnerRequest,
+    receipt: GovRunnerReceipt | Mapping[str, Any],
+    **expected: Any,
+) -> GovRunnerReceipt:
+    """Validate a receipt binding after the receipt/request boundary check."""
+
+    item = validate_runner_receipt_for_request(request, receipt)
+    return validate_runner_receipt_binding_record(request, item, **expected)
 
 
 def supervision_plan_from_runner_request(
