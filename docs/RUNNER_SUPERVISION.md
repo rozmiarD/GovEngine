@@ -113,4 +113,5 @@ Missing prerequisites before a live local runner can be added:
 Therefore GE-032 must not add a live subprocess backend unless this readiness
 gate becomes `ready` through tested, host-neutral prerequisites. The safe path is
 to keep `DryRunRunner` as the only GovEngine-owned runner behavior and treat any
-live adapter as future host-owned work.
+live adapter as future host-owned work. The formal GE-032 decision artifact is
+[LOCAL_SUBPROCESS_RUNNER_DECISION.md](LOCAL_SUBPROCESS_RUNNER_DECISION.md).

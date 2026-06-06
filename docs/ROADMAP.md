@@ -262,6 +262,8 @@ Current readiness: `evaluate_local_subprocess_runner_readiness()` returns
 profile authorization, cwd/env allowlist enforcement, output limit/digest
 handling, and redaction policy are implemented and tested. GovEngine must keep
 `DryRunRunner` as the only owned runner behavior while that gate is not ready.
+The current not-applicable decision is recorded in
+[LOCAL_SUBPROCESS_RUNNER_DECISION.md](LOCAL_SUBPROCESS_RUNNER_DECISION.md).
 
 Required guardrails:
 

@@ -363,6 +363,16 @@ def test_local_subprocess_runner_readiness_is_exported_from_top_level_package() 
     assert 'evaluate_local_subprocess_runner_readiness' in govengine.__all__
 
 
+def test_local_subprocess_runner_is_not_exported_when_readiness_is_not_applicable() -> None:
+    import govengine
+
+    readiness = govengine.evaluate_local_subprocess_runner_readiness()
+
+    assert readiness.status == 'not_applicable'
+    assert not hasattr(govengine, 'LocalSubprocessRunner')
+    assert 'LocalSubprocessRunner' not in govengine.__all__
+
+
 def test_runner_supervision_docs_define_live_runner_safety_spec() -> None:
     text = Path('docs/RUNNER_SUPERVISION.md').read_text(encoding='utf-8')
     section = ' '.join(text.split('## Live Runner Safety Specification', 1)[1].split())
@@ -415,3 +425,25 @@ def test_runner_supervision_docs_record_local_runner_readiness_decision() -> Non
 
     for marker in required_markers:
         assert marker in section
+
+
+def test_local_subprocess_runner_decision_artifact_records_not_applicable_scope() -> None:
+    text = Path('docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md').read_text(encoding='utf-8')
+    compact = ' '.join(text.split())
+
+    required_markers = (
+        'Decision: `not_applicable`',
+        'Reason code: `local_subprocess_runner_prerequisites_incomplete`',
+        'GE-032 does not implement `LocalSubprocessRunner`',
+        'host-owned live runner profile authorization policy',
+        'enforced cwd allowlist semantics',
+        'enforced environment allowlist semantics',
+        'maximum output enforcement',
+        'output digest contract',
+        'redaction policy or hook',
+        'no subprocess backend',
+        'no SCLite canonicalization',
+    )
+
+    for marker in required_markers:
+        assert marker in compact
