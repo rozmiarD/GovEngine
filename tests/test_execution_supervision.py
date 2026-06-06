@@ -447,3 +447,29 @@ def test_local_subprocess_runner_decision_artifact_records_not_applicable_scope(
 
     for marker in required_markers:
         assert marker in compact
+
+
+def test_unsafe_local_runner_negative_cases_are_not_applicable_without_runner() -> None:
+    import govengine
+
+    readiness = govengine.evaluate_local_subprocess_runner_readiness()
+    missing = set(readiness.missing_prerequisites)
+    unsafe_cases = {
+        'shell_string_execution': 'no_subprocess_backend',
+        'out_of_scope_cwd': 'cwd_allowlist_enforced',
+        'unallowlisted_env': 'env_allowlist_enforced',
+        'missing_timeout': 'positive_timeout_required',
+        'max_output_bypass': 'max_output_enforced',
+        'unredacted_output_excerpt': 'redaction_policy_available',
+        'missing_live_receipt': 'bounded_receipt_for_all_outcomes',
+    }
+
+    assert readiness.status == 'not_applicable'
+    assert not hasattr(govengine, 'LocalSubprocessRunner')
+    assert unsafe_cases['shell_string_execution'] in readiness.non_claims
+    assert unsafe_cases['out_of_scope_cwd'] in missing
+    assert unsafe_cases['unallowlisted_env'] in missing
+    assert unsafe_cases['max_output_bypass'] in missing
+    assert unsafe_cases['unredacted_output_excerpt'] in missing
+    assert unsafe_cases['missing_timeout'] not in missing
+    assert unsafe_cases['missing_live_receipt'] not in missing
