@@ -28,3 +28,8 @@ Hosts such as Ravenclaw may map their own approved execution and runner
 semantics into these objects. GovEngine validates the neutral representation;
 the host still owns concrete tool adapters, subprocess behavior, artifact
 storage, operator authorization, live execution authority, and audit retention.
+
+Receipt binding across admission, execution ticket, runner request, receipt, and
+evidence references is defined in [RECEIPT_BINDING.md](RECEIPT_BINDING.md).
+That design is additive to the current dry-run receipt shape and must not be
+treated as live execution authority.
