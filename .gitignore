@@ -10,3 +10,11 @@ dist/
 .coverage
 htmlcov/
 .DS_Store
+
+# Local Signposter/operator scratch artifacts. Active roadmap manifests that are
+# intentionally tracked under docs/roadmaps are not covered by these patterns.
+.signposter-local/
+docs/roadmaps/local/
+docs/roadmaps/**/*.local.md
+docs/roadmaps/**/*.scratch.md
+docs/roadmaps/**/*.private.md
