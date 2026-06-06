@@ -37,3 +37,48 @@ receipt digests, can compare an admission digest when a GovEngine admission
 record or digest is supplied, and treats ticket digests as SCLite/host-provided
 references. The verifier is not live execution authority and does not store raw
 evidence.
+
+## Live Runner Safety Specification
+
+GovEngine does not provide a live subprocess runner in this stage. This section
+is the prerequisite safety contract for any future optional host adapter; it is
+not implementation permission and it does not make live execution the default.
+
+A future live runner must be rejected unless all of these conditions are true:
+
+- Runtime admission is allowed and references a valid policy decision,
+  approved execution ticket, guarded-strict SCLite verification when the action
+  is runtime-consumable, fresh replay state, valid trust decision, an allowed
+  runner profile, and an explicit receipt obligation.
+- The runner profile explicitly enables a live backend for the host and task;
+  dry-run remains the default profile and `live_backend_enabled` remains false
+  unless the host provides an approved supervision plan.
+- Commands are derived from approved execution specs as argv-only step shapes.
+  Shell strings, implicit shell execution, command interpolation, and raw
+  intent prompts are rejected by default.
+- The working directory is restricted by an allowlist policy. A live runner must
+  not accept arbitrary cwd values, home-directory expansion, or unreviewed
+  runtime storage paths from task metadata.
+- The environment is restricted by an allowlist policy. A live runner must not
+  inherit the ambient process environment wholesale and must reject credential,
+  token, password, private-key, and secret material at the GovEngine boundary.
+- A positive timeout is required for every attempted step. Unbounded execution
+  is invalid.
+- Bounded stdout/stderr capture is required. Raw output is not stored in
+  GovEngine-owned records; receipts carry digests, statuses, reason codes, and
+  bounded excerpts only when a host redaction policy permits them.
+- A redaction hook or equivalent host policy is required before any output
+  excerpt is emitted. Redaction failures must block publication of excerpts.
+- A receipt is always emitted for attempted work, including blocked, timed out,
+  interrupted, failed, and dry-run outcomes. The receipt must bind admission,
+  ticket, request, runner profile, status, and output digests where available.
+- SCLite remains the proof/review artifact authority. GovEngine may bind
+  references and digests, but it must not duplicate SCLite artifact-chain
+  verification, review-bundle verdicts, or canonicalization.
+- Production identity, credentials, key management, operator approval workflow,
+  raw evidence storage, audit retention, and live backend implementation remain
+  host-owned.
+
+These requirements are deliberately stricter than the current
+`GovSupervisionPlan` record. The record expresses the neutral plan shape; the
+host live adapter must satisfy the full checklist before it can run anything.

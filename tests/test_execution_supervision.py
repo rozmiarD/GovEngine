@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -284,3 +285,36 @@ def test_supervision_rejects_forbidden_metadata_claims() -> None:
 
     with pytest.raises(GovApiError, match='forbidden_supervision_metadata:storage_path'):
         runner_lease_from_request(request, metadata={'storage_path': '/tmp/lease.db'})
+
+
+def test_runner_supervision_docs_define_live_runner_safety_spec() -> None:
+    text = Path('docs/RUNNER_SUPERVISION.md').read_text(encoding='utf-8')
+    section = ' '.join(text.split('## Live Runner Safety Specification', 1)[1].split())
+
+    required_markers = (
+        'does not provide a live subprocess runner',
+        'not implementation permission',
+        'Runtime admission is allowed',
+        'valid policy decision',
+        'approved execution ticket',
+        'guarded-strict SCLite verification',
+        'fresh replay state',
+        'valid trust decision',
+        'explicit receipt obligation',
+        'dry-run remains the default profile',
+        'argv-only step shapes',
+        'Shell strings',
+        'allowlist policy',
+        'must not inherit the ambient process environment',
+        'positive timeout',
+        'Bounded stdout/stderr capture',
+        'digests',
+        'redaction hook',
+        'receipt is always emitted',
+        'blocked, timed out, interrupted, failed, and dry-run outcomes',
+        'SCLite remains the proof/review artifact authority',
+        'host-owned',
+    )
+
+    for marker in required_markers:
+        assert marker in section
