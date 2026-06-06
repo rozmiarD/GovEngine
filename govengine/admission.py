@@ -32,6 +32,33 @@ POLICY_RUNTIME_ACTIONS = {
     'unknown_policy_decision': 'obtain_valid_policy_decision',
     'missing_or_invalid_policy_decision': 'obtain_policy_decision',
 }
+TICKET_RUNTIME_BLOCKERS = {
+    'invalid': 'invalid_execution_ticket',
+    'malformed': 'invalid_execution_ticket',
+    'denied': 'execution_ticket_not_approved',
+    'deny': 'execution_ticket_not_approved',
+    'rejected': 'execution_ticket_not_approved',
+    'unapproved': 'execution_ticket_not_approved',
+    'pending': 'execution_ticket_not_approved',
+    'mismatch': 'execution_ticket_mismatch',
+    'mismatched': 'execution_ticket_mismatch',
+    'scope_mismatch': 'execution_ticket_mismatch',
+    'digest_mismatch': 'execution_ticket_mismatch',
+    'stale': 'execution_ticket_stale',
+    'expired': 'execution_ticket_stale',
+    'failed': 'execution_ticket_failed',
+    'failure': 'execution_ticket_failed',
+    'error': 'execution_ticket_failed',
+}
+TICKET_RUNTIME_ACTIONS = {
+    'missing_or_invalid_execution_ticket': 'approve_execution_ticket',
+    'invalid_execution_ticket': 'repair_or_reissue_execution_ticket',
+    'execution_ticket_not_approved': 'approve_execution_ticket',
+    'execution_ticket_mismatch': 'reconcile_execution_ticket_scope',
+    'execution_ticket_stale': 'refresh_execution_ticket',
+    'execution_ticket_failed': 'revalidate_execution_ticket',
+    'unknown_execution_ticket_status': 'obtain_valid_execution_ticket',
+}
 
 FORBIDDEN_ADMISSION_METADATA_KEYS = (
     'raw_intent',
@@ -482,6 +509,14 @@ def compose_runtime_admission_result(
             'obtain_policy_decision',
             POLICY_RUNTIME_ACTIONS[policy_blocker],
         )
+    ticket_blocker = _ticket_runtime_blocker(ticket_status)
+    if ticket_blocker:
+        blockers = _replace_or_append(blockers, 'missing_or_invalid_execution_ticket', ticket_blocker)
+        required_next_actions = _replace_or_append(
+            required_next_actions,
+            'approve_execution_ticket',
+            TICKET_RUNTIME_ACTIONS[ticket_blocker],
+        )
 
     if not _receipt_obligation_required(receipt_summary):
         blockers.append('receipt_obligation_required')
@@ -490,7 +525,7 @@ def compose_runtime_admission_result(
     blockers_tuple = _dedupe(blockers)
     actions_tuple = _dedupe(required_next_actions)
     allowed = gate_decision.allowed and not blockers_tuple
-    reason_code = 'all_required_gates_passed' if allowed else policy_blocker or (
+    reason_code = 'all_required_gates_passed' if allowed else policy_blocker or ticket_blocker or (
         gate_decision.reason_code if not gate_decision.allowed else blockers_tuple[0]
     )
     status = 'allowed' if allowed else _policy_runtime_status(policy_status)
@@ -641,6 +676,14 @@ def _policy_runtime_status(policy_status: str) -> str:
     if policy_status in {'defer', 'deferred', 'require_approval'}:
         return 'needs_review'
     return 'blocked'
+
+
+def _ticket_runtime_blocker(ticket_status: str) -> str:
+    if ticket_status in {'approve', 'approved', 'approved_for_dry_run', 'passed', 'ok'}:
+        return ''
+    if ticket_status == 'missing':
+        return 'missing_or_invalid_execution_ticket'
+    return TICKET_RUNTIME_BLOCKERS.get(ticket_status, 'unknown_execution_ticket_status')
 
 
 def _replace_or_append(values: Iterable[Any], old: str, new: str) -> list[str]:

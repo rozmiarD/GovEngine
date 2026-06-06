@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from govengine.execution.gate import DryRunRunner, ExecutionGate, ExecutionGateInput, RunnerProfile
 from govengine.execution.runner_protocol import GovRunnerRequest, GovRunnerStep
 
@@ -108,6 +110,19 @@ def test_execution_gate_blocks_live_by_default() -> None:
     assert decision.allowed is False
     assert decision.reason_code == "execution_disabled"
     assert "live_backend_disabled" in decision.blockers
+
+
+@pytest.mark.parametrize(
+    "ticket_status",
+    ("missing", "invalid", "unapproved", "mismatch", "stale", "failed"),
+)
+def test_execution_gate_blocks_non_approved_execution_ticket(ticket_status: str) -> None:
+    decision = ExecutionGate().evaluate(_gate_input(execution_ticket_status=ticket_status))
+
+    assert decision.allowed is False
+    assert decision.reason_code == "raw_intent_rejected"
+    assert "missing_or_invalid_execution_ticket" in decision.blockers
+    assert "approve_execution_ticket" in decision.next_actions
 
 
 def test_execution_gate_requires_allowed_runner_profile() -> None:

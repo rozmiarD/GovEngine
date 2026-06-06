@@ -333,6 +333,56 @@ def test_compose_runtime_admission_result_blocks_non_allow_policy_states(
     assert expected_action in result.required_next_actions
 
 
+@pytest.mark.parametrize(
+    ('execution_ticket', 'expected_blocker', 'expected_action'),
+    (
+        (None, 'missing_or_invalid_execution_ticket', 'approve_execution_ticket'),
+        (
+            {'status': 'invalid', 'ticket_id': 'ticket-1'},
+            'invalid_execution_ticket',
+            'repair_or_reissue_execution_ticket',
+        ),
+        (
+            {'approval_status': 'unapproved', 'ticket_id': 'ticket-1'},
+            'execution_ticket_not_approved',
+            'approve_execution_ticket',
+        ),
+        (
+            {'ticket_status': 'mismatch', 'ticket_id': 'ticket-1'},
+            'execution_ticket_mismatch',
+            'reconcile_execution_ticket_scope',
+        ),
+        (
+            {'status': 'stale', 'ticket_id': 'ticket-1'},
+            'execution_ticket_stale',
+            'refresh_execution_ticket',
+        ),
+        (
+            {'status': 'failed', 'ticket_id': 'ticket-1'},
+            'execution_ticket_failed',
+            'revalidate_execution_ticket',
+        ),
+        (
+            {'status': 'maybe', 'ticket_id': 'ticket-1'},
+            'unknown_execution_ticket_status',
+            'obtain_valid_execution_ticket',
+        ),
+    ),
+)
+def test_compose_runtime_admission_result_blocks_invalid_ticket_states(
+    execution_ticket,
+    expected_blocker,
+    expected_action,
+) -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(execution_ticket=execution_ticket))
+
+    assert result.allowed is False
+    assert result.status == 'blocked'
+    assert result.reason_code == expected_blocker
+    assert expected_blocker in result.blockers
+    assert expected_action in result.required_next_actions
+
+
 def test_compose_runtime_admission_result_blocks_replayed_runtime_bundle() -> None:
     result = compose_runtime_admission_result(**_runtime_admission_inputs(
         runtime_consumable=True,
