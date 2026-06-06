@@ -89,6 +89,38 @@ profile-owned tool, policy, and UX semantics remain in Ravenclaw. New neutral
 extraction should land in typed core/profile surfaces only when the code and a
 second host prove it there.
 
+## Post-0.12.2 governed-runtime MVP direction
+
+The internal 2026-06-06 audit points to one highest-leverage next target:
+formalize a canonical runtime admission result before adding any live runner
+surface. GovEngine already has useful pieces across policy, execution tickets,
+signing/trust, guarded SCLite replay, runner requests/receipts, and dry-run
+gates. The missing public kernel shape is one bounded machine-readable decision
+that composes those pieces without turning intent into execution authority.
+
+The next MVP contract should be named `RuntimeAdmissionResult`,
+`GovernedExecutionAdmission`, or an equivalent neutral name. It should report:
+
+- status and `allowed`;
+- deterministic reason code;
+- blockers and required next actions;
+- prepared execution contract status;
+- policy decision status;
+- execution ticket status and reference or digest;
+- trust decision status;
+- guarded-strict SCLite verification status when the artifact is
+  runtime-consumable;
+- GovEngine replay freshness;
+- runner profile;
+- receipt obligation;
+- bounded artifact references or digests.
+
+This admission result is not a live execution backend. It is the reviewable
+decision surface that later trust, receipt, ledger, replay-store, inspect-only,
+and optional runner work must use. Live subprocess execution remains disabled by
+default and out of scope until admission, trust, replay freshness, receipt
+binding, runner safety requirements, and negative tests are complete.
+
 ## Version roadmap
 
 ### 0.2.x — Kernel boundary freeze and stable envelopes

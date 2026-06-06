@@ -38,6 +38,11 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Artifact lifecycle controller: initial transition policy/gate/controller for ordered lifecycle transitions and blocker/next-action reporting.
 - Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, transition-decision helpers, and published deterministic demo signer/verifier fixture ports without PKI/key ownership.
 - Controlled execution gate: initial dry-run-only execution gate and default `DryRunRunner`; live requests are blocked by default.
+- Runtime admission chain: not yet canonicalized as one public
+  `RuntimeAdmissionResult` / `GovernedExecutionAdmission` record. Current
+  helpers expose the separate policy, ticket, trust, guarded-replay, runner,
+  and receipt pieces; the governed-runtime MVP roadmap must compose them into
+  one bounded machine-readable admission result before any live backend work.
 - Public surface registry: tested `govengine.surfaces` metadata contains only neutral artifact-governance core, planning-contracts core, admission-policy core, evidence-review core, domain-profile SDK, runtime contract proofs, and controlled-execution core surfaces.
 - Security profile retirement: the published `0.12.0a0` alpha package removes the former optional Ravenclaw-derived facade and helper modules; security-domain behavior remains host-owned.
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
@@ -89,6 +94,11 @@ GovEngine does not currently claim:
 ## Controlled execution posture
 
 Controlled execution is a later capability, not the current default. Execution must be gated by a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, and allowed runner profile. Runtime-consumable SCLite bundles additionally require guarded-strict verification plus replay-fresh status. Dry-run behavior is the default; live backends are optional future work and must stay disabled by default.
+
+The next kernel target is a canonical runtime admission result that reports
+`allowed`, `status`, reason code, blockers, required next actions, and bounded
+artifact references for those inputs. That record is an admission decision
+surface, not a live execution authority.
 
 ## Release posture
 

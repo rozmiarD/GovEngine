@@ -74,6 +74,21 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 
 GovEngine is an **alpha package 0.12.2a0 (`0.12.2-alpha`)**. It keeps the neutral artifact-governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review, profile, and proof surfaces while removing the former optional security-profile facade and Ravenclaw-derived helper modules. The published dependency line is `sclite-core>=1.0.1,<1.1`.
 
+## Current roadmap direction
+
+The current governed-runtime MVP work is to add a canonical
+`RuntimeAdmissionResult` / `GovernedExecutionAdmission` record before expanding
+runner behavior. That result should compose prepared execution contract status,
+policy decision, execution ticket status, trust decision, guarded-strict SCLite
+verification when runtime-consumable, GovEngine replay freshness, runner
+profile, receipt obligation, blockers, next actions, and bounded artifact
+references.
+
+This roadmap does not make intent execution authority. It keeps profile/domain
+policy meaning, production identity, key management, operator authorization,
+raw evidence storage, and live backend behavior host-owned until explicit
+ports, negative tests, and safety gates justify any additional kernel surface.
+
 ## Installation
 
 Install the currently published public alpha package from PyPI with an exact version pin:
