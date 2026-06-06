@@ -237,6 +237,64 @@ def qualify_evidence_claim(
     ))
 
 
+def validate_evidence_review_chain(
+    claim: GovEvidenceClaim | Mapping[str, Any],
+    requirement: GovEvidenceRequirement | Mapping[str, Any],
+    *,
+    receipt_id: str,
+    receipt_status: str,
+    admission_id: str = '',
+    admission_digest: str = '',
+    receipt_digest: str = '',
+    qualification: GovEvidenceQualification | Mapping[str, Any] | None = None,
+    review: GovReviewResult | Mapping[str, Any] | None = None,
+) -> GovEvidenceQualification:
+    """Verify the bounded admission -> receipt -> evidence -> review chain.
+
+    This helper checks neutral references only. It does not store raw evidence,
+    evaluate SCLite review bundles, or turn a receipt into execution authority.
+    """
+
+    checked_claim = validate_evidence_claim(claim)
+    checked_requirement = validate_evidence_requirement(requirement)
+    expected_receipt_id = str(receipt_id or '').strip()
+    if not expected_receipt_id:
+        raise GovApiError('missing_evidence_review_receipt_id')
+    if expected_receipt_id not in checked_claim.receipt_refs:
+        raise GovApiError('evidence_receipt_ref_mismatch')
+    if checked_claim.subject_ref != checked_requirement.subject_ref:
+        raise GovApiError('evidence_subject_ref_mismatch')
+    if not _claim_matches_admission(checked_claim, admission_id=admission_id, admission_digest=admission_digest):
+        raise GovApiError('evidence_admission_ref_mismatch')
+    expected_receipt_digest = str(receipt_digest or '').strip()
+    if expected_receipt_digest:
+        claim_receipt_digest = str(checked_claim.metadata.get('receipt_digest') or '').strip()
+        if claim_receipt_digest != expected_receipt_digest:
+            raise GovApiError('evidence_receipt_digest_mismatch')
+
+    qualified = (
+        validate_evidence_qualification(qualification)
+        if qualification is not None
+        else qualify_evidence_claim(checked_claim, checked_requirement, receipt_status=receipt_status)
+    )
+    if qualified.claim_id != checked_claim.claim_id:
+        raise GovApiError('evidence_qualification_claim_mismatch')
+    if qualified.requirement_id != checked_requirement.requirement_id:
+        raise GovApiError('evidence_qualification_requirement_mismatch')
+    if qualified.receipt_status != _enum(receipt_status, RECEIPT_STATUSES, 'dry-run'):
+        raise GovApiError('evidence_qualification_receipt_status_mismatch')
+    if qualified.result != 'supported':
+        raise GovApiError(f'evidence_claim_not_supported:{qualified.reason_code}')
+
+    if review is not None:
+        checked_review = validate_review_result(review)
+        if checked_review.subject_ref != checked_requirement.subject_ref:
+            raise GovApiError('review_result_subject_ref_mismatch')
+        if qualified.qualification_id not in checked_review.qualification_refs:
+            raise GovApiError('review_result_qualification_ref_mismatch')
+    return qualified
+
+
 def _receipt_rank(status: str) -> int:
     return {
         'blocked': 0,
@@ -245,6 +303,23 @@ def _receipt_rank(status: str) -> int:
         'dry-run': 2,
         'succeeded': 3,
     }.get(status, 0)
+
+
+def _claim_matches_admission(
+    claim: GovEvidenceClaim,
+    *,
+    admission_id: str,
+    admission_digest: str,
+) -> bool:
+    expected = {str(value or '').strip() for value in (admission_id, admission_digest) if str(value or '').strip()}
+    if not expected:
+        return True
+    observed = {
+        claim.subject_ref,
+        str(claim.metadata.get('admission_id') or '').strip(),
+        str(claim.metadata.get('admission_digest') or '').strip(),
+    }
+    return bool(expected & observed)
 
 
 def _enum(value: Any, allowed: tuple[str, ...], default: str) -> str:

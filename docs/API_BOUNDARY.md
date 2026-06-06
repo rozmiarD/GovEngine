@@ -69,7 +69,7 @@ Neutral evidence-review modules:
 
 - `govengine.review`
 
-Claim: neutral evidence-requirement, evidence-claim, evidence-qualification, and review-result validators that hosts can use for receipt-bounded post-execution review. Non-claims: SCLite review-bundle verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage ownership, raw target/output ownership, protocol adapter ownership, command authority, or live execution.
+Claim: neutral evidence-requirement, evidence-claim, evidence-qualification, review-result, and evidence-review-chain validators that hosts can use for receipt-bounded post-execution review. Non-claims: SCLite review-bundle verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage ownership, raw target/output ownership, protocol adapter ownership, command authority, or live execution.
 
 ### Domain-profile SDK
 

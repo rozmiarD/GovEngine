@@ -119,3 +119,8 @@ references. It does not canonicalize SCLite tickets, store raw evidence, or
 enable live execution. Evidence/review helpers should then verify
 admission -> request -> receipt -> evidence references without storing raw
 evidence.
+
+`validate_evidence_review_chain()` performs that next neutral check for
+evidence claims and review-result references. It uses receipt ids/digests,
+admission ids/digests, and receipt status bounds; it does not store raw
+evidence and does not duplicate SCLite review-bundle verdict authority.
