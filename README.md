@@ -76,13 +76,13 @@ GovEngine is an **alpha package 0.12.2a0 (`0.12.2-alpha`)**. It keeps the neutra
 
 ## Current roadmap direction
 
-The current governed-runtime MVP work is to add a canonical
-`RuntimeAdmissionResult` / `GovernedExecutionAdmission` record before expanding
-runner behavior. That result should compose prepared execution contract status,
-policy decision, execution ticket status, trust decision, guarded-strict SCLite
-verification when runtime-consumable, GovEngine replay freshness, runner
-profile, receipt obligation, blockers, next actions, and bounded artifact
-references.
+The governed-runtime MVP now includes a canonical `RuntimeAdmissionResult`
+record as the bounded admission decision surface. The next implementation step
+is to compose prepared execution contract status, policy decision, execution
+ticket status, trust decision, guarded-strict SCLite verification when
+runtime-consumable, GovEngine replay freshness, runner profile, receipt
+obligation, blockers, next actions, and bounded artifact references into that
+record.
 
 This roadmap does not make intent execution authority. It keeps profile/domain
 policy meaning, production identity, key management, operator authorization,

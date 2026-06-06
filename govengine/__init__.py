@@ -12,11 +12,13 @@ from .admission import (
     GovApprovalRequest,
     GovAuditRecord,
     GovPolicyDecision,
+    RuntimeAdmissionResult,
     admission_decision_from_host_gate,
     validate_admission_decision,
     validate_approval_request,
     validate_audit_record,
     validate_policy_decision,
+    validate_runtime_admission_result,
 )
 from .api import GovApiError, GovApiResult
 from .boundary import (
@@ -209,6 +211,7 @@ __all__ = [
     'GovRunState',
     'GovRuntimeSnapshot',
     'GovSchedulerTick',
+    'RuntimeAdmissionResult',
     'GuardedBundleRuntimeDecision',
     'GuardReplayDecision',
     'GuardReplayRecord',
@@ -304,6 +307,7 @@ __all__ = [
     'validate_runtime_snapshot',
     'validate_runtime_contract_proof',
     'validate_scheduler_tick',
+    'validate_runtime_admission_result',
     'validate_state_transition',
     'validate_supervised_runner_request',
     'validate_supervision_decision',

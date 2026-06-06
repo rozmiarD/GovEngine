@@ -11,9 +11,13 @@ SUBJECT_KINDS = ('task', 'run', 'host', 'artifact', 'profile', 'operator_action'
 POLICY_DECISIONS = ('allow', 'deny', 'defer', 'require_approval', 'dry_run_only', 'record_only')
 APPROVAL_STATES = ('not_required', 'requested', 'approved', 'denied', 'expired', 'cancelled')
 AUDIT_RECORD_TYPES = ('admission_decision', 'policy_decision', 'approval_request', 'operator_review')
+RUNTIME_ADMISSION_STATUSES = ('allowed', 'blocked', 'dry_run_only', 'needs_review', 'record_only')
 
 FORBIDDEN_ADMISSION_METADATA_KEYS = (
     'raw_intent',
+    'raw_payload',
+    'raw_evidence',
+    'raw_output',
     'prompt',
     'credential',
     'credentials',
@@ -23,6 +27,8 @@ FORBIDDEN_ADMISSION_METADATA_KEYS = (
     'api_key',
     'command',
     'commands',
+    'stdout',
+    'stderr',
     'subprocess',
     'shell',
     'live_execution',
@@ -227,6 +233,88 @@ class GovAuditRecord:
         return out
 
 
+@dataclass(frozen=True)
+class RuntimeAdmissionResult:
+    """Canonical runtime admission record.
+
+    This is the bounded machine-readable decision surface for the governed
+    runtime MVP. It composes gate summaries, not raw execution authority. Hosts
+    still own domain policy meaning, operator approval, live backends, raw
+    evidence storage, and production identity/key management.
+    """
+
+    admission_id: str
+    subject_ref: str
+    status: str = 'blocked'
+    allowed: bool = False
+    reason_code: str = 'blocked'
+    blockers: tuple[str, ...] = field(default_factory=tuple)
+    required_next_actions: tuple[str, ...] = field(default_factory=tuple)
+    prepared_execution_contract: Mapping[str, Any] = field(default_factory=dict)
+    policy_decision: Mapping[str, Any] = field(default_factory=dict)
+    execution_ticket: Mapping[str, Any] = field(default_factory=dict)
+    trust_decision: Mapping[str, Any] = field(default_factory=dict)
+    sclite_guarded_strict: Mapping[str, Any] = field(default_factory=dict)
+    replay_freshness: Mapping[str, Any] = field(default_factory=dict)
+    runner_profile: Mapping[str, Any] = field(default_factory=dict)
+    receipt_obligation: Mapping[str, Any] = field(default_factory=dict)
+    artifact_refs: Mapping[str, Any] = field(default_factory=dict)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_mapping(cls, value: Mapping[str, Any]) -> 'RuntimeAdmissionResult':
+        raw = require_mapping(value, reason_code='invalid_runtime_admission_result')
+        admission_id = str(raw.get('admission_id') or raw.get('id') or '').strip()
+        if not admission_id:
+            raise GovApiError('missing_runtime_admission_id')
+        subject_ref = str(raw.get('subject_ref') or '').strip()
+        if not subject_ref:
+            raise GovApiError('missing_runtime_admission_subject_ref')
+        status = _strict_enum(raw.get('status'), RUNTIME_ADMISSION_STATUSES, 'runtime_admission_status')
+        item = cls(
+            admission_id=admission_id,
+            subject_ref=subject_ref,
+            status=status,
+            allowed=bool(raw.get('allowed', status == 'allowed')),
+            reason_code=str(raw.get('reason_code') or status).strip() or status,
+            blockers=_tuple(raw.get('blockers') or ()),
+            required_next_actions=_tuple(raw.get('required_next_actions') or ()),
+            prepared_execution_contract=_metadata(raw.get('prepared_execution_contract')),
+            policy_decision=_metadata(raw.get('policy_decision')),
+            execution_ticket=_metadata(raw.get('execution_ticket')),
+            trust_decision=_metadata(raw.get('trust_decision')),
+            sclite_guarded_strict=_metadata(raw.get('sclite_guarded_strict')),
+            replay_freshness=_metadata(raw.get('replay_freshness')),
+            runner_profile=_metadata(raw.get('runner_profile')),
+            receipt_obligation=_metadata(raw.get('receipt_obligation')),
+            artifact_refs=_metadata(raw.get('artifact_refs')),
+            metadata=_metadata(raw.get('metadata')),
+        )
+        validate_runtime_admission_result(item)
+        return item
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            'admission_id': self.admission_id,
+            'subject_ref': self.subject_ref,
+            'status': self.status,
+            'allowed': self.allowed,
+            'reason_code': self.reason_code,
+            'blockers': list(self.blockers),
+            'required_next_actions': list(self.required_next_actions),
+            'prepared_execution_contract': dict(self.prepared_execution_contract),
+            'policy_decision': dict(self.policy_decision),
+            'execution_ticket': dict(self.execution_ticket),
+            'trust_decision': dict(self.trust_decision),
+            'sclite_guarded_strict': dict(self.sclite_guarded_strict),
+            'replay_freshness': dict(self.replay_freshness),
+            'runner_profile': dict(self.runner_profile),
+            'receipt_obligation': dict(self.receipt_obligation),
+            'artifact_refs': dict(self.artifact_refs),
+            'metadata': dict(self.metadata),
+        }
+
+
 def validate_admission_decision(value: Mapping[str, Any] | GovAdmissionDecision) -> GovAdmissionDecision:
     item = value if isinstance(value, GovAdmissionDecision) else GovAdmissionDecision.from_mapping(value)
     if item.subject_kind not in SUBJECT_KINDS:
@@ -274,6 +362,34 @@ def validate_audit_record(value: Mapping[str, Any] | GovAuditRecord) -> GovAudit
     return item
 
 
+def validate_runtime_admission_result(value: Mapping[str, Any] | RuntimeAdmissionResult) -> RuntimeAdmissionResult:
+    item = value if isinstance(value, RuntimeAdmissionResult) else RuntimeAdmissionResult.from_mapping(value)
+    if item.status not in RUNTIME_ADMISSION_STATUSES:
+        raise GovApiError(f'unknown_runtime_admission_status:{item.status}')
+    if item.allowed and item.status != 'allowed':
+        raise GovApiError('runtime_admission_allowed_status_mismatch')
+    if not item.allowed and item.status == 'allowed':
+        raise GovApiError('runtime_admission_blocked_status_mismatch')
+    if item.allowed and (item.blockers or item.required_next_actions):
+        raise GovApiError('runtime_admission_allowed_with_blockers')
+    if item.status != 'allowed' and not (item.blockers or item.required_next_actions):
+        raise GovApiError('runtime_admission_blocked_without_evidence')
+    for payload in (
+        item.prepared_execution_contract,
+        item.policy_decision,
+        item.execution_ticket,
+        item.trust_decision,
+        item.sclite_guarded_strict,
+        item.replay_freshness,
+        item.runner_profile,
+        item.receipt_obligation,
+        item.artifact_refs,
+        item.metadata,
+    ):
+        _reject_forbidden_metadata(payload)
+    return item
+
+
 def admission_decision_from_host_gate(
     *,
     decision_id: str,
@@ -308,6 +424,13 @@ def admission_decision_from_host_gate(
 def _enum(value: Any, allowed: tuple[str, ...], default: str) -> str:
     normalized = str(value or '').strip().lower() or default
     return normalized if normalized in allowed else default
+
+
+def _strict_enum(value: Any, allowed: tuple[str, ...], field_name: str) -> str:
+    normalized = str(value or '').strip().lower()
+    if normalized not in allowed:
+        raise GovApiError(f'unknown_{field_name}:{normalized or "missing"}')
+    return normalized
 
 
 def _tuple(values: Iterable[Any]) -> tuple[str, ...]:
