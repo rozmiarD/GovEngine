@@ -33,12 +33,17 @@ class MemoryStore:
         self.values[key] = dict(value)
 
 
-def _guard(root_tag: str = "tag-1") -> dict[str, str]:
+def _guard(
+    root_tag: str = "tag-1",
+    *,
+    chain_id: str = "chain-1",
+    key_id: str = "key-20260525",
+) -> dict[str, str]:
     return {
         "profile": "kernel_guard_hmac_v1",
         "root_tag": root_tag,
-        "chain_id": "chain-1",
-        "key_id": "key-20260525",
+        "chain_id": chain_id,
+        "key_id": key_id,
     }
 
 
@@ -161,6 +166,61 @@ def test_replay_claim_store_observe_only_does_not_append_seen_record() -> None:
     assert decision.allowed is True
     assert decision.replay_status == "seen"
     assert store.records == (first,)
+
+
+def test_replay_claim_store_blocks_same_payload_claim_once() -> None:
+    store = InMemoryReplayClaimStore()
+    first = guard_replay_record_from_guard(
+        _guard("tag-1"),
+        ticket_id="ticket-1",
+        observed_at="2026-05-25T21:00:00+00:00",
+        metadata={"root_chain_digest": "sha256:payload"},
+    )
+    reguarded = guard_replay_record_from_guard(
+        _guard("tag-2"),
+        ticket_id="ticket-1",
+        observed_at="2026-05-25T21:01:00+00:00",
+        metadata={"root_chain_digest": "sha256:payload"},
+    )
+
+    first_decision = store.claim_once(first)
+    replay_decision = store.claim_once(reguarded)
+
+    assert first_decision.replay_status == "fresh"
+    assert replay_decision.allowed is False
+    assert replay_decision.replay_status == "replayed"
+    assert replay_decision.blocker == "replayed_guarded_payload:sha256:payload"
+    assert store.records == (first,)
+
+
+def test_replay_claim_store_keeps_chain_and_key_namespaces_separate() -> None:
+    store = InMemoryReplayClaimStore()
+    first = guard_replay_record_from_guard(
+        _guard("tag-1", chain_id="chain-1", key_id="key-a"),
+        observed_at="2026-05-25T21:00:00+00:00",
+    )
+    different_chain = guard_replay_record_from_guard(
+        _guard("tag-1", chain_id="chain-2", key_id="key-a"),
+        observed_at="2026-05-25T21:01:00+00:00",
+    )
+    different_key = guard_replay_record_from_guard(
+        _guard("tag-1", chain_id="chain-1", key_id="key-b"),
+        observed_at="2026-05-25T21:02:00+00:00",
+    )
+
+    assert store.claim_once(first).replay_status == "fresh"
+    assert store.claim_once(different_chain).replay_status == "fresh"
+    assert store.claim_once(different_key).replay_status == "fresh"
+    assert store.records == (first, different_chain, different_key)
+
+
+def test_replay_claim_store_reports_invalid_mapping() -> None:
+    store = InMemoryReplayClaimStore()
+
+    with pytest.raises(GovApiError, match="missing_root_tag"):
+        store.claim_once({"chain_id": "chain-1", "key_id": "key-1"})
+
+    assert store.records == ()
 
 
 def test_record_guard_replay_file_round_trip(tmp_path) -> None:
