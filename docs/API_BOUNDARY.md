@@ -14,7 +14,7 @@ The top-level export stability classification lives in [API_STABILITY_MATRIX.md]
 `govengine.control.validate_control_decision()` checks deterministic between-step control decisions and delegates legal state changes to the state machine without accepting raw prompts, commands, schedulers, runtime storage, delivery, or live-execution claims.
 `govengine.runtime_shell.validate_runtime_snapshot()` checks host-provided control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without accepting raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 `govengine.planning.validate_task_contract()` and `validate_plan_intent_contract()` check neutral planner-to-runtime handoff shapes without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
-`govengine.admission.validate_admission_decision()`, `validate_policy_decision()`, `validate_approval_request()`, and `validate_audit_record()` check neutral runtime gate records without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
+`govengine.admission.validate_admission_decision()`, `validate_policy_decision()`, `validate_approval_request()`, `validate_audit_record()`, and `validate_runtime_admission_result()` check neutral runtime gate records without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 `govengine.execution.supervision.validate_supervised_runner_request()` and `validate_runner_receipt_for_request()` check approved-spec runner supervision and receipt boundaries without accepting raw intent or granting live backend ownership.
 `govengine.review.qualify_evidence_claim()` checks neutral evidence claims against receipt bounds without accepting raw targets, raw output, commands, credentials, storage, carrier payloads, or live-execution claims.
 `govengine.profiles.validate_profile_conformance()` checks contract-only domain profile declarations without granting domain taxonomy, carrier adapter, credential, product UX, or live-execution ownership.
@@ -57,7 +57,7 @@ Neutral admission-policy modules:
 
 - `govengine.admission`
 
-Claim: neutral admission-decision, policy-decision, approval-request, and audit-record validators that hosts can use for runtime gate review. Non-claims: domain policy meaning ownership, operator approval workflow ownership, audit storage or retention ownership, raw target/prompt ownership, queue/scheduler/storage ownership, protocol adapter ownership, command authority, or live execution.
+Claim: neutral admission-decision, runtime-admission, policy-decision, approval-request, and audit-record validators that hosts can use for runtime gate review. Non-claims: domain policy meaning ownership, operator approval workflow ownership, audit storage or retention ownership, raw target/prompt ownership, queue/scheduler/storage ownership, protocol adapter ownership, command authority, or live execution.
 
 ### Evidence-review core
 
@@ -109,7 +109,7 @@ GovEngine owns:
 - `govengine.control` — deterministic between-step control decisions that can apply validated in-memory state transitions without storage, scheduler, delivery, command, or live-execution authority.
 - `govengine.runtime_shell` — neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, scheduler, delivery, command, credential, carrier, or live-execution authority.
 - `govengine.planning` — neutral task-contract, plan-intent, and planner-port validators without planner implementation, raw target/prompt, queue/scheduler/storage, command, credential, adapter, or live-execution authority.
-- `govengine.admission` — neutral admission-decision, policy-decision, approval-request, and audit-record validators without domain policy meaning, approval workflow, audit storage, command, credential, adapter, or live-execution authority.
+- `govengine.admission` — neutral admission-decision, runtime-admission, policy-decision, approval-request, and audit-record validators without domain policy meaning, approval workflow, audit storage, command, credential, adapter, or live-execution authority.
 - `govengine.review` — neutral evidence-requirement, evidence-claim, evidence-qualification, and review-result validators without SCLite review verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage, command, credential, adapter, or live-execution authority.
 - `govengine.profiles` — contract-only domain profile declarations, registries, fixture profiles, and conformance reports without domain taxonomy, product UX, credential, adapter, or live-execution ownership.
 - `govengine.contract_proofs` — public-safe runtime contract proof fixtures and neutral governance vocabulary over existing contracts without adapter, credential, scheduler, storage, live-execution, domain runtime, or new OODA ownership.
@@ -162,13 +162,12 @@ GovEngine must never execute directly from raw intent. Execution requires all of
 4. valid signature/trust decision;
 5. allowed runner profile.
 
-The governed-runtime MVP should expose those inputs through the canonical
-runtime admission contract described in
-[RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). The future
-`RuntimeAdmissionResult` / `GovernedExecutionAdmission` style record should
-carry bounded blockers, next actions, and artifact references. That record
-composes the gate evidence for hosts and reviewers; it does not grant live
-execution authority by itself.
+The governed-runtime MVP exposes those inputs through the canonical runtime
+admission contract described in
+[RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). `RuntimeAdmissionResult` carries
+bounded blockers, next actions, and artifact references. The next composition
+helper should populate it from gate evidence for hosts and reviewers; the record
+does not grant live execution authority by itself.
 
 Before any execution backend moves into GovEngine:
 

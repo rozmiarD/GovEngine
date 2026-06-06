@@ -7,11 +7,13 @@ from govengine import (
     GovApprovalRequest,
     GovAuditRecord,
     GovPolicyDecision,
+    RuntimeAdmissionResult,
     admission_decision_from_host_gate,
     validate_admission_decision,
     validate_approval_request,
     validate_audit_record,
     validate_policy_decision,
+    validate_runtime_admission_result,
 )
 from govengine.api import GovApiError
 
@@ -131,4 +133,102 @@ def test_policy_approval_and_audit_reject_runtime_ownership_claims() -> None:
             'record_id': 'audit-bad',
             'subject_ref': 'sha256:task-ref',
             'metadata': {'storage_path': '/tmp/audit.db'},
+        })
+
+
+def test_runtime_admission_result_allows_bounded_gate_summaries() -> None:
+    result = validate_runtime_admission_result({
+        'admission_id': 'runtime-admission-1',
+        'subject_ref': 'sha256:prepared-contract',
+        'status': 'allowed',
+        'allowed': True,
+        'reason_code': 'all_required_gates_passed',
+        'prepared_execution_contract': {'status': 'prepared', 'digest': 'sha256:contract'},
+        'policy_decision': {'decision': 'allow', 'policy_id': 'policy-1'},
+        'execution_ticket': {'status': 'passed', 'ticket_id': 'ticket-1', 'digest': 'sha256:ticket'},
+        'trust_decision': {'status': 'passed', 'trust_status': 'trusted'},
+        'sclite_guarded_strict': {'status': 'passed', 'required': True},
+        'replay_freshness': {'status': 'allowed', 'replay_status': 'fresh'},
+        'runner_profile': {'profile': 'dry_run', 'mode': 'dry_run'},
+        'receipt_obligation': {'required': True, 'binds': ['admission', 'ticket']},
+        'artifact_refs': {'admission_digest': 'sha256:admission'},
+    })
+
+    payload = result.as_dict()
+
+    assert isinstance(result, RuntimeAdmissionResult)
+    assert payload['allowed'] is True
+    assert payload['status'] == 'allowed'
+    assert payload['blockers'] == []
+    assert payload['runner_profile']['profile'] == 'dry_run'
+
+
+def test_runtime_admission_result_blocks_with_next_actions() -> None:
+    result = RuntimeAdmissionResult.from_mapping({
+        'id': 'runtime-admission-blocked',
+        'subject_ref': 'sha256:prepared-contract',
+        'status': 'blocked',
+        'allowed': False,
+        'reason_code': 'missing_policy_decision',
+        'blockers': ['missing_policy_decision'],
+        'required_next_actions': ['evaluate_policy'],
+        'prepared_execution_contract': {'status': 'prepared', 'digest': 'sha256:contract'},
+    })
+
+    assert result.allowed is False
+    assert result.blockers == ('missing_policy_decision',)
+    assert result.required_next_actions == ('evaluate_policy',)
+
+
+def test_runtime_admission_result_rejects_status_allowed_mismatch() -> None:
+    with pytest.raises(GovApiError, match='runtime_admission_allowed_status_mismatch'):
+        validate_runtime_admission_result(RuntimeAdmissionResult(
+            admission_id='bad-runtime-admission-1',
+            subject_ref='sha256:prepared-contract',
+            status='blocked',
+            allowed=True,
+            reason_code='bad',
+            blockers=('missing_policy_decision',),
+        ))
+
+    with pytest.raises(GovApiError, match='runtime_admission_blocked_status_mismatch'):
+        validate_runtime_admission_result({
+            'admission_id': 'bad-runtime-admission-2',
+            'subject_ref': 'sha256:prepared-contract',
+            'status': 'allowed',
+            'allowed': False,
+            'reason_code': 'bad',
+        })
+
+
+def test_runtime_admission_result_rejects_blocked_without_evidence() -> None:
+    with pytest.raises(GovApiError, match='runtime_admission_blocked_without_evidence'):
+        validate_runtime_admission_result({
+            'admission_id': 'bad-runtime-admission-3',
+            'subject_ref': 'sha256:prepared-contract',
+            'status': 'blocked',
+            'allowed': False,
+            'reason_code': 'blocked',
+        })
+
+
+def test_runtime_admission_result_rejects_raw_payloads_and_unknown_status() -> None:
+    with pytest.raises(GovApiError, match='forbidden_admission_metadata:raw_output'):
+        validate_runtime_admission_result({
+            'admission_id': 'bad-runtime-admission-4',
+            'subject_ref': 'sha256:prepared-contract',
+            'status': 'blocked',
+            'allowed': False,
+            'reason_code': 'raw_output_forbidden',
+            'blockers': ['raw_output_forbidden'],
+            'artifact_refs': {'raw_output': 'full stdout must not be carried'},
+        })
+
+    with pytest.raises(GovApiError, match='unknown_runtime_admission_status:maybe'):
+        validate_runtime_admission_result({
+            'admission_id': 'bad-runtime-admission-5',
+            'subject_ref': 'sha256:prepared-contract',
+            'status': 'maybe',
+            'allowed': False,
+            'blockers': ['unknown_status'],
         })

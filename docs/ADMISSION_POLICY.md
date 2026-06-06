@@ -29,8 +29,9 @@ the host still owns security meaning, target selection, budget logic, cooldown
 logic, operator approval, queue mutation, process control, audit persistence,
 and concrete execution.
 
-The next governed-runtime MVP design is the canonical runtime admission
-contract in [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). That contract composes
-policy, ticket, trust, SCLite guarded verification, replay freshness, runner
-profile, and receipt-obligation signals into one bounded admission result
-without making intent an execution authority.
+The canonical runtime admission contract lives in
+[RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). The initial
+`RuntimeAdmissionResult` record is the bounded admission decision surface. The
+next composition helper must populate it from policy, ticket, trust, SCLite
+guarded verification, replay freshness, runner-profile, and
+receipt-obligation signals without making intent an execution authority.

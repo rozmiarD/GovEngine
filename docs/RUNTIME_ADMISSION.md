@@ -1,9 +1,10 @@
 # Runtime Admission Contract
 
 GovEngine's governed-runtime MVP needs one canonical admission decision before
-any live runner work expands. The proposed public shape is
-`RuntimeAdmissionResult`, `GovernedExecutionAdmission`, or an equivalent neutral
-name chosen during implementation.
+any live runner work expands. The initial public record is
+`RuntimeAdmissionResult`. `GovernedExecutionAdmission` remains an equivalent
+concept name for hosts and roadmap discussion, not a second implementation
+surface.
 
 This contract is a design boundary. It does not add execution authority by
 itself.
@@ -124,17 +125,23 @@ them:
   for runner request, receipt, and profile boundaries;
 - `govengine.review` for later receipt/evidence review binding.
 
-## Implementation Notes For The Next Tasks
+## Implementation Status And Next Tasks
 
-The first implementation should be additive and backward-compatible:
+The first implementation is additive and backward-compatible:
 
-1. add the runtime admission record without changing existing helpers;
-2. add a pure composition helper with deterministic blocker ordering;
-3. add negative tests for each missing or failed gate;
-4. keep live backend support disabled by default;
-5. keep serialization bounded and deterministic enough for later digest/signing
+1. `RuntimeAdmissionResult` exists as the core record;
+2. `validate_runtime_admission_result()` enforces basic status/allowed/blocker
+   consistency;
+3. existing helpers remain unchanged.
+
+The next implementation tasks should:
+
+1. add a pure composition helper with deterministic blocker ordering;
+2. add negative tests for each missing or failed gate;
+3. keep live backend support disabled by default;
+4. keep serialization bounded and deterministic enough for later digest/signing
    work;
-6. document any host-owned input that GovEngine validates but does not produce.
+5. document any host-owned input that GovEngine validates but does not produce.
 
 The result should be usable by future receipt, audit-ledger, replay-store,
 inspect-only, and optional runner tasks, but it must not claim production

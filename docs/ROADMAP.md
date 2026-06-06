@@ -98,8 +98,9 @@ signing/trust, guarded SCLite replay, runner requests/receipts, and dry-run
 gates. The missing public kernel shape is one bounded machine-readable decision
 that composes those pieces without turning intent into execution authority.
 
-The next MVP contract should be named `RuntimeAdmissionResult`,
-`GovernedExecutionAdmission`, or an equivalent neutral name. It should report:
+The MVP contract is now named `RuntimeAdmissionResult`; the roadmap may still
+use `GovernedExecutionAdmission` as an equivalent concept name. It should
+report:
 
 - status and `allowed`;
 - deterministic reason code;
