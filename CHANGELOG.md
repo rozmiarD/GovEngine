@@ -4,11 +4,11 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
-## Unreleased
+## 0.12.2-alpha - SCLite 1.0 dependency sync and guarded replay hardening
 
-- Prepares the `0.12.2a0` / `0.12.2-alpha` source line over
-  `sclite-core>=1.0.1,<1.1` after SCLite 1.0.1 audit hardening; PyPI
-  publication remains gated on downstream Ravenclaw validation.
+- Publishes the `0.12.2a0` / `0.12.2-alpha` package line over
+  `sclite-core>=1.0.1,<1.1` after SCLite 1.0.1 audit hardening and
+  downstream Ravenclaw validation.
 - Tightens guarded-bundle replay freshness from root-tag-only matching to
   semantic payload matching over `root_chain_digest`, ticket/chain scope, and
   `key_id`, so re-guarding the same payload with fresh nonces does not bypass
