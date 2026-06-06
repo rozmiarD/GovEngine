@@ -74,6 +74,9 @@ accepted, and later claims for the same replay key must be rejected by the
 host-owned atomic store. `InMemoryReplayClaimStore` is deterministic but
 development-only. `record_guard_replay_file()` remains a local JSON helper and
 is not a production atomic store, database, or concurrency boundary.
+Replay matching prefers the guarded payload digest plus ticket or chain scope
+and key id. The root-tag compatibility fallback is scoped by `chain_id` and
+`key_id` so unrelated domains or key namespaces do not collide.
 
 Runtime-consumable artifacts should use this posture:
 

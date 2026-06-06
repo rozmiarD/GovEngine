@@ -105,7 +105,7 @@ class ReplayClaimStore(Protocol):
 
     def claim_once(
         self,
-        record: GuardReplayRecord,
+        record: GuardReplayRecord | Mapping[str, Any],
         *,
         require_fresh: bool = True,
     ) -> GuardReplayDecision:
@@ -132,11 +132,11 @@ class InMemoryReplayClaimStore:
 
     def claim_once(
         self,
-        record: GuardReplayRecord,
+        record: GuardReplayRecord | Mapping[str, Any],
         *,
         require_fresh: bool = True,
     ) -> GuardReplayDecision:
-        checked = GuardReplayRecord.from_mapping(record.as_dict())
+        checked = record if isinstance(record, GuardReplayRecord) else GuardReplayRecord.from_mapping(record)
         decision = evaluate_guard_replay(checked, self._records, require_fresh=require_fresh)
         if decision.replay_status == "fresh":
             self._records = (*self._records, checked)
@@ -422,7 +422,12 @@ def evaluate_guard_replay(
                 record=record,
                 first_seen=prior,
             )
-        if prior.root_tag == record.root_tag:
+        root_tag_replay = (
+            prior.root_tag == record.root_tag
+            and prior.chain_id == record.chain_id
+            and prior.key_id == record.key_id
+        )
+        if root_tag_replay:
             if require_fresh:
                 return GuardReplayDecision(
                     status="blocked",
