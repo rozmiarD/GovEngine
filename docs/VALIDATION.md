@@ -56,6 +56,9 @@ Expected result for the current `0.12.2a0` package line (`0.12.2-alpha`):
   its runtime payloads to public SCLite lifecycle artifacts;
 - guarded-bundle runtime flow tests prove first use of a verified SCLite guard
   can be recorded as fresh and a second use of the same `root_tag` is blocked;
+- replay claim-store tests prove the development claim-once port records the
+  first fresh claim and rejects or observes repeated claims without claiming
+  production persistence or concurrency ownership;
 - runtime-consumable execution-gate tests require guarded-strict verification
   plus replay-fresh status before a bundle can be consumed for execution;
 - runner receipt binding tests require admission, ticket, request, receipt,

@@ -31,7 +31,7 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 | alpha | govengine.orchestration | `OrchestrationStep`, `OrchestratorBoundary`, `orchestrator_boundary_contract`, `validate_orchestration_step` | Deterministic orchestration handoff records only. |
 | alpha | govengine.planning | `GovPlanIntentContract`, `GovTaskContract`, `PlannerPort`, `task_contract_from_host_task`, `validate_plan_intent_contract`, `validate_planner_port`, `validate_task_contract` | Planner-to-runtime contract shapes; no planner implementation ownership. |
 | alpha | govengine.profiles | `CapabilityDeclaration`, `DomainProfile`, `EvidenceRuleDeclaration`, `PlanningStageRegistry`, `PolicyHookDeclaration`, `ProfileConformanceReport`, `ResourceTypeRegistry`, `RunnerProfileDeclaration`, `TaskFamilyRegistry`, `profile_conformance_report`, `ravenclaw_security_profile`, `tecrax_infra_ops_profile`, `validate_domain_profile`, `validate_profile_conformance` | Contract-only domain profile SDK and fixtures; host owns domain semantics. |
-| alpha | govengine.replay | `GuardedBundleRuntimeDecision`, `GuardReplayDecision`, `GuardReplayRecord`, `evaluate_guard_replay`, `guard_replay_record_from_guard`, `record_guard_replay`, `record_guard_replay_file`, `verify_guard_and_record_replay` | Guarded SCLite root replay freshness over host-supplied store; no HMAC/key ownership. |
+| alpha | govengine.replay | `GuardedBundleRuntimeDecision`, `GuardReplayDecision`, `GuardReplayRecord`, `InMemoryReplayClaimStore`, `ReplayClaimStore`, `evaluate_guard_replay`, `guard_replay_record_from_guard`, `record_guard_replay`, `record_guard_replay_file`, `verify_guard_and_record_replay` | Guarded SCLite root replay freshness over host-supplied store plus a claim-once port and deterministic in-memory development adapter; no HMAC/key ownership, database ownership, or production concurrency guarantee. |
 | alpha | govengine.review | `GovEvidenceClaim`, `GovEvidenceQualification`, `GovEvidenceRequirement`, `GovReviewResult`, `qualify_evidence_claim`, `validate_evidence_claim`, `validate_evidence_qualification`, `validate_evidence_requirement`, `validate_evidence_review_chain`, `validate_review_result` | Receipt-bounded evidence review records; SCLite review bundle authority is not duplicated. |
 | alpha | govengine.roles | `GovRoleAdapters` | Adapter binding record; no Ravenclaw/OpenClaw dependency. |
 | alpha | govengine.runtime_shell | `GovControlAction`, `GovQueueLane`, `GovQueueSnapshot`, `GovRuntimeSnapshot`, `GovSchedulerTick`, `control_action_from_host_action`, `queue_snapshot_from_lanes`, `validate_control_action`, `validate_queue_snapshot`, `validate_runtime_snapshot`, `validate_scheduler_tick` | Host-provided runtime shell projection; no scheduler/storage/live-execution authority. |
@@ -47,7 +47,7 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 Current summary:
 
 - stable exports: 0
-- alpha exports: 176
+- alpha exports: 178
 - fixture exports: 4
 - deprecated exports: 0
 - internal-exposed exports: 0
