@@ -14,7 +14,7 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 
 | Stability | Source | Exports | Boundary note |
 | --- | --- | --- | --- |
-| alpha | govengine.admission | `GovAdmissionDecision`, `GovApprovalRequest`, `GovAuditRecord`, `GovPolicyDecision`, `RuntimeAdmissionResult`, `admission_decision_from_host_gate`, `validate_admission_decision`, `validate_approval_request`, `validate_audit_record`, `validate_policy_decision`, `validate_runtime_admission_result` | Neutral admission/policy/runtime-admission records only; host owns policy meaning, approval workflow, live backend behavior, and production trust/key boundaries. |
+| alpha | govengine.admission | `GovAdmissionDecision`, `GovApprovalRequest`, `GovAuditRecord`, `GovPolicyDecision`, `RuntimeAdmissionResult`, `admission_decision_from_host_gate`, `compose_runtime_admission_result`, `validate_admission_decision`, `validate_approval_request`, `validate_audit_record`, `validate_policy_decision`, `validate_runtime_admission_result` | Neutral admission/policy/runtime-admission records and gate-summary composition only; host owns policy meaning, approval workflow, live backend behavior, and production trust/key boundaries. |
 | alpha | govengine.api | `GovApiError`, `GovApiResult` | Lightweight result/error helpers. |
 | alpha | govengine.boundary | `BoundaryReport`, `DomainProfileConformance`, `DomainProfileContract`, `KernelBoundary`, `boundary_surface_index`, `domain_profile_conformance`, `kernel_boundary_contract`, `kernel_boundary_report`, `known_profile_contracts`, `ravenclaw_profile_contract`, `validate_domain_profile_contract`, `validate_domain_profile_conformance` | Kernel/profile/runtime/SCLite ownership contracts; Ravenclaw contract remains fixture/profile metadata. |
 | alpha | govengine.context | `GovEngineContext`, `GovEnginePaths`, `host_compat_context`, `ravenclaw_context` | Host path/context records; Ravenclaw context remains compatibility fixture metadata. |
@@ -47,7 +47,7 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 Current summary:
 
 - stable exports: 0
-- alpha exports: 153
+- alpha exports: 154
 - fixture exports: 3
 - deprecated exports: 0
 - internal-exposed exports: 0

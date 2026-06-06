@@ -95,8 +95,10 @@ The internal 2026-06-06 audit points to one highest-leverage next target:
 formalize a canonical runtime admission result before adding any live runner
 surface. GovEngine already has useful pieces across policy, execution tickets,
 signing/trust, guarded SCLite replay, runner requests/receipts, and dry-run
-gates. The missing public kernel shape is one bounded machine-readable decision
-that composes those pieces without turning intent into execution authority.
+gates. The public kernel shape is one bounded machine-readable decision that
+composes those pieces without turning intent into execution authority; the
+initial record and composition helper now exist and need focused negative
+coverage plus later trust/receipt/audit hardening.
 
 The MVP contract is now named `RuntimeAdmissionResult`; the roadmap may still
 use `GovernedExecutionAdmission` as an equivalent concept name. It should

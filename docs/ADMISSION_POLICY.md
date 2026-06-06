@@ -32,6 +32,6 @@ and concrete execution.
 The canonical runtime admission contract lives in
 [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). The initial
 `RuntimeAdmissionResult` record is the bounded admission decision surface. The
-next composition helper must populate it from policy, ticket, trust, SCLite
-guarded verification, replay freshness, runner-profile, and
+`compose_runtime_admission_result()` helper populates it from policy, ticket,
+trust, SCLite guarded verification, replay freshness, runner-profile, and
 receipt-obligation signals without making intent an execution authority.
