@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from govengine import (
@@ -321,6 +323,104 @@ def test_jsonl_audit_ledger_adapter_rejects_wrong_previous_digest(tmp_path) -> N
     assert rejected.reason_code == 'audit_ledger_previous_digest_mismatch'
     assert rejected.blockers == ('audit_ledger_previous_digest_mismatch',)
     assert len(ledger.read()) == 1
+
+
+def test_jsonl_audit_ledger_adapter_detects_one_field_tamper(tmp_path) -> None:
+    path = tmp_path / 'audit-ledger.jsonl'
+    ledger = JsonlAuditLedgerAdapter(path)
+    record = validate_audit_record({
+        'record_id': 'audit-1',
+        'record_type': 'policy_decision',
+        'subject_ref': 'sha256:policy-subject',
+        'decision_ref': 'policy-1',
+    })
+
+    ledger.append(record, record_digest='sha256:audit-1')
+    [line] = path.read_text(encoding='utf-8').splitlines()
+    tampered = json.loads(line)
+    tampered['record']['decision_ref'] = 'policy-tampered'
+    path.write_text(json.dumps(tampered, sort_keys=True, separators=(',', ':')) + '\n', encoding='utf-8')
+
+    verification = ledger.verify(ledger.read())
+
+    assert verification.status == 'failed'
+    assert verification.verified is False
+    assert verification.reason_code == 'audit_ledger_entry_digest_mismatch'
+    assert verification.blockers == ('audit_ledger_entry_digest_mismatch',)
+
+
+def test_jsonl_audit_ledger_adapter_detects_deleted_line(tmp_path) -> None:
+    path = tmp_path / 'audit-ledger.jsonl'
+    ledger = JsonlAuditLedgerAdapter(path)
+    first = validate_audit_record({
+        'record_id': 'audit-1',
+        'record_type': 'admission_decision',
+        'subject_ref': 'sha256:runtime-admission',
+        'decision_ref': 'runtime-admission-1',
+    })
+    second = validate_audit_record({
+        'record_id': 'audit-2',
+        'record_type': 'policy_decision',
+        'subject_ref': 'sha256:policy-subject',
+        'decision_ref': 'policy-1',
+    })
+
+    ledger.append(first, record_digest='sha256:audit-1')
+    ledger.append(second, record_digest='sha256:audit-2')
+    _, remaining = path.read_text(encoding='utf-8').splitlines()
+    path.write_text(remaining + '\n', encoding='utf-8')
+
+    verification = ledger.verify(ledger.read())
+
+    assert verification.status == 'failed'
+    assert verification.reason_code == 'audit_ledger_sequence_mismatch'
+    assert verification.blockers == ('audit_ledger_sequence_mismatch',)
+
+
+def test_jsonl_audit_ledger_adapter_rejects_malformed_jsonl(tmp_path) -> None:
+    path = tmp_path / 'audit-ledger.jsonl'
+    path.write_text('{not-json}\n', encoding='utf-8')
+    ledger = JsonlAuditLedgerAdapter(path)
+
+    with pytest.raises(GovApiError, match='invalid_audit_ledger_jsonl:1'):
+        ledger.read()
+
+
+def test_jsonl_audit_ledger_adapter_detects_chain_restart(tmp_path) -> None:
+    path = tmp_path / 'audit-ledger.jsonl'
+    ledger = JsonlAuditLedgerAdapter(path)
+    first = validate_audit_record({
+        'record_id': 'audit-1',
+        'record_type': 'admission_decision',
+        'subject_ref': 'sha256:runtime-admission',
+        'decision_ref': 'runtime-admission-1',
+    })
+    restarted_record = validate_audit_record({
+        'record_id': 'audit-2',
+        'record_type': 'policy_decision',
+        'subject_ref': 'sha256:policy-subject',
+        'decision_ref': 'policy-1',
+    })
+
+    ledger.append(first, record_digest='sha256:audit-1')
+    restarted = AuditLedgerEntry(
+        entry_id='audit-ledger-entry-restarted',
+        sequence=0,
+        record=restarted_record,
+        record_digest='sha256:audit-2',
+        previous_entry_digest='',
+        metadata={'adapter': 'jsonl_hash_chain_dev', 'storage': 'development_only'},
+    )
+    restarted = AuditLedgerEntry(**{**restarted.as_dict(), 'entry_digest': audit_ledger_entry_digest(restarted)})
+    with path.open('a', encoding='utf-8') as handle:
+        handle.write(json.dumps(restarted.as_dict(), sort_keys=True, separators=(',', ':')))
+        handle.write('\n')
+
+    verification = ledger.verify(ledger.read())
+
+    assert verification.status == 'failed'
+    assert verification.reason_code == 'audit_ledger_sequence_mismatch'
+    assert verification.blockers == ('audit_ledger_sequence_mismatch',)
 
 
 def test_runtime_admission_result_allows_bounded_gate_summaries() -> None:
