@@ -16,6 +16,11 @@ deliver carrier messages, hold credentials, or execute tools.
   approval workflow.
 - `GovAuditRecord` validates an append-only audit record shape without owning
   storage or retention.
+- `AuditLedgerEntry`, `AuditLedgerAppendResult`, and
+  `AuditLedgerVerificationResult` define the bounded append/read/verify records
+  for a host-owned audit ledger.
+- `AuditLedgerPort` defines the neutral append/read/verify adapter contract
+  without providing production persistence.
 
 ## Boundary
 
@@ -35,3 +40,22 @@ The canonical runtime admission contract lives in
 `compose_runtime_admission_result()` helper populates it from policy, ticket,
 trust, SCLite guarded verification, replay freshness, runner-profile, and
 receipt-obligation signals without making intent an execution authority.
+
+## Audit ledger port
+
+`GovAuditRecord` is the event shape. `AuditLedgerPort` is the storage boundary.
+The port separates record validation from persistence by requiring adapters to:
+
+- append one bounded `GovAuditRecord` plus a `record_digest` and optional
+  `event_digest`;
+- return `AuditLedgerAppendResult` with the assigned entry id, sequence, and
+  entry digest;
+- read bounded `AuditLedgerEntry` records without exposing storage paths;
+- verify a sequence and return `AuditLedgerVerificationResult`.
+
+GovEngine validates ids, sequence numbers, digest references, append outcomes,
+verification outcomes, blockers, and forbidden metadata. GovEngine does not
+choose a database, file path, lock, clock, transaction isolation level,
+retention policy, production concurrency model, or deletion policy. GE-024 may
+add a JSONL hash-chain development adapter on top of this port, but production
+persistence remains host-owned.

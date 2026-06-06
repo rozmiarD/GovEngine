@@ -3,6 +3,10 @@ from __future__ import annotations
 import pytest
 
 from govengine import (
+    AuditLedgerAppendResult,
+    AuditLedgerEntry,
+    AuditLedgerPort,
+    AuditLedgerVerificationResult,
     GovAdmissionDecision,
     GovApprovalRequest,
     GovAuditRecord,
@@ -13,6 +17,9 @@ from govengine import (
     validate_admission_decision,
     validate_approval_request,
     validate_audit_record,
+    validate_audit_ledger_append_result,
+    validate_audit_ledger_entry,
+    validate_audit_ledger_verification_result,
     validate_policy_decision,
     validate_runtime_admission_result,
 )
@@ -135,6 +142,130 @@ def test_policy_approval_and_audit_reject_runtime_ownership_claims() -> None:
             'record_id': 'audit-bad',
             'subject_ref': 'sha256:task-ref',
             'metadata': {'storage_path': '/tmp/audit.db'},
+        })
+
+
+def test_audit_ledger_port_contracts_are_shape_only() -> None:
+    record = validate_audit_record({
+        'record_id': 'audit-1',
+        'record_type': 'admission_decision',
+        'subject_ref': 'sha256:runtime-admission',
+        'decision_ref': 'runtime-admission-1',
+        'event_refs': ['event-1'],
+        'metadata': {'retention': 'host_owned'},
+    })
+    entry = validate_audit_ledger_entry({
+        'entry_id': 'ledger-entry-1',
+        'sequence': 1,
+        'record': record.as_dict(),
+        'record_digest': 'sha256:audit-record',
+        'event_digest': 'sha256:event-1',
+        'previous_entry_digest': 'sha256:previous-entry',
+        'metadata': {'storage': 'host_owned'},
+    })
+    append = validate_audit_ledger_append_result({
+        'status': 'appended',
+        'entry_id': entry.entry_id,
+        'sequence': entry.sequence,
+        'entry_digest': 'sha256:ledger-entry-1',
+    })
+    verification = validate_audit_ledger_verification_result({
+        'status': 'verified',
+        'verified': True,
+        'checked_entries': 1,
+        'last_entry_id': entry.entry_id,
+        'last_entry_digest': append.entry_digest,
+    })
+
+    class FixtureLedger:
+        def append(
+            self,
+            record: GovAuditRecord,
+            *,
+            record_digest: str,
+            event_digest: str = '',
+            previous_entry_digest: str = '',
+        ) -> AuditLedgerAppendResult:
+            assert record.record_id == 'audit-1'
+            assert record_digest == 'sha256:audit-record'
+            assert event_digest == 'sha256:event-1'
+            assert previous_entry_digest == 'sha256:previous-entry'
+            return append
+
+        def read(self, *, after_entry_id: str = '', limit: int = 100) -> tuple[AuditLedgerEntry, ...]:
+            assert after_entry_id == ''
+            assert limit == 100
+            return (entry,)
+
+        def verify(self, entries: tuple[AuditLedgerEntry, ...]) -> AuditLedgerVerificationResult:
+            assert entries == (entry,)
+            return verification
+
+    ledger: AuditLedgerPort = FixtureLedger()
+
+    assert isinstance(entry, AuditLedgerEntry)
+    assert entry.as_dict()['record']['record_id'] == 'audit-1'
+    assert ledger.append(
+        record,
+        record_digest='sha256:audit-record',
+        event_digest='sha256:event-1',
+        previous_entry_digest='sha256:previous-entry',
+    ).entry_digest == 'sha256:ledger-entry-1'
+    assert ledger.read()[0].record_digest == 'sha256:audit-record'
+    assert ledger.verify(ledger.read()).verified is True
+
+
+def test_audit_ledger_contracts_reject_unsafe_or_incomplete_boundaries() -> None:
+    base_record = {
+        'record_id': 'audit-1',
+        'record_type': 'policy_decision',
+        'subject_ref': 'sha256:task-ref',
+    }
+
+    with pytest.raises(GovApiError, match='missing_audit_ledger_record_digest'):
+        validate_audit_ledger_entry({
+            'entry_id': 'ledger-entry-1',
+            'sequence': 0,
+            'record': base_record,
+        })
+
+    with pytest.raises(GovApiError, match='invalid_audit_ledger_record_digest'):
+        validate_audit_ledger_entry({
+            'entry_id': 'ledger-entry-1',
+            'sequence': 0,
+            'record': base_record,
+            'record_digest': 'md5:not-allowed',
+        })
+
+    with pytest.raises(GovApiError, match='forbidden_admission_metadata:storage_path'):
+        validate_audit_ledger_entry({
+            'entry_id': 'ledger-entry-1',
+            'sequence': 0,
+            'record': base_record,
+            'record_digest': 'sha256:audit-record',
+            'metadata': {'storage_path': '/tmp/govengine-ledger.jsonl'},
+        })
+
+    with pytest.raises(GovApiError, match='missing_audit_ledger_append_digest'):
+        validate_audit_ledger_append_result({
+            'status': 'appended',
+            'entry_id': 'ledger-entry-1',
+            'sequence': 0,
+        })
+
+    with pytest.raises(GovApiError, match='audit_ledger_failed_without_blockers'):
+        validate_audit_ledger_verification_result({
+            'status': 'failed',
+            'checked_entries': 1,
+        })
+
+    with pytest.raises(GovApiError, match='audit_ledger_verified_status_mismatch'):
+        validate_audit_ledger_verification_result({
+            'status': 'verified',
+            'verified': False,
+            'checked_entries': 1,
+            'last_entry_id': 'ledger-entry-1',
+            'last_entry_digest': 'sha256:ledger-entry-1',
         })
 
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Protocol
 
 from govengine.api import GovApiError, require_mapping
 
@@ -11,6 +11,8 @@ SUBJECT_KINDS = ('task', 'run', 'host', 'artifact', 'profile', 'operator_action'
 POLICY_DECISIONS = ('allow', 'deny', 'defer', 'require_approval', 'dry_run_only', 'record_only')
 APPROVAL_STATES = ('not_required', 'requested', 'approved', 'denied', 'expired', 'cancelled')
 AUDIT_RECORD_TYPES = ('admission_decision', 'policy_decision', 'approval_request', 'operator_review')
+AUDIT_LEDGER_APPEND_STATUSES = ('appended', 'rejected')
+AUDIT_LEDGER_VERIFY_STATUSES = ('verified', 'failed', 'empty')
 RUNTIME_ADMISSION_STATUSES = ('allowed', 'blocked', 'dry_run_only', 'needs_review', 'record_only')
 PREPARED_EXECUTION_CONTRACT_STATUSES = ('prepared', 'passed', 'ok', 'allowed')
 RECEIPT_OBLIGATION_STATUSES = ('required', 'passed', 'ok')
@@ -348,6 +350,188 @@ class GovAuditRecord:
 
 
 @dataclass(frozen=True)
+class AuditLedgerEntry:
+    """Bounded append-only ledger entry over one GovEngine audit record.
+
+    This is the neutral record shape a host or development adapter may append.
+    Storage, locking, clocks, retention, and production concurrency remain
+    host-owned.
+    """
+
+    entry_id: str
+    sequence: int
+    record: GovAuditRecord | Mapping[str, Any]
+    record_digest: str
+    event_digest: str = ''
+    previous_entry_digest: str = ''
+    entry_digest: str = ''
+    recorded_at: str = ''
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        record = self.record if isinstance(self.record, GovAuditRecord) else GovAuditRecord.from_mapping(self.record)
+        object.__setattr__(self, 'entry_id', str(self.entry_id or '').strip())
+        object.__setattr__(self, 'sequence', int(self.sequence))
+        object.__setattr__(self, 'record', record)
+        object.__setattr__(self, 'record_digest', str(self.record_digest or '').strip())
+        object.__setattr__(self, 'event_digest', str(self.event_digest or '').strip())
+        object.__setattr__(self, 'previous_entry_digest', str(self.previous_entry_digest or '').strip())
+        object.__setattr__(self, 'entry_digest', str(self.entry_digest or '').strip())
+        object.__setattr__(self, 'recorded_at', str(self.recorded_at or '').strip())
+        object.__setattr__(self, 'metadata', _metadata(self.metadata))
+        validate_audit_ledger_entry(self)
+
+    @classmethod
+    def from_mapping(cls, value: Mapping[str, Any]) -> 'AuditLedgerEntry':
+        raw = require_mapping(value, reason_code='invalid_audit_ledger_entry')
+        record_value = raw.get('record')
+        if not isinstance(record_value, Mapping):
+            raise GovApiError('missing_audit_ledger_record')
+        return cls(
+            entry_id=str(raw.get('entry_id') or raw.get('id') or '').strip(),
+            sequence=int(raw.get('sequence') or 0),
+            record=record_value,
+            record_digest=str(raw.get('record_digest') or '').strip(),
+            event_digest=str(raw.get('event_digest') or '').strip(),
+            previous_entry_digest=str(raw.get('previous_entry_digest') or '').strip(),
+            entry_digest=str(raw.get('entry_digest') or '').strip(),
+            recorded_at=str(raw.get('recorded_at') or '').strip(),
+            metadata=_metadata(raw.get('metadata')),
+        )
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            'entry_id': self.entry_id,
+            'sequence': self.sequence,
+            'record': self.record.as_dict(),
+            'record_digest': self.record_digest,
+            'event_digest': self.event_digest,
+            'previous_entry_digest': self.previous_entry_digest,
+            'entry_digest': self.entry_digest,
+            'recorded_at': self.recorded_at,
+            'metadata': dict(self.metadata),
+        }
+
+
+@dataclass(frozen=True)
+class AuditLedgerAppendResult:
+    """Append result returned by a host-owned ledger adapter."""
+
+    status: str
+    entry_id: str = ''
+    sequence: int = -1
+    entry_digest: str = ''
+    reason_code: str = 'recorded'
+    blockers: tuple[str, ...] = field(default_factory=tuple)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, 'status', str(self.status or '').strip())
+        object.__setattr__(self, 'entry_id', str(self.entry_id or '').strip())
+        object.__setattr__(self, 'sequence', int(self.sequence))
+        object.__setattr__(self, 'entry_digest', str(self.entry_digest or '').strip())
+        object.__setattr__(self, 'reason_code', str(self.reason_code or 'recorded').strip() or 'recorded')
+        object.__setattr__(self, 'blockers', _tuple(self.blockers))
+        object.__setattr__(self, 'metadata', _metadata(self.metadata))
+        validate_audit_ledger_append_result(self)
+
+    @classmethod
+    def from_mapping(cls, value: Mapping[str, Any]) -> 'AuditLedgerAppendResult':
+        raw = require_mapping(value, reason_code='invalid_audit_ledger_append_result')
+        return cls(
+            status=str(raw.get('status') or '').strip(),
+            entry_id=str(raw.get('entry_id') or '').strip(),
+            sequence=int(raw.get('sequence') if raw.get('sequence') is not None else -1),
+            entry_digest=str(raw.get('entry_digest') or '').strip(),
+            reason_code=str(raw.get('reason_code') or 'recorded').strip() or 'recorded',
+            blockers=_tuple(raw.get('blockers') or ()),
+            metadata=_metadata(raw.get('metadata')),
+        )
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            'status': self.status,
+            'entry_id': self.entry_id,
+            'sequence': self.sequence,
+            'entry_digest': self.entry_digest,
+            'reason_code': self.reason_code,
+            'blockers': list(self.blockers),
+            'metadata': dict(self.metadata),
+        }
+
+
+@dataclass(frozen=True)
+class AuditLedgerVerificationResult:
+    """Verification summary for a bounded ledger entry sequence."""
+
+    status: str
+    verified: bool = False
+    checked_entries: int = 0
+    last_entry_id: str = ''
+    last_entry_digest: str = ''
+    reason_code: str = 'verified'
+    blockers: tuple[str, ...] = field(default_factory=tuple)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        status = str(self.status or '').strip()
+        object.__setattr__(self, 'status', status)
+        object.__setattr__(self, 'checked_entries', int(self.checked_entries))
+        object.__setattr__(self, 'last_entry_id', str(self.last_entry_id or '').strip())
+        object.__setattr__(self, 'last_entry_digest', str(self.last_entry_digest or '').strip())
+        object.__setattr__(self, 'reason_code', str(self.reason_code or status or 'verified').strip() or 'verified')
+        object.__setattr__(self, 'blockers', _tuple(self.blockers))
+        object.__setattr__(self, 'metadata', _metadata(self.metadata))
+        validate_audit_ledger_verification_result(self)
+
+    @classmethod
+    def from_mapping(cls, value: Mapping[str, Any]) -> 'AuditLedgerVerificationResult':
+        raw = require_mapping(value, reason_code='invalid_audit_ledger_verification_result')
+        return cls(
+            status=str(raw.get('status') or '').strip(),
+            verified=bool(raw.get('verified', False)),
+            checked_entries=int(raw.get('checked_entries') or 0),
+            last_entry_id=str(raw.get('last_entry_id') or '').strip(),
+            last_entry_digest=str(raw.get('last_entry_digest') or '').strip(),
+            reason_code=str(raw.get('reason_code') or raw.get('status') or 'verified').strip() or 'verified',
+            blockers=_tuple(raw.get('blockers') or ()),
+            metadata=_metadata(raw.get('metadata')),
+        )
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            'status': self.status,
+            'verified': self.verified,
+            'checked_entries': self.checked_entries,
+            'last_entry_id': self.last_entry_id,
+            'last_entry_digest': self.last_entry_digest,
+            'reason_code': self.reason_code,
+            'blockers': list(self.blockers),
+            'metadata': dict(self.metadata),
+        }
+
+
+class AuditLedgerPort(Protocol):
+    """Host-owned append/read/verify port for audit ledger adapters."""
+
+    def append(
+        self,
+        record: GovAuditRecord,
+        *,
+        record_digest: str,
+        event_digest: str = '',
+        previous_entry_digest: str = '',
+    ) -> AuditLedgerAppendResult:
+        ...
+
+    def read(self, *, after_entry_id: str = '', limit: int = 100) -> tuple[AuditLedgerEntry, ...]:
+        ...
+
+    def verify(self, entries: Iterable[AuditLedgerEntry]) -> AuditLedgerVerificationResult:
+        ...
+
+
+@dataclass(frozen=True)
 class RuntimeAdmissionResult:
     """Canonical runtime admission record.
 
@@ -472,6 +656,66 @@ def validate_audit_record(value: Mapping[str, Any] | GovAuditRecord) -> GovAudit
         raise GovApiError(f'unknown_audit_subject_kind:{item.subject_kind}')
     if item.record_type not in AUDIT_RECORD_TYPES:
         raise GovApiError(f'unknown_audit_record_type:{item.record_type}')
+    _reject_forbidden_metadata(item.metadata)
+    return item
+
+
+def validate_audit_ledger_entry(value: Mapping[str, Any] | AuditLedgerEntry) -> AuditLedgerEntry:
+    item = value if isinstance(value, AuditLedgerEntry) else AuditLedgerEntry.from_mapping(value)
+    if not item.entry_id:
+        raise GovApiError('missing_audit_ledger_entry_id')
+    if item.sequence < 0:
+        raise GovApiError('invalid_audit_ledger_sequence')
+    validate_audit_record(item.record)
+    _require_digest_ref(item.record_digest, 'missing_audit_ledger_record_digest', 'invalid_audit_ledger_record_digest')
+    _validate_optional_digest_ref(item.event_digest, 'invalid_audit_ledger_event_digest')
+    _validate_optional_digest_ref(item.previous_entry_digest, 'invalid_audit_ledger_previous_digest')
+    _validate_optional_digest_ref(item.entry_digest, 'invalid_audit_ledger_entry_digest')
+    _reject_forbidden_metadata(item.metadata)
+    return item
+
+
+def validate_audit_ledger_append_result(
+    value: Mapping[str, Any] | AuditLedgerAppendResult,
+) -> AuditLedgerAppendResult:
+    item = value if isinstance(value, AuditLedgerAppendResult) else AuditLedgerAppendResult.from_mapping(value)
+    if item.status not in AUDIT_LEDGER_APPEND_STATUSES:
+        raise GovApiError(f'unknown_audit_ledger_append_status:{item.status}')
+    if item.status == 'appended':
+        if not item.entry_id:
+            raise GovApiError('missing_audit_ledger_append_entry_id')
+        if item.sequence < 0:
+            raise GovApiError('invalid_audit_ledger_append_sequence')
+        _require_digest_ref(item.entry_digest, 'missing_audit_ledger_append_digest', 'invalid_audit_ledger_append_digest')
+    if item.status == 'rejected' and not (item.blockers or item.reason_code != 'recorded'):
+        raise GovApiError('audit_ledger_rejection_without_reason')
+    _reject_forbidden_metadata(item.metadata)
+    return item
+
+
+def validate_audit_ledger_verification_result(
+    value: Mapping[str, Any] | AuditLedgerVerificationResult,
+) -> AuditLedgerVerificationResult:
+    item = value if isinstance(value, AuditLedgerVerificationResult) else AuditLedgerVerificationResult.from_mapping(value)
+    if item.status not in AUDIT_LEDGER_VERIFY_STATUSES:
+        raise GovApiError(f'unknown_audit_ledger_verification_status:{item.status}')
+    if item.checked_entries < 0:
+        raise GovApiError('invalid_audit_ledger_checked_entries')
+    _validate_optional_digest_ref(item.last_entry_digest, 'invalid_audit_ledger_last_digest')
+    if item.status == 'verified':
+        if not item.verified:
+            raise GovApiError('audit_ledger_verified_status_mismatch')
+        if item.checked_entries < 1:
+            raise GovApiError('audit_ledger_verified_without_entries')
+        if not item.last_entry_id:
+            raise GovApiError('missing_audit_ledger_last_entry_id')
+        _require_digest_ref(item.last_entry_digest, 'missing_audit_ledger_last_digest', 'invalid_audit_ledger_last_digest')
+        if item.blockers:
+            raise GovApiError('audit_ledger_verified_with_blockers')
+    if item.status == 'failed' and not item.blockers:
+        raise GovApiError('audit_ledger_failed_without_blockers')
+    if item.status == 'empty' and item.checked_entries != 0:
+        raise GovApiError('audit_ledger_empty_with_entries')
     _reject_forbidden_metadata(item.metadata)
     return item
 
@@ -994,6 +1238,20 @@ def _reject_forbidden_metadata(value: Mapping[str, Any]) -> None:
     reason = _find_forbidden_key(value)
     if reason:
         raise GovApiError(f'forbidden_admission_metadata:{reason}')
+
+
+def _require_digest_ref(value: str, missing_reason: str, invalid_reason: str) -> str:
+    text = str(value or '').strip()
+    if not text:
+        raise GovApiError(missing_reason)
+    _validate_optional_digest_ref(text, invalid_reason)
+    return text
+
+
+def _validate_optional_digest_ref(value: str, invalid_reason: str) -> None:
+    text = str(value or '').strip()
+    if text and not text.startswith('sha256:'):
+        raise GovApiError(invalid_reason)
 
 
 def _find_forbidden_key(value: Any) -> str:
