@@ -85,7 +85,7 @@ digest, and evidence references. Receipts without binding remain valid for
 current dry-run/default-safe execution helpers, but later verifier work should
 require binding before treating a receipt as runtime evidence.
 
-Receipt binding should be additive:
+Receipt binding is additive:
 
 1. keep existing dry-run receipt constructors working;
 2. use the optional binding envelope around existing receipts;
@@ -111,8 +111,11 @@ key/trust management.
 
 ## Implementation Sequence
 
-This design is intentionally before implementation. The next implementation
-task should add the minimal receipt/admission/ticket binding helper and tests
-without enabling live execution. Evidence/review helpers should then verify
+`GovRunnerReceiptBinding` and `validate_runner_receipt_binding()` provide the
+minimal admission/ticket/request/receipt verifier. The verifier compares
+GovEngine-owned admission, request, and receipt digests when records or expected
+digests are supplied, and compares SCLite/host ticket digests only as bounded
+references. It does not canonicalize SCLite tickets, store raw evidence, or
+enable live execution. Evidence/review helpers should then verify
 admission -> request -> receipt -> evidence references without storing raw
 evidence.

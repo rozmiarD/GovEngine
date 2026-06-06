@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from typing import Any, Mapping, Protocol, Sequence
 
 from govengine.api import GovApiError, require_mapping
 from govengine.execution.approved_spec import approved_execution_steps
+from govengine.signing import govengine_record_digest
 
 FORBIDDEN_RECEIPT_BINDING_KEYS = {
     "command",
@@ -27,6 +28,7 @@ FORBIDDEN_RECEIPT_BINDING_KEYS = {
     "token",
     "url",
 }
+RUNNER_RECEIPT_STATUSES = ("dry-run", "succeeded", "blocked", "failed", "interrupted")
 
 
 @dataclass(frozen=True)
@@ -95,6 +97,8 @@ class GovRunnerReceiptBinding:
     request_digest: str = ""
     receipt_id: str = ""
     receipt_digest: str = ""
+    status: str = ""
+    reason_code: str = ""
     runner_profile: str = ""
     output_digests: Mapping[str, str] = field(default_factory=dict)
     evidence_refs: Mapping[str, str] = field(default_factory=dict)
@@ -108,6 +112,8 @@ class GovRunnerReceiptBinding:
         object.__setattr__(self, "request_digest", _clean_text(self.request_digest))
         object.__setattr__(self, "receipt_id", _clean_text(self.receipt_id))
         object.__setattr__(self, "receipt_digest", _clean_text(self.receipt_digest))
+        object.__setattr__(self, "status", _clean_text(self.status))
+        object.__setattr__(self, "reason_code", _clean_text(self.reason_code))
         object.__setattr__(self, "runner_profile", _clean_text(self.runner_profile))
         object.__setattr__(
             self,
@@ -131,6 +137,8 @@ class GovRunnerReceiptBinding:
             request_digest=raw.get("request_digest") or "",
             receipt_id=raw.get("receipt_id") or "",
             receipt_digest=raw.get("receipt_digest") or "",
+            status=raw.get("status") or "",
+            reason_code=raw.get("reason_code") or "",
             runner_profile=raw.get("runner_profile") or "",
             output_digests=raw.get("output_digests") if isinstance(raw.get("output_digests"), Mapping) else {},
             evidence_refs=raw.get("evidence_refs") if isinstance(raw.get("evidence_refs"), Mapping) else {},
@@ -147,6 +155,8 @@ class GovRunnerReceiptBinding:
             self.request_digest,
             self.receipt_id,
             self.receipt_digest,
+            self.status,
+            self.reason_code,
             self.runner_profile,
             bool(self.output_digests),
             bool(self.evidence_refs),
@@ -162,6 +172,8 @@ class GovRunnerReceiptBinding:
             "request_digest": self.request_digest,
             "receipt_id": self.receipt_id,
             "receipt_digest": self.receipt_digest,
+            "status": self.status,
+            "reason_code": self.reason_code,
             "runner_profile": self.runner_profile,
             "output_digests": dict(self.output_digests),
             "evidence_refs": dict(self.evidence_refs),
@@ -281,7 +293,7 @@ def runner_receipt_with_binding(
 ) -> GovRunnerReceipt:
     """Return a copy of a runner receipt with bounded binding references."""
 
-    return GovRunnerReceipt(
+    bound = GovRunnerReceipt(
         status=receipt.status,
         request_id=receipt.request_id,
         source=receipt.source,
@@ -297,15 +309,159 @@ def runner_receipt_with_binding(
             request_digest=request_digest,
             receipt_id=receipt_id,
             receipt_digest=receipt_digest,
+            status=receipt.status,
+            reason_code=receipt.reason_code,
             runner_profile=runner_profile,
             output_digests=output_digests or {},
             evidence_refs=evidence_refs or {},
         ),
     )
+    if not receipt_digest:
+        binding = replace(bound.binding, receipt_digest=runner_receipt_digest(bound))
+        bound = replace(bound, binding=binding)
+    return bound
+
+
+def runner_request_digest(request: GovRunnerRequest) -> str:
+    """Return the GovEngine-owned digest for a runner request record."""
+
+    return govengine_record_digest(request, record_type="govengine.execution.runner_protocol.GovRunnerRequest")
+
+
+def runner_receipt_digest(receipt: GovRunnerReceipt) -> str:
+    """Return the GovEngine-owned digest for a receipt with self-digest cleared."""
+
+    record = receipt.as_dict()
+    binding = record.get("binding")
+    if isinstance(binding, Mapping):
+        binding = dict(binding)
+        binding["receipt_digest"] = ""
+        record["binding"] = binding
+    return govengine_record_digest(record, record_type="govengine.execution.runner_protocol.GovRunnerReceipt")
+
+
+def validate_runner_receipt_binding(
+    request: GovRunnerRequest,
+    receipt: GovRunnerReceipt,
+    *,
+    admission: Any | None = None,
+    admission_id: str = "",
+    admission_digest: str = "",
+    admission_record_type: str = "govengine.admission.RuntimeAdmissionResult",
+    ticket: Mapping[str, Any] | None = None,
+    ticket_id: str = "",
+    ticket_digest: str = "",
+    request_digest: str = "",
+    receipt_digest: str = "",
+    allowed_statuses: Sequence[str] = RUNNER_RECEIPT_STATUSES,
+) -> GovRunnerReceipt:
+    """Fail closed unless a receipt binding matches the governed chain.
+
+    GovEngine computes digests only for GovEngine-owned request/receipt and
+    optional admission records. Ticket digests are compared as host/SCLite
+    supplied references; this helper does not canonicalize SCLite tickets.
+    """
+
+    binding = receipt.binding
+    if not binding.present:
+        raise GovApiError("missing_runner_receipt_binding")
+    if not binding.admission_id:
+        raise GovApiError("missing_runner_receipt_binding_admission_id")
+    if not binding.admission_digest:
+        raise GovApiError("missing_runner_receipt_binding_admission_digest")
+    if not binding.ticket_id:
+        raise GovApiError("missing_runner_receipt_binding_ticket_id")
+    if not binding.ticket_digest:
+        raise GovApiError("missing_runner_receipt_binding_ticket_digest")
+    if not binding.request_id:
+        raise GovApiError("missing_runner_receipt_binding_request_id")
+    if binding.request_id != request.request_id:
+        raise GovApiError("runner_receipt_binding_request_mismatch")
+    if not binding.request_digest:
+        raise GovApiError("missing_runner_receipt_binding_request_digest")
+    if not binding.receipt_id:
+        raise GovApiError("missing_runner_receipt_binding_receipt_id")
+    if not binding.receipt_digest:
+        raise GovApiError("missing_runner_receipt_binding_receipt_digest")
+    if not binding.status:
+        raise GovApiError("missing_runner_receipt_binding_status")
+    if binding.status != receipt.status:
+        raise GovApiError("runner_receipt_binding_status_mismatch")
+    if receipt.status not in set(allowed_statuses):
+        raise GovApiError(f"unknown_runner_receipt_status:{receipt.status}")
+
+    expected_admission_id = _record_identifier(admission, admission_id, ("admission_id", "id"))
+    if expected_admission_id and binding.admission_id != expected_admission_id:
+        raise GovApiError("runner_receipt_binding_admission_id_mismatch")
+    expected_admission_digest = _expected_admission_digest(
+        admission,
+        admission_digest=admission_digest,
+        admission_record_type=admission_record_type,
+    )
+    if expected_admission_digest and binding.admission_digest != expected_admission_digest:
+        raise GovApiError("runner_receipt_binding_admission_digest_mismatch")
+
+    expected_ticket_id = _record_identifier(ticket, ticket_id, ("ticket_id", "id"))
+    if expected_ticket_id and binding.ticket_id != expected_ticket_id:
+        raise GovApiError("runner_receipt_binding_ticket_id_mismatch")
+    expected_ticket_digest = _digest_reference(ticket, ticket_digest, ("ticket_digest", "digest", "artifact_digest"))
+    if expected_ticket_digest and binding.ticket_digest != expected_ticket_digest:
+        raise GovApiError("runner_receipt_binding_ticket_digest_mismatch")
+
+    expected_request_digest = _clean_text(request_digest) or runner_request_digest(request)
+    if binding.request_digest != expected_request_digest:
+        raise GovApiError("runner_receipt_binding_request_digest_mismatch")
+    expected_receipt_digest = _clean_text(receipt_digest) or runner_receipt_digest(receipt)
+    if binding.receipt_digest != expected_receipt_digest:
+        raise GovApiError("runner_receipt_binding_receipt_digest_mismatch")
+    return receipt
 
 
 def _clean_text(value: Any) -> str:
     return str(value or "").strip()
+
+
+def _expected_admission_digest(
+    admission: Any | None,
+    *,
+    admission_digest: str,
+    admission_record_type: str,
+) -> str:
+    explicit = _clean_text(admission_digest)
+    if explicit:
+        return explicit
+    if admission is None:
+        return ""
+    return govengine_record_digest(admission, record_type=admission_record_type)
+
+
+def _record_identifier(value: Any | None, explicit: str, keys: Sequence[str]) -> str:
+    if explicit:
+        return _clean_text(explicit)
+    if value is None:
+        return ""
+    for key in keys:
+        item = getattr(value, key, "")
+        if item:
+            return _clean_text(item)
+    if isinstance(value, Mapping):
+        for key in keys:
+            item = value.get(key)
+            if item:
+                return _clean_text(item)
+    return ""
+
+
+def _digest_reference(value: Mapping[str, Any] | None, explicit: str, keys: Sequence[str]) -> str:
+    if explicit:
+        return _clean_text(explicit)
+    if not isinstance(value, Mapping):
+        return ""
+    for key in keys:
+        item = value.get(key)
+        if item:
+            return _clean_text(item)
+    return ""
 
 
 def _bounded_string_mapping(

@@ -15,7 +15,11 @@ The top-level export stability classification lives in [API_STABILITY_MATRIX.md]
 `govengine.runtime_shell.validate_runtime_snapshot()` checks host-provided control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without accepting raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 `govengine.planning.validate_task_contract()` and `validate_plan_intent_contract()` check neutral planner-to-runtime handoff shapes without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 `govengine.admission.validate_admission_decision()`, `validate_policy_decision()`, `validate_approval_request()`, `validate_audit_record()`, and `validate_runtime_admission_result()` check neutral runtime gate records without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
-`govengine.execution.supervision.validate_supervised_runner_request()` and `validate_runner_receipt_for_request()` check approved-spec runner supervision and receipt boundaries without accepting raw intent or granting live backend ownership.
+`govengine.execution.supervision.validate_supervised_runner_request()`,
+`validate_runner_receipt_for_request()`, and
+`validate_runner_receipt_binding()` check approved-spec runner supervision,
+receipt, and bounded admission/ticket/request/receipt binding boundaries without
+accepting raw intent or granting live backend ownership.
 `govengine.review.qualify_evidence_claim()` checks neutral evidence claims against receipt bounds without accepting raw targets, raw output, commands, credentials, storage, carrier payloads, or live-execution claims.
 `govengine.profiles.validate_profile_conformance()` checks contract-only domain profile declarations without granting domain taxonomy, carrier adapter, credential, product UX, or live-execution ownership.
 `govengine.contract_proofs.validate_runtime_contract_proof()` checks public-safe multi-profile contract proof fixtures without granting adapter, credential, scheduler, storage, live-execution, or new OODA ownership.

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 from govengine.api import GovApiError
@@ -7,7 +9,9 @@ from govengine.execution.runner_protocol import (
     GovRunnerReceiptBinding,
     dry_run_runner_receipt,
     normalize_runner_steps,
+    runner_receipt_digest,
     runner_receipt_with_binding,
+    runner_request_digest,
     runner_request_from_approved_spec,
 )
 
@@ -76,6 +80,25 @@ def test_runner_receipt_with_binding_adds_bounded_references() -> None:
     assert binding["runner_profile"] == "dry-run"
     assert binding["output_digests"] == {"stdout": "sha256:stdout"}
     assert binding["evidence_refs"] == {"review": "artifact://review/1"}
+
+
+def test_runner_receipt_binding_auto_digest_changes_when_receipt_mutates() -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id="r-digest")
+    receipt = runner_receipt_with_binding(
+        dry_run_runner_receipt(request),
+        admission_id="admission-1",
+        admission_digest="sha256:" + "a" * 64,
+        ticket_id="ticket-1",
+        ticket_digest="sha256:" + "b" * 64,
+        request_digest=runner_request_digest(request),
+        receipt_id="receipt-1",
+    )
+
+    assert receipt.binding.status == "dry-run"
+    assert receipt.binding.reason_code == "dry_run_requested"
+    assert receipt.binding.receipt_digest == runner_receipt_digest(receipt)
+    assert receipt.binding.receipt_digest.startswith("sha256:")
+    assert runner_receipt_digest(replace(receipt, reason_code="tampered")) != receipt.binding.receipt_digest
 
 
 def test_runner_receipt_binding_rejects_raw_output_fields() -> None:
