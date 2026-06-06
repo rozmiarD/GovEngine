@@ -43,6 +43,24 @@ absence of a live runner unless a later, explicitly reviewed task first closes
 the missing prerequisites above. The safe runtime path remains dry-run,
 host-neutral, SCLite-aware, and receipt-bound.
 
+## GE-033 Unsafe Runner Negative-Test Disposition
+
+The unsafe live runner cases are not applicable as live-runner behavior because
+GovEngine does not provide `LocalSubprocessRunner`.
+
+The regression coverage for this stage must therefore prove:
+
+- shell-string execution remains absent;
+- out-of-scope cwd handling remains absent from GovEngine-owned live behavior;
+- unallowlisted environment inheritance remains absent;
+- missing timeout live execution remains absent;
+- maximum-output enforcement is still a missing prerequisite, not a bypassed
+  behavior;
+- redaction policy is still a missing prerequisite, not an optional live-output
+  publication step;
+- receipt emission remains covered only by `DryRunRunner` and runner receipt
+  binding helpers until a future host-owned live adapter is explicitly reviewed.
+
 ## Non-Claims
 
 - no live execution authority;
