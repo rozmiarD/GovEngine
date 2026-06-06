@@ -79,6 +79,13 @@ to:
 `allowed=True` must imply that `status` is `allowed`. A blocked or review-only
 status must include at least one blocker or required next action.
 
+The receipt/admission/ticket binding design is documented in
+[RECEIPT_BINDING.md](RECEIPT_BINDING.md). The binding design describes
+`admission_id`, `admission_digest`, `ticket_id`, `ticket_digest`, `request_id`,
+`receipt_id`, status, output digests, evidence refs, and compatibility with the
+existing dry-run `GovRunnerReceipt` shape. It is a review contract, not an
+execution grant.
+
 ## Gate Semantics
 
 The result is fail-closed:
