@@ -505,8 +505,8 @@ def compose_runtime_admission_result(
     policy_status = _policy_signal_status(policy_summary)
     ticket_status = _ticket_signal_status(ticket_summary)
     trust_status = _trust_signal_status(trust_summary)
-    guarded_status = _signal_status(guarded_summary, ('verification_status', 'guarded_status', 'status'))
-    replay_status = _signal_status(replay_summary, ('replay_status', 'status')) or _signal_status(guarded_summary, ('replay_status',))
+    guarded_status = _guarded_runtime_status(guarded_summary)
+    replay_status = _replay_runtime_status(replay_summary, guarded_summary)
 
     runner = RunnerProfile(
         name=str(runner_summary.get('name') or runner_summary.get('profile') or '').strip() or 'missing',
@@ -693,6 +693,27 @@ def _trust_signal_status(payload: Mapping[str, Any]) -> str:
     if 'trusted' in payload:
         return 'trusted' if _bool_value(payload.get('trusted'), default=False) else 'denied'
     return _signal_status(payload, ('trust_status', 'status', 'verification_status')) or 'unknown'
+
+
+def _guarded_runtime_status(payload: Mapping[str, Any]) -> str:
+    if not payload:
+        return ''
+    if _explicit_false(payload, 'guarded') or _explicit_false(payload, 'kernel_guard_present'):
+        return 'not_guarded'
+    if (
+        _explicit_false(payload, 'strict')
+        or _explicit_false(payload, 'strict_lifecycle')
+        or _explicit_false(payload, 'guarded_strict')
+    ):
+        return 'not_strict'
+    return _signal_status(payload, ('verification_status', 'guarded_status', 'status'))
+
+
+def _replay_runtime_status(replay_payload: Mapping[str, Any], guarded_payload: Mapping[str, Any]) -> str:
+    return (
+        _signal_status(replay_payload, ('replay_status', 'status'))
+        or _signal_status(guarded_payload, ('replay_status',))
+    )
 
 
 def _status_in(value: str, allowed: tuple[str, ...]) -> bool:

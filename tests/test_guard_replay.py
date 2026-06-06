@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+from govengine import compose_runtime_admission_result
 from govengine.api import GovApiError
 from govengine.replay import (
     GuardReplayRecord,
@@ -38,6 +39,29 @@ def _guard(root_tag: str = "tag-1") -> dict[str, str]:
         "chain_id": "chain-1",
         "key_id": "key-20260525",
     }
+
+
+def _runtime_admission_inputs(**overrides):
+    values = {
+        "admission_id": "runtime-admission-guard-1",
+        "subject_ref": "sha256:prepared-contract",
+        "prepared_execution_contract": {"status": "prepared", "digest": "sha256:contract"},
+        "policy_decision": {"decision": "allow", "policy_id": "policy-1"},
+        "execution_ticket": {
+            "status": "passed",
+            "ticket_id": "ticket-1",
+            "digest": "sha256:ticket",
+        },
+        "trust_decision": {
+            "status": "passed",
+            "trust_status": "trusted",
+            "verifier_id": "fixture",
+        },
+        "runner_profile": {"name": "dry-run", "allowed": True, "live_backend_enabled": False},
+        "receipt_obligation": {"required": True, "binds": ["admission", "ticket"]},
+    }
+    values.update(overrides)
+    return values
 
 
 def test_guard_replay_record_from_guard_captures_runtime_ids() -> None:
@@ -200,3 +224,53 @@ def test_verify_guard_and_record_replay_requires_strict_lifecycle(tmp_path: Path
 
     assert decision.allowed is False
     assert decision.blocker == "strict_lifecycle_required_for_runtime_consumable_guard"
+
+
+@pytest.mark.parametrize(
+    "guarded_decision",
+    (
+        None,
+        {"status": "passed", "verification_status": "passed", "guarded": False},
+        {"status": "passed", "verification_status": "passed", "strict": False},
+        {"status": "blocked", "verification_status": "failed"},
+    ),
+)
+def test_runtime_admission_blocks_missing_or_non_strict_guarded_bundle(
+    guarded_decision,
+) -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        runtime_consumable=True,
+        sclite_guarded_strict=guarded_decision,
+        replay_freshness={"status": "allowed", "replay_status": "fresh"},
+    ))
+
+    assert result.allowed is False
+    assert result.reason_code == "signature_required"
+    assert "missing_or_invalid_kernel_guard" in result.blockers
+
+
+@pytest.mark.parametrize("replay_status", ("replayed", "stale", "expired"))
+def test_runtime_admission_blocks_replayed_or_stale_guarded_bundle(
+    replay_status: str,
+) -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        runtime_consumable=True,
+        sclite_guarded_strict={"status": "allowed", "verification_status": "passed"},
+        replay_freshness={"status": "blocked", "replay_status": replay_status},
+    ))
+
+    assert result.allowed is False
+    assert result.reason_code == "replay_detected"
+    assert "missing_or_replayed_guarded_root" in result.blockers
+
+
+def test_runtime_admission_keeps_review_only_bundle_posture_distinct() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        runtime_consumable=False,
+        sclite_guarded_strict={"status": "blocked", "verification_status": "failed"},
+        replay_freshness={"status": "blocked", "replay_status": "stale"},
+    ))
+
+    assert result.allowed is True
+    assert result.status == "allowed"
+    assert result.reason_code == "all_required_gates_passed"
