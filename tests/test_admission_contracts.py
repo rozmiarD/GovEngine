@@ -461,9 +461,44 @@ def test_compose_runtime_admission_result_requires_receipt_obligation() -> None:
     assert 'require_runner_receipt_obligation' in result.required_next_actions
 
 
+@pytest.mark.parametrize('receipt_obligation', (None, {'required': False}, {'status': 'optional'}))
+def test_compose_runtime_admission_result_blocks_missing_or_disabled_receipt_obligation(
+    receipt_obligation,
+) -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        receipt_obligation=receipt_obligation,
+    ))
+
+    assert result.allowed is False
+    assert result.reason_code == 'receipt_obligation_required'
+    assert result.blockers == ('receipt_obligation_required',)
+    assert result.required_next_actions == ('require_runner_receipt_obligation',)
+
+
+@pytest.mark.parametrize(
+    ('runner_profile', 'expected_blocker', 'expected_action'),
+    (
+        (None, 'missing_runner_profile', 'select_allowed_runner_profile'),
+        ({'name': 'local', 'allowed': False}, 'runner_profile_not_allowed', 'select_allowed_runner_profile'),
+    ),
+)
+def test_compose_runtime_admission_result_blocks_missing_or_disallowed_runner_profile(
+    runner_profile,
+    expected_blocker,
+    expected_action,
+) -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(runner_profile=runner_profile))
+
+    assert result.allowed is False
+    assert result.reason_code == expected_blocker
+    assert expected_blocker in result.blockers
+    assert expected_action in result.required_next_actions
+
+
 def test_compose_runtime_admission_result_keeps_live_disabled_by_default() -> None:
     result = compose_runtime_admission_result(**_runtime_admission_inputs(live=True))
 
     assert result.allowed is False
-    assert result.reason_code == 'execution_disabled'
+    assert result.reason_code == 'live_backend_disabled'
     assert 'live_backend_disabled' in result.blockers
+    assert 'use_dry_run_or_select_host_enabled_live_profile' in result.required_next_actions

@@ -85,6 +85,11 @@ TRUST_RUNTIME_ACTIONS = {
     'trust_signer_not_allowed': 'use_allowed_signer_or_update_trust_policy',
     'unknown_trust_decision_status': 'obtain_valid_trust_decision',
 }
+RUNNER_RUNTIME_ACTIONS = {
+    'missing_runner_profile': 'select_allowed_runner_profile',
+    'runner_profile_not_allowed': 'select_allowed_runner_profile',
+    'live_backend_disabled': 'use_dry_run_or_select_host_enabled_live_profile',
+}
 
 FORBIDDEN_ADMISSION_METADATA_KEYS = (
     'raw_intent',
@@ -552,15 +557,26 @@ def compose_runtime_admission_result(
             TRUST_RUNTIME_ACTIONS[trust_blocker],
         )
 
+    runner_blocker = _runner_runtime_blocker(runner_summary, runner, live)
+    if runner_blocker:
+        blockers = _replace_or_append(blockers, 'runner_profile_not_allowed', runner_blocker)
+        required_next_actions = _replace_or_append(
+            required_next_actions,
+            'select_allowed_runner_profile',
+            RUNNER_RUNTIME_ACTIONS[runner_blocker],
+        )
+
+    receipt_blocker = ''
     if not _receipt_obligation_required(receipt_summary):
-        blockers.append('receipt_obligation_required')
+        receipt_blocker = 'receipt_obligation_required'
+        blockers.append(receipt_blocker)
         required_next_actions.append('require_runner_receipt_obligation')
 
     blockers_tuple = _dedupe(blockers)
     actions_tuple = _dedupe(required_next_actions)
     allowed = gate_decision.allowed and not blockers_tuple
     reason_code = 'all_required_gates_passed' if allowed else (
-        policy_blocker or ticket_blocker or trust_blocker or (
+        policy_blocker or ticket_blocker or trust_blocker or runner_blocker or receipt_blocker or (
             gate_decision.reason_code if not gate_decision.allowed else blockers_tuple[0]
         )
     )
@@ -752,6 +768,16 @@ def _trust_runtime_blocker(trust_status: str) -> str:
     if trust_status == 'missing':
         return 'missing_or_invalid_trust_decision'
     return TRUST_RUNTIME_BLOCKERS.get(trust_status, 'unknown_trust_decision_status')
+
+
+def _runner_runtime_blocker(payload: Mapping[str, Any], runner: Any, live: bool) -> str:
+    if not payload:
+        return 'missing_runner_profile'
+    if not runner.allowed:
+        return 'runner_profile_not_allowed'
+    if live and not runner.live_backend_enabled:
+        return 'live_backend_disabled'
+    return ''
 
 
 def _replace_or_append(values: Iterable[Any], old: str, new: str) -> list[str]:
