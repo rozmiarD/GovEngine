@@ -14,6 +14,24 @@ AUDIT_RECORD_TYPES = ('admission_decision', 'policy_decision', 'approval_request
 RUNTIME_ADMISSION_STATUSES = ('allowed', 'blocked', 'dry_run_only', 'needs_review', 'record_only')
 PREPARED_EXECUTION_CONTRACT_STATUSES = ('prepared', 'passed', 'ok', 'allowed')
 RECEIPT_OBLIGATION_STATUSES = ('required', 'passed', 'ok')
+POLICY_RUNTIME_BLOCKERS = {
+    'deny': 'policy_denied',
+    'denied': 'policy_denied',
+    'defer': 'policy_deferred',
+    'deferred': 'policy_deferred',
+    'require_approval': 'policy_requires_approval',
+    'dry_run_only': 'policy_dry_run_only',
+    'record_only': 'policy_record_only',
+}
+POLICY_RUNTIME_ACTIONS = {
+    'policy_denied': 'revise_request_or_policy',
+    'policy_deferred': 'resolve_policy_deferral',
+    'policy_requires_approval': 'obtain_operator_approval',
+    'policy_dry_run_only': 'use_dry_run_only_path',
+    'policy_record_only': 'record_without_execution',
+    'unknown_policy_decision': 'obtain_valid_policy_decision',
+    'missing_or_invalid_policy_decision': 'obtain_policy_decision',
+}
 
 FORBIDDEN_ADMISSION_METADATA_KEYS = (
     'raw_intent',
@@ -456,6 +474,14 @@ def compose_runtime_admission_result(
     gate_decision = ExecutionGate().evaluate(gate_input, live=live)
     blockers = list(gate_decision.blockers)
     required_next_actions = list(gate_decision.next_actions)
+    policy_blocker = _policy_runtime_blocker(policy_status)
+    if policy_blocker:
+        blockers = _replace_or_append(blockers, 'missing_or_invalid_policy_decision', policy_blocker)
+        required_next_actions = _replace_or_append(
+            required_next_actions,
+            'obtain_policy_decision',
+            POLICY_RUNTIME_ACTIONS[policy_blocker],
+        )
 
     if not _receipt_obligation_required(receipt_summary):
         blockers.append('receipt_obligation_required')
@@ -464,14 +490,15 @@ def compose_runtime_admission_result(
     blockers_tuple = _dedupe(blockers)
     actions_tuple = _dedupe(required_next_actions)
     allowed = gate_decision.allowed and not blockers_tuple
-    reason_code = 'all_required_gates_passed' if allowed else (
+    reason_code = 'all_required_gates_passed' if allowed else policy_blocker or (
         gate_decision.reason_code if not gate_decision.allowed else blockers_tuple[0]
     )
+    status = 'allowed' if allowed else _policy_runtime_status(policy_status)
 
     return validate_runtime_admission_result(RuntimeAdmissionResult(
         admission_id=admission_id,
         subject_ref=subject_ref,
-        status='allowed' if allowed else 'blocked',
+        status=status,
         allowed=allowed,
         reason_code=reason_code,
         blockers=blockers_tuple,
@@ -596,6 +623,39 @@ def _trust_signal_status(payload: Mapping[str, Any]) -> str:
 
 def _status_in(value: str, allowed: tuple[str, ...]) -> bool:
     return value in allowed
+
+
+def _policy_runtime_blocker(policy_status: str) -> str:
+    if policy_status in {'allow', 'allowed', 'passed', 'ok'}:
+        return ''
+    if policy_status == 'missing':
+        return 'missing_or_invalid_policy_decision'
+    return POLICY_RUNTIME_BLOCKERS.get(policy_status, 'unknown_policy_decision')
+
+
+def _policy_runtime_status(policy_status: str) -> str:
+    if policy_status == 'dry_run_only':
+        return 'dry_run_only'
+    if policy_status == 'record_only':
+        return 'record_only'
+    if policy_status in {'defer', 'deferred', 'require_approval'}:
+        return 'needs_review'
+    return 'blocked'
+
+
+def _replace_or_append(values: Iterable[Any], old: str, new: str) -> list[str]:
+    out: list[str] = []
+    replaced = False
+    for value in values:
+        item = str(value).strip()
+        if item == old:
+            out.append(new)
+            replaced = True
+        else:
+            out.append(item)
+    if not replaced:
+        out.append(new)
+    return out
 
 
 def _explicit_false(payload: Mapping[str, Any], key: str) -> bool:
