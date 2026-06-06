@@ -14,13 +14,17 @@ from govengine.signing import (
     SigningPolicy,
     SigningRequest,
     SignatureEnvelope,
+    SignedArtifact,
     TrustPolicy,
     VerificationResult,
     canonical_govengine_record,
     demo_sign_and_verify,
+    demo_sign_govengine_record,
     govengine_record_digest,
+    signed_artifact_from_record,
     signature_envelope_from_artifact,
     signature_transition_decision,
+    verify_signed_govengine_record,
 )
 
 
@@ -272,4 +276,122 @@ def test_canonical_govengine_record_rejects_non_string_mapping_keys() -> None:
         canonical_govengine_record(
             {"status": "allowed", 1: "colliding-key"},
             record_type="govengine.admission.RuntimeAdmissionResult",
+        )
+
+
+def test_demo_signed_govengine_record_binds_digest_signer_and_payload_ref() -> None:
+    record = {"status": "allowed", "reason_code": "ok"}
+
+    signed = demo_sign_govengine_record(
+        record,
+        record_type="govengine.admission.RuntimeAdmissionResult",
+        payload_ref="artifact://admission/runtime-1",
+        signer_id="owner-demo",
+    )
+
+    expected_digest = govengine_record_digest(record, record_type="govengine.admission.RuntimeAdmissionResult")
+    parsed = SignedArtifact.from_mapping(signed.as_dict())
+
+    assert parsed.as_dict() == signed.as_dict()
+    assert signed.record_digest == expected_digest
+    assert signed.payload_ref == "artifact://admission/runtime-1"
+    assert signed.signer_id == "owner-demo"
+    assert signed.signature.binds_digest == expected_digest
+    assert signed.signature.metadata["demo_only"] is True
+    assert signed.signature.metadata["payload_ref"] == "artifact://admission/runtime-1"
+
+
+def test_verify_signed_govengine_record_uses_host_verifier_port() -> None:
+    record = {"status": "allowed", "reason_code": "ok"}
+    signed = demo_sign_govengine_record(
+        record,
+        record_type="govengine.admission.RuntimeAdmissionResult",
+        payload_ref="artifact://admission/runtime-1",
+        signer_id="owner-demo",
+    )
+
+    verification = verify_signed_govengine_record(
+        record,
+        signed,
+        verifier=DemoDigestVerifier(allowed_signer_ids=("owner-demo",)),
+    )
+
+    assert verification.status == "passed"
+    assert verification.trusted is True
+
+
+def test_verify_signed_govengine_record_rejects_tampered_record() -> None:
+    record = {"status": "allowed", "reason_code": "ok"}
+    signed = demo_sign_govengine_record(
+        record,
+        record_type="govengine.admission.RuntimeAdmissionResult",
+        payload_ref="artifact://admission/runtime-1",
+        signer_id="owner-demo",
+    )
+
+    verification = verify_signed_govengine_record(
+        {"status": "blocked", "reason_code": "policy_denied"},
+        signed,
+        verifier=DemoDigestVerifier(allowed_signer_ids=("owner-demo",)),
+    )
+
+    assert verification.status == "failed"
+    assert verification.reason_code == "signed_record_digest_mismatch"
+    assert verification.metadata["payload_ref"] == "artifact://admission/runtime-1"
+
+
+def test_signed_artifact_from_record_requires_payload_ref() -> None:
+    record = {"status": "allowed", "reason_code": "ok"}
+    signed = demo_sign_govengine_record(
+        record,
+        record_type="govengine.admission.RuntimeAdmissionResult",
+        payload_ref="artifact://admission/runtime-1",
+        signer_id="owner-demo",
+    )
+
+    with pytest.raises(GovApiError, match="missing_signed_payload_ref"):
+        signed_artifact_from_record(
+            record,
+            record_type="govengine.admission.RuntimeAdmissionResult",
+            payload_ref="",
+            signature=signed.signature,
+        )
+
+
+def test_signed_artifact_rejects_unsigned_signature() -> None:
+    record = {"status": "allowed", "reason_code": "ok"}
+
+    with pytest.raises(GovApiError, match="missing_signed_record_signature"):
+        SignedArtifact(
+            record_type="govengine.admission.RuntimeAdmissionResult",
+            record_digest=govengine_record_digest(record, record_type="govengine.admission.RuntimeAdmissionResult"),
+            payload_ref="artifact://admission/runtime-1",
+            signature=SignatureEnvelope(),
+        )
+
+
+def test_signed_artifact_from_record_rejects_mismatched_signature_digest() -> None:
+    record = {"status": "allowed", "reason_code": "ok"}
+
+    with pytest.raises(GovApiError, match="signed_record_digest_mismatch"):
+        signed_artifact_from_record(
+            record,
+            record_type="govengine.admission.RuntimeAdmissionResult",
+            payload_ref="artifact://admission/runtime-1",
+            signature=SignatureEnvelope(
+                mode="detached_signature",
+                signer_id="owner-demo",
+                signature="sig",
+                binds_digest="sha256:" + ("0" * 64),
+            ),
+        )
+
+
+def test_signed_artifact_rejects_invalid_digest() -> None:
+    with pytest.raises(GovApiError, match="invalid_signed_record_digest"):
+        SignedArtifact(
+            record_type="govengine.admission.RuntimeAdmissionResult",
+            record_digest="sha256:not-a-real-digest",
+            payload_ref="artifact://admission/runtime-1",
+            signature=SignatureEnvelope(),
         )

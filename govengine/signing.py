@@ -4,6 +4,7 @@ import json
 from dataclasses import asdict, dataclass, field, is_dataclass
 from hashlib import sha256
 from math import isfinite
+from string import hexdigits
 from typing import Any, Mapping, Protocol
 
 from govengine.api import GovApiError, require_mapping
@@ -133,6 +134,76 @@ class VerificationResult:
         }
 
 
+@dataclass(frozen=True)
+class SignedArtifact:
+    """Envelope for a signed GovEngine-owned record.
+
+    The envelope binds a GovEngine-owned record digest, signer metadata, and a
+    payload reference. It does not implement PKI, KMS, key storage, or SCLite
+    canonicalization.
+    """
+
+    record_type: str
+    record_digest: str
+    payload_ref: str
+    signature: SignatureEnvelope | Mapping[str, Any] = field(default_factory=SignatureEnvelope)
+    schema_version: str = "v1"
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        record_type = _validate_govengine_record_type(self.record_type)
+        record_digest = _validate_govengine_record_digest(self.record_digest)
+        payload_ref = str(self.payload_ref or "").strip()
+        if not payload_ref:
+            raise GovApiError("missing_signed_payload_ref")
+        signature = self.signature if isinstance(self.signature, SignatureEnvelope) else SignatureEnvelope.from_mapping(self.signature)
+        if not signature.signed:
+            raise GovApiError("missing_signed_record_signature")
+        if not signature.signer_id:
+            raise GovApiError("missing_signed_record_signer")
+        if signature.binds_digest != record_digest:
+            raise GovApiError("signed_record_digest_mismatch")
+        metadata = self.metadata if isinstance(self.metadata, Mapping) else {}
+        object.__setattr__(self, "record_type", record_type)
+        object.__setattr__(self, "record_digest", record_digest)
+        object.__setattr__(self, "payload_ref", payload_ref)
+        object.__setattr__(self, "signature", signature)
+        object.__setattr__(self, "schema_version", str(self.schema_version or "v1"))
+        object.__setattr__(self, "metadata", dict(metadata))
+
+    @classmethod
+    def from_mapping(cls, value: Mapping[str, Any]) -> "SignedArtifact":
+        raw = require_mapping(value, reason_code="invalid_signed_artifact")
+        signature = raw.get("signature") if isinstance(raw.get("signature"), Mapping) else {}
+        signature_payload = dict(signature)
+        if raw.get("signer_id") and not signature_payload.get("signer_id"):
+            signature_payload["signer_id"] = raw.get("signer_id")
+        metadata = raw.get("metadata") if isinstance(raw.get("metadata"), Mapping) else {}
+        return cls(
+            record_type=str(raw.get("record_type") or ""),
+            record_digest=str(raw.get("record_digest") or raw.get("digest") or ""),
+            payload_ref=str(raw.get("payload_ref") or raw.get("payload_reference") or ""),
+            signature=SignatureEnvelope.from_mapping(signature_payload),
+            schema_version=str(raw.get("schema_version") or "v1"),
+            metadata=dict(metadata),
+        )
+
+    @property
+    def signer_id(self) -> str:
+        return self.signature.signer_id
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "record_type": self.record_type,
+            "record_digest": self.record_digest,
+            "payload_ref": self.payload_ref,
+            "signer_id": self.signer_id,
+            "signature": self.signature.as_dict(),
+            "metadata": dict(self.metadata),
+        }
+
+
 def canonical_govengine_record(
     record: Mapping[str, Any] | Any,
     *,
@@ -171,18 +242,55 @@ def govengine_record_digest(
     return f"sha256:{sha256(payload.encode('utf-8')).hexdigest()}"
 
 
+def signed_artifact_from_record(
+    record: Mapping[str, Any] | Any,
+    *,
+    record_type: str,
+    payload_ref: str,
+    signature: SignatureEnvelope | Mapping[str, Any],
+    schema_version: str = "v1",
+    metadata: Mapping[str, Any] | None = None,
+) -> SignedArtifact:
+    """Create a signed-artifact envelope for a GovEngine-owned record."""
+
+    return SignedArtifact(
+        record_type=record_type,
+        record_digest=govengine_record_digest(record, record_type=record_type, schema_version=schema_version),
+        payload_ref=payload_ref,
+        signature=signature,
+        schema_version=schema_version,
+        metadata=metadata or {},
+    )
+
+
 def _resolve_govengine_record_type(record: Any, *, record_type: str) -> str:
     explicit = str(record_type or "").strip()
     if explicit:
-        if not explicit.startswith("govengine."):
-            raise GovApiError("invalid_govengine_record_type", "record_type must start with govengine.")
-        return explicit
+        return _validate_govengine_record_type(explicit)
     if is_dataclass(record) and not isinstance(record, type):
         cls = record.__class__
         module = str(cls.__module__)
         if module.startswith("govengine."):
             return f"{module}.{cls.__name__}"
     raise GovApiError("missing_govengine_record_type", "mapping records require an explicit govengine.* record_type")
+
+
+def _validate_govengine_record_type(record_type: str) -> str:
+    resolved = str(record_type or "").strip()
+    if not resolved:
+        raise GovApiError("missing_govengine_record_type")
+    if not resolved.startswith("govengine."):
+        raise GovApiError("invalid_govengine_record_type", "record_type must start with govengine.")
+    return resolved
+
+
+def _validate_govengine_record_digest(record_digest: str) -> str:
+    digest = str(record_digest or "").strip().lower()
+    prefix = "sha256:"
+    value = digest.removeprefix(prefix)
+    if not digest.startswith(prefix) or len(value) != 64 or any(char not in hexdigits for char in value):
+        raise GovApiError("invalid_signed_record_digest")
+    return digest
 
 
 def _canonical_record_value(value: Any) -> Any:
@@ -280,6 +388,47 @@ def demo_sign_and_verify(
     return signing, verification
 
 
+def demo_sign_govengine_record(
+    record: Mapping[str, Any] | Any,
+    *,
+    record_type: str,
+    payload_ref: str,
+    signer_id: str = "demo-signer",
+    purpose: str = "govengine_record",
+    schema_version: str = "v1",
+) -> SignedArtifact:
+    """Create a demo-only signed envelope for a GovEngine-owned record."""
+
+    record_digest = govengine_record_digest(record, record_type=record_type, schema_version=schema_version)
+    descriptor = ArtifactDescriptor(
+        "govengine_record",
+        schema_version,
+        record_digest,
+        role=record_type,
+        path=payload_ref,
+        metadata={"demo_only": True},
+    )
+    signing = DemoDigestSigner(signer_id=signer_id).sign(
+        SigningRequest(descriptor=descriptor, purpose=purpose, metadata={"demo_only": True, "record_type": record_type})
+    )
+    signature = SignatureEnvelope(
+        mode=signing.signature.mode,
+        signer_id=signing.signature.signer_id,
+        signature=signing.signature.signature,
+        binds_digest=signing.signature.binds_digest,
+        algorithm=signing.signature.algorithm,
+        metadata={**dict(signing.signature.metadata), "record_type": record_type, "payload_ref": payload_ref},
+    )
+    return SignedArtifact(
+        record_type=record_type,
+        record_digest=record_digest,
+        payload_ref=payload_ref,
+        signature=signature,
+        schema_version=schema_version,
+        metadata={"demo_only": True, "purpose": purpose},
+    )
+
+
 class SignerPort(Protocol):
     """Host-provided signing port. GovEngine core must not store keys."""
 
@@ -292,6 +441,38 @@ class VerifierPort(Protocol):
 
     def verify(self, descriptor: ArtifactDescriptor, signature: SignatureEnvelope) -> VerificationResult:
         ...
+
+
+def verify_signed_govengine_record(
+    record: Mapping[str, Any] | Any,
+    signed_artifact: SignedArtifact | Mapping[str, Any],
+    *,
+    verifier: VerifierPort,
+) -> VerificationResult:
+    """Verify a signed GovEngine-owned record envelope with a host verifier."""
+
+    artifact = signed_artifact if isinstance(signed_artifact, SignedArtifact) else SignedArtifact.from_mapping(signed_artifact)
+    computed_digest = govengine_record_digest(
+        record,
+        record_type=artifact.record_type,
+        schema_version=artifact.schema_version,
+    )
+    if computed_digest != artifact.record_digest:
+        return VerificationResult(
+            status="failed",
+            trust_status="denied",
+            reason_code="signed_record_digest_mismatch",
+            verifier_id=str(getattr(verifier, "verifier_id", "")),
+            metadata={"record_type": artifact.record_type, "payload_ref": artifact.payload_ref},
+        )
+    descriptor = ArtifactDescriptor(
+        "govengine_record",
+        artifact.schema_version,
+        artifact.record_digest,
+        role=artifact.record_type,
+        path=artifact.payload_ref,
+    )
+    return verifier.verify(descriptor, artifact.signature)
 
 
 def signature_transition_decision(

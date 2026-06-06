@@ -37,8 +37,8 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 | alpha | govengine.runtime_shell | `GovControlAction`, `GovQueueLane`, `GovQueueSnapshot`, `GovRuntimeSnapshot`, `GovSchedulerTick`, `control_action_from_host_action`, `queue_snapshot_from_lanes`, `validate_control_action`, `validate_queue_snapshot`, `validate_runtime_snapshot`, `validate_scheduler_tick` | Host-provided runtime shell projection; no scheduler/storage/live-execution authority. |
 | alpha | govengine.sclite_contracts lazy exports | `GovSCLiteLifecycleVerifier`, `review_bundle_state`, `review_bundle_transition_decision`, `review_sclite_bundle`, `verify_lifecycle_manifest` | Lazy SCLite bridge exports; SCLite owns lifecycle and review verification. |
 | alpha | govengine.scope_ports | `FunctionalScopePort`, `GovScopePort` | Host-neutral scope port protocols/helpers. |
-| alpha | govengine.signing | `SignatureEnvelope`, `SigningPolicy`, `TrustPolicy`, `VerificationResult`, `canonical_govengine_record`, `govengine_record_digest` | Host-provided signer/verifier/trust decision records plus deterministic serialization/digest helpers for GovEngine-owned records only; no SCLite canonicalization, PKI/KMS, or key-store ownership. |
-| fixture | govengine.signing demo helpers | `DemoDigestSigner`, `DemoDigestVerifier`, `demo_sign_and_verify` | Deterministic demo-only signer/verifier helpers; not cryptographic identity proof. |
+| alpha | govengine.signing | `SignatureEnvelope`, `SignedArtifact`, `SigningPolicy`, `TrustPolicy`, `VerificationResult`, `canonical_govengine_record`, `govengine_record_digest`, `signed_artifact_from_record`, `verify_signed_govengine_record` | Host-provided signer/verifier/trust decision records plus deterministic serialization/digest and signed-envelope helpers for GovEngine-owned records only; no SCLite canonicalization, PKI/KMS, or key-store ownership. |
+| fixture | govengine.signing demo helpers | `DemoDigestSigner`, `DemoDigestVerifier`, `demo_sign_and_verify`, `demo_sign_govengine_record` | Deterministic demo-only signer/verifier helpers; not cryptographic identity proof. |
 | alpha | govengine.state_index | `ArtifactStateIndex` | Lightweight artifact state summary helper. |
 | alpha | govengine.state_machine | `GovRunState`, `StateTransition`, `apply_state_transition`, `validate_run_state`, `validate_state_transition` | Neutral run-state transitions; no persistence/scheduler/live-execution authority. |
 | alpha | govengine.state_store | `GovStateStore` | Neutral JSON state helper primitive; production persistence remains host-owned. |
@@ -47,7 +47,7 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 Current summary:
 
 - stable exports: 0
-- alpha exports: 157
-- fixture exports: 3
+- alpha exports: 160
+- fixture exports: 4
 - deprecated exports: 0
 - internal-exposed exports: 0
