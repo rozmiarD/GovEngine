@@ -125,6 +125,19 @@ def test_execution_gate_blocks_non_approved_execution_ticket(ticket_status: str)
     assert "approve_execution_ticket" in decision.next_actions
 
 
+@pytest.mark.parametrize(
+    "trust_status",
+    ("missing", "denied", "failed", "untrusted", "unknown"),
+)
+def test_execution_gate_blocks_invalid_trust_decision_status(trust_status: str) -> None:
+    decision = ExecutionGate().evaluate(_gate_input(trust_decision_status=trust_status))
+
+    assert decision.allowed is False
+    assert decision.reason_code == "raw_intent_rejected"
+    assert "missing_or_invalid_trust_decision" in decision.blockers
+    assert "verify_trust_decision" in decision.next_actions
+
+
 def test_execution_gate_requires_allowed_runner_profile() -> None:
     decision = ExecutionGate().evaluate(_gate_input(runner_profile=RunnerProfile(name="local", allowed=False)))
 
