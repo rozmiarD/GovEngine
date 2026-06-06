@@ -288,7 +288,49 @@ def test_compose_runtime_admission_result_honors_explicit_policy_denial() -> Non
     ))
 
     assert result.allowed is False
-    assert 'missing_or_invalid_policy_decision' in result.blockers
+    assert result.reason_code == 'policy_denied'
+    assert 'policy_denied' in result.blockers
+
+
+@pytest.mark.parametrize(
+    ('policy_decision', 'expected_status', 'expected_blocker', 'expected_action'),
+    (
+        ({'decision': 'deny', 'policy_id': 'policy-1'}, 'blocked', 'policy_denied', 'revise_request_or_policy'),
+        ({'decision': 'defer', 'policy_id': 'policy-1'}, 'needs_review', 'policy_deferred', 'resolve_policy_deferral'),
+        (
+            {'decision': 'require_approval', 'policy_id': 'policy-1'},
+            'needs_review',
+            'policy_requires_approval',
+            'obtain_operator_approval',
+        ),
+        (
+            {'decision': 'dry_run_only', 'policy_id': 'policy-1'},
+            'dry_run_only',
+            'policy_dry_run_only',
+            'use_dry_run_only_path',
+        ),
+        (
+            {'decision': 'record_only', 'policy_id': 'policy-1'},
+            'record_only',
+            'policy_record_only',
+            'record_without_execution',
+        ),
+        ({'status': 'maybe', 'policy_id': 'policy-1'}, 'blocked', 'unknown_policy_decision', 'obtain_valid_policy_decision'),
+    ),
+)
+def test_compose_runtime_admission_result_blocks_non_allow_policy_states(
+    policy_decision,
+    expected_status,
+    expected_blocker,
+    expected_action,
+) -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(policy_decision=policy_decision))
+
+    assert result.allowed is False
+    assert result.status == expected_status
+    assert result.reason_code == expected_blocker
+    assert expected_blocker in result.blockers
+    assert expected_action in result.required_next_actions
 
 
 def test_compose_runtime_admission_result_blocks_replayed_runtime_bundle() -> None:
