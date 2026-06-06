@@ -1608,5 +1608,11 @@
       "actual_risk": "high",
       "mutation_boundary": "dry-run first; guarded Signposter apply only; no upstream mutation; no package publish; no tags"
     }
-  ]
+  ],
+  "task_contract": {
+    "version": "v1",
+    "path": "docs/roadmaps/GE-TASK-CONTRACT.md",
+    "applies_to": "GE-031..GE-045 and side tasks that opt in",
+    "purpose": "Reduce repeated issue-body boilerplate while preserving Signposter lifecycle rules."
+  }
 }
