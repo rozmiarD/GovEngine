@@ -89,14 +89,7 @@ MVP_SURFACE_DOC_MARKERS = {
         'LocalSubprocessRunner',
         'Current stage decision: `not_applicable`.',
     ),
-    'docs/DOCUMENTATION_HYGIENE.md': (
-        'docs/roadmaps/ge-governed-runtime-kernel-mvp-seed-manifest.json',
-        'Removing those files mid-roadmap would break the current',
-        '.signposter-local/',
-        'docs/roadmaps/local/',
-        'Returning to mainline: next task is GE-039',
-    ),
-}
+
 
 
 def _read(path: str) -> str:
