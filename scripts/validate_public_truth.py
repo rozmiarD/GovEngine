@@ -89,7 +89,7 @@ MVP_SURFACE_DOC_MARKERS = {
         'LocalSubprocessRunner',
         'Current stage decision: `not_applicable`.',
     ),
-
+}
 
 
 def _read(path: str) -> str:
