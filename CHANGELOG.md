@@ -4,6 +4,18 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## Unreleased
+
+- Added `govengine.replay` with a neutral replay claim store port. The port records replay claims (root tag, chain id, ticket/run id, key id) through a host-supplied JSON state and can reject repeat roots in require-fresh mode.
+- Added receipt-to-admission binding: runner receipts can now be bound to admission evidence. Added validators for runner receipt bindings and admission evidence chains.
+- Added JSONL audit ledger adapter implementing the `AuditLedgerPort` contract. The adapter provides a development-only, hash-chained append-only log without choosing a production database.
+- Added support for signed GovEngine records: introduced record digest helper and signed envelope construction for admission and review artifacts.
+- Added runner profile and receipt admission gates. Controlled execution now requires an approved runner profile together with a matching receipt before granting live execution authority.
+- Added `verify_evidence_review_chain()` and supporting validators for end-to-end evidence review chains (admission → receipt → evidence → review).
+- Refined trust ports and normalized admission artifact references and digests.
+- Added local runner readiness gating: the kernel can now explicitly mark the local subprocess runner as not applicable and enforce that decision at the admission gate.
+- Performed repository hygiene cleanup: removed Signposter control-plane artifacts (`docs/roadmaps/`, `DOCUMENTATION_HYGIENE.md`) from the tracked public surface and strengthened documentation hygiene guards.
+
 ## 0.12.2-alpha - SCLite 1.0 dependency sync and guarded replay hardening
 
 - Publishes the `0.12.2a0` / `0.12.2-alpha` package line over
