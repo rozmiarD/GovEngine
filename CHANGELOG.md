@@ -6,15 +6,60 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-- Added `govengine.replay` with a neutral replay claim store port. The port records replay claims (root tag, chain id, ticket/run id, key id) through a host-supplied JSON state and can reject repeat roots in require-fresh mode.
-- Added receipt-to-admission binding: runner receipts can now be bound to admission evidence. Added validators for runner receipt bindings and admission evidence chains.
-- Added JSONL audit ledger adapter implementing the `AuditLedgerPort` contract. The adapter provides a development-only, hash-chained append-only log without choosing a production database.
-- Added support for signed GovEngine records: introduced record digest helper and signed envelope construction for admission and review artifacts.
-- Added runner profile and receipt admission gates. Controlled execution now requires an approved runner profile together with a matching receipt before granting live execution authority.
-- Added `verify_evidence_review_chain()` and supporting validators for end-to-end evidence review chains (admission → receipt → evidence → review).
+### Governed-runtime admission kernel
+
+- Added the public runtime admission surface: `RuntimeAdmissionResult`,
+  `compose_runtime_admission_result()`, `normalize_admission_artifact_refs()`,
+  and `validate_runtime_admission_result()`. The composer assembles policy,
+  ticket, trust, guarded replay, runner profile, receipt obligation, and bounded
+  artifact-reference summaries into one host-consumable decision record.
+- Added runner profile and receipt admission gates. Controlled execution now
+  requires an approved runner profile together with a matching receipt before
+  granting live execution authority.
+- Added inspect-only admission workflow and `scripts/inspect_runtime_admission.py`
+  for read-only operator inspection of composed admission decisions without live
+  execution.
+
+### Replay, receipt, evidence, and audit
+
+- Extended `govengine.replay` with a neutral `ReplayClaimStore` port and an
+  in-memory development adapter. The port records replay claims (root tag, chain
+  id, ticket/run id, key id) and can reject repeat roots in require-fresh mode
+  without replacing existing guarded-root replay helpers from `0.12.1`.
+- Added receipt-to-admission binding plus validators for runner receipt bindings
+  and admission evidence chains.
+- Added `verify_evidence_review_chain()` and supporting validators for end-to-end
+  evidence review chains (admission → receipt → evidence → review).
+- Added `AuditLedgerPort` contracts plus `JsonlAuditLedgerAdapter`, a
+  development-only hash-chained append-only JSONL adapter without choosing a
+  production database.
+
+### Signing, trust, and runner supervision
+
+- Added signed GovEngine record support: `govengine_record_digest()`,
+  `canonical_govengine_record()`, `signed_artifact_from_record()`,
+  `verify_signed_govengine_record()`, and supporting trust/key-resolver ports.
 - Refined trust ports and normalized admission artifact references and digests.
-- Added local runner readiness gating: the kernel can now explicitly mark the local subprocess runner as not applicable and enforce that decision at the admission gate.
-- Performed repository hygiene cleanup: removed Signposter control-plane artifacts (`docs/roadmaps/`, `DOCUMENTATION_HYGIENE.md`) from the tracked public surface and strengthened documentation hygiene guards.
+- Added local subprocess runner readiness gating:
+  `LocalSubprocessRunnerReadiness`, `evaluate_local_subprocess_runner_readiness()`,
+  and `validate_runner_receipt_binding()`. The kernel can now mark the local
+  runner as not applicable and enforce that decision at the admission gate.
+
+### Documentation, validation, and repository hygiene
+
+- Added governed-runtime operator documentation:
+  `docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`, `docs/RUNTIME_ADMISSION.md`,
+  `docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md`,
+  `docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md`, and related updates to
+  `docs/API_STABILITY_MATRIX.md`, `docs/API_BOUNDARY.md`, `PUBLIC_STATUS.md`,
+  and `README.md`.
+- Recorded final roadmap audits, package-validation smoke, and Signposter
+  lifecycle smoke evidence in docs without expanding live-execution claims.
+- Strengthened public-truth and documentation hygiene guards in
+  `scripts/validate_public_truth.py` and tests.
+- Added governed-runtime smoke-chain coverage in standalone tests.
+- Removed Signposter control-plane artifacts (`docs/roadmaps/`,
+  `DOCUMENTATION_HYGIENE.md`) from the tracked public surface.
 
 ## 0.12.2-alpha - SCLite 1.0 dependency sync and guarded replay hardening
 
