@@ -59,6 +59,31 @@ If a decision is interrupting (`pause`, `abort`, `cooldown`, `degrade_to_dry_run
 
 If a decision is non-interrupting (`continue`, `replan_after_step`), the host runner may continue or re-enter planning according to host policy while preserving the compact decision record.
 
+## Verification chain
+
+OODA decision summaries are reviewable only after the governed receipt chain is
+bounded. A host should verify this order before treating control decisions as
+runtime evidence:
+
+```text
+RuntimeAdmissionResult
+  -> GovRunnerRequest
+  -> GovRunnerReceipt
+  -> GovEvidenceClaim
+  -> GovReviewResult
+```
+
+`validate_runner_receipt_binding()` verifies the admission, ticket, request,
+receipt, and digest references on the receipt boundary. After that,
+`validate_evidence_review_chain()` verifies that the evidence claim references
+the expected receipt, matches the admitted subject or admission digest, stays
+within receipt status bounds, and, when present, links the review result to the
+computed evidence qualification.
+
+This chain is reference validation only. It does not store raw evidence, does
+not evaluate SCLite review-bundle verdicts, and does not make an OODA decision
+or receipt into execution authority.
+
 ## Evidence behavior
 
 Evidence artifacts should treat OODA decisions as governance evidence, not vulnerability evidence.

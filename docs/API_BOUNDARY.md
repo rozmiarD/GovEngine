@@ -2,18 +2,24 @@
 
 GovEngine owns reusable governed-execution services. Its public surface should stay carrier-neutral and SCLite-aware.
 
+The top-level export stability classification lives in [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md). It covers the current `govengine.__all__` surface and is guarded by tests so new public exports require an explicit stability decision.
+
 `govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current alpha public surface set. It contains the neutral artifact-governance core, planning contracts, admission/policy contracts, evidence review, domain-profile SDK, runtime contract proofs, and controlled-execution core. The published `0.12.0-alpha` line removes the prior Ravenclaw-derived optional security facade; domain security behavior belongs in the host runtime.
 `govengine.boundary.kernel_boundary_report()` is the tested machine-readable 0.2 boundary report. It combines the kernel/profile/runtime/SCLite ownership contract, known domain-profile contracts such as Ravenclaw, and the current public surface index.
 `govengine.boundary.validate_domain_profile_conformance()` checks that a domain profile does not claim forbidden ownership and consumes only known GovEngine/SCLite surfaces.
 `govengine.orchestration.validate_orchestration_step()` checks deterministic orchestration handoff records without granting agent-loop, scheduler, UI, carrier, credential, or live-execution authority.
 `govengine.events.validate_event_envelope()` checks transport-neutral governance event metadata without accepting raw prompts, credentials, live commands, carrier payloads, or scheduling claims.
 `govengine.state_machine.validate_state_transition()` checks neutral run-state transitions without accepting runtime storage, scheduler, credential, command, or live-execution claims.
-`govengine.replay.record_guard_replay()` checks and records SCLite Kernel Guard root tags through a host-supplied state store without verifying HMAC tags, storing keys, or replacing SCLite guard verification. `govengine.replay.verify_guard_and_record_replay()` is the high-level runtime adapter: it calls SCLite's guarded-strict verification profile, then records replay freshness and returns one runtime decision.
+`govengine.replay.record_guard_replay()` checks and records SCLite Kernel Guard root tags through a host-supplied state store without verifying HMAC tags, storing keys, or replacing SCLite guard verification. `govengine.replay.ReplayClaimStore` expresses host-owned claim-once replay freshness semantics; the in-memory adapter is development-only and not production atomic storage. `govengine.replay.verify_guard_and_record_replay()` is the high-level runtime adapter: it calls SCLite's guarded-strict verification profile, then records replay freshness and returns one runtime decision.
 `govengine.control.validate_control_decision()` checks deterministic between-step control decisions and delegates legal state changes to the state machine without accepting raw prompts, commands, schedulers, runtime storage, delivery, or live-execution claims.
 `govengine.runtime_shell.validate_runtime_snapshot()` checks host-provided control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without accepting raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 `govengine.planning.validate_task_contract()` and `validate_plan_intent_contract()` check neutral planner-to-runtime handoff shapes without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
-`govengine.admission.validate_admission_decision()`, `validate_policy_decision()`, `validate_approval_request()`, and `validate_audit_record()` check neutral runtime gate records without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
-`govengine.execution.supervision.validate_supervised_runner_request()` and `validate_runner_receipt_for_request()` check approved-spec runner supervision and receipt boundaries without accepting raw intent or granting live backend ownership.
+`govengine.admission.validate_admission_decision()`, `validate_policy_decision()`, `validate_approval_request()`, `validate_audit_record()`, `validate_audit_ledger_entry()`, `validate_audit_ledger_append_result()`, `validate_audit_ledger_verification_result()`, and `validate_runtime_admission_result()` check neutral runtime gate and audit-ledger port records without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
+`govengine.execution.supervision.validate_supervised_runner_request()`,
+`validate_runner_receipt_for_request()`, and
+`validate_runner_receipt_binding()` check approved-spec runner supervision,
+receipt, and bounded admission/ticket/request/receipt binding boundaries without
+accepting raw intent or granting live backend ownership.
 `govengine.review.qualify_evidence_claim()` checks neutral evidence claims against receipt bounds without accepting raw targets, raw output, commands, credentials, storage, carrier payloads, or live-execution claims.
 `govengine.profiles.validate_profile_conformance()` checks contract-only domain profile declarations without granting domain taxonomy, carrier adapter, credential, product UX, or live-execution ownership.
 `govengine.contract_proofs.validate_runtime_contract_proof()` checks public-safe multi-profile contract proof fixtures without granting adapter, credential, scheduler, storage, live-execution, or new OODA ownership.
@@ -39,7 +45,7 @@ Neutral core modules:
 - `govengine.state_store`
 - `govengine.replay`
 
-Claim: portable kernel/profile boundary contracts, artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, guarded-root replay checks, guarded-bundle runtime decision assembly, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, SCLite Kernel Guard HMAC verification ownership, PKI/key-store ownership, raw artifact storage ownership, workflow scheduler ownership.
+Claim: portable kernel/profile boundary contracts, artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, GovEngine-owned record serialization/digests/signed envelopes, guarded-root replay checks, claim-once replay-store port shapes, guarded-bundle runtime decision assembly, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, SCLite Kernel Guard HMAC verification ownership, PKI/key-store ownership, raw artifact storage ownership, production replay persistence/atomicity ownership, workflow scheduler ownership.
 
 ### Planning-contracts core
 
@@ -55,7 +61,7 @@ Neutral admission-policy modules:
 
 - `govengine.admission`
 
-Claim: neutral admission-decision, policy-decision, approval-request, and audit-record validators that hosts can use for runtime gate review. Non-claims: domain policy meaning ownership, operator approval workflow ownership, audit storage or retention ownership, raw target/prompt ownership, queue/scheduler/storage ownership, protocol adapter ownership, command authority, or live execution.
+Claim: neutral admission-decision, runtime-admission, policy-decision, approval-request, audit-record, audit-ledger port validators, and a JSONL hash-chain development adapter that hosts can use for runtime gate and audit-chain review. Non-claims: domain policy meaning ownership, operator approval workflow ownership, production audit storage, retention, locking, or concurrency ownership, raw target/prompt ownership, queue/scheduler/storage ownership, protocol adapter ownership, command authority, or live execution.
 
 ### Evidence-review core
 
@@ -63,7 +69,7 @@ Neutral evidence-review modules:
 
 - `govengine.review`
 
-Claim: neutral evidence-requirement, evidence-claim, evidence-qualification, and review-result validators that hosts can use for receipt-bounded post-execution review. Non-claims: SCLite review-bundle verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage ownership, raw target/output ownership, protocol adapter ownership, command authority, or live execution.
+Claim: neutral evidence-requirement, evidence-claim, evidence-qualification, review-result, and evidence-review-chain validators that hosts can use for receipt-bounded post-execution review. Non-claims: SCLite review-bundle verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage ownership, raw target/output ownership, protocol adapter ownership, command authority, or live execution.
 
 ### Domain-profile SDK
 
@@ -107,19 +113,19 @@ GovEngine owns:
 - `govengine.control` — deterministic between-step control decisions that can apply validated in-memory state transitions without storage, scheduler, delivery, command, or live-execution authority.
 - `govengine.runtime_shell` — neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, scheduler, delivery, command, credential, carrier, or live-execution authority.
 - `govengine.planning` — neutral task-contract, plan-intent, and planner-port validators without planner implementation, raw target/prompt, queue/scheduler/storage, command, credential, adapter, or live-execution authority.
-- `govengine.admission` — neutral admission-decision, policy-decision, approval-request, and audit-record validators without domain policy meaning, approval workflow, audit storage, command, credential, adapter, or live-execution authority.
-- `govengine.review` — neutral evidence-requirement, evidence-claim, evidence-qualification, and review-result validators without SCLite review verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage, command, credential, adapter, or live-execution authority.
+- `govengine.admission` — neutral admission-decision, runtime-admission, policy-decision, approval-request, audit-record, audit-ledger port validators, and JSONL hash-chain development adapter without domain policy meaning, approval workflow, production audit storage/concurrency, command, credential, protocol adapter, or live-execution authority.
+- `govengine.review` — neutral evidence-requirement, evidence-claim, evidence-qualification, review-result, and evidence-review-chain validators without SCLite review verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage, command, credential, adapter, or live-execution authority.
 - `govengine.profiles` — contract-only domain profile declarations, registries, fixture profiles, and conformance reports without domain taxonomy, product UX, credential, adapter, or live-execution ownership.
 - `govengine.contract_proofs` — public-safe runtime contract proof fixtures and neutral governance vocabulary over existing contracts without adapter, credential, scheduler, storage, live-execution, domain runtime, or new OODA ownership.
 - `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
-- `govengine.signing` — signature envelopes, signing/trust policy objects, host-provided signer/verifier ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
+- `govengine.signing` — signature envelopes, signed GovEngine-owned record envelopes, signing/trust policy objects, GovEngine-owned record serialization/digest helpers, host-provided signer/verifier/key-resolver/trust-store ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
 - `govengine.contracts.execution` — execution-contract shaping and redaction helpers.
 - `govengine.execution.*` — approved-spec, ticket, command-shape, dry-run helpers, and controlled execution gates that keep live backends disabled by default.
 - `govengine.orchestration` — deterministic orchestration handoff contracts without scheduler, UI, adapter, credential, or live-execution authority.
 - `govengine.events` — transport-neutral governance event metadata and envelope validation without scheduler, carrier, credential, or command payload authority.
 - `govengine.scope_ports` — neutral scope-port protocol and host extraction helper used by controlled-execution contracts.
 - `govengine.state_store` — neutral JSON state helper primitives.
-- `govengine.replay` — guarded SCLite root replay records and fresh/replayed decisions over host-supplied JSON state without HMAC verification, key storage, runtime storage ownership, or replay policy beyond the supplied store.
+- `govengine.replay` — guarded SCLite root replay records, claim-once replay-store port contracts, and fresh/replayed decisions over host-supplied state without HMAC verification, key storage, runtime storage ownership, production database ownership, or replay policy beyond the supplied store.
 - `govengine.sclite_*` — explicit integration seams with SCLite, including descriptor/status/transition mapping that delegates lifecycle verification and review-bundle verdicts to SCLite.
 
 ## Consumes
@@ -148,6 +154,28 @@ GovEngine must not own Ravenclaw-specific runtime/application concerns:
 
 `DemoDigestSigner`, `DemoDigestVerifier`, and `demo_sign_and_verify` are test/reviewer helpers. They create deterministic digest-bound demo signatures so hosts can exercise the `SignerPort`/`VerifierPort` contract and inspect trust decisions without bringing real keys into GovEngine. They are not cryptographic identity proof, not a CA/KMS/key-store, and not a replacement for a host-owned production verifier. Hosts that need real signatures must provide their own signer/verifier ports and trust policy.
 
+`canonical_govengine_record()` and `govengine_record_digest()` are alpha helpers
+for GovEngine-owned records such as admission and future receipt envelopes.
+They require a `govengine.*` record type for mappings, auto-scope GovEngine
+dataclasses, and return deterministic JSON or `sha256:` digests. They do not
+canonicalize SCLite records, verify SCLite artifact chains, store raw evidence,
+or provide identity, PKI, KMS, CA, or key-store behavior.
+
+`SignedArtifact`, `signed_artifact_from_record()`, and
+`verify_signed_govengine_record()` bind a GovEngine-owned record digest to a
+payload reference and signer metadata. Verification still uses a host-provided
+`VerifierPort`; GovEngine does not own production identity, trust anchors,
+rotation, revocation, KMS, CA, or key storage. `demo_sign_govengine_record()` is
+fixture-only and uses the same deterministic demo digest-binding convention as
+`DemoDigestSigner`.
+
+`KeyResolutionRequest`, `KeyResolutionResult`, `KeyResolverPort`,
+`TrustStoreDecision`, and `TrustStorePort` are host-neutral trust port contracts.
+They carry signer IDs, key references, trust-anchor references, statuses, and
+bounded metadata only. They reject obvious private key material or credential
+fields at the GovEngine boundary; actual key lookup, trust anchors, revocation,
+rotation, CA/KMS behavior, and policy meaning stay host-owned.
+
 ## Execution backend rule
 
 Live subprocess execution is intentionally absent from this scaffold and remains disabled by default for future live backends.
@@ -159,6 +187,23 @@ GovEngine must never execute directly from raw intent. Execution requires all of
 3. approved execution ticket;
 4. valid signature/trust decision;
 5. allowed runner profile.
+
+The governed-runtime MVP exposes those inputs through the canonical runtime
+admission contract described in
+[RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). `RuntimeAdmissionResult` carries
+bounded blockers, next actions, and artifact references.
+`compose_runtime_admission_result()` populates it from bounded gate evidence for
+hosts and reviewers; the record does not grant live execution authority by
+itself. `normalize_admission_artifact_refs()` is an alpha helper for bounded
+review references and existing digest strings only; it does not compute content
+digests and does not claim SCLite canonicalization authority.
+
+The operator-facing path that ties admission, trust ports, guarded SCLite
+verification, replay freshness, runner profile, receipt obligation, and
+evidence/review binding together is documented in
+[GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md). That
+runbook is descriptive; it does not add a new public API surface or execution
+backend.
 
 Before any execution backend moves into GovEngine:
 

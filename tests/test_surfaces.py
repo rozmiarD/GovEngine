@@ -50,6 +50,8 @@ def test_core_surfaces_keep_live_execution_and_adapter_non_claims() -> None:
     assert 'govengine.state_machine' in artifact.modules
     assert 'govengine.planning' in planning.modules
     assert 'govengine.admission' in admission.modules
+    assert 'runtime-admission' in admission.claim
+    assert 'bounded reference helpers' in admission.claim
     assert 'govengine.review' in review.modules
     assert 'govengine.profiles' in profiles.modules
     assert 'govengine.contract_proofs' in proofs.modules

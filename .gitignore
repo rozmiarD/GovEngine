@@ -10,3 +10,9 @@ dist/
 .coverage
 htmlcov/
 .DS_Store
+
+# Local operator scratch artifacts (never committed)
+.signposter-local/
+*.local.md
+*.scratch.md
+*.private.md

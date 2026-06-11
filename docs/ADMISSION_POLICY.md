@@ -16,6 +16,13 @@ deliver carrier messages, hold credentials, or execute tools.
   approval workflow.
 - `GovAuditRecord` validates an append-only audit record shape without owning
   storage or retention.
+- `AuditLedgerEntry`, `AuditLedgerAppendResult`, and
+  `AuditLedgerVerificationResult` define the bounded append/read/verify records
+  for a host-owned audit ledger.
+- `AuditLedgerPort` defines the neutral append/read/verify adapter contract
+  without providing production persistence.
+- `JsonlAuditLedgerAdapter` is a development-only JSONL hash-chain adapter for
+  local smoke validation.
 
 ## Boundary
 
@@ -28,3 +35,37 @@ semantics into these objects. GovEngine validates the neutral representation;
 the host still owns security meaning, target selection, budget logic, cooldown
 logic, operator approval, queue mutation, process control, audit persistence,
 and concrete execution.
+
+The canonical runtime admission contract lives in
+[RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). The initial
+`RuntimeAdmissionResult` record is the bounded admission decision surface. The
+`compose_runtime_admission_result()` helper populates it from policy, ticket,
+trust, SCLite guarded verification, replay freshness, runner-profile, and
+receipt-obligation signals without making intent an execution authority.
+
+## Audit ledger port
+
+`GovAuditRecord` is the event shape. `AuditLedgerPort` is the storage boundary.
+The port separates record validation from persistence by requiring adapters to:
+
+- append one bounded `GovAuditRecord` plus a `record_digest` and optional
+  `event_digest`;
+- return `AuditLedgerAppendResult` with the assigned entry id, sequence, and
+  entry digest;
+- read bounded `AuditLedgerEntry` records without exposing storage paths;
+- verify a sequence and return `AuditLedgerVerificationResult`.
+
+GovEngine validates ids, sequence numbers, digest references, append outcomes,
+verification outcomes, blockers, and forbidden metadata. `audit_ledger_entry_digest()`
+clears the self-referential `entry_digest` field before computing a GovEngine-owned
+record digest. `JsonlAuditLedgerAdapter` writes one canonical JSON object per
+line, links each entry to the previous entry digest, and verifies sequence,
+previous-digest, and entry-digest continuity.
+
+GovEngine does not choose a production database, lock, clock, transaction
+isolation level, retention policy, concurrency model, or deletion policy. The
+JSONL adapter is development-only and should not be treated as production
+persistence. Its verification is intentionally limited to local smoke evidence:
+one-field tamper, missing lines, malformed JSONL, and chain restarts are
+detected as failed or invalid local chains, but recovery, retention,
+concurrency, and trusted reconstruction remain host-owned.

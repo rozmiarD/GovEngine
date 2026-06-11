@@ -38,6 +38,12 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Artifact lifecycle controller: initial transition policy/gate/controller for ordered lifecycle transitions and blocker/next-action reporting.
 - Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, transition-decision helpers, and published deterministic demo signer/verifier fixture ports without PKI/key ownership.
 - Controlled execution gate: initial dry-run-only execution gate and default `DryRunRunner`; live requests are blocked by default.
+- Runtime admission chain: initial public `RuntimeAdmissionResult` record,
+  validator, `compose_runtime_admission_result()`, and
+  `normalize_admission_artifact_refs()` helpers exist as the bounded admission
+  decision surface. The helpers compose separate policy, ticket, trust,
+  guarded-replay, runner, receipt-obligation, and bounded reference summaries
+  before any live backend work.
 - Public surface registry: tested `govengine.surfaces` metadata contains only neutral artifact-governance core, planning-contracts core, admission-policy core, evidence-review core, domain-profile SDK, runtime contract proofs, and controlled-execution core surfaces.
 - Security profile retirement: the published `0.12.0a0` alpha package removes the former optional Ravenclaw-derived facade and helper modules; security-domain behavior remains host-owned.
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
@@ -89,6 +95,10 @@ GovEngine does not currently claim:
 ## Controlled execution posture
 
 Controlled execution is a later capability, not the current default. Execution must be gated by a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, and allowed runner profile. Runtime-consumable SCLite bundles additionally require guarded-strict verification plus replay-fresh status. Dry-run behavior is the default; live backends are optional future work and must stay disabled by default.
+
+The current kernel target has added the runtime admission composition helper to
+populate the canonical admission result from existing gate signals. The record
+is an admission decision surface, not a live execution authority.
 
 ## Release posture
 

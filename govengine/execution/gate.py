@@ -80,9 +80,14 @@ class ExecutionGate:
             if gate_input.replay_status != "fresh":
                 guarded_blockers.append("missing_or_replayed_guarded_root")
         if guarded_blockers:
+            replay_not_fresh = gate_input.replay_status in {"replayed", "stale", "expired"}
             return TransitionDecision(
                 status="blocked",
-                reason_code=ReasonCode.REPLAY_DETECTED.value if gate_input.replay_status == "replayed" else ReasonCode.SIGNATURE_REQUIRED.value,
+                reason_code=(
+                    ReasonCode.REPLAY_DETECTED.value
+                    if replay_not_fresh
+                    else ReasonCode.SIGNATURE_REQUIRED.value
+                ),
                 from_state="execution_gated",
                 to_state="runner_allowed_live" if live else "runner_allowed_dry_run",
                 blockers=tuple((*decision.blockers, *guarded_blockers)),
