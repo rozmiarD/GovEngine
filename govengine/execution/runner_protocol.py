@@ -1,10 +1,34 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from typing import Any, Mapping, Protocol, Sequence
 
-from govengine.api import GovApiError
+from govengine.api import GovApiError, require_mapping
 from govengine.execution.approved_spec import approved_execution_steps
+from govengine.signing import govengine_record_digest
+
+FORBIDDEN_RECEIPT_BINDING_KEYS = {
+    "command",
+    "commands",
+    "credential",
+    "credentials",
+    "api_key",
+    "passphrase",
+    "password",
+    "private_key",
+    "prompt",
+    "raw_output",
+    "raw_stderr",
+    "raw_stdout",
+    "secret",
+    "stderr",
+    "stdout",
+    "target",
+    "target_url",
+    "token",
+    "url",
+}
+RUNNER_RECEIPT_STATUSES = ("dry-run", "succeeded", "blocked", "failed", "interrupted")
 
 
 @dataclass(frozen=True)
@@ -58,6 +82,105 @@ class GovRunnerStepResult:
 
 
 @dataclass(frozen=True)
+class GovRunnerReceiptBinding:
+    """Bounded admission/ticket/request references for a runner receipt.
+
+    This is a reference envelope only. GovEngine does not store raw evidence,
+    own SCLite ticket canonicalization, or grant live execution authority.
+    """
+
+    admission_id: str = ""
+    admission_digest: str = ""
+    ticket_id: str = ""
+    ticket_digest: str = ""
+    request_id: str = ""
+    request_digest: str = ""
+    receipt_id: str = ""
+    receipt_digest: str = ""
+    status: str = ""
+    reason_code: str = ""
+    runner_profile: str = ""
+    output_digests: Mapping[str, str] = field(default_factory=dict)
+    evidence_refs: Mapping[str, str] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "admission_id", _clean_text(self.admission_id))
+        object.__setattr__(self, "admission_digest", _clean_text(self.admission_digest))
+        object.__setattr__(self, "ticket_id", _clean_text(self.ticket_id))
+        object.__setattr__(self, "ticket_digest", _clean_text(self.ticket_digest))
+        object.__setattr__(self, "request_id", _clean_text(self.request_id))
+        object.__setattr__(self, "request_digest", _clean_text(self.request_digest))
+        object.__setattr__(self, "receipt_id", _clean_text(self.receipt_id))
+        object.__setattr__(self, "receipt_digest", _clean_text(self.receipt_digest))
+        object.__setattr__(self, "status", _clean_text(self.status))
+        object.__setattr__(self, "reason_code", _clean_text(self.reason_code))
+        object.__setattr__(self, "runner_profile", _clean_text(self.runner_profile))
+        object.__setattr__(
+            self,
+            "output_digests",
+            _bounded_string_mapping(self.output_digests, allow_output_stream_keys=True),
+        )
+        object.__setattr__(self, "evidence_refs", _bounded_string_mapping(self.evidence_refs))
+
+    @classmethod
+    def from_mapping(cls, value: Mapping[str, Any] | None) -> "GovRunnerReceiptBinding":
+        if value is None:
+            return cls()
+        raw = require_mapping(value, reason_code="invalid_runner_receipt_binding")
+        _reject_forbidden_binding(raw)
+        return cls(
+            admission_id=raw.get("admission_id") or "",
+            admission_digest=raw.get("admission_digest") or "",
+            ticket_id=raw.get("ticket_id") or "",
+            ticket_digest=raw.get("ticket_digest") or "",
+            request_id=raw.get("request_id") or "",
+            request_digest=raw.get("request_digest") or "",
+            receipt_id=raw.get("receipt_id") or "",
+            receipt_digest=raw.get("receipt_digest") or "",
+            status=raw.get("status") or "",
+            reason_code=raw.get("reason_code") or "",
+            runner_profile=raw.get("runner_profile") or "",
+            output_digests=raw.get("output_digests") if isinstance(raw.get("output_digests"), Mapping) else {},
+            evidence_refs=raw.get("evidence_refs") if isinstance(raw.get("evidence_refs"), Mapping) else {},
+        )
+
+    @property
+    def present(self) -> bool:
+        return any((
+            self.admission_id,
+            self.admission_digest,
+            self.ticket_id,
+            self.ticket_digest,
+            self.request_id,
+            self.request_digest,
+            self.receipt_id,
+            self.receipt_digest,
+            self.status,
+            self.reason_code,
+            self.runner_profile,
+            bool(self.output_digests),
+            bool(self.evidence_refs),
+        ))
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "admission_id": self.admission_id,
+            "admission_digest": self.admission_digest,
+            "ticket_id": self.ticket_id,
+            "ticket_digest": self.ticket_digest,
+            "request_id": self.request_id,
+            "request_digest": self.request_digest,
+            "receipt_id": self.receipt_id,
+            "receipt_digest": self.receipt_digest,
+            "status": self.status,
+            "reason_code": self.reason_code,
+            "runner_profile": self.runner_profile,
+            "output_digests": dict(self.output_digests),
+            "evidence_refs": dict(self.evidence_refs),
+        }
+
+
+@dataclass(frozen=True)
 class GovRunnerReceipt:
     status: str
     request_id: str
@@ -65,9 +188,14 @@ class GovRunnerReceipt:
     step_results: tuple[GovRunnerStepResult, ...] = ()
     reason_code: str = "ok"
     control_decisions: tuple[Mapping[str, Any], ...] = ()
+    binding: GovRunnerReceiptBinding | Mapping[str, Any] = field(default_factory=GovRunnerReceiptBinding)
+
+    def __post_init__(self) -> None:
+        binding = self.binding if isinstance(self.binding, GovRunnerReceiptBinding) else GovRunnerReceiptBinding.from_mapping(self.binding)
+        object.__setattr__(self, "binding", binding)
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        out = {
             "status": self.status,
             "request_id": self.request_id,
             "source": self.source,
@@ -75,6 +203,9 @@ class GovRunnerReceipt:
             "step_results": [result.as_dict() for result in self.step_results],
             "control_decisions": [dict(decision) for decision in self.control_decisions],
         }
+        if self.binding.present:
+            out["binding"] = self.binding.as_dict()
+        return out
 
 
 class GovRunner(Protocol):
@@ -128,7 +259,11 @@ def runner_request_from_approved_spec(
     )
 
 
-def dry_run_runner_receipt(request: GovRunnerRequest) -> GovRunnerReceipt:
+def dry_run_runner_receipt(
+    request: GovRunnerRequest,
+    *,
+    binding: GovRunnerReceiptBinding | Mapping[str, Any] | None = None,
+) -> GovRunnerReceipt:
     return GovRunnerReceipt(
         status="dry-run",
         request_id=request.request_id,
@@ -138,4 +273,221 @@ def dry_run_runner_receipt(request: GovRunnerRequest) -> GovRunnerReceipt:
             for step in request.steps
         ),
         reason_code="dry_run_requested",
+        binding=binding or GovRunnerReceiptBinding(),
     )
+
+
+def runner_receipt_with_binding(
+    receipt: GovRunnerReceipt,
+    *,
+    admission_id: str,
+    admission_digest: str = "",
+    ticket_id: str,
+    ticket_digest: str = "",
+    request_digest: str = "",
+    receipt_id: str = "",
+    receipt_digest: str = "",
+    runner_profile: str = "",
+    output_digests: Mapping[str, str] | None = None,
+    evidence_refs: Mapping[str, str] | None = None,
+) -> GovRunnerReceipt:
+    """Return a copy of a runner receipt with bounded binding references."""
+
+    bound = GovRunnerReceipt(
+        status=receipt.status,
+        request_id=receipt.request_id,
+        source=receipt.source,
+        step_results=receipt.step_results,
+        reason_code=receipt.reason_code,
+        control_decisions=receipt.control_decisions,
+        binding=GovRunnerReceiptBinding(
+            admission_id=admission_id,
+            admission_digest=admission_digest,
+            ticket_id=ticket_id,
+            ticket_digest=ticket_digest,
+            request_id=receipt.request_id,
+            request_digest=request_digest,
+            receipt_id=receipt_id,
+            receipt_digest=receipt_digest,
+            status=receipt.status,
+            reason_code=receipt.reason_code,
+            runner_profile=runner_profile,
+            output_digests=output_digests or {},
+            evidence_refs=evidence_refs or {},
+        ),
+    )
+    if not receipt_digest:
+        binding = replace(bound.binding, receipt_digest=runner_receipt_digest(bound))
+        bound = replace(bound, binding=binding)
+    return bound
+
+
+def runner_request_digest(request: GovRunnerRequest) -> str:
+    """Return the GovEngine-owned digest for a runner request record."""
+
+    return govengine_record_digest(request, record_type="govengine.execution.runner_protocol.GovRunnerRequest")
+
+
+def runner_receipt_digest(receipt: GovRunnerReceipt) -> str:
+    """Return the GovEngine-owned digest for a receipt with self-digest cleared."""
+
+    record = receipt.as_dict()
+    binding = record.get("binding")
+    if isinstance(binding, Mapping):
+        binding = dict(binding)
+        binding["receipt_digest"] = ""
+        record["binding"] = binding
+    return govengine_record_digest(record, record_type="govengine.execution.runner_protocol.GovRunnerReceipt")
+
+
+def validate_runner_receipt_binding(
+    request: GovRunnerRequest,
+    receipt: GovRunnerReceipt,
+    *,
+    admission: Any | None = None,
+    admission_id: str = "",
+    admission_digest: str = "",
+    admission_record_type: str = "govengine.admission.RuntimeAdmissionResult",
+    ticket: Mapping[str, Any] | None = None,
+    ticket_id: str = "",
+    ticket_digest: str = "",
+    request_digest: str = "",
+    receipt_digest: str = "",
+    allowed_statuses: Sequence[str] = RUNNER_RECEIPT_STATUSES,
+) -> GovRunnerReceipt:
+    """Fail closed unless a receipt binding matches the governed chain.
+
+    GovEngine computes digests only for GovEngine-owned request/receipt and
+    optional admission records. Ticket digests are compared as host/SCLite
+    supplied references; this helper does not canonicalize SCLite tickets.
+    """
+
+    binding = receipt.binding
+    if not binding.present:
+        raise GovApiError("missing_runner_receipt_binding")
+    if not binding.admission_id:
+        raise GovApiError("missing_runner_receipt_binding_admission_id")
+    if not binding.admission_digest:
+        raise GovApiError("missing_runner_receipt_binding_admission_digest")
+    if not binding.ticket_id:
+        raise GovApiError("missing_runner_receipt_binding_ticket_id")
+    if not binding.ticket_digest:
+        raise GovApiError("missing_runner_receipt_binding_ticket_digest")
+    if not binding.request_id:
+        raise GovApiError("missing_runner_receipt_binding_request_id")
+    if binding.request_id != request.request_id:
+        raise GovApiError("runner_receipt_binding_request_mismatch")
+    if not binding.request_digest:
+        raise GovApiError("missing_runner_receipt_binding_request_digest")
+    if not binding.receipt_id:
+        raise GovApiError("missing_runner_receipt_binding_receipt_id")
+    if not binding.receipt_digest:
+        raise GovApiError("missing_runner_receipt_binding_receipt_digest")
+    if not binding.status:
+        raise GovApiError("missing_runner_receipt_binding_status")
+    if binding.status != receipt.status:
+        raise GovApiError("runner_receipt_binding_status_mismatch")
+    if receipt.status not in set(allowed_statuses):
+        raise GovApiError(f"unknown_runner_receipt_status:{receipt.status}")
+
+    expected_admission_id = _record_identifier(admission, admission_id, ("admission_id", "id"))
+    if expected_admission_id and binding.admission_id != expected_admission_id:
+        raise GovApiError("runner_receipt_binding_admission_id_mismatch")
+    expected_admission_digest = _expected_admission_digest(
+        admission,
+        admission_digest=admission_digest,
+        admission_record_type=admission_record_type,
+    )
+    if expected_admission_digest and binding.admission_digest != expected_admission_digest:
+        raise GovApiError("runner_receipt_binding_admission_digest_mismatch")
+
+    expected_ticket_id = _record_identifier(ticket, ticket_id, ("ticket_id", "id"))
+    if expected_ticket_id and binding.ticket_id != expected_ticket_id:
+        raise GovApiError("runner_receipt_binding_ticket_id_mismatch")
+    expected_ticket_digest = _digest_reference(ticket, ticket_digest, ("ticket_digest", "digest", "artifact_digest"))
+    if expected_ticket_digest and binding.ticket_digest != expected_ticket_digest:
+        raise GovApiError("runner_receipt_binding_ticket_digest_mismatch")
+
+    expected_request_digest = _clean_text(request_digest) or runner_request_digest(request)
+    if binding.request_digest != expected_request_digest:
+        raise GovApiError("runner_receipt_binding_request_digest_mismatch")
+    expected_receipt_digest = _clean_text(receipt_digest) or runner_receipt_digest(receipt)
+    if binding.receipt_digest != expected_receipt_digest:
+        raise GovApiError("runner_receipt_binding_receipt_digest_mismatch")
+    return receipt
+
+
+def _clean_text(value: Any) -> str:
+    return str(value or "").strip()
+
+
+def _expected_admission_digest(
+    admission: Any | None,
+    *,
+    admission_digest: str,
+    admission_record_type: str,
+) -> str:
+    explicit = _clean_text(admission_digest)
+    if explicit:
+        return explicit
+    if admission is None:
+        return ""
+    return govengine_record_digest(admission, record_type=admission_record_type)
+
+
+def _record_identifier(value: Any | None, explicit: str, keys: Sequence[str]) -> str:
+    if explicit:
+        return _clean_text(explicit)
+    if value is None:
+        return ""
+    for key in keys:
+        item = getattr(value, key, "")
+        if item:
+            return _clean_text(item)
+    if isinstance(value, Mapping):
+        for key in keys:
+            item = value.get(key)
+            if item:
+                return _clean_text(item)
+    return ""
+
+
+def _digest_reference(value: Mapping[str, Any] | None, explicit: str, keys: Sequence[str]) -> str:
+    if explicit:
+        return _clean_text(explicit)
+    if not isinstance(value, Mapping):
+        return ""
+    for key in keys:
+        item = value.get(key)
+        if item:
+            return _clean_text(item)
+    return ""
+
+
+def _bounded_string_mapping(
+    value: Mapping[str, Any] | None,
+    *,
+    allow_output_stream_keys: bool = False,
+) -> dict[str, str]:
+    raw = value if isinstance(value, Mapping) else {}
+    _reject_forbidden_binding(raw, allow_output_stream_keys=allow_output_stream_keys)
+    return {str(key): _clean_binding_ref(item) for key, item in raw.items()}
+
+
+def _reject_forbidden_binding(
+    value: Mapping[str, Any],
+    *,
+    allow_output_stream_keys: bool = False,
+) -> None:
+    forbidden = set(FORBIDDEN_RECEIPT_BINDING_KEYS)
+    if allow_output_stream_keys:
+        forbidden -= {"stderr", "stdout"}
+    for key in value:
+        if str(key).lower() in forbidden:
+            raise GovApiError(f"forbidden_runner_receipt_binding:{key}")
+
+
+def _clean_binding_ref(value: Any) -> str:
+    if isinstance(value, Mapping) or isinstance(value, (list, tuple, set)):
+        raise GovApiError("invalid_runner_receipt_binding_ref")
+    return _clean_text(value)

@@ -4,7 +4,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Protocol
 
 from govengine.api import GovApiError, require_mapping
 from govengine.state_store import GovStateStore, atomic_write_json, safe_load_json_object
@@ -93,6 +93,54 @@ class GuardReplayDecision:
             "blocker": self.blocker,
             "next_action": self.next_action,
         }
+
+
+class ReplayClaimStore(Protocol):
+    """Host-neutral replay freshness port with claim-once semantics.
+
+    Production adapters must make `claim_once()` atomic for the replay key they
+    own. GovEngine defines the port shape and development behavior only; hosts
+    own durable persistence, locking, retention, and concurrency semantics.
+    """
+
+    def claim_once(
+        self,
+        record: GuardReplayRecord | Mapping[str, Any],
+        *,
+        require_fresh: bool = True,
+    ) -> GuardReplayDecision:
+        """Claim one guarded-root replay record if it has not been seen."""
+        ...
+
+
+class InMemoryReplayClaimStore:
+    """Deterministic development adapter for `ReplayClaimStore`.
+
+    The adapter is useful for tests and local smoke flows. It is not production
+    persistence and does not provide cross-process atomicity.
+    """
+
+    def __init__(self, records: Iterable[GuardReplayRecord | Mapping[str, Any]] = ()) -> None:
+        self._records = tuple(
+            item if isinstance(item, GuardReplayRecord) else GuardReplayRecord.from_mapping(item)
+            for item in records
+        )
+
+    @property
+    def records(self) -> tuple[GuardReplayRecord, ...]:
+        return self._records
+
+    def claim_once(
+        self,
+        record: GuardReplayRecord | Mapping[str, Any],
+        *,
+        require_fresh: bool = True,
+    ) -> GuardReplayDecision:
+        checked = record if isinstance(record, GuardReplayRecord) else GuardReplayRecord.from_mapping(record)
+        decision = evaluate_guard_replay(checked, self._records, require_fresh=require_fresh)
+        if decision.replay_status == "fresh":
+            self._records = (*self._records, checked)
+        return decision
 
 
 @dataclass(frozen=True)
@@ -374,7 +422,12 @@ def evaluate_guard_replay(
                 record=record,
                 first_seen=prior,
             )
-        if prior.root_tag == record.root_tag:
+        root_tag_replay = (
+            prior.root_tag == record.root_tag
+            and prior.chain_id == record.chain_id
+            and prior.key_id == record.key_id
+        )
+        if root_tag_replay:
             if require_fresh:
                 return GuardReplayDecision(
                     status="blocked",

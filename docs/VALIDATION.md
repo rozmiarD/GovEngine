@@ -56,9 +56,46 @@ Expected result for the current `0.12.2a0` package line (`0.12.2-alpha`):
   its runtime payloads to public SCLite lifecycle artifacts;
 - guarded-bundle runtime flow tests prove first use of a verified SCLite guard
   can be recorded as fresh and a second use of the same `root_tag` is blocked;
+- replay claim-store tests prove the development claim-once port records the
+  first fresh claim and rejects or observes repeated claims without claiming
+  production persistence or concurrency ownership;
+- replay documentation distinguishes host-owned atomic production stores from
+  `InMemoryReplayClaimStore` and `record_guard_replay_file()` development
+  helpers;
 - runtime-consumable execution-gate tests require guarded-strict verification
   plus replay-fresh status before a bundle can be consumed for execution;
+- runner receipt binding tests require admission, ticket, request, receipt,
+  and digest references before a receipt can be treated as runtime evidence;
+- evidence-review chain tests require the evidence claim and optional review
+  result to reference the expected receipt, admission, qualification, and
+  receipt-status bounds without storing raw evidence or replacing SCLite
+  review-bundle verdict authority;
+- audit-ledger tests require append/read/verify contracts, GovEngine-owned
+  digest binding, and JSONL development hash-chain continuity without
+  production persistence claims;
+- inspect-only admission workflow tests must validate and summarize
+  `RuntimeAdmissionResult` records without creating runner requests, receipts,
+  replay claims, audit entries, target contact, or live execution authority;
 - no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced.
+
+## Operator/runbook docs gate
+
+Docs that change the governed-runtime MVP operator path should preserve the
+truth in [GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md):
+admission is a decision record, SCLite owns proof/review authority, trust and
+keys are host-owned ports, replay/audit persistence is host-owned beyond local
+adapters, dry-run remains the default runner path, and live execution remains
+disabled unless a future host adapter satisfies the runner safety spec.
+
+Use these checks for operator/runbook-only updates:
+
+```bash
+python scripts/validate_public_truth.py
+python scripts/validate_alpha_readiness.py
+python -m pytest tests/ -q
+ruff check .
+git diff --check
+```
 
 ## Historical validation records
 
@@ -176,6 +213,11 @@ Current tests cover:
 - admission/policy/approval/audit validators without profile policy meaning, approval workflow, audit storage/retention, raw target/prompt, queue, scheduler, storage, command, carrier, credential, or live-execution claims.
 - runner-supervision validators without live backend ownership, lease persistence, raw intent, scheduler, storage, carrier, credential, or concrete execution claims.
 - evidence-review validators without SCLite review verdict ownership, Ravenclaw finding taxonomy, raw output/evidence storage, target/prompt, command, carrier, credential, or live-execution claims.
+- receipt/evidence chain validators over admission, runner request, receipt,
+  evidence claim, and optional review-result references without raw evidence
+  storage, SCLite canonicalization ownership, or live execution authority.
+- JSONL hash-chain development audit adapter without production storage,
+  locking, retention, concurrency, raw evidence, or live execution authority.
 
 Historical expected result for the `0.7.0` release line:
 

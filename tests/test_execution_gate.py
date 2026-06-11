@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from govengine.execution.gate import DryRunRunner, ExecutionGate, ExecutionGateInput, RunnerProfile
 from govengine.execution.runner_protocol import GovRunnerRequest, GovRunnerStep
 
@@ -94,6 +96,19 @@ def test_execution_gate_blocks_runtime_consumable_replayed_bundle() -> None:
     assert "missing_or_replayed_guarded_root" in decision.blockers
 
 
+@pytest.mark.parametrize("replay_status", ("stale", "expired"))
+def test_execution_gate_blocks_runtime_consumable_stale_replay(replay_status: str) -> None:
+    decision = ExecutionGate().evaluate(_gate_input(
+        runtime_consumable_bundle=True,
+        guarded_bundle_status="passed",
+        replay_status=replay_status,
+    ))
+
+    assert decision.allowed is False
+    assert decision.reason_code == "replay_detected"
+    assert "missing_or_replayed_guarded_root" in decision.blockers
+
+
 def test_execution_gate_rejects_raw_intent_missing_contract() -> None:
     decision = ExecutionGate().evaluate(_gate_input(has_prepared_execution_contract=False))
 
@@ -108,6 +123,56 @@ def test_execution_gate_blocks_live_by_default() -> None:
     assert decision.allowed is False
     assert decision.reason_code == "execution_disabled"
     assert "live_backend_disabled" in decision.blockers
+
+
+def test_execution_gate_blocks_live_profile_without_explicit_backend_enablement() -> None:
+    decision = ExecutionGate().evaluate(
+        _gate_input(runner_profile=RunnerProfile(name="local-live", allowed=True)),
+        live=True,
+    )
+
+    assert decision.allowed is False
+    assert decision.to_state == "runner_allowed_live"
+    assert decision.reason_code == "execution_disabled"
+    assert "live_backend_disabled" in decision.blockers
+    assert decision.context.metadata["runner_profile"]["live_backend_enabled"] is False
+
+
+def test_execution_gate_only_allows_live_when_profile_explicitly_enables_backend() -> None:
+    decision = ExecutionGate().evaluate(
+        _gate_input(runner_profile=RunnerProfile(name="local-live", allowed=True, live_backend_enabled=True)),
+        live=True,
+    )
+
+    assert decision.allowed is True
+    assert decision.to_state == "runner_allowed_live"
+    assert decision.context.metadata["runner_profile"]["live_backend_enabled"] is True
+
+
+@pytest.mark.parametrize(
+    "ticket_status",
+    ("missing", "invalid", "unapproved", "mismatch", "stale", "failed"),
+)
+def test_execution_gate_blocks_non_approved_execution_ticket(ticket_status: str) -> None:
+    decision = ExecutionGate().evaluate(_gate_input(execution_ticket_status=ticket_status))
+
+    assert decision.allowed is False
+    assert decision.reason_code == "raw_intent_rejected"
+    assert "missing_or_invalid_execution_ticket" in decision.blockers
+    assert "approve_execution_ticket" in decision.next_actions
+
+
+@pytest.mark.parametrize(
+    "trust_status",
+    ("missing", "denied", "failed", "untrusted", "unknown"),
+)
+def test_execution_gate_blocks_invalid_trust_decision_status(trust_status: str) -> None:
+    decision = ExecutionGate().evaluate(_gate_input(trust_decision_status=trust_status))
+
+    assert decision.allowed is False
+    assert decision.reason_code == "raw_intent_rejected"
+    assert "missing_or_invalid_trust_decision" in decision.blockers
+    assert "verify_trust_decision" in decision.next_actions
 
 
 def test_execution_gate_requires_allowed_runner_profile() -> None:
@@ -131,3 +196,4 @@ def test_dry_run_runner_never_executes_live_request() -> None:
     assert receipt.status == "blocked"
     assert receipt.reason_code == "live_backend_disabled"
     assert receipt.step_results[0].reason_code == "live_backend_disabled"
+    assert receipt.control_decisions[0]["non_claim"] == "DryRunRunner never executes live requests"

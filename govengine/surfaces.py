@@ -53,7 +53,7 @@ def artifact_governance_surface() -> GovSurface:
         )),
         claim=(
             'Portable kernel/profile boundary, artifact descriptor/state/transition, '
-            'SCLite lifecycle bridge, signing/trust decision, guarded-root replay checks, guarded-bundle runtime decisions, deconfliction, state-machine, and state-index helpers.'
+            'SCLite lifecycle bridge, signing/trust decision, guarded-root replay checks, claim-once replay-store port, guarded-bundle runtime decisions, deconfliction, state-machine, and state-index helpers.'
         ),
         non_claims=_tuple((
             'SCLite schema/canonicalization ownership',
@@ -128,7 +128,7 @@ def admission_policy_surface() -> GovSurface:
             'govengine.admission',
         )),
         claim=(
-            'Neutral admission, policy-decision, approval-request, and audit-record validators for hosts '
+            'Neutral admission, policy-decision, approval-request, audit-record, runtime-admission, and bounded reference helpers for hosts '
             'that need deterministic runtime gate records without moving domain policy semantics into GovEngine.'
         ),
         non_claims=_tuple((
