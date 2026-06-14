@@ -1,8 +1,8 @@
 # Inspect-Only Admission Workflow
 
 This document defines the operator-facing inspect workflow for
-`RuntimeAdmissionResult` records. It is a design contract for GE-034 and does
-not implement execution.
+`RuntimeAdmissionResult` records. The workflow is read-only: it validates and
+summarizes an admission record without executing work.
 
 The workflow exists so an operator or host runtime can inspect a canonical
 runtime-admission record before any runner request is considered.
@@ -32,25 +32,24 @@ It must not execute live work, contact targets, open raw evidence, resolve
 credentials, call a runner backend, mutate SCLite artifacts, claim replay keys,
 or store audit entries.
 
-## Proposed Operator Shape
+## Operator Command
 
-GE-035 should implement this as a small inspect-only script or CLI surface. The
-preferred initial command shape is:
+The inspect-only surface is implemented as:
 
 ```bash
 python scripts/inspect_runtime_admission.py path/to/runtime-admission.json
 ```
 
-The command should be read-only and should exit non-zero only when the input
-record is malformed or unsafe to summarize.
+The command is read-only and exits with code `2` when the input record is
+malformed or unsafe to summarize.
 
-Optional future flags may be added only if they remain inspect-only:
+Supported inspect-only flags:
 
-- `--format text` for compact human output;
+- `--format text` for compact human output (default);
 - `--format json` for bounded machine-readable output;
 - `--show-artifact-refs` to include already-bounded references and digests.
 
-No future flag may grant execution authority.
+No flag may grant execution authority. No future flag may grant execution authority.
 
 ## Output Contract
 
@@ -70,9 +69,9 @@ artifact_refs: 2 bounded refs
 execution: not performed
 ```
 
-JSON output, if implemented, should contain the same bounded fields and should
-omit raw payloads, credentials, prompts, stdout, stderr, commands, targets, and
-raw evidence. It should never include environment variables or secret material.
+JSON output contains the same bounded fields and omits raw payloads,
+credentials, prompts, stdout, stderr, commands, targets, and raw evidence. It
+never includes environment variables or secret material.
 
 ## Validation Rules
 
@@ -122,9 +121,9 @@ execution enablement.
 - no raw evidence loading;
 - no Ravenclaw, OpenClaw, MCP, A2A, scheduler, carrier, or credential adapter.
 
-## GE-035 Implementation Acceptance
+## Test Coverage
 
-The implementation task should add tests proving:
+Standalone tests in `tests/test_admission_contracts.py` prove:
 
 - an allowed dry-run admission prints compact allowed output;
 - a blocked admission prints blockers and required next actions;
@@ -135,7 +134,7 @@ The implementation task should add tests proving:
 
 ## Implementation Status
 
-The initial inspect-only surface is implemented as:
+The inspect-only surface is implemented as:
 
 ```bash
 python scripts/inspect_runtime_admission.py path/to/runtime-admission.json

@@ -159,3 +159,71 @@ def test_public_truth_validator_rejects_missing_mvp_surface_doc_marker(
                 'Intent is not execution authority.',
             ),
         })
+
+
+def test_public_truth_version_doc_truth_negative_guards() -> None:
+    """Positive version/doc truth is covered by test_public_truth_validator_passes."""
+    validator = _load_validator()
+
+    assert set(validator.VERSION_TRUTH_FIELDS) == {
+        'source_version',
+        'package_init_version',
+        'published_pypi_version',
+        'release_label',
+        'sclite_dependency',
+        'changelog_unreleased_heading',
+    }
+    assert {field for _, field, _ in validator.FORBIDDEN_CURRENT_DOC_CLAIMS} == {
+        'unreleased_api_name',
+        'retired_helper_claim',
+        'stale_sclite_version',
+        'stale_policy_helper_claim',
+        'future_inspect_claim',
+        'future_implementation_tense',
+        'stale_plan_claim',
+        'stale_mvp_direction_claim',
+    }
+
+    unreleased_mvp_changelog = (
+        '## Unreleased\n'
+        '- Added `RuntimeAdmissionResult` and `compose_runtime_admission_result()`.\n'
+        '- Added `validate_evidence_review_chain()`.\n'
+        '## 0.12.2-alpha\n'
+    )
+    negative_cases = (
+        (
+            'missing_source_pypi_gap_readme',
+            'README.md:missing:Unreleased',
+            lambda: validator._assert_source_pypi_gap_docs(
+                validator.PUBLISHED_VERSION,
+                'alpha package 0.12.2a0 without the gap note',
+                validator._read('PUBLIC_STATUS.md'),
+                validator._read('docs/ROADMAP.md'),
+                unreleased_mvp_changelog,
+            ),
+        ),
+        (
+            'stale_unreleased_api_name',
+            'CHANGELOG.md:unreleased_stale_api_name:verify_evidence_review_chain',
+            lambda: validator._assert_changelog_unreleased_api_names(
+                '## Unreleased\n'
+                '- Added `verify_evidence_review_chain()`.\n'
+                '## 0.12.2-alpha\n'
+            ),
+        ),
+        (
+            'stale_sclite_integration_version',
+            'docs/SCLITE_INTEGRATION.md:forbidden_current_claim:stale_sclite_version:0.8.0b2',
+            lambda: validator._assert_forbidden_current_doc_claims({
+                'CHANGELOG.md': validator._read('CHANGELOG.md'),
+                'docs/SCLITE_INTEGRATION.md': 'review-bundle mapping through SCLite `0.8.0b2`',
+                'docs/RUNTIME_ADMISSION.md': validator._read('docs/RUNTIME_ADMISSION.md'),
+                'docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md': validator._read('docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md'),
+                'docs/ROADMAP.md': validator._read('docs/ROADMAP.md'),
+            }),
+        ),
+    )
+
+    for case_id, matcher, invoke in negative_cases:
+        with pytest.raises(AssertionError, match=matcher):
+            invoke()

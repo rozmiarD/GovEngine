@@ -14,6 +14,7 @@ python -m venv .venv
 python -m pip install --upgrade pip
 python -m pip install -e '.[dev]'
 python -m pytest -q
+python scripts/validate_public_truth.py
 ```
 
 For dependency-consistency and readiness validation, run the clean installed-package gate from a new virtual environment path:

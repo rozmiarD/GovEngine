@@ -44,6 +44,16 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
   decision surface. The helpers compose separate policy, ticket, trust,
   guarded-replay, runner, receipt-obligation, and bounded reference summaries
   before any live backend work.
+- Receipt and evidence binding: `validate_runner_receipt_binding()` and
+  `validate_evidence_review_chain()` validate bounded admission/ticket/request/
+  receipt and receipt/evidence/review reference chains without storing raw
+  evidence or replacing SCLite review verdict authority.
+- Audit ledger port: `AuditLedgerPort` and development-only
+  `JsonlAuditLedgerAdapter` provide append/read/verify contracts without
+  production database, locking, or retention ownership.
+- Inspect-only admission workflow: `scripts/inspect_runtime_admission.py`
+  validates and summarizes `RuntimeAdmissionResult` records without creating
+  runner requests, replay claims, audit entries, or live execution authority.
 - Public surface registry: tested `govengine.surfaces` metadata contains only neutral artifact-governance core, planning-contracts core, admission-policy core, evidence-review core, domain-profile SDK, runtime contract proofs, and controlled-execution core surfaces.
 - Security profile retirement: the published `0.12.0a0` alpha package removes the former optional Ravenclaw-derived facade and helper modules; security-domain behavior remains host-owned.
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
