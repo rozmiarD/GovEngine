@@ -188,13 +188,14 @@ Definition of done:
 
 Status: implemented in `0.3.0` as the initial `govengine.runtime_shell`
 surface. The implementation adds neutral control actions, queue snapshots,
-runtime snapshots, and scheduler-tick metadata while leaving persistence,
-queue mutation, scheduler loops, carrier delivery, credentials, UI, and live
-execution to host runtimes.
+runtime snapshots, and scheduler-tick metadata validators while leaving
+persistence, queue mutation, scheduler loops, carrier delivery, credentials,
+UI, and live execution to host runtimes. GovEngine does not ship `EventStore`,
+`WorkQueue`, or other storage-backed queue implementations in this surface.
 
 Goal: introduce a deterministic orchestration shell without making GovEngine an LLM agent loop.
 
-Historical 0.3.x work items:
+Historical 0.3.x design targets (not all implemented as concrete types):
 
 - `GovEvent`, `EventEnvelope`, `EventStore` protocol;
 - `GovState`, `GovRunState`, `StateStore` protocol;

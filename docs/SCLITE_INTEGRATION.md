@@ -88,14 +88,33 @@ Replay-store responsibilities are split deliberately:
 - Hosts own atomic production persistence, locking, transaction isolation,
   multi-process concurrency, retention, deletion policy, and recovery.
 
-Runtime-consumable artifacts should use this posture:
+Runtime-consumable artifacts should use this posture with
+`runtime_consumable=True` on the admission composition inputs:
 
 ```text
 strict lifecycle pass
 kernel_guard_hmac_v1 pass in SCLite
 replay fresh in GovEngine
 policy/ticket/trust gates pass
+runtime_consumable=True for guarded/replay blockers
 ```
+
+`compose_runtime_admission_result()` consumes bounded gate summaries. It does
+not call SCLite verification or record replay state itself. Hosts should obtain
+guarded-strict and replay summaries first — for example through
+`verify_guard_and_record_replay()` — and then pass those summaries into
+admission composition.
+
+GovEngine exposes two replay models:
+
+- `ReplayClaimStore` — host-owned claim-once replay freshness port with a
+  development-only in-memory adapter;
+- `verify_guard_and_record_replay()` — calls SCLite guarded-strict verification,
+  then records replay freshness through a host `GovStateStore` or compatible
+  adapter and returns one runtime decision.
+
+These are complementary: SCLite verifies guarded bundles; GovEngine records
+whether a guarded root or payload has already been consumed for runtime work.
 
 A deterministic dry-run example for this path is documented in
 [GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md](GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md).

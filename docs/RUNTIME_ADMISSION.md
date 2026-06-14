@@ -63,14 +63,17 @@ to:
 - `allowed`: boolean, true only when all required gates pass.
 - `reason_code`: deterministic machine-readable reason for the top-level
   decision.
-- `blockers`: ordered blocker codes such as `missing_policy_decision`,
-  `execution_ticket_invalid`, `trust_decision_missing`,
-  `guarded_strict_required`, `replay_not_fresh`,
-  `runner_profile_missing`, or `receipt_required`.
-- `required_next_actions`: ordered action codes such as `evaluate_policy`,
-  `issue_execution_ticket`, `verify_trust`, `verify_sclite_guarded_strict`,
-  `claim_replay_freshness`, `select_runner_profile`, or
-  `bind_runner_receipt`.
+- `blockers`: ordered blocker codes emitted by the current runtime composition
+  path, including `missing_or_invalid_policy_decision`, `policy_denied`,
+  `missing_or_invalid_execution_ticket`, `invalid_execution_ticket`,
+  `missing_or_invalid_trust_decision`, `missing_prepared_execution_contract`,
+  `missing_or_invalid_kernel_guard`, `missing_or_replayed_guarded_root`,
+  `missing_runner_profile`, `runner_profile_not_allowed`,
+  `live_backend_disabled`, and `receipt_obligation_required`.
+- `required_next_actions`: ordered action codes such as `obtain_policy_decision`,
+  `approve_execution_ticket`, `verify_trust_decision`,
+  `verify_guarded_strict_bundle`, `record_guard_replay_freshness`,
+  `select_allowed_runner_profile`, and `require_runner_receipt_obligation`.
 - `inputs`: bounded summaries of each input gate.
 - `artifact_refs`: bounded paths, ids, or digests. This should never carry raw
   prompts, credentials, live command output, private target data, or raw
@@ -94,23 +97,46 @@ receipts, replay claims, audit entries, or live execution authority.
 
 ## Gate Semantics
 
-The result is fail-closed:
+`compose_runtime_admission_result()` is fail-closed and consumes host-supplied
+gate summaries. It does not call SCLite verification, ticket-gate helpers, or
+trust verifiers directly.
 
+When `runtime_consumable=True`, guarded-strict and replay-freshness summaries
+participate in the admission decision. When `runtime_consumable=False`,
+guarded/replay failures do not block admission composition and review-only bundles
+can remain distinct from runtime-consumable posture.
+
+The result is fail-closed for missing or invalid host-supplied summaries:
+
+- missing prepared execution contract blocks;
 - missing policy blocks;
-- denied, unknown, deferred, or approval-required policy blocks unless the
-  status is explicitly `needs_review` or `dry_run_only`;
+- missing or invalid policy blocks;
+- denied, deferred, approval-required, dry-run-only, or record-only policy
+  outcomes yield policy-specific blockers and usually keep `allowed=False`;
 - missing or invalid execution ticket blocks runtime-consumable work;
-- missing or failed trust decision blocks when trust is required;
-- runtime-consumable SCLite artifacts require guarded-strict verification;
-- replayed or stale guarded roots block require-fresh runtime admission;
-- missing runner profile blocks;
-- live runner profiles block unless a future host profile explicitly enables
-  them after runner safety prerequisites exist;
-- missing receipt obligation blocks controlled runner requests.
+- missing or invalid trust decision blocks when trust is required;
+- runtime-consumable bundles require guarded-strict verification and replay
+  freshness when `runtime_consumable=True`;
+- missing or disallowed runner profile blocks;
+- live runner profiles block when `live=True` unless the host explicitly enables
+  `live_backend_enabled` on the profile;
+- missing receipt obligation blocks admission composition;
+- missing or disabled receipt obligation blocks admission composition with
+  `receipt_obligation_required`.
+
+`status` values such as `dry_run_only` or `needs_review` can coexist with
+`allowed=False`. Only `status=allowed` with `allowed=True` means all required
+composition gates passed.
 
 Dry-run remains the default safe posture. A dry-run admission can be allowed only
-when the required policy, ticket, trust, guarded/replay, runner-profile, and
-receipt-obligation rules for that dry-run profile are satisfied.
+when the required policy, ticket, trust, guarded/replay (if runtime-consumable),
+runner-profile, and receipt-obligation rules for that dry-run profile are
+satisfied.
+
+After admission composition, hosts may call
+`validate_runtime_admission_proof_inputs()` on an already-allowed record to
+check that expected proof-input summaries and references are present. That helper
+does not verify SCLite artifacts, signatures, or replay persistence.
 
 ## Boundary Rules
 
@@ -130,20 +156,24 @@ ports needed by host runtimes.
 
 ## Relationship To Existing Modules
 
-The implementation composes the existing surfaces instead of replacing
-them:
+The implementation composes host-supplied summaries from existing surfaces
+instead of replacing them:
 
-- `govengine.admission` for policy/admission/approval/audit record shapes;
-- `govengine.execution.ticket_gate` for execution-ticket checks;
+- `govengine.admission` for policy/admission/approval/audit record shapes and
+  runtime admission composition;
+- `govengine.execution.gate` for prerequisite and guarded/replay blocker
+  evaluation inside `compose_runtime_admission_result()`;
+- `govengine.execution.ticket_gate` for host-side execution-ticket checks before
+  summaries are composed;
 - `govengine.signing` for signature/trust decisions, host verifier ports, and
   deterministic GovEngine-owned admission/receipt record digests and signed
   record envelopes;
-- `govengine.signing` key-resolver and trust-store ports for host-owned signer
-  key references and trust-anchor decisions;
-- `govengine.replay` for guarded SCLite replay freshness;
+- `govengine.replay` for guarded SCLite replay freshness summaries and
+  `verify_guard_and_record_replay()`;
 - `govengine.execution.runner_protocol` and `govengine.execution.supervision`
-  for runner request, receipt, and profile boundaries;
-- `govengine.review` for later receipt/evidence review binding.
+  for runner request, receipt, and `validate_runner_receipt_binding()`;
+- `govengine.review` for receipt-bounded evidence/review reference checks through
+  `validate_evidence_review_chain()`.
 
 ## Implementation Status And Next Tasks
 
@@ -174,7 +204,9 @@ Delivered on current `main` (CHANGELOG `Unreleased` until the next PyPI alpha):
     guarded-strict composition helpers;
 11. `scripts/inspect_runtime_admission.py` implements the inspect-only operator
     workflow;
-12. focused negative tests cover missing policy, ticket, trust, replay,
+12. `scripts/verify_runner_receipt_binding.py` and
+    `scripts/verify_audit_ledger.py` provide read-only operator verifiers;
+13. focused negative tests cover missing policy, ticket, trust, replay,
     runner-profile, and receipt-obligation blockers in admission composition.
 
 Remaining work:

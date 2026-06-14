@@ -11,8 +11,9 @@ For the current extraction, the host/domain runtime is Ravenclaw. A future infra
 ## Governed-runtime MVP chain
 
 The current MVP path is documented for operators in
-[GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md). The short
-form is:
+[GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md). The full
+integration order and non-claims are in
+[SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md). The short form is:
 
 ```text
 intent
@@ -23,13 +24,43 @@ intent
   -> runner profile
   -> receipt obligation
   -> RuntimeAdmissionResult
-  -> bounded request/receipt/evidence references
+  -> GovRunnerRequest
+  -> GovRunnerReceipt
+  -> validate_runner_receipt_binding()
+  -> validate_evidence_review_chain()
+  -> bounded audit / review references
 ```
+
+`compose_runtime_admission_result()` composes host-supplied gate summaries into
+`RuntimeAdmissionResult`. It does not validate SCLite tickets, verify
+signatures, record replay state, or execute live work. Runtime admission
+composition requires an allowed runner profile and a receipt obligation;
+concrete runner receipts are validated later with
+`validate_runner_receipt_binding()`. Guarded/replay blockers apply during
+composition only when the host sets `runtime_consumable=True`.
 
 GovEngine owns the neutral mechanics that compose and validate this chain. It
 does not own domain policy meaning, operator approval workflow, production
 identity or keys, raw evidence storage, SCLite proof authority, or live backend
 execution.
+
+## Public surface map
+
+The tested public surface registry in `govengine.surfaces` currently exposes
+seven neutral surfaces. Additional alpha exports such as `govengine.api`,
+`govengine.context`, `govengine.roles`, and `govengine.execution_backend` exist
+outside that registry. See also [API_BOUNDARY.md](API_BOUNDARY.md) and
+[API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md).
+
+| Surface | Primary modules |
+| --- | --- |
+| `artifact_governance_core` | `govengine.core`, `govengine.boundary`, `govengine.sclite_contracts`, `govengine.lifecycle`, `govengine.signing`, `govengine.replay`, `govengine.deconfliction`, `govengine.state_index`, `govengine.state_machine`, `govengine.state_store` |
+| `planning_contracts_core` | `govengine.planning` |
+| `admission_policy_core` | `govengine.admission` |
+| `evidence_review_core` | `govengine.review` |
+| `domain_profile_sdk` | `govengine.profiles` |
+| `runtime_contract_proofs` | `govengine.contract_proofs` |
+| `controlled_execution_core` | `govengine.execution.*`, `govengine.ooda`, `govengine.orchestration`, `govengine.events`, `govengine.control`, `govengine.runtime_shell`, `govengine.scope_ports`, `govengine.contracts.execution` |
 
 ## Layers
 
@@ -56,7 +87,21 @@ Purpose:
 
 - validate neutral admission, policy-decision, approval, audit, evidence, and
   review records;
+- compose and validate `RuntimeAdmissionResult` through
+  `compose_runtime_admission_result()`, `validate_runtime_admission_result()`,
+  `validate_runtime_admission_proof_inputs()`, and bounded public summaries;
+- expose `AuditLedgerPort` and a development-only `JsonlAuditLedgerAdapter` for
+  hash-chained audit append/read/verify without production database ownership;
+- validate receipt-bounded evidence and review reference chains through
+  `validate_evidence_review_chain()`;
 - keep security-domain policy meaning and evidence taxonomy in the host runtime.
+
+`validate_runtime_admission_result()` checks record shape and consistency; it
+does not by itself enforce receipt obligation on arbitrary stored records the way
+`compose_runtime_admission_result()` does.
+
+See [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md) and
+[EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md).
 
 ### 2. Contract layer
 
@@ -74,7 +119,29 @@ Purpose:
 Lifecycle artifact projection from a host runtime payload is host-owned;
 Ravenclaw implements its projection outside this kernel.
 
-### 3. Execution helper / runner protocol layer
+See [SCLITE_INTEGRATION.md](SCLITE_INTEGRATION.md).
+
+### 3. Replay, signing, and trust bridge layer
+
+Modules:
+
+- `govengine.replay`
+- `govengine.signing`
+
+Purpose:
+
+- record guarded SCLite root freshness through host-supplied JSON state,
+  `ReplayClaimStore`, or development-only in-memory adapters;
+- compose SCLite guarded-strict verification with replay recording through
+  `verify_guard_and_record_replay()`;
+- provide GovEngine-owned record digests, signed-record envelopes, and
+  host-provided signer/verifier/trust ports, plus deterministic demo ports for
+  fixtures only.
+
+GovEngine does not own SCLite Kernel Guard HMAC verification, PKI, KMS, key
+storage, or production replay persistence.
+
+### 4. Execution helper / runner protocol layer
 
 Modules:
 
@@ -84,20 +151,33 @@ Modules:
 - `govengine.execution.command_shape`
 - `govengine.execution.runner`
 - `govengine.execution.runner_protocol`
+- `govengine.execution.gate`
+- `govengine.execution.supervision`
 - `govengine.execution_backend`
 
 Purpose:
 
 - expose stable API result/error envelopes for hard boundaries;
 - validate approved execution specs;
-- check execution-ticket presence/shape;
+- check execution-ticket presence/shape through host-facing ticket-gate helpers;
 - normalize command shape and target observations;
 - assemble dry-run result envelopes;
-- define the carrier-neutral runner request/receipt protocol a host adapter can honor.
+- define the carrier-neutral runner request/receipt protocol a host adapter can honor;
+- gate controlled execution through `ExecutionGate` and default `DryRunRunner`;
+- validate supervised runner requests, receipts, and receipt bindings through
+  `validate_runner_receipt_binding()`;
+- evaluate optional local subprocess runner readiness through
+  `LocalSubprocessRunnerReadiness` while keeping the local runner at
+  `not_applicable` by default.
 
-Important: live subprocess execution is not owned by GovEngine yet. The runner protocol prepares and records bounded execution shape; host adapters still own concrete IO/subprocess behavior.
+`govengine.execution_backend` is a port-only contract with no shipped live
+backend. Important: live subprocess execution is not owned by GovEngine. The
+runner protocol prepares and records bounded execution shape; host adapters
+still own concrete IO/subprocess behavior. See
+[RUNNER_SUPERVISION.md](RUNNER_SUPERVISION.md) and
+[LOCAL_SUBPROCESS_RUNNER_DECISION.md](LOCAL_SUBPROCESS_RUNNER_DECISION.md).
 
-### 4. Host context and scope-port layer
+### 5. Host context and scope-port layer
 
 Modules:
 
@@ -113,20 +193,59 @@ Purpose:
 - avoid hard dependencies on Ravenclaw internals;
 - support standalone import and package testing.
 
-### 5. OODA safety/control layer
+### 6. Planning, profile, and proof contract layer
 
-Module:
+Modules:
+
+- `govengine.planning`
+- `govengine.profiles`
+- `govengine.contract_proofs`
+
+Purpose:
+
+- validate neutral planner-to-runtime handoff contracts without owning a planner
+  implementation;
+- declare contract-only domain profiles and conformance reports for Ravenclaw and
+  Tecrax fixture paths;
+- provide public-safe multi-profile proof fixtures over existing GovEngine
+  contracts.
+
+These surfaces are metadata and validation only. They do not add scheduling,
+carrier adapters, credentials, or live execution authority.
+
+### 7. OODA, orchestration, and runtime-shell control layer
+
+Modules:
 
 - `govengine.ooda`
+- `govengine.orchestration`
+- `govengine.events`
+- `govengine.control`
+- `govengine.runtime_shell`
 
 Purpose:
 
 - observe normalized execution telemetry and operator-control events;
 - orient observations against approved specs, execution tickets, policy decisions, scope, budgets, and host state;
 - decide whether the next step should continue, pause, abort, cooldown, degrade to dry-run, or require owner review;
-- act by returning deterministic control decisions to the host runner/adapter.
+- expose deterministic orchestration handoff records, governance event envelopes, run-state transitions, between-step control decisions, and host runtime-shell projections without owning schedulers, queues, storage, credentials, or live execution.
 
-This layer converts Ravenclaw's existing scattered controls — stop/pause, host health gates, cooldowns, runtime decisions, and anomaly/replay checks — into a reusable GovEngine contract. It is policy-first, deterministic by default, and carrier-neutral.
+GovEngine provides reusable deterministic contracts here. Host runtimes such as
+Ravenclaw still own wiring those contracts into live control loops.
+
+## Operator surfaces
+
+GovEngine also ships read-only operator helpers that validate bounded records
+without executing work:
+
+- `scripts/inspect_runtime_admission.py` — inspect `RuntimeAdmissionResult`
+  records;
+- `scripts/verify_runner_receipt_binding.py` — verify admission/ticket/request/
+  receipt binding references;
+- `scripts/verify_audit_ledger.py` — verify development JSONL audit-ledger
+  chains.
+
+These scripts are inspection and verification tools, not execution backends.
 
 ## Boundary rule
 
@@ -140,10 +259,15 @@ forbidden: GovEngine -> Logdash/OpenClaw/MCP/A2A adapters
 
 ## Current maturity
 
-The package currently covers dry-run-safe helpers and neutral contract gates.
-The published `0.12.2-alpha` line keeps the governed-runtime kernel MVP honest:
-canonical runtime admission, host-provided trust ports, receipt/evidence
-binding, audit/replay ports, inspect-only admission review, and runner safety
-documentation are alpha surfaces, not production execution claims. GovEngine is
-not a complete orchestrator, scheduler, supervisor stack, subprocess runner, or
-product shell and does not claim production execution safety on its own.
+The package currently covers dry-run-safe helpers and neutral contract gates in
+kernel in alpha form. Source on `main` already includes the governed-runtime MVP
+and roadmap-hardening surfaces described above; the last PyPI publish remains
+`govengine==0.12.2a0` (`0.12.2-alpha`), with newer work recorded under
+`Unreleased` in `CHANGELOG.md` until the next alpha release.
+
+Those alpha surfaces — canonical runtime admission, host-provided trust ports,
+receipt/evidence binding, audit/replay ports, inspect-only admission review,
+read-only operator verifiers, and runner safety documentation — are not
+production execution claims. GovEngine is not a complete orchestrator,
+scheduler, supervisor stack, subprocess runner, or product shell and does not
+claim production execution safety on its own.

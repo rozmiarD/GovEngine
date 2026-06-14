@@ -29,8 +29,14 @@ intent
   -> RuntimeAdmissionResult
   -> GovRunnerRequest
   -> GovRunnerReceipt
+  -> validate_runner_receipt_binding()
+  -> validate_evidence_review_chain()
   -> bounded evidence/review references
 ```
+
+`compose_runtime_admission_result()` composes host-supplied gate summaries; it
+does not verify SCLite tickets, record replay state, or execute work. For
+runtime-consumable guarded/replay blockers, pass `runtime_consumable=True`.
 
 `RuntimeAdmissionResult` is the canonical machine-readable decision. It carries
 status, `allowed`, reason code, blockers, required next actions, gate inputs,
@@ -56,13 +62,16 @@ execute anything by itself.
    blocked unless a future host adapter satisfies the runner safety checklist.
 8. Require a receipt obligation that binds admission, ticket, request, receipt,
    status, and bounded output/evidence references.
-9. Compose or inspect `RuntimeAdmissionResult`.
+9. Compose or inspect `RuntimeAdmissionResult`. For allowed admissions, optionally
+    call `validate_runtime_admission_proof_inputs()` to confirm expected
+    proof-input summaries are present.
 10. If the result is blocked, follow `required_next_actions` instead of trying
     to execute.
 11. If the result is allowed for dry-run, create a bounded runner request and
     require a receipt.
-12. Qualify evidence/review references against the receipt/admission chain
-    without storing raw evidence in GovEngine.
+12. Validate receipt binding with `validate_runner_receipt_binding()` and qualify
+    evidence/review references with `validate_evidence_review_chain()` without
+    storing raw evidence in GovEngine.
 
 ## Inspect-Only Workflow
 
@@ -73,6 +82,13 @@ target contact, subprocesses, or live execution authority.
 
 The contract is documented in
 [INSPECT_ONLY_ADMISSION_WORKFLOW.md](INSPECT_ONLY_ADMISSION_WORKFLOW.md).
+
+Operator verifiers:
+
+- `scripts/inspect_runtime_admission.py` — inspect admission records;
+- `scripts/verify_runner_receipt_binding.py` — verify admission/ticket/request/
+  receipt binding references;
+- `scripts/verify_audit_ledger.py` — verify development JSONL audit chains.
 
 ## Audit and Replay
 
