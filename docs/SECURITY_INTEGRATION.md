@@ -12,7 +12,9 @@ Runtime-consuming hosts should evaluate the security path in this order:
 2. GovEngine replay freshness for the guarded root or guarded payload.
 3. Host trust decision for signer, signature, and trust-anchor status.
 4. Execution ticket gate for ticket status and scope binding.
-5. Runtime admission composition through `RuntimeAdmissionResult`.
+5. Runtime admission composition through `compose_runtime_admission_result()`
+   with host-supplied gate summaries (`runtime_consumable=True` when guarded/
+   replay should block).
 6. Runner request creation from an approved execution spec.
 7. Runner receipt binding for admission, ticket, request, and receipt refs.
 8. Evidence and review records bounded by receipt status.

@@ -2,7 +2,12 @@
 
 A domain profile contract is the host-facing declaration that lets a runtime consume GovEngine without moving domain semantics into the kernel.
 
-GovEngine `0.8.x` also exposes `govengine.profiles`, a minimal contract-only SDK around this boundary. The SDK provides `DomainProfile`, resource/task/stage registries, capability, runner, policy-hook, evidence-rule declarations, fixture Ravenclaw/Tecrax profiles, and `ProfileConformanceReport`. These declarations remain data and validation shapes; they do not implement adapters, credentials, product UX, domain taxonomy, or live execution.
+GovEngine also exposes `govengine.profiles`, a minimal contract-only SDK around
+this boundary. The SDK provides `DomainProfile`, resource/task/stage registries,
+capability, runner, policy-hook, evidence-rule declarations, fixture
+Ravenclaw/Tecrax profiles, and `ProfileConformanceReport`. These declarations
+remain data and validation shapes; they do not implement adapters, credentials,
+product UX, domain taxonomy, or live execution.
 
 ## Contract Shape
 
@@ -49,7 +54,7 @@ These remain outside profile ownership even when a profile has runtime code that
 
 ## Ravenclaw Compatibility
 
-The built-in Ravenclaw profile contract identifies Ravenclaw as a security-research host profile. It owns campaign/runtime semantics and Logdash/operator workflow language, while consuming neutral GovEngine admission-policy and controlled-execution surfaces plus SCLite review bundles.
+The built-in Ravenclaw profile contract identifies Ravenclaw as a security-research host profile. It owns campaign/runtime semantics and Logdash/operator workflow language, while consuming neutral GovEngine admission-policy, evidence-review, and controlled-execution surfaces plus SCLite review bundles.
 
 The `ravenclaw_security_profile()` SDK fixture is narrower than Ravenclaw itself: it declares security-research resource types, task families, planning stages, policy hooks, dry-run runner profile, and receipt-bounded evidence expectations. It does not make GovEngine own Ravenclaw finding taxonomy, Logdash, campaign UX, or target-test authorization.
 

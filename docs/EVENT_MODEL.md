@@ -36,4 +36,6 @@ The runtime owns event-loop liveness, queues, schedules, transports, UI, credent
 
 ## Release Use
 
-Before 0.2, event docs, public exports, surface metadata, and tests should agree that events are compact governance metadata only. Runtime scheduling, carrier delivery, credential handling, and live execution stay outside GovEngine.
+Event docs, public exports, surface metadata, and tests agree that events are
+compact governance metadata only. Runtime scheduling, carrier delivery,
+credential handling, and live execution stay outside GovEngine.

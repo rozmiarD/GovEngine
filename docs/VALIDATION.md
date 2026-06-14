@@ -2,6 +2,20 @@
 
 GovEngine validation is local and public-safe. It does not run live targets.
 
+## CI vs local gates
+
+GitHub Actions (`.github/workflows/pytest.yml`) runs public-truth validation,
+alpha readiness, full pytest across supported Python versions, package dry-run
+build, `twine check`, wheel install, and isolated `pip check`. Treat branch or
+PR CI as required merge evidence.
+
+Local-only gates that CI does not fully replace:
+
+- `ruff check .`
+- `git diff --check`
+- `scripts/validate_clean_package_install.py` with a disposable venv and
+  coordinated SCLite source when validating release readiness
+
 ## Local package gate
 
 ```bash

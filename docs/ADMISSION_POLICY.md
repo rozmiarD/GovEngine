@@ -39,9 +39,12 @@ and concrete execution.
 The canonical runtime admission contract lives in
 [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). The initial
 `RuntimeAdmissionResult` record is the bounded admission decision surface. The
-`compose_runtime_admission_result()` helper populates it from policy, ticket,
-trust, SCLite guarded verification, replay freshness, runner-profile, and
-receipt-obligation signals without making intent an execution authority.
+`compose_runtime_admission_result()` helper populates it from host-supplied
+policy, ticket, trust, SCLite guarded verification, replay freshness,
+runner-profile, and receipt-obligation summaries without making intent an
+execution authority. The helper composes summaries only; it does not verify
+SCLite tickets or record replay state. Guarded/replay blockers apply when the
+host sets `runtime_consumable=True`.
 
 ## Audit ledger port
 

@@ -57,12 +57,16 @@ Events describe what happened. State transitions describe how the neutral run st
 
 ## Release Use
 
-For 0.2, state-machine docs, public exports, surface metadata, and tests agree
-that state transitions are deterministic metadata only. Runtime persistence,
-queueing, scheduling, credentials, and live execution stay outside GovEngine.
+State-machine docs, public exports, surface metadata, and tests agree that state
+transitions are deterministic metadata only. Runtime persistence, queueing,
+scheduling, credentials, and live execution stay outside GovEngine.
 
-For 0.3, higher-level host lifecycle actions and queue/runtime projections live
-in `govengine.runtime_shell` rather than expanding `GovRunState` into a host
-state store. This keeps the state machine narrow while giving hosts a neutral
-shape for `start`, `pause`, `resume`, `stop`, `cancel`, `replan`, and
-`cooldown` control records.
+GovEngine uses two related but distinct state vocabularies:
+
+- `GovRunState` / `StateTransition` in `govengine.state_machine` — narrow
+  governed-run progression metadata;
+- `RUNTIME_STATES` / host lifecycle actions in `govengine.runtime_shell` —
+  higher-level control projections such as `start`, `pause`, and `cooldown`.
+
+Hosts map their own persistence and process control onto these neutral shapes.
+GovEngine validates records; it does not own a host state store.
