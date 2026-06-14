@@ -13,6 +13,9 @@ Current published PyPI line: `govengine==0.12.2a0` (`0.12.2-alpha`) with `sclite
 - [ ] `python scripts/validate_alpha_readiness.py` passes for alpha release lines.
 - [ ] `python -m pytest -q` passes.
 - [ ] `python scripts/validate_clean_package_install.py --venv /tmp/govengine-clean-release --dev --sclite-source /path/to/SCLite --no-editable` passes from a new virtual environment path, including its isolated installed-package retirement smoke.
+- [ ] `scripts/verify_runner_receipt_binding.py` and `scripts/verify_audit_ledger.py` are treated as read-only verifier smoke helpers if their records are used as release evidence; they must not generate runner requests, append ledger records, or expose raw payloads.
+- [ ] Maintainer/security review confirms there are no open P0/P1 security findings. Passing tests alone is not release approval when a P0/P1 finding is open.
+- [ ] Downstream smoke evidence is classified before release: SCLite released-line is required, SCLite main is optional/coordinated unless targeted, and Ravenclaw/Tecrax host contract smokes remain external host-owned checks.
 - [ ] Build artifacts are generated from a clean tree.
 - [ ] No generated `build/`, `dist/`, `*.egg-info`, caches, private state, or Ravenclaw workspace files are committed unless intentionally package metadata.
 
@@ -73,3 +76,20 @@ python -m venv /tmp/govengine-wheel-smoke
 ```
 
 Do not upload to PyPI or create public tags until the operator explicitly approves the release action.
+
+## Downstream compatibility smoke gates
+
+GovEngine release checks may validate downstream compatibility, but production
+code must stay host-neutral:
+
+- Required: SCLite released-line smoke in a clean environment using the
+  supported `sclite-core` package range.
+- Optional/coordinated: SCLite main smoke during dependency waves. Treat it as
+  an early warning unless the release target explicitly updates the supported
+  dependency line.
+- External/manual: Ravenclaw, Tecrax, or other host contract smokes. Those
+  checks prove package consumption and host adapter compatibility without
+  adding host imports to GovEngine.
+
+These smokes support a release decision. They do not publish, tag, upload,
+enable live execution, or make production-readiness claims.

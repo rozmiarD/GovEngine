@@ -89,6 +89,12 @@ MVP_SURFACE_DOC_MARKERS = {
         'LocalSubprocessRunner',
         'Current stage decision: `not_applicable`.',
     ),
+    'docs/SECURITY_INTEGRATION.md': (
+        'SCLite secure verification',
+        '`RuntimeAdmissionResult` is not proof and not execution authority',
+        'PKI, KMS, CA, HSM, private key storage',
+        '`JsonlAuditLedgerAdapter` is a development JSONL hash-chain adapter',
+    ),
 }
 
 

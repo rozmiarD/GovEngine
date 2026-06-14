@@ -36,6 +36,32 @@ def test_approved_spec_and_dry_run_result() -> None:
     assert result['execution_ticket_gate'] == {'status': 'not_required'}
 
 
+@pytest.mark.parametrize('bad_step', ['curl https://example.com', None, ['curl']])
+def test_approved_execution_steps_rejects_non_mapping_steps(bad_step) -> None:
+    approved = _approved_spec()
+    approved['execution_truth']['execution_plan'] = [bad_step]
+
+    with pytest.raises(ValueError, match='invalid_approved_execution_step:0'):
+        approved_execution_steps(approved)
+
+
+@pytest.mark.parametrize(
+    ('bad_step', 'reason'),
+    [
+        ({'args': ['https://example.com']}, 'missing_approved_execution_step_tool:0'),
+        ({'tool': '', 'args': ['https://example.com']}, 'missing_approved_execution_step_tool:0'),
+        ({'tool': 'curl'}, 'missing_approved_execution_step_args:0'),
+        ({'tool': 'curl', 'args': 'https://example.com'}, 'invalid_approved_execution_step_args:0'),
+    ],
+)
+def test_approved_execution_steps_rejects_malformed_tool_or_args(bad_step, reason: str) -> None:
+    approved = _approved_spec()
+    approved['execution_truth']['execution_plan'] = [bad_step]
+
+    with pytest.raises(ValueError, match=reason):
+        approved_execution_steps(approved)
+
+
 def test_execution_ticket_gate_requires_ticket_when_called() -> None:
     approved = _approved_spec()
     with pytest.raises(ValueError, match='missing_execution_ticket'):

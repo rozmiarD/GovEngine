@@ -6,7 +6,9 @@ from govengine import (
     GovEvidenceClaim,
     GovEvidenceRequirement,
     GovReviewResult,
+    evidence_claim_public_summary,
     qualify_evidence_claim,
+    review_result_public_summary,
     validate_evidence_claim,
     validate_evidence_requirement,
     validate_evidence_review_chain,
@@ -85,6 +87,43 @@ def test_review_result_is_shape_only() -> None:
 
     assert isinstance(review, GovReviewResult)
     assert review.as_dict()['qualification_refs'] == ['claim-1:qualification']
+
+
+def test_review_public_summaries_exclude_raw_metadata() -> None:
+    claim = validate_evidence_claim({
+        'claim_id': 'claim-public',
+        'subject_ref': 'sha256:subject',
+        'claim_type': 'execution_truth',
+        'receipt_refs': ['receipt-1'],
+        'evidence_refs': ['evidence-1', 'evidence-2'],
+        'metadata': {'admission_id': 'admission-1'},
+    })
+    review = validate_review_result({
+        'review_id': 'review-public',
+        'subject_ref': 'sha256:subject',
+        'verdict': 'passed',
+        'qualification_refs': ['claim-public:qualification'],
+        'metadata': {'reviewer': 'host-owned'},
+    })
+
+    claim_summary = evidence_claim_public_summary(claim)
+    review_summary = review_result_public_summary(review)
+
+    assert claim_summary == {
+        'claim_id': 'claim-public',
+        'subject_ref': 'sha256:subject',
+        'claim_type': 'execution_truth',
+        'receipt_ref_count': 1,
+        'evidence_ref_count': 2,
+    }
+    assert review_summary == {
+        'review_id': 'review-public',
+        'subject_ref': 'sha256:subject',
+        'verdict': 'passed',
+        'qualification_ref_count': 1,
+    }
+    assert 'metadata' not in claim_summary
+    assert 'metadata' not in review_summary
 
 
 def test_evidence_review_chain_validates_admission_receipt_and_review_refs() -> None:
