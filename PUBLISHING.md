@@ -6,7 +6,8 @@ Current published PyPI line: `govengine==0.12.3a0` (`0.12.3-alpha`) with `sclite
 
 ## Preflight
 
-- [ ] For maintainer releases from the operator-controlled publish tree, effective git identity is `0x505badc0de <32790662+rozmiarD@users.noreply.github.com>`; external contributors use their own GitHub-associated identity.
+- [ ] For maintainer releases from the operator-controlled publish tree, effective git identity is `Krzysztof Probola <32790662+rozmiarD@users.noreply.github.com>`; external contributors use their own GitHub-associated identity.
+- [ ] Published Git history is preserved after the one-time 2026-06-09 authorship normalization on `rozmiarD/GovEngine`: no further force-push, history rewrite, date rewrite, or tag rewrite to fix authorship/contribution graphs. Use corrective commits instead.
 - [ ] Published Git history is preserved: no force-push, history rewrite, date rewrite, or tag rewrite to fix authorship/contribution graphs. Use corrective commits instead.
 - [ ] `CHANGELOG.md`, `PUBLIC_STATUS.md`, `README.md`, `docs/VALIDATION.md`, `docs/ROADMAP.md`, `docs/API_BOUNDARY.md`, `govengine/surfaces.py`, and `pyproject.toml` agree on version/status and claim only tested behavior.
 - [ ] `python scripts/validate_public_truth.py` passes.
