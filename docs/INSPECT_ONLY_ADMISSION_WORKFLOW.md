@@ -47,7 +47,9 @@ Supported inspect-only flags:
 
 - `--format text` for compact human output (default);
 - `--format json` for bounded machine-readable output;
-- `--show-artifact-refs` to include already-bounded references and digests.
+- `--show-artifact-refs` to include already-bounded references and digests;
+- `--max-bytes N` to reject oversized input files before parsing (default
+  bounded limit).
 
 No flag may grant execution authority. No future flag may grant execution authority.
 
@@ -82,8 +84,8 @@ The inspect workflow must:
    `validate_runtime_admission_result()`;
 3. rely on the admission validator to reject forbidden raw fields;
 4. preserve ordered blockers and required next actions;
-5. report missing or disabled receipt obligation as a blocker, not as an
-   implicit approval;
+5. report missing or disabled receipt obligation in the summary without treating
+   inspect output as execution permission;
 6. treat `allowed=True` as informational only, not as execution permission;
 7. state explicitly that no execution was performed.
 
@@ -132,8 +134,6 @@ Standalone tests in `tests/test_admission_contracts.py` prove:
 - output states that execution was not performed;
 - no live backend is imported or invoked.
 
-## Implementation Status
-
 The inspect-only surface is implemented as:
 
 ```bash
@@ -141,5 +141,6 @@ python scripts/inspect_runtime_admission.py path/to/runtime-admission.json
 ```
 
 The script validates a single JSON `RuntimeAdmissionResult`, emits compact text
-by default, supports bounded JSON output, exits with code 2 for malformed or
-unsafe inputs, and always reports `execution: not performed`.
+by default, supports bounded JSON output, rejects oversized inputs via
+`--max-bytes`, exits with code 2 for malformed or unsafe inputs, and always
+reports `execution: not performed`.

@@ -15,7 +15,8 @@ The example does not execute a backend and does not require credentials.
 
 ## Inputs
 
-The host supplies bounded gate summaries:
+The host supplies bounded gate summaries with `runtime_consumable=True` when
+guarded/replay outcomes should block admission:
 
 - a prepared execution contract status and digest;
 - a host-owned policy decision;
@@ -28,6 +29,9 @@ The host supplies bounded gate summaries:
 
 SCLite owns guarded verification and ticket semantics. GovEngine records replay
 freshness and composes the runtime admission result from bounded signals.
+`compose_runtime_admission_result()` does not verify SCLite artifacts or record
+replay persistence; obtain guarded/replay summaries first (for example via
+`verify_guard_and_record_replay()`), then compose admission.
 
 ## Expected Result
 

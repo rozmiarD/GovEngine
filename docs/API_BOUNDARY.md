@@ -4,8 +4,8 @@ GovEngine owns reusable governed-execution services. Its public surface should s
 
 The top-level export stability classification lives in [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md). It covers the current `govengine.__all__` surface and is guarded by tests so new public exports require an explicit stability decision.
 
-`govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current alpha public surface set. It contains the neutral artifact-governance core, planning contracts, admission/policy contracts, evidence review, domain-profile SDK, runtime contract proofs, and controlled-execution core. The published `0.12.0-alpha` line removes the prior Ravenclaw-derived optional security facade; domain security behavior belongs in the host runtime.
-`govengine.boundary.kernel_boundary_report()` is the tested machine-readable 0.2 boundary report. It combines the kernel/profile/runtime/SCLite ownership contract, known domain-profile contracts such as Ravenclaw, and the current public surface index.
+`govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current alpha public surface set. It contains the neutral artifact-governance core, planning contracts, admission/policy contracts, evidence review, domain-profile SDK, runtime contract proofs, and controlled-execution core. The published `0.12.2a0` (`0.12.2-alpha`) line removes the prior Ravenclaw-derived optional security facade; domain security behavior belongs in the host runtime.
+`govengine.boundary.kernel_boundary_report()` is the tested machine-readable boundary report (schema `v0.1`). It combines the kernel/profile/runtime/SCLite ownership contract, known domain-profile contracts such as Ravenclaw, and the current public surface index.
 `govengine.boundary.validate_domain_profile_conformance()` checks that a domain profile does not claim forbidden ownership and consumes only known GovEngine/SCLite surfaces.
 `govengine.orchestration.validate_orchestration_step()` checks deterministic orchestration handoff records without granting agent-loop, scheduler, UI, carrier, credential, or live-execution authority.
 `govengine.events.validate_event_envelope()` checks transport-neutral governance event metadata without accepting raw prompts, credentials, live commands, carrier payloads, or scheduling claims.
@@ -14,7 +14,7 @@ The top-level export stability classification lives in [API_STABILITY_MATRIX.md]
 `govengine.control.validate_control_decision()` checks deterministic between-step control decisions and delegates legal state changes to the state machine without accepting raw prompts, commands, schedulers, runtime storage, delivery, or live-execution claims.
 `govengine.runtime_shell.validate_runtime_snapshot()` checks host-provided control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without accepting raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
 `govengine.planning.validate_task_contract()` and `validate_plan_intent_contract()` check neutral planner-to-runtime handoff shapes without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
-`govengine.admission.validate_admission_decision()`, `validate_policy_decision()`, `validate_approval_request()`, `validate_audit_record()`, `validate_audit_ledger_entry()`, `validate_audit_ledger_append_result()`, `validate_audit_ledger_verification_result()`, and `validate_runtime_admission_result()` check neutral runtime gate and audit-ledger port records without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
+`govengine.admission.validate_admission_decision()`, `validate_policy_decision()`, `validate_approval_request()`, `validate_audit_record()`, `validate_audit_ledger_entry()`, `validate_audit_ledger_append_result()`, `validate_audit_ledger_verification_result()`, `validate_runtime_admission_result()`, `compose_runtime_admission_result()`, and `validate_runtime_admission_proof_inputs()` check neutral runtime gate and audit-ledger port records without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims. `compose_runtime_admission_result()` composes host-supplied summaries; it does not verify SCLite tickets or record replay state.
 `govengine.execution.supervision.validate_supervised_runner_request()`,
 `validate_runner_receipt_for_request()`, and
 `validate_runner_receipt_binding()` check approved-spec runner supervision,
@@ -42,6 +42,7 @@ Neutral core modules:
 - `govengine.signing`
 - `govengine.deconfliction`
 - `govengine.state_index`
+- `govengine.state_machine`
 - `govengine.state_store`
 - `govengine.replay`
 
@@ -126,7 +127,7 @@ GovEngine owns:
 - `govengine.scope_ports` — neutral scope-port protocol and host extraction helper used by controlled-execution contracts.
 - `govengine.state_store` — neutral JSON state helper primitives.
 - `govengine.replay` — guarded SCLite root replay records, claim-once replay-store port contracts, and fresh/replayed decisions over host-supplied state without HMAC verification, key storage, runtime storage ownership, production database ownership, or replay policy beyond the supplied store.
-- `govengine.sclite_*` — explicit integration seams with SCLite, including descriptor/status/transition mapping that delegates lifecycle verification and review-bundle verdicts to SCLite.
+- `govengine.sclite_contracts` — explicit integration seams with SCLite, including descriptor/status/transition mapping that delegates lifecycle verification and review-bundle verdicts to SCLite.
 
 ## Consumes
 
@@ -194,9 +195,10 @@ admission contract described in
 bounded blockers, next actions, and artifact references.
 `compose_runtime_admission_result()` populates it from bounded gate evidence for
 hosts and reviewers; the record does not grant live execution authority by
-itself. `normalize_admission_artifact_refs()` is an alpha helper for bounded
-review references and existing digest strings only; it does not compute content
-digests and does not claim SCLite canonicalization authority.
+itself. After an allowed admission is composed, hosts may call
+`validate_runtime_admission_proof_inputs()` to check that expected proof-input
+summaries are present. That helper does not verify SCLite artifacts or replay
+persistence.
 
 The operator-facing path that ties admission, trust ports, guarded SCLite
 verification, replay freshness, runner profile, receipt obligation, and

@@ -74,4 +74,6 @@ OODA decisions answer whether the next step should continue, pause, abort, cool 
 
 ## Release Use
 
-Before 0.2, public API, boundary docs, and tests should agree that orchestration is deterministic control metadata only. Runtime scheduling, UI, adapters, credentials, and live execution must remain outside GovEngine.
+Public API, boundary docs, and tests agree that orchestration is deterministic
+control metadata only. Runtime scheduling, UI, adapters, credentials, and live
+execution must remain outside GovEngine.

@@ -1,9 +1,10 @@
 # Receipt Binding Design
 
 GovEngine runner receipts must be bindable to the runtime admission decision and
-the execution ticket they claim to satisfy. This design defines the neutral
-binding shape for later implementation. It does not add live execution
-authority.
+the execution ticket they claim to satisfy. `GovRunnerReceiptBinding` and
+`validate_runner_receipt_binding()` implement the neutral binding shape. This
+surface does not add live execution authority and does not grant execution
+permission by itself.
 
 ```text
 Intent is not execution authority.
@@ -12,6 +13,11 @@ A receipt without admission and ticket bindings is not runtime evidence.
 ```
 
 ## Purpose
+
+Receipt binding is separate from receipt obligation at admission composition
+time. `compose_runtime_admission_result()` requires a receipt obligation before
+admission can allow controlled runner work; `validate_runner_receipt_binding()`
+validates the concrete receipt after the host adapter has produced one.
 
 Receipt binding makes the post-run record reviewable without moving host-owned
 runner behavior, raw evidence storage, or SCLite proof authority into
@@ -28,16 +34,14 @@ RuntimeAdmissionResult
 
 ## Required Binding Fields
 
-Future receipt-binding records should carry these bounded fields:
+`GovRunnerReceiptBinding` carries these bounded fields:
 
 - `admission_id`: the `RuntimeAdmissionResult` identifier.
 - `admission_digest`: the GovEngine-owned digest for the admission record when
   available.
-- `admission_ref`: optional bounded path, URI, or artifact reference.
 - `ticket_id`: the SCLite execution ticket identifier or host ticket id.
 - `ticket_digest`: the ticket digest or bounded SCLite ticket artifact digest
   when available.
-- `ticket_ref`: optional bounded ticket artifact reference.
 - `request_id`: the `GovRunnerRequest` identifier.
 - `request_digest`: a GovEngine-owned digest for the runner request record when
   available.
@@ -50,15 +54,15 @@ Future receipt-binding records should carry these bounded fields:
 - `runner_profile`: the admitted runner profile, including dry-run/live posture.
 - `output_digests`: bounded stdout/stderr or artifact digests, never raw output.
 - `evidence_refs`: bounded downstream evidence or review artifact references.
-- `control_decisions`: compact OODA/control decision summaries when present.
 
-The binding record may carry timestamps or lease references only as
-host-provided bounded metadata. Hosts own clocks, leases, persistence, raw logs,
-and retention policy.
+`control_decisions` on a receipt may carry compact OODA/control summaries as
+host metadata; they are not part of binding validation. The binding record may
+carry timestamps or lease references only as host-provided bounded metadata.
+Hosts own clocks, leases, persistence, raw logs, and retention policy.
 
 ## Verification Rules
 
-A receipt-binding verifier should fail closed when:
+`validate_runner_receipt_binding()` fails closed when:
 
 - the receipt omits `admission_id` or `admission_digest` after admission binding
   is required;
@@ -79,11 +83,11 @@ evidence storage and do not replace SCLite review bundles.
 ## Compatibility With Current Receipts
 
 `GovRunnerReceipt` records `status`, `request_id`, `source`, `reason_code`,
-step results, and compact control decisions. It can now carry an optional
-bounded `binding` envelope with admission, ticket, request, receipt, output
-digest, and evidence references. Receipts without binding remain valid for
-current dry-run/default-safe execution helpers, but later verifier work should
-require binding before treating a receipt as runtime evidence.
+step results, and compact control decisions. It can carry an optional bounded
+`binding` envelope with admission, ticket, request, receipt, output digest, and
+evidence references. Receipts without binding remain valid for current
+dry-run/default-safe execution helpers, but verifier work should require binding
+before treating a receipt as runtime evidence.
 
 Receipt binding is additive:
 
@@ -102,7 +106,7 @@ and GovEngine-owned record digests for admission, request, and receipt records.
 
 SCLite owns ticket schema, guarded verification, artifact-chain verification,
 canonicalization, lifecycle proof, and review-bundle authority. GovEngine may
-store bounded SCLite ticket ids, refs, and digests but must not duplicate SCLite
+store bounded SCLite ticket ids and digests but must not duplicate SCLite
 verification.
 
 Hosts own raw evidence, redaction, clocks, persistence, live runner behavior,
@@ -116,7 +120,7 @@ minimal admission/ticket/request/receipt verifier. The verifier compares
 GovEngine-owned admission, request, and receipt digests when records or expected
 digests are supplied, and compares SCLite/host ticket digests only as bounded
 references. It does not canonicalize SCLite tickets, store raw evidence, or
-enable live execution. Evidence/review helpers should then verify
+enable live execution. Evidence/review helpers then verify
 admission -> request -> receipt -> evidence references without storing raw
 evidence.
 
@@ -124,3 +128,6 @@ evidence.
 evidence claims and review-result references. It uses receipt ids/digests,
 admission ids/digests, and receipt status bounds; it does not store raw
 evidence and does not duplicate SCLite review-bundle verdict authority.
+
+Read-only operator verification is available through
+`scripts/verify_runner_receipt_binding.py`.
