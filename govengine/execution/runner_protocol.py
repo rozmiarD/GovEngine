@@ -29,6 +29,9 @@ FORBIDDEN_RECEIPT_BINDING_KEYS = {
     "url",
 }
 RUNNER_RECEIPT_STATUSES = ("dry-run", "succeeded", "blocked", "failed", "interrupted")
+RUNNER_REQUEST_SCHEMA_VERSION = "v0.1"
+RUNNER_RECEIPT_SCHEMA_VERSION = "v0.1"
+RUNNER_RECEIPT_BINDING_SCHEMA_VERSION = "v0.1"
 
 
 @dataclass(frozen=True)
@@ -53,6 +56,7 @@ class GovRunnerRequest:
     request_id: str
     source: str
     steps: tuple[GovRunnerStep, ...]
+    schema_version: str = RUNNER_REQUEST_SCHEMA_VERSION
     approved_execution_spec: Mapping[str, Any] = field(default_factory=dict)
     execution_ticket_gate: Mapping[str, Any] = field(default_factory=dict)
     dry_run: bool = True
@@ -61,6 +65,7 @@ class GovRunnerRequest:
         return {
             "request_id": self.request_id,
             "source": self.source,
+            "schema_version": self.schema_version,
             "steps": [step.as_dict() for step in self.steps],
             "approved_execution_spec": dict(self.approved_execution_spec),
             "execution_ticket_gate": dict(self.execution_ticket_gate),
@@ -90,6 +95,7 @@ class GovRunnerReceiptBinding:
     """
 
     admission_id: str = ""
+    schema_version: str = RUNNER_RECEIPT_BINDING_SCHEMA_VERSION
     admission_digest: str = ""
     ticket_id: str = ""
     ticket_digest: str = ""
@@ -105,6 +111,7 @@ class GovRunnerReceiptBinding:
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "admission_id", _clean_text(self.admission_id))
+        object.__setattr__(self, "schema_version", _clean_text(self.schema_version) or RUNNER_RECEIPT_BINDING_SCHEMA_VERSION)
         object.__setattr__(self, "admission_digest", _clean_text(self.admission_digest))
         object.__setattr__(self, "ticket_id", _clean_text(self.ticket_id))
         object.__setattr__(self, "ticket_digest", _clean_text(self.ticket_digest))
@@ -130,6 +137,7 @@ class GovRunnerReceiptBinding:
         _reject_forbidden_binding(raw)
         return cls(
             admission_id=raw.get("admission_id") or "",
+            schema_version=raw.get("schema_version") or RUNNER_RECEIPT_BINDING_SCHEMA_VERSION,
             admission_digest=raw.get("admission_digest") or "",
             ticket_id=raw.get("ticket_id") or "",
             ticket_digest=raw.get("ticket_digest") or "",
@@ -165,6 +173,7 @@ class GovRunnerReceiptBinding:
     def as_dict(self) -> dict[str, Any]:
         return {
             "admission_id": self.admission_id,
+            "schema_version": self.schema_version,
             "admission_digest": self.admission_digest,
             "ticket_id": self.ticket_id,
             "ticket_digest": self.ticket_digest,
@@ -185,6 +194,7 @@ class GovRunnerReceipt:
     status: str
     request_id: str
     source: str
+    schema_version: str = RUNNER_RECEIPT_SCHEMA_VERSION
     step_results: tuple[GovRunnerStepResult, ...] = ()
     reason_code: str = "ok"
     control_decisions: tuple[Mapping[str, Any], ...] = ()
@@ -199,6 +209,7 @@ class GovRunnerReceipt:
             "status": self.status,
             "request_id": self.request_id,
             "source": self.source,
+            "schema_version": self.schema_version,
             "reason_code": self.reason_code,
             "step_results": [result.as_dict() for result in self.step_results],
             "control_decisions": [dict(decision) for decision in self.control_decisions],
@@ -253,6 +264,7 @@ def runner_request_from_approved_spec(
         request_id=str(request_id or "approved-spec-request"),
         source="approved_execution_spec",
         steps=normalize_runner_steps(raw_steps),
+        schema_version=RUNNER_REQUEST_SCHEMA_VERSION,
         approved_execution_spec=dict(approved_execution_spec),
         execution_ticket_gate=dict(execution_ticket_gate or {"status": "not_required"}),
         dry_run=bool(dry_run),
@@ -268,6 +280,7 @@ def dry_run_runner_receipt(
         status="dry-run",
         request_id=request.request_id,
         source=request.source,
+        schema_version=RUNNER_RECEIPT_SCHEMA_VERSION,
         step_results=tuple(
             GovRunnerStepResult(index=step.index, status="dry-run", reason_code="dry_run_requested")
             for step in request.steps
@@ -297,6 +310,7 @@ def runner_receipt_with_binding(
         status=receipt.status,
         request_id=receipt.request_id,
         source=receipt.source,
+        schema_version=receipt.schema_version,
         step_results=receipt.step_results,
         reason_code=receipt.reason_code,
         control_decisions=receipt.control_decisions,
@@ -338,6 +352,52 @@ def runner_receipt_digest(receipt: GovRunnerReceipt) -> str:
         binding["receipt_digest"] = ""
         record["binding"] = binding
     return govengine_record_digest(record, record_type="govengine.execution.runner_protocol.GovRunnerReceipt")
+
+
+def runner_receipt_public_summary(value: GovRunnerReceipt | Mapping[str, Any]) -> dict[str, Any]:
+    """Return a bounded receipt summary without raw stdout/stderr payloads."""
+
+    receipt = value if isinstance(value, GovRunnerReceipt) else _receipt_from_mapping(value)
+    binding = receipt.binding
+    return {
+        "schema_version": receipt.schema_version,
+        "receipt_id": binding.receipt_id,
+        "request_id": receipt.request_id,
+        "status": receipt.status,
+        "reason_code": receipt.reason_code,
+        "step_count": len(receipt.step_results),
+        "admission_id": binding.admission_id,
+        "ticket_id": binding.ticket_id,
+        "request_digest": binding.request_digest,
+        "receipt_digest": binding.receipt_digest,
+        "output_digest_count": len(binding.output_digests),
+        "evidence_ref_count": len(binding.evidence_refs),
+    }
+
+
+def _receipt_from_mapping(value: Mapping[str, Any]) -> GovRunnerReceipt:
+    raw = require_mapping(value, reason_code="invalid_runner_receipt")
+    return GovRunnerReceipt(
+        status=str(raw.get("status") or "").strip(),
+        request_id=str(raw.get("request_id") or "").strip(),
+        source=str(raw.get("source") or "").strip(),
+        schema_version=str(raw.get("schema_version") or RUNNER_RECEIPT_SCHEMA_VERSION).strip(),
+        reason_code=str(raw.get("reason_code") or "ok").strip() or "ok",
+        step_results=tuple(
+            GovRunnerStepResult(
+                index=int(item.get("index", -1)),
+                status=str(item.get("status") or "").strip(),
+                returncode=int(item.get("returncode", 0)),
+                stdout=str(item.get("stdout") or ""),
+                stderr=str(item.get("stderr") or ""),
+                reason_code=str(item.get("reason_code") or "ok").strip() or "ok",
+            )
+            for item in list(raw.get("step_results") or ())
+            if isinstance(item, Mapping)
+        ),
+        control_decisions=tuple(dict(item) for item in list(raw.get("control_decisions") or ()) if isinstance(item, Mapping)),
+        binding=raw.get("binding") if isinstance(raw.get("binding"), Mapping) else {},
+    )
 
 
 def validate_runner_receipt_binding(

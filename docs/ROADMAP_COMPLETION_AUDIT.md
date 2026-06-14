@@ -8,22 +8,20 @@ execution, or moving host-specific behavior into GovEngine.
 
 ## DAG Reduction
 
-The open issue graph is much larger than the remaining code delta. Most GOV
-nodes from `GOV-001` through `GOV-059` are already represented in the current
-tree by guard replay hardening, receipt binding, audit ledger contracts, public
-projection helpers, inspect-only admission, bounded output guards, public truth
-validators, and documentation hygiene tests.
+The open issue graph is larger than a linear implementation plan and several
+issue chains duplicate the same runtime boundary. The first pass over-reduced
+the graph to the tail. The corrected repository batch collapses the eligible
+GOV nodes into these implementation clusters:
 
-The remaining eligible tail collapsed into one implementation batch:
-
-- `GOV-060` and `GOV-061`: design and implement a read-only runner receipt
-  binding verifier.
-- `GOV-062` and `GOV-063`: design and implement a read-only development audit
-  ledger verifier.
-- `GOV-064`: define the next alpha release readiness gate.
-- `GOV-065`: define downstream compatibility smoke gates outside production
-  imports.
-- `GOV-066`: record this completion audit and beta-readiness decision.
+- guarded replay and SCLite delegation/import boundaries;
+- approved execution fail-closed normalization;
+- runtime admission schema/versioning, proof-input checks, and public
+  summaries;
+- runner receipt, review, and audit public projections;
+- inspect-only admission bounds and stable failure exits;
+- read-only runner receipt and audit-ledger verifier scripts;
+- API stability matrix, public truth, release gates, downstream smoke guidance,
+  and security integration documentation.
 
 `GOV-S001` is intentionally not executed in this repository batch. It is a
 cross-repo SCLite transition task whose acceptance criteria require Signposter
@@ -34,6 +32,24 @@ eligible under the current operator boundary.
 
 Implemented code and tests:
 
+- `approved_execution_steps()` now rejects malformed execution steps,
+  missing tools, and missing/non-list args instead of silently dropping them.
+- runtime admission, audit records, audit ledger entries, guard replay records,
+  runner requests, and runner receipts carry explicit schema-version handling
+  with legacy compatibility where needed.
+- `validate_runtime_admission_proof_inputs()` checks that an allowed admission
+  carries guarded-strict, replay-freshness, trust, ticket, runner-profile,
+  receipt-obligation, and bounded artifact-reference inputs without claiming to
+  verify SCLite, signatures, policy meaning, or execution authority.
+- `runtime_admission_public_summary()`,
+  `runner_receipt_public_summary()`, `audit_record_public_summary()`,
+  `audit_ledger_verification_public_summary()`,
+  `evidence_claim_public_summary()`, and `review_result_public_summary()`
+  expose bounded public projections without raw evidence/output metadata.
+- `scripts/inspect_runtime_admission.py` remains read-only and now rejects
+  oversized inputs before parsing.
+- SCLite integration tests assert the production import allowlist and guarded
+  replay delegation into `sclite.secure.verify_secure_bundle()`.
 - `scripts/verify_runner_receipt_binding.py` verifies existing request,
   receipt, admission, and ticket references through
   `validate_runner_receipt_binding()`. It never generates runner requests,
@@ -47,6 +63,12 @@ Implemented code and tests:
 
 Documentation and release gates:
 
+- `docs/SECURITY_INTEGRATION.md` records the required security integration
+  order, production non-claims, and development-only helpers.
+- `docs/API_STABILITY_MATRIX.md` classifies the new public projection and
+  proof-input helpers.
+- `scripts/validate_public_truth.py` now requires the security integration
+  document as part of the MVP public docs.
 - `docs/VALIDATION.md` now records exact CLI shapes, JSON inputs, bounded
   outputs, forbidden behavior, stable exit codes, next-alpha readiness checks,
   no-open-P0/P1 security finding requirement, and downstream smoke ownership.

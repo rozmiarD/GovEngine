@@ -13,6 +13,7 @@ from govengine import compose_runtime_admission_result
 from govengine.api import GovApiError
 from govengine.replay import (
     evaluate_guard_replay,
+    GuardReplayRecord,
     guard_replay_record_from_guard,
     InMemoryReplayClaimStore,
     ReplayClaimStore,
@@ -84,6 +85,17 @@ def test_guard_replay_record_from_guard_captures_runtime_ids() -> None:
     assert record.ticket_id == "ticket-1"
     assert record.run_id == "run-1"
     assert record.guard_profile == "kernel_guard_hmac_v1"
+    assert record.schema_version == "v0.1"
+
+
+def test_guard_replay_record_accepts_legacy_mapping_without_schema_version() -> None:
+    record = GuardReplayRecord.from_mapping({
+        "root_tag": "tag-legacy",
+        "chain_id": "chain-1",
+        "key_id": "key-1",
+    })
+
+    assert record.schema_version == "v0.1"
 
 
 def test_guard_replay_record_requires_core_guard_identifiers() -> None:
@@ -233,10 +245,19 @@ def test_record_guard_replay_file_round_trip(tmp_path) -> None:
     assert "tag-1" in path.read_text(encoding="utf-8")
 
 
-def _install_fake_sclite_secure(monkeypatch: pytest.MonkeyPatch) -> None:
+def _install_fake_sclite_secure(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, Any]]:
     module = types.ModuleType("sclite.secure")
+    calls: list[dict[str, Any]] = []
 
     def verify_secure_bundle(manifest_path, *, guard_path, key, root, validate_schemas, strict_jsonschema):
+        calls.append({
+            "manifest_path": manifest_path,
+            "guard_path": guard_path,
+            "key": key,
+            "root": root,
+            "validate_schemas": validate_schemas,
+            "strict_jsonschema": strict_jsonschema,
+        })
         return {
             "status": "passed",
             "secure_profile": "guarded-strict",
@@ -248,6 +269,7 @@ def _install_fake_sclite_secure(monkeypatch: pytest.MonkeyPatch) -> None:
 
     module.verify_secure_bundle = verify_secure_bundle
     monkeypatch.setitem(sys.modules, "sclite.secure", module)
+    return calls
 
 
 def _write_guarded_bundle(tmp_path: Path, *, root_tag: str = "tag-1") -> tuple[Path, Path]:
@@ -276,7 +298,7 @@ def _write_guarded_bundle(tmp_path: Path, *, root_tag: str = "tag-1") -> tuple[P
 
 
 def test_verify_guard_and_record_replay_allows_first_use_and_blocks_second(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    _install_fake_sclite_secure(monkeypatch)
+    calls = _install_fake_sclite_secure(monkeypatch)
     manifest_path, guard_path = _write_guarded_bundle(tmp_path)
     store = MemoryStore()
 
@@ -291,6 +313,11 @@ def test_verify_guard_and_record_replay_allows_first_use_and_blocks_second(tmp_p
     assert second.status == "blocked"
     assert second.replay_status == "replayed"
     assert second.blocker.startswith("replayed_guarded_payload:")
+    assert len(calls) == 2
+    assert calls[0]["manifest_path"] == manifest_path.resolve()
+    assert calls[0]["guard_path"] == guard_path.resolve()
+    assert calls[0]["root"] == tmp_path.resolve()
+    assert calls[0]["validate_schemas"] is True
 
 
 def test_verify_guard_and_record_replay_blocks_reguarded_same_payload(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

@@ -16,6 +16,9 @@ AUDIT_RECORD_TYPES = ('admission_decision', 'policy_decision', 'approval_request
 AUDIT_LEDGER_APPEND_STATUSES = ('appended', 'rejected')
 AUDIT_LEDGER_VERIFY_STATUSES = ('verified', 'failed', 'empty')
 RUNTIME_ADMISSION_STATUSES = ('allowed', 'blocked', 'dry_run_only', 'needs_review', 'record_only')
+RUNTIME_ADMISSION_SCHEMA_VERSION = 'v0.1'
+AUDIT_RECORD_SCHEMA_VERSION = 'v0.1'
+AUDIT_LEDGER_ENTRY_SCHEMA_VERSION = 'v0.1'
 PREPARED_EXECUTION_CONTRACT_STATUSES = ('prepared', 'passed', 'ok', 'allowed')
 RECEIPT_OBLIGATION_STATUSES = ('required', 'passed', 'ok')
 POLICY_RUNTIME_BLOCKERS = {
@@ -314,6 +317,7 @@ class GovAuditRecord:
     record_id: str
     record_type: str
     subject_ref: str
+    schema_version: str = AUDIT_RECORD_SCHEMA_VERSION
     subject_kind: str = 'task'
     decision_ref: str = ''
     reason_code: str = 'recorded'
@@ -334,6 +338,7 @@ class GovAuditRecord:
             record_id=record_id,
             record_type=_enum(raw.get('record_type'), AUDIT_RECORD_TYPES, 'admission_decision'),
             subject_ref=subject_ref,
+            schema_version=str(raw.get('schema_version') or AUDIT_RECORD_SCHEMA_VERSION).strip(),
             subject_kind=_enum(raw.get('subject_kind'), SUBJECT_KINDS, 'task'),
             decision_ref=str(raw.get('decision_ref') or '').strip(),
             reason_code=str(raw.get('reason_code') or 'recorded').strip() or 'recorded',
@@ -364,6 +369,7 @@ class AuditLedgerEntry:
     sequence: int
     record: GovAuditRecord | Mapping[str, Any]
     record_digest: str
+    schema_version: str = AUDIT_LEDGER_ENTRY_SCHEMA_VERSION
     event_digest: str = ''
     previous_entry_digest: str = ''
     entry_digest: str = ''
@@ -376,6 +382,7 @@ class AuditLedgerEntry:
         object.__setattr__(self, 'sequence', int(self.sequence))
         object.__setattr__(self, 'record', record)
         object.__setattr__(self, 'record_digest', str(self.record_digest or '').strip())
+        object.__setattr__(self, 'schema_version', str(self.schema_version or '').strip())
         object.__setattr__(self, 'event_digest', str(self.event_digest or '').strip())
         object.__setattr__(self, 'previous_entry_digest', str(self.previous_entry_digest or '').strip())
         object.__setattr__(self, 'entry_digest', str(self.entry_digest or '').strip())
@@ -394,6 +401,7 @@ class AuditLedgerEntry:
             sequence=int(raw.get('sequence') or 0),
             record=record_value,
             record_digest=str(raw.get('record_digest') or '').strip(),
+            schema_version=str(raw.get('schema_version') or '').strip(),
             event_digest=str(raw.get('event_digest') or '').strip(),
             previous_entry_digest=str(raw.get('previous_entry_digest') or '').strip(),
             entry_digest=str(raw.get('entry_digest') or '').strip(),
@@ -407,6 +415,7 @@ class AuditLedgerEntry:
             'sequence': self.sequence,
             'record': self.record.as_dict(),
             'record_digest': self.record_digest,
+            'schema_version': self.schema_version,
             'event_digest': self.event_digest,
             'previous_entry_digest': self.previous_entry_digest,
             'entry_digest': self.entry_digest,
@@ -656,6 +665,7 @@ class RuntimeAdmissionResult:
 
     admission_id: str
     subject_ref: str
+    schema_version: str = RUNTIME_ADMISSION_SCHEMA_VERSION
     status: str = 'blocked'
     allowed: bool = False
     reason_code: str = 'blocked'
@@ -685,6 +695,7 @@ class RuntimeAdmissionResult:
         item = cls(
             admission_id=admission_id,
             subject_ref=subject_ref,
+            schema_version=str(raw.get('schema_version') or RUNTIME_ADMISSION_SCHEMA_VERSION).strip(),
             status=status,
             allowed=_bool_value(raw.get('allowed'), default=status == 'allowed'),
             reason_code=str(raw.get('reason_code') or status).strip() or status,
@@ -708,6 +719,7 @@ class RuntimeAdmissionResult:
         return {
             'admission_id': self.admission_id,
             'subject_ref': self.subject_ref,
+            'schema_version': self.schema_version,
             'status': self.status,
             'allowed': self.allowed,
             'reason_code': self.reason_code,
@@ -769,6 +781,8 @@ def validate_audit_record(value: Mapping[str, Any] | GovAuditRecord) -> GovAudit
         raise GovApiError(f'unknown_audit_subject_kind:{item.subject_kind}')
     if item.record_type not in AUDIT_RECORD_TYPES:
         raise GovApiError(f'unknown_audit_record_type:{item.record_type}')
+    if item.schema_version != AUDIT_RECORD_SCHEMA_VERSION:
+        raise GovApiError(f'unknown_audit_record_schema_version:{item.schema_version or "missing"}')
     _reject_forbidden_metadata(item.metadata)
     return item
 
@@ -779,6 +793,8 @@ def validate_audit_ledger_entry(value: Mapping[str, Any] | AuditLedgerEntry) -> 
         raise GovApiError('missing_audit_ledger_entry_id')
     if item.sequence < 0:
         raise GovApiError('invalid_audit_ledger_sequence')
+    if item.schema_version and item.schema_version != AUDIT_LEDGER_ENTRY_SCHEMA_VERSION:
+        raise GovApiError(f'unknown_audit_ledger_entry_schema_version:{item.schema_version}')
     validate_audit_record(item.record)
     _require_digest_ref(item.record_digest, 'missing_audit_ledger_record_digest', 'invalid_audit_ledger_record_digest')
     _validate_optional_digest_ref(item.event_digest, 'invalid_audit_ledger_event_digest')
@@ -843,6 +859,8 @@ def audit_ledger_entry_digest(value: Mapping[str, Any] | AuditLedgerEntry) -> st
     item = value if isinstance(value, AuditLedgerEntry) else AuditLedgerEntry.from_mapping(value)
     payload = item.as_dict()
     payload['entry_digest'] = ''
+    if not payload.get('schema_version'):
+        payload.pop('schema_version', None)
     from govengine.signing import govengine_record_digest
 
     return govengine_record_digest(payload, record_type='govengine.admission.AuditLedgerEntry')
@@ -850,6 +868,8 @@ def audit_ledger_entry_digest(value: Mapping[str, Any] | AuditLedgerEntry) -> st
 
 def validate_runtime_admission_result(value: Mapping[str, Any] | RuntimeAdmissionResult) -> RuntimeAdmissionResult:
     item = value if isinstance(value, RuntimeAdmissionResult) else RuntimeAdmissionResult.from_mapping(value)
+    if item.schema_version != RUNTIME_ADMISSION_SCHEMA_VERSION:
+        raise GovApiError(f'unknown_runtime_admission_schema_version:{item.schema_version or "missing"}')
     if item.status not in RUNTIME_ADMISSION_STATUSES:
         raise GovApiError(f'unknown_runtime_admission_status:{item.status}')
     if item.allowed and item.status != 'allowed':
@@ -873,6 +893,99 @@ def validate_runtime_admission_result(value: Mapping[str, Any] | RuntimeAdmissio
         item.metadata,
     ):
         _reject_forbidden_metadata(payload)
+    return item
+
+
+def runtime_admission_public_summary(
+    value: Mapping[str, Any] | RuntimeAdmissionResult,
+    *,
+    show_artifact_refs: bool = False,
+) -> dict[str, Any]:
+    """Return a bounded public summary of a runtime admission result."""
+
+    item = validate_runtime_admission_result(value)
+    summary: dict[str, Any] = {
+        'schema_version': item.schema_version,
+        'admission_id': item.admission_id,
+        'subject_ref': item.subject_ref,
+        'status': item.status,
+        'allowed': item.allowed,
+        'reason_code': item.reason_code,
+        'blocker_count': len(item.blockers),
+        'required_next_action_count': len(item.required_next_actions),
+        'receipt_obligation': _receipt_obligation_public_status(item.receipt_obligation),
+    }
+    if show_artifact_refs:
+        summary['artifact_refs'] = dict(item.artifact_refs)
+    return summary
+
+
+def audit_record_public_summary(value: Mapping[str, Any] | GovAuditRecord) -> dict[str, Any]:
+    """Return public-safe audit record identifiers without raw metadata."""
+
+    item = validate_audit_record(value)
+    return {
+        'schema_version': item.schema_version,
+        'record_id': item.record_id,
+        'record_type': item.record_type,
+        'subject_ref': item.subject_ref,
+        'decision_ref': item.decision_ref,
+        'reason_code': item.reason_code,
+        'event_ref_count': len(item.event_refs),
+    }
+
+
+def audit_ledger_verification_public_summary(
+    value: Mapping[str, Any] | AuditLedgerVerificationResult,
+) -> dict[str, Any]:
+    """Return a bounded ledger verification summary without raw records."""
+
+    item = validate_audit_ledger_verification_result(value)
+    return {
+        'status': item.status,
+        'verified': item.verified,
+        'reason_code': item.reason_code,
+        'blocker_count': len(item.blockers),
+        'checked_entries': item.checked_entries,
+        'last_entry_id': item.last_entry_id,
+        'last_entry_digest': item.last_entry_digest,
+    }
+
+
+def validate_runtime_admission_proof_inputs(
+    value: Mapping[str, Any] | RuntimeAdmissionResult,
+) -> RuntimeAdmissionResult:
+    """Validate that an allowed admission carries the expected proof summaries.
+
+    This checks presence and status of already-produced bounded records. It does
+    not verify SCLite artifacts, check signatures, evaluate policy meaning, or
+    authorize execution.
+    """
+
+    item = validate_runtime_admission_result(value)
+    if not item.allowed:
+        raise GovApiError('runtime_admission_proof_not_allowed')
+    if _guarded_runtime_status(item.sclite_guarded_strict) != 'passed':
+        raise GovApiError('runtime_admission_proof_guarded_strict_missing')
+    if _replay_runtime_status(item.replay_freshness, item.sclite_guarded_strict) != 'fresh':
+        raise GovApiError('runtime_admission_proof_replay_freshness_missing')
+    if _trust_signal_status(item.trust_decision) not in {'trusted', 'passed', 'ok'}:
+        raise GovApiError('runtime_admission_proof_trust_decision_missing')
+    if _ticket_signal_status(item.execution_ticket) not in {'approve', 'approved', 'approved_for_dry_run', 'passed', 'ok'}:
+        raise GovApiError('runtime_admission_proof_execution_ticket_missing')
+    if not _receipt_obligation_required(item.receipt_obligation):
+        raise GovApiError('runtime_admission_proof_receipt_obligation_missing')
+    if not _bool_value(item.runner_profile.get('allowed'), default=False):
+        raise GovApiError('runtime_admission_proof_runner_profile_missing')
+    if _bool_value(item.runner_profile.get('live_backend_enabled'), default=False):
+        raise GovApiError('runtime_admission_proof_live_backend_not_allowed')
+    if not _proof_ref(item.artifact_refs, 'sclite_guarded_strict', 'root_chain_digest'):
+        raise GovApiError('runtime_admission_proof_guard_digest_missing')
+    if not _proof_ref(item.artifact_refs, 'execution_ticket', 'ticket_id'):
+        raise GovApiError('runtime_admission_proof_ticket_ref_missing')
+    binds = {str(item) for item in item.receipt_obligation.get('binds', ()) if not isinstance(item, Mapping)}
+    if not {'admission', 'ticket'} <= binds:
+        raise GovApiError('runtime_admission_proof_receipt_binding_incomplete')
     return item
 
 
@@ -1318,6 +1431,24 @@ def _receipt_obligation_required(payload: Mapping[str, Any]) -> bool:
     if _bool_value(payload.get('required'), default=False):
         return True
     return _status_in(_signal_status(payload, ('status', 'obligation_status')), RECEIPT_OBLIGATION_STATUSES)
+
+
+def _receipt_obligation_public_status(payload: Mapping[str, Any]) -> str:
+    if not payload:
+        return 'missing'
+    if _receipt_obligation_required(payload):
+        return 'required'
+    return str(payload.get('status') or 'missing').strip() or 'missing'
+
+
+def _proof_ref(refs: Mapping[str, Any], group: str, key: str) -> str:
+    value = refs.get(group)
+    if not isinstance(value, Mapping):
+        return ''
+    item = value.get(key)
+    if isinstance(item, Mapping) or isinstance(item, (list, tuple, set)):
+        return ''
+    return str(item or '').strip()
 
 
 def _dedupe(values: Iterable[Any]) -> tuple[str, ...]:
