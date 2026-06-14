@@ -6,6 +6,12 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+## 0.12.3-alpha - Governed-runtime MVP and SCLite 1.0.2 sync
+
+- Publishes the `0.12.3a0` / `0.12.3-alpha` package line over
+  `sclite-core>=1.0.2,<1.1` after SCLite 1.0.2 roadmap hardening and
+  Ravenclaw stack-compatibility validation.
+
 ### Governed-runtime admission kernel
 
 - Added the public runtime admission surface: `RuntimeAdmissionResult`,

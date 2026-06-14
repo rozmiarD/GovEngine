@@ -1,9 +1,9 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.12.2a0](https://img.shields.io/badge/package-govengine%200.12.2a0-blueviolet.svg)](https://pypi.org/project/govengine/0.12.2a0/)
+[![Package: govengine 0.12.3a0](https://img.shields.io/badge/package-govengine%200.12.3a0-blueviolet.svg)](https://pypi.org/project/govengine/0.12.3a0/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Dependency: SCLite >=1.0.1](https://img.shields.io/badge/dependency-SCLite%20%3E%3D1.0.1-informational.svg)](https://github.com/rozmiarD/SCLite)
+[![Dependency: SCLite >=1.0.2](https://img.shields.io/badge/dependency-SCLite%20%3E%3D1.0.2-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
 GovEngine is a carrier-agnostic deterministic governed-runtime kernel for portable artifact governance and policy-gated controlled execution.
@@ -59,7 +59,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 - explicit SCLite integration seams;
 - focused standalone pytest coverage and GitHub Actions CI.
 
-On current `main` (already in source, still listed under `Unreleased` in `CHANGELOG.md` until the next PyPI alpha release), the governed-runtime MVP also adds:
+The `0.12.3-alpha` line also adds:
 
 - **one admission decision you can actually read** — a single `RuntimeAdmissionResult` record that summarizes whether a prepared request may proceed, what blocked it, and what to fix next; helpers compose and validate that record from separate policy, ticket, trust, guard, replay, runner, and receipt signals without running live work themselves;
 - **replay freshness** — remember which verified SCLite guarded roots were already used, so the same protected bundle cannot silently count as “fresh” twice;
@@ -84,9 +84,7 @@ On current `main` (already in source, still listed under `Unreleased` in `CHANGE
 
 ## Current status
 
-GovEngine is an **alpha package 0.12.2a0 (`0.12.2-alpha`)**. It keeps the neutral artifact-governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review, profile, and proof surfaces while removing the former optional security-profile facade and Ravenclaw-derived helper modules. The published dependency line is `sclite-core>=1.0.1,<1.1`.
-
-Source on `main` already includes the governed-runtime MVP described below; the last PyPI publish remains `0.12.2a0`, with the MVP changes recorded under `Unreleased` in `CHANGELOG.md` until the next alpha release.
+GovEngine is an **alpha package 0.12.3a0 (`0.12.3-alpha`)**. It keeps the neutral artifact-governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review, profile, and proof surfaces while removing the former optional security-profile facade and Ravenclaw-derived helper modules. The published dependency line is `sclite-core>=1.0.2,<1.1`.
 
 ## Current roadmap direction
 
@@ -119,7 +117,7 @@ ports, negative tests, and safety gates justify any additional kernel surface.
 Install the currently published public alpha package from PyPI with an exact version pin:
 
 ```bash
-python -m pip install govengine==0.12.2a0
+python -m pip install govengine==0.12.3a0
 ```
 
 GovEngine depends on the PyPI distribution `sclite-core` while preserving the Python import package `sclite`.

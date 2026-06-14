@@ -156,7 +156,7 @@ Only this section states current validation expectations. The versioned
 sections under **Historical validation records** are retained release evidence,
 not the active gate.
 
-Expected result for the current `0.12.2a0` package line (`0.12.2-alpha`):
+Expected result for the current `0.12.3a0` package line (`0.12.3-alpha`):
 
 - full pytest passes in the source tree;
 - `scripts/validate_clean_package_install.py` passes, rejects retired module paths from the installed artifact, and runs `pip check` inside its newly created virtual environment;

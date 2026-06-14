@@ -20,8 +20,8 @@ from govengine.contract_proofs import (  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
 
-EXPECTED_VERSION = '0.12.2a0'
-EXPECTED_RELEASE_LABEL = '0.12.2-alpha'
+EXPECTED_VERSION = '0.12.3a0'
+EXPECTED_RELEASE_LABEL = '0.12.3-alpha'
 EXPECTED_SURFACES = [
     'artifact_governance_core',
     'planning_contracts_core',

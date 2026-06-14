@@ -14,8 +14,8 @@ from govengine import __version__ as package_version  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '0.12.2-alpha'
-PUBLISHED_VERSION = '0.12.2a0'
+EXPECTED_RELEASE_LABEL = '0.12.3-alpha'
+PUBLISHED_VERSION = '0.12.3a0'
 
 SURFACE_HEADINGS = {
     'Artifact-governance core': 'artifact_governance_core',
@@ -103,10 +103,10 @@ VERSION_TRUTH_FIELDS = {
     'published_pypi_version': 'PyPI install pin / README badge',
     'release_label': 'README.md / PUBLIC_STATUS.md release label',
     'sclite_dependency': 'pyproject.toml dependencies[sclite-core]',
-    'changelog_unreleased_heading': 'CHANGELOG.md:## Unreleased',
+    'changelog_release_heading': 'CHANGELOG.md:current alpha release section',
 }
 
-GOVERNED_RUNTIME_UNRELEASED_MARKERS = (
+GOVERNED_RUNTIME_RELEASE_MARKERS = (
     'RuntimeAdmissionResult',
     'compose_runtime_admission_result()',
     'validate_evidence_review_chain()',
@@ -114,13 +114,12 @@ GOVERNED_RUNTIME_UNRELEASED_MARKERS = (
 
 SOURCE_PYPI_GAP_DOC_MARKERS = {
     'README.md': (
-        'Unreleased',
-        'last PyPI publish remains',
+        'The `0.12.3-alpha` line also adds:',
         '`compose_runtime_admission_result()` composes host-supplied gate summaries',
     ),
     'docs/ROADMAP.md': (
-        'implemented on current `main`',
-        'Unreleased',
+        'published in `0.12.3-alpha`',
+        'current governed-runtime MVP baseline',
     ),
 }
 
@@ -144,7 +143,7 @@ README_MVP_DOC_LINK_MARKERS = (
 
 MVP_DELIVERY_DOC_MARKERS = {
     'docs/RUNTIME_ADMISSION.md': (
-        'Delivered on current `main`',
+        'Delivered in `0.12.3-alpha`',
         'scripts/inspect_runtime_admission.py',
         'The implementation exposes a small immutable record',
     ),
@@ -166,9 +165,26 @@ def _changelog_unreleased_section(changelog: str) -> str:
     return tail
 
 
+def _changelog_release_section(changelog: str, release_label: str = EXPECTED_RELEASE_LABEL) -> str:
+    heading = f'## {release_label}'
+    if heading not in changelog:
+        return ''
+    start = changelog.index(heading) + len(heading)
+    tail = changelog[start:]
+    match = re.search(r'\n## \d', tail)
+    if match:
+        return tail[: match.start()]
+    return tail
+
+
+def _changelog_has_current_governed_runtime_mvp(changelog: str) -> bool:
+    section = _changelog_release_section(changelog)
+    return all(marker in section for marker in GOVERNED_RUNTIME_RELEASE_MARKERS)
+
+
 def _changelog_has_unreleased_governed_runtime_mvp(changelog: str) -> bool:
     section = _changelog_unreleased_section(changelog)
-    return all(marker in section for marker in GOVERNED_RUNTIME_UNRELEASED_MARKERS)
+    return all(marker in section for marker in GOVERNED_RUNTIME_RELEASE_MARKERS)
 
 
 def _assert_source_pypi_gap_docs(
@@ -180,7 +196,8 @@ def _assert_source_pypi_gap_docs(
 ) -> None:
     if version != PUBLISHED_VERSION:
         return
-    if not _changelog_has_unreleased_governed_runtime_mvp(changelog):
+    _assert_contains('CHANGELOG.md', changelog, f'## {EXPECTED_RELEASE_LABEL}')
+    if not _changelog_has_current_governed_runtime_mvp(changelog):
         return
     for path, markers in SOURCE_PYPI_GAP_DOC_MARKERS.items():
         text = {'README.md': readme, 'docs/ROADMAP.md': roadmap}[path]
