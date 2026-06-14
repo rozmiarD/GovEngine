@@ -98,6 +98,33 @@ def test_neutral_public_surfaces_do_not_import_host_runtime_or_carrier_packages(
     assert violations == []
 
 
+def test_sclite_imports_stay_on_delegation_allowlist() -> None:
+    allowed = {
+        'sclite.bundles',
+        'sclite.integrity',
+        'sclite.integrity.chain',
+        'sclite.secure',
+        'sclite.tickets',
+    }
+    violations: list[str] = []
+    for path in (ROOT / 'govengine').rglob('*.py'):
+        if path.name == '__init__.py':
+            continue
+        tree = ast.parse(path.read_text(encoding='utf-8'), filename=str(path))
+        found: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                found.update(alias.name for alias in node.names if alias.name == 'sclite' or alias.name.startswith('sclite.'))
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                if node.module == 'sclite' or node.module.startswith('sclite.'):
+                    found.add(node.module)
+        forbidden = sorted(module for module in found if module not in allowed)
+        if forbidden:
+            violations.append(f'{path.relative_to(ROOT).as_posix()} -> {forbidden}')
+
+    assert violations == []
+
+
 def test_neutral_surfaces_keep_runtime_authority_as_non_claims() -> None:
     required_by_surface = {
         'artifact_governance_core': ('key-store', 'storage', 'scheduling'),
@@ -137,3 +164,26 @@ def test_public_docs_keep_live_backend_disabled_by_default_non_claims() -> None:
 
     for marker in required_markers:
         assert marker in combined
+
+
+def test_security_integration_doc_records_order_and_non_claims() -> None:
+    text = (ROOT / 'docs' / 'SECURITY_INTEGRATION.md').read_text(encoding='utf-8')
+    required_markers = (
+        'SCLite secure verification',
+        'GovEngine replay freshness',
+        'Host trust decision',
+        'Execution ticket gate',
+        'Runtime admission composition',
+        'Runner receipt binding',
+        '`RuntimeAdmissionResult` is not proof and not execution authority',
+        'not verify SCLite artifacts',
+        'PKI, KMS, CA, HSM, private key storage',
+        'raw evidence storage',
+        '`DemoDigestSigner` and `DemoDigestVerifier` are deterministic demo helpers',
+        '`InMemoryReplayClaimStore` is a development claim-once adapter',
+        '`record_guard_replay_file()` is a local JSON helper',
+        '`JsonlAuditLedgerAdapter` is a development JSONL hash-chain adapter',
+    )
+
+    for marker in required_markers:
+        assert marker in text

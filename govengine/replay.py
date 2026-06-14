@@ -11,6 +11,7 @@ from govengine.state_store import GovStateStore, atomic_write_json, safe_load_js
 
 GUARD_REPLAY_STORE_ARTIFACT_TYPE = "guard_replay_store"
 GUARD_REPLAY_STORE_SCHEMA_VERSION = "v0.1"
+GUARD_REPLAY_RECORD_SCHEMA_VERSION = "v0.1"
 DEFAULT_GUARD_REPLAY_STORE_KEY = "guard_replay_store"
 
 
@@ -30,6 +31,7 @@ class GuardReplayRecord:
     root_tag: str
     chain_id: str
     key_id: str
+    schema_version: str = GUARD_REPLAY_RECORD_SCHEMA_VERSION
     root_chain_digest: str = ""
     ticket_id: str = ""
     run_id: str = ""
@@ -54,6 +56,7 @@ class GuardReplayRecord:
             root_tag=root_tag,
             chain_id=chain_id,
             key_id=key_id,
+            schema_version=str(raw.get("schema_version") or GUARD_REPLAY_RECORD_SCHEMA_VERSION),
             root_chain_digest=str(raw.get("root_chain_digest") or ""),
             ticket_id=str(raw.get("ticket_id") or ""),
             run_id=str(raw.get("run_id") or ""),

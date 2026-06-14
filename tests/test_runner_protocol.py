@@ -9,6 +9,7 @@ from govengine.execution.runner_protocol import (
     GovRunnerReceiptBinding,
     dry_run_runner_receipt,
     normalize_runner_steps,
+    runner_receipt_public_summary,
     runner_receipt_digest,
     runner_receipt_with_binding,
     runner_request_digest,
@@ -35,6 +36,7 @@ def _approved_spec() -> dict:
 def test_runner_request_from_approved_spec_is_carrier_neutral() -> None:
     request = runner_request_from_approved_spec(_approved_spec(), request_id="r1")
 
+    assert request.schema_version == "v0.1"
     assert request.request_id == "r1"
     assert request.source == "approved_execution_spec"
     assert request.dry_run is True
@@ -48,6 +50,7 @@ def test_dry_run_runner_receipt_records_each_step() -> None:
     receipt = dry_run_runner_receipt(request)
 
     assert receipt.status == "dry-run"
+    assert receipt.schema_version == "v0.1"
     assert receipt.reason_code == "dry_run_requested"
     assert receipt.step_results[0].status == "dry-run"
     assert receipt.as_dict()["step_results"][0]["reason_code"] == "dry_run_requested"
@@ -72,6 +75,7 @@ def test_runner_receipt_with_binding_adds_bounded_references() -> None:
     binding = receipt.as_dict()["binding"]
 
     assert binding["admission_id"] == "admission-1"
+    assert binding["schema_version"] == "v0.1"
     assert binding["admission_digest"] == "sha256:admission"
     assert binding["ticket_id"] == "ticket-1"
     assert binding["ticket_digest"] == "sha256:ticket"
@@ -80,6 +84,40 @@ def test_runner_receipt_with_binding_adds_bounded_references() -> None:
     assert binding["runner_profile"] == "dry-run"
     assert binding["output_digests"] == {"stdout": "sha256:stdout"}
     assert binding["evidence_refs"] == {"review": "artifact://review/1"}
+
+
+def test_runner_receipt_public_summary_excludes_raw_step_output() -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id="r-public")
+    receipt = runner_receipt_with_binding(
+        dry_run_runner_receipt(request),
+        admission_id="admission-1",
+        admission_digest="sha256:" + "a" * 64,
+        ticket_id="ticket-1",
+        ticket_digest="sha256:" + "b" * 64,
+        request_digest=runner_request_digest(request),
+        receipt_id="receipt-1",
+        output_digests={"stdout": "sha256:stdout"},
+        evidence_refs={"review": "artifact://review/1"},
+    )
+
+    summary = runner_receipt_public_summary(receipt)
+
+    assert summary == {
+        "schema_version": "v0.1",
+        "receipt_id": "receipt-1",
+        "request_id": "r-public",
+        "status": "dry-run",
+        "reason_code": "dry_run_requested",
+        "step_count": 1,
+        "admission_id": "admission-1",
+        "ticket_id": "ticket-1",
+        "request_digest": runner_request_digest(request),
+        "receipt_digest": receipt.binding.receipt_digest,
+        "output_digest_count": 1,
+        "evidence_ref_count": 1,
+    }
+    assert "stdout" not in summary
+    assert "stderr" not in summary
 
 
 def test_runner_receipt_binding_auto_digest_changes_when_receipt_mutates() -> None:
