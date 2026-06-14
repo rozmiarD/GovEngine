@@ -58,6 +58,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 - neutral admission, policy, approval, and audit contracts for host runtime gates;
 - explicit SCLite integration seams;
 - focused standalone pytest coverage and GitHub Actions CI.
+- on current `main`, the governed-runtime MVP helpers also include `RuntimeAdmissionResult`, `compose_runtime_admission_result()`, `validate_runtime_admission_result()`, `normalize_admission_artifact_refs()`, `ReplayClaimStore`, `verify_guard_and_record_replay()`, `validate_runner_receipt_binding()`, `validate_evidence_review_chain()`, GovEngine-owned record digests and signed-record helpers, `AuditLedgerPort` with a development-only `JsonlAuditLedgerAdapter`, runner supervision including `LocalSubprocessRunnerReadiness`, and `scripts/inspect_runtime_admission.py` for read-only admission inspection (listed in `CHANGELOG.md` under `Unreleased` until the next PyPI alpha release).
 
 ## What it intentionally does not include yet
 
@@ -68,15 +69,19 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 - LLM provider integrations;
 - Ravenclaw-specific personas, workspace state, or campaign UX;
 - production-readiness claims;
-- PKI, CA, KMS, key storage, or production identity proof.
+- PKI, CA, KMS, key storage, or production identity proof;
+- a shipped `LocalSubprocessRunner` implementation (`LocalSubprocessRunnerReadiness` is a gating contract only);
+- production replay or audit persistence (`ReplayClaimStore` and `JsonlAuditLedgerAdapter` are host-owned or development-only adapters).
 
 ## Current status
 
 GovEngine is an **alpha package 0.12.2a0 (`0.12.2-alpha`)**. It keeps the neutral artifact-governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review, profile, and proof surfaces while removing the former optional security-profile facade and Ravenclaw-derived helper modules. The published dependency line is `sclite-core>=1.0.1,<1.1`.
 
+Source on `main` already includes the governed-runtime MVP described below; the last PyPI publish remains `0.12.2a0`, with the MVP changes recorded under `Unreleased` in `CHANGELOG.md` until the next alpha release.
+
 ## Current roadmap direction
 
-The governed-runtime MVP now includes a canonical `RuntimeAdmissionResult`
+The governed-runtime MVP on `main` includes a canonical `RuntimeAdmissionResult`
 record as the bounded admission decision surface and
 `compose_runtime_admission_result()` as the neutral gate-summary composition
 helper. The helper composes prepared execution contract status, policy
@@ -86,6 +91,8 @@ profile, receipt obligation, blockers, next actions, and bounded artifact
 references into that record. `normalize_admission_artifact_refs()` is an alpha
 helper for bounded review references and existing digest strings; it does not
 compute content digests or claim SCLite canonicalization.
+
+`compose_runtime_admission_result()` composes host-supplied gate summaries; it does not validate SCLite tickets, verify signatures, record replay state, or execute live work.
 
 The operator-facing MVP flow is documented in
 [`docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`](docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md).
@@ -115,6 +122,7 @@ python -m venv .venv
 . .venv/bin/activate
 python -m pip install -e '.[dev]'
 python -m pytest -q
+python scripts/validate_public_truth.py
 ```
 
 ## Minimal smoke example
@@ -155,12 +163,16 @@ assert receipt["status"] == "dry-run"
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — package shape and dependency boundaries.
 - [`docs/SCLITE_INTEGRATION.md`](docs/SCLITE_INTEGRATION.md) — how GovEngine consumes SCLite.
 - [`docs/API_BOUNDARY.md`](docs/API_BOUNDARY.md) — owned vs excluded surfaces.
+- [`docs/API_STABILITY_MATRIX.md`](docs/API_STABILITY_MATRIX.md) — alpha vs fixture export classification.
 - [`docs/RUNTIME_ADMISSION.md`](docs/RUNTIME_ADMISSION.md) — canonical runtime admission contract direction.
 - [`docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`](docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md) — operator-facing governed-runtime MVP chain.
+- [`docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md`](docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md) — read-only admission inspect workflow.
+- [`docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md`](docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md) — guarded-strict plus replay-fresh example.
 - [`docs/ADMISSION_POLICY.md`](docs/ADMISSION_POLICY.md) — neutral admission, policy, approval, audit, and audit-ledger contracts.
 - [`docs/RECEIPT_BINDING.md`](docs/RECEIPT_BINDING.md) — admission/ticket/request/receipt binding design.
 - [`docs/EVIDENCE_REVIEW.md`](docs/EVIDENCE_REVIEW.md) — receipt-bounded evidence/review contract.
 - [`docs/RUNNER_SUPERVISION.md`](docs/RUNNER_SUPERVISION.md) — runner request, receipt, supervision, and live-runner safety boundaries.
+- [`docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md`](docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md) — local subprocess runner decision record.
 - [`docs/GOVENGINE_KERNEL_BOUNDARY.md`](docs/GOVENGINE_KERNEL_BOUNDARY.md) — kernel/profile/runtime/SCLite ownership split.
 - [`docs/DOMAIN_PROFILE_CONTRACT.md`](docs/DOMAIN_PROFILE_CONTRACT.md) — domain profile contract and conformance rules.
 - [`docs/ORCHESTRATOR_MODEL.md`](docs/ORCHESTRATOR_MODEL.md) — deterministic orchestration boundary and runtime non-claims.

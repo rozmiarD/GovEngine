@@ -55,7 +55,7 @@ The admission result composes existing GovEngine and SCLite-facing signals:
 
 ## Output Shape
 
-The implementation should expose a small immutable record with fields equivalent
+The implementation exposes a small immutable record with fields equivalent
 to:
 
 - `status`: `allowed`, `blocked`, `dry_run_only`, `needs_review`, or
@@ -88,9 +88,9 @@ execution grant.
 
 The inspect-only operator workflow is documented in
 [INSPECT_ONLY_ADMISSION_WORKFLOW.md](INSPECT_ONLY_ADMISSION_WORKFLOW.md). It
-defines a future read-only admission-record inspection surface that validates
-and summarizes `RuntimeAdmissionResult` records without creating runner
-requests, receipts, replay claims, audit entries, or live execution authority.
+validates and summarizes `RuntimeAdmissionResult` records through
+`scripts/inspect_runtime_admission.py` without creating runner requests,
+receipts, replay claims, audit entries, or live execution authority.
 
 ## Gate Semantics
 
@@ -130,7 +130,7 @@ ports needed by host runtimes.
 
 ## Relationship To Existing Modules
 
-The implementation should compose the existing surfaces instead of replacing
+The implementation composes the existing surfaces instead of replacing
 them:
 
 - `govengine.admission` for policy/admission/approval/audit record shapes;
@@ -147,7 +147,7 @@ them:
 
 ## Implementation Status And Next Tasks
 
-The first implementation is additive and backward-compatible:
+Delivered on current `main` (CHANGELOG `Unreleased` until the next PyPI alpha):
 
 1. `RuntimeAdmissionResult` exists as the core record;
 2. `validate_runtime_admission_result()` enforces basic status/allowed/blocker
@@ -157,26 +157,36 @@ The first implementation is additive and backward-compatible:
 4. `normalize_admission_artifact_refs()` is exposed as an alpha bounded-reference
    helper for admission review output;
 5. `canonical_govengine_record()` and `govengine_record_digest()` provide a
-   GovEngine-owned record serialization/digest boundary for future
-   admission/receipt binding without canonicalizing SCLite artifacts;
+   GovEngine-owned record serialization/digest boundary for admission/receipt
+   binding without canonicalizing SCLite artifacts;
 6. `SignedArtifact` binds a GovEngine-owned record digest to signer metadata
    and a payload reference while leaving production verification to
    host-provided verifier ports;
 7. key-resolver and trust-store port records carry references and decisions
    only, not private key material, credentials, KMS, CA, or trust-anchor
    storage;
-8. existing helpers remain unchanged.
+8. `validate_runner_receipt_binding()` and `validate_evidence_review_chain()`
+   validate bounded receipt and evidence/review reference chains;
+9. `AuditLedgerPort` and `JsonlAuditLedgerAdapter` provide a development-only
+   hash-chained audit append/read/verify surface;
+10. `ReplayClaimStore`, `InMemoryReplayClaimStore`, and
+    `verify_guard_and_record_replay()` provide replay claim-once and
+    guarded-strict composition helpers;
+11. `scripts/inspect_runtime_admission.py` implements the inspect-only operator
+    workflow;
+12. focused negative tests cover missing policy, ticket, trust, replay,
+    runner-profile, and receipt-obligation blockers in admission composition.
 
-The next implementation tasks should:
+Remaining work:
 
-1. add focused negative tests for each missing or failed gate;
+1. publish the governed-runtime MVP as the next alpha PyPI line when operator
+   release gates pass;
 2. keep live backend support disabled by default;
-3. keep serialization bounded and deterministic enough for later digest/signing
-   work;
-4. implement the inspect-only admission workflow from
-   [INSPECT_ONLY_ADMISSION_WORKFLOW.md](INSPECT_ONLY_ADMISSION_WORKFLOW.md);
-5. document any host-owned input that GovEngine validates but does not produce.
+3. keep production replay, audit, and evidence persistence host-owned beyond the
+   development adapters;
+4. keep optional `LocalSubprocessRunner` out of the kernel until host-owned live
+   profile authorization and safety gates are implemented and tested.
 
-The result should be usable by future receipt, audit-ledger, replay-store,
-inspect-only, and optional runner tasks, but it must not claim production
+The result is usable by hosts for receipt, audit-ledger, replay-store,
+inspect-only, and dry-run runner workflows, but it must not claim production
 runtime readiness.
