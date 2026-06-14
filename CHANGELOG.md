@@ -13,9 +13,14 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   and `validate_runtime_admission_result()`. The composer assembles policy,
   ticket, trust, guarded replay, runner profile, receipt obligation, and bounded
   artifact-reference summaries into one host-consumable decision record.
-- Added runner profile and receipt admission gates. Controlled execution now
-  requires an approved runner profile together with a matching receipt before
-  granting live execution authority.
+- Added runner-profile and receipt-obligation admission gates. Runtime admission
+  now requires an allowed runner profile and a receipt obligation; concrete
+  runner receipts are validated separately with
+  `validate_runner_receipt_binding()` against admission, ticket, request, and
+  receipt digests.
+- Added these admission gates before any host-owned controlled runner path may
+  proceed; GovEngine still does not grant live execution authority or ship a live
+  subprocess backend.
 - Added inspect-only admission workflow and `scripts/inspect_runtime_admission.py`
   for read-only operator inspection of composed admission decisions without live
   execution.
@@ -26,8 +31,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   in-memory development adapter. The port records replay claims (root tag, chain
   id, ticket/run id, key id) and can reject repeat roots in require-fresh mode
   without replacing existing guarded-root replay helpers from `0.12.1`.
-- Added receipt-to-admission binding plus validators for runner receipt bindings
-  and admission evidence chains.
+- Added receipt-to-admission binding plus `validate_runner_receipt_binding()`
+  and `validate_evidence_review_chain()` for bounded admission/ticket/request/
+  receipt and receipt/evidence/review reference checks.
 - Added `validate_evidence_review_chain()` and supporting validators for end-to-end
   evidence review chains (admission → receipt → evidence → review).
 - Added `AuditLedgerPort` contracts plus `JsonlAuditLedgerAdapter`, a
@@ -40,10 +46,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   `canonical_govengine_record()`, `signed_artifact_from_record()`,
   `verify_signed_govengine_record()`, and supporting trust/key-resolver ports.
 - Refined trust ports and normalized admission artifact references and digests.
-- Added local subprocess runner readiness gating:
-  `LocalSubprocessRunnerReadiness`, `evaluate_local_subprocess_runner_readiness()`,
-  and `validate_runner_receipt_binding()`. The kernel can now mark the local
-  runner as not applicable and enforce that decision at the admission gate.
+- Added local subprocess runner readiness gating with
+  `LocalSubprocessRunnerReadiness` and
+  `evaluate_local_subprocess_runner_readiness()`. The kernel keeps the optional
+  local subprocess runner at `not_applicable` until explicit host safety
+  prerequisites exist.
 
 ### Documentation, validation, and repository hygiene
 
