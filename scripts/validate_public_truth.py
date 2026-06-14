@@ -97,6 +97,144 @@ MVP_SURFACE_DOC_MARKERS = {
     ),
 }
 
+VERSION_TRUTH_FIELDS = {
+    'source_version': 'pyproject.toml:project.version',
+    'package_init_version': 'govengine.__init__.__version__',
+    'published_pypi_version': 'PyPI install pin / README badge',
+    'release_label': 'README.md / PUBLIC_STATUS.md release label',
+    'sclite_dependency': 'pyproject.toml dependencies[sclite-core]',
+    'changelog_unreleased_heading': 'CHANGELOG.md:## Unreleased',
+}
+
+GOVERNED_RUNTIME_UNRELEASED_MARKERS = (
+    'RuntimeAdmissionResult',
+    'compose_runtime_admission_result()',
+    'validate_evidence_review_chain()',
+)
+
+SOURCE_PYPI_GAP_DOC_MARKERS = {
+    'README.md': (
+        'Unreleased',
+        'last PyPI publish remains',
+        '`compose_runtime_admission_result()` composes host-supplied gate summaries',
+    ),
+    'docs/ROADMAP.md': (
+        'implemented on current `main`',
+        'Unreleased',
+    ),
+}
+
+FORBIDDEN_CURRENT_DOC_CLAIMS = (
+    ('CHANGELOG.md', 'unreleased_api_name', 'verify_evidence_review_chain()'),
+    ('docs/SCLITE_INTEGRATION.md', 'retired_helper_claim', 'action validation and compilation'),
+    ('docs/SCLITE_INTEGRATION.md', 'stale_sclite_version', '0.8.0b2'),
+    ('docs/SCLITE_INTEGRATION.md', 'stale_policy_helper_claim', 'policy decision normalization/evaluation'),
+    ('docs/RUNTIME_ADMISSION.md', 'future_inspect_claim', 'future read-only'),
+    ('docs/RUNTIME_ADMISSION.md', 'future_implementation_tense', 'The implementation should expose'),
+    ('docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md', 'stale_plan_claim', 'GE-035 should implement'),
+    ('docs/ROADMAP.md', 'stale_mvp_direction_claim', 'need focused negative'),
+)
+
+README_MVP_DOC_LINK_MARKERS = (
+    'docs/API_STABILITY_MATRIX.md',
+    'docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md',
+    'docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md',
+    'docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md',
+)
+
+MVP_DELIVERY_DOC_MARKERS = {
+    'docs/RUNTIME_ADMISSION.md': (
+        'Delivered on current `main`',
+        'scripts/inspect_runtime_admission.py',
+        'The implementation exposes a small immutable record',
+    ),
+    'docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md': (
+        'The inspect-only surface is implemented as:',
+        'scripts/inspect_runtime_admission.py',
+    ),
+}
+
+
+def _changelog_unreleased_section(changelog: str) -> str:
+    if '## Unreleased' not in changelog:
+        return ''
+    start = changelog.index('## Unreleased') + len('## Unreleased')
+    tail = changelog[start:]
+    match = re.search(r'\n## \d', tail)
+    if match:
+        return tail[: match.start()]
+    return tail
+
+
+def _changelog_has_unreleased_governed_runtime_mvp(changelog: str) -> bool:
+    section = _changelog_unreleased_section(changelog)
+    return all(marker in section for marker in GOVERNED_RUNTIME_UNRELEASED_MARKERS)
+
+
+def _assert_source_pypi_gap_docs(
+    version: str,
+    readme: str,
+    public_status: str,
+    roadmap: str,
+    changelog: str,
+) -> None:
+    if version != PUBLISHED_VERSION:
+        return
+    if not _changelog_has_unreleased_governed_runtime_mvp(changelog):
+        return
+    for path, markers in SOURCE_PYPI_GAP_DOC_MARKERS.items():
+        text = {'README.md': readme, 'docs/ROADMAP.md': roadmap}[path]
+        for marker in markers:
+            _assert_contains(path, text, marker)
+    _assert_contains(
+        'PUBLIC_STATUS.md',
+        public_status,
+        f'Source/package version: `{version}`.',
+    )
+    _assert_contains(
+        'PUBLIC_STATUS.md',
+        public_status,
+        f'PyPI package: `govengine=={PUBLISHED_VERSION}` is the published current alpha package.',
+    )
+    _assert_contains('README.md', readme, f'python -m pip install govengine=={PUBLISHED_VERSION}')
+
+
+def _assert_changelog_unreleased_api_names(changelog: str) -> None:
+    section = _changelog_unreleased_section(changelog)
+    if not section:
+        return
+    if 'verify_evidence_review_chain()' in section:
+        raise AssertionError('CHANGELOG.md:unreleased_stale_api_name:verify_evidence_review_chain')
+    if _changelog_has_unreleased_governed_runtime_mvp(changelog):
+        _assert_contains('CHANGELOG.md', section, 'validate_evidence_review_chain()')
+
+
+def _assert_forbidden_current_doc_claims(docs: Mapping[str, str]) -> None:
+    for path, field, forbidden in FORBIDDEN_CURRENT_DOC_CLAIMS:
+        text = docs[path]
+        if forbidden in text:
+            raise AssertionError(f'{path}:forbidden_current_claim:{field}:{forbidden}')
+
+
+def _assert_sclite_integration_current_dependency_truth(
+    sclite_integration: str,
+    dependency: str,
+) -> None:
+    _assert_contains('docs/SCLITE_INTEGRATION.md', sclite_integration, dependency)
+    _assert_contains('docs/SCLITE_INTEGRATION.md', sclite_integration, 'approved-spec and execution-ticket validation helpers')
+
+
+def _assert_readme_mvp_doc_links(readme: str) -> None:
+    for marker in README_MVP_DOC_LINK_MARKERS:
+        _assert_contains('README.md', readme, marker)
+
+
+def _assert_mvp_delivery_doc_truth(markers: Mapping[str, Iterable[str]] = MVP_DELIVERY_DOC_MARKERS) -> None:
+    for path, expected_markers in markers.items():
+        text = _read(path)
+        for marker in expected_markers:
+            _assert_contains(path, text, marker)
+
 
 def _read(path: str) -> str:
     return (ROOT / path).read_text(encoding='utf-8')
@@ -297,6 +435,19 @@ def main() -> int:
     _assert_validation_current_gate_precedes_history(validation, version)
     _assert_clean_pip_check_guidance(contributing, validation, publishing)
     _assert_mvp_surface_docs()
+    changelog = _read('CHANGELOG.md')
+    _assert_changelog_unreleased_api_names(changelog)
+    _assert_source_pypi_gap_docs(version, readme, public_status, roadmap, changelog)
+    _assert_forbidden_current_doc_claims({
+        'CHANGELOG.md': changelog,
+        'docs/SCLITE_INTEGRATION.md': sclite_integration,
+        'docs/RUNTIME_ADMISSION.md': _read('docs/RUNTIME_ADMISSION.md'),
+        'docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md': _read('docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md'),
+        'docs/ROADMAP.md': roadmap,
+    })
+    _assert_sclite_integration_current_dependency_truth(sclite_integration, dependency)
+    _assert_readme_mvp_doc_links(readme)
+    _assert_mvp_delivery_doc_truth()
     _assert_no_published_line_candidate_drift((
         'README.md',
         'CONTRIBUTING.md',

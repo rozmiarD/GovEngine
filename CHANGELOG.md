@@ -28,7 +28,7 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   without replacing existing guarded-root replay helpers from `0.12.1`.
 - Added receipt-to-admission binding plus validators for runner receipt bindings
   and admission evidence chains.
-- Added `verify_evidence_review_chain()` and supporting validators for end-to-end
+- Added `validate_evidence_review_chain()` and supporting validators for end-to-end
   evidence review chains (admission → receipt → evidence → review).
 - Added `AuditLedgerPort` contracts plus `JsonlAuditLedgerAdapter`, a
   development-only hash-chained append-only JSONL adapter without choosing a
