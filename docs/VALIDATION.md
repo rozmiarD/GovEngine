@@ -32,6 +32,110 @@ then runs validators, tests, and `pip check`. A broad system interpreter is not
 a release-readiness environment because unrelated installed tools can make
 its dependency set inconsistent.
 
+## Read-only operator verifier gates
+
+These scripts are local verification helpers. They never execute work, contact
+targets, append audit records, rewrite ledgers, create runner requests, or
+validate SCLite canonicalization. They summarize already-bounded GovEngine
+records only.
+
+Runner receipt binding verification:
+
+```bash
+python scripts/verify_runner_receipt_binding.py \
+  --request /path/to/runner-request.json \
+  --receipt /path/to/runner-receipt.json \
+  --admission /path/to/runtime-admission.json \
+  --ticket-id ticket-1 \
+  --ticket-digest sha256:<ticket-digest>
+```
+
+Inputs are JSON mappings for `GovRunnerRequest`, `GovRunnerReceipt`, and
+optionally `RuntimeAdmissionResult`. If no admission file is supplied, use
+`--admission-id` and `--admission-digest`. The script rejects missing or
+mismatched admission, ticket, request, receipt, status, and digest bindings
+through `validate_runner_receipt_binding()`. It does not accept raw target,
+prompt, command, credential, stdout/stderr payload, or raw evidence fields in
+the binding. Output is bounded to status, reason code, blockers, request id,
+receipt status, admission id, ticket id, and the fixed `execution: not
+performed` non-claim.
+
+Development audit ledger verification:
+
+```bash
+python scripts/verify_audit_ledger.py /path/to/audit-ledger.jsonl
+```
+
+Input is a JSONL file containing `AuditLedgerEntry` records created by the
+development `JsonlAuditLedgerAdapter` or an equivalent bounded local fixture.
+The script reads and verifies sequence, previous-entry digest, and entry digest
+continuity. Malformed JSONL, tamper, deleted-line, restarted-chain, empty, or
+invalid-limit cases fail closed. Output omits raw records and reports only
+status, reason code, blockers, checked entry count, last entry id, and the
+fixed `writes: none` non-claim.
+
+Stable exit codes for both helpers:
+
+- `0`: verified.
+- `1`: verification failed or failed closed on invalid/tampered input.
+- `2`: CLI/input handling error such as unreadable JSON or invalid read limit.
+
+## Next alpha release readiness gate
+
+The next alpha release gate is a decision checklist, not a publication action.
+It must pass before any tag or package upload is considered:
+
+```bash
+env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_public_truth.py
+env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_alpha_readiness.py
+env PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -q -p no:cacheprovider
+ruff check .
+git diff --check
+python scripts/validate_clean_package_install.py \
+  --venv /tmp/govengine-clean-release \
+  --dev \
+  --sclite-source /path/to/SCLite \
+  --no-editable
+```
+
+Release reviewers should also run a clean build and wheel install smoke where
+build tooling is available:
+
+```bash
+python -m build
+python -m twine check dist/*
+python -m venv /tmp/govengine-wheel-smoke
+/tmp/govengine-wheel-smoke/bin/python -m pip install --upgrade pip
+/tmp/govengine-wheel-smoke/bin/python -m pip install dist/*.whl
+/tmp/govengine-wheel-smoke/bin/python -m pip check
+```
+
+No tag, PyPI upload, release artifact publication, or production-readiness
+claim is part of this gate. A maintainer must explicitly confirm that there
+are no open P0/P1 security findings in the tracked issue/security-review
+source before approving a release. If any P0/P1 finding is open, the release
+gate is blocked even when tests pass.
+
+## Downstream compatibility smoke design
+
+Downstream compatibility is release engineering evidence, not a runtime import
+path. GovEngine production code must not import Ravenclaw, Tecrax, or other
+host runtimes.
+
+- SCLite released-line smoke: local or CI gate. Install the currently supported
+  `sclite-core` package range and run public truth, alpha readiness, full
+  pytest, clean install, and package smoke. This is required for release
+  approval.
+- SCLite main smoke: optional CI or manual pre-release gate during coordinated
+  SCLite/GovEngine waves. It may run against
+  `sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main`, but failures
+  should block only coordinated dependency updates, not ordinary patch releases
+  unless the release target explicitly consumes main.
+- Ravenclaw or other host contract smoke: external/manual gate owned by the
+  host runtime. It should validate package consumption and contract adapters
+  outside GovEngine production imports. Host failures become release risk
+  evidence, not justification to add host semantics to GovEngine core.
+
 ## Current package-line gate
 
 Only this section states current validation expectations. The versioned
