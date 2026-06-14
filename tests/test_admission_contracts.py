@@ -740,7 +740,11 @@ def test_compose_runtime_admission_result_populates_bounded_artifact_refs() -> N
 def test_compose_runtime_admission_result_allows_guarded_fresh_runtime_bundle() -> None:
     result = compose_runtime_admission_result(**_runtime_admission_inputs(
         runtime_consumable=True,
-        sclite_guarded_strict={'status': 'allowed', 'verification_status': 'passed'},
+        sclite_guarded_strict={
+            'status': 'allowed',
+            'verification_status': 'passed',
+            'replay_status': 'fresh',
+        },
         replay_freshness={'status': 'allowed', 'replay_status': 'fresh'},
     ))
 
@@ -755,6 +759,7 @@ def test_validate_runtime_admission_proof_inputs_accepts_complete_bounded_chain(
         sclite_guarded_strict={
             'status': 'allowed',
             'verification_status': 'passed',
+            'replay_status': 'fresh',
             'root_chain_digest': 'sha256:' + ('b' * 64),
         },
         replay_freshness={'status': 'allowed', 'replay_status': 'fresh'},
@@ -777,6 +782,7 @@ def test_validate_runtime_admission_proof_inputs_accepts_complete_bounded_chain(
                 'sclite_guarded_strict': {
                     'status': 'allowed',
                     'verification_status': 'passed',
+                    'replay_status': 'fresh',
                     'root_chain_digest': 'sha256:' + ('b' * 64),
                 },
                 'replay_freshness': {'status': 'allowed', 'replay_status': 'fresh'},
@@ -791,7 +797,11 @@ def test_validate_runtime_admission_proof_inputs_accepts_complete_bounded_chain(
         (
             {
                 'runtime_consumable': True,
-                'sclite_guarded_strict': {'status': 'allowed', 'verification_status': 'passed'},
+                'sclite_guarded_strict': {
+                    'status': 'allowed',
+                    'verification_status': 'passed',
+                    'replay_status': 'fresh',
+                },
                 'replay_freshness': {'status': 'allowed', 'replay_status': 'fresh'},
                 'artifact_refs': {'execution_ticket': {'ticket_id': 'ticket-1'}},
             },
@@ -1041,7 +1051,11 @@ def test_compose_runtime_admission_result_blocks_live_even_with_complete_guarded
     result = compose_runtime_admission_result(**_runtime_admission_inputs(
         live=True,
         runtime_consumable=True,
-        sclite_guarded_strict={'status': 'allowed', 'verification_status': 'passed'},
+        sclite_guarded_strict={
+            'status': 'allowed',
+            'verification_status': 'passed',
+            'replay_status': 'fresh',
+        },
         replay_freshness={'status': 'allowed', 'replay_status': 'fresh'},
     ))
 

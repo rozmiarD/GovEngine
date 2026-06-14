@@ -6,6 +6,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+## 0.13.0
+
+- PyPI default install fix: publishes stable `0.13.0` so `pip install govengine` resolves above stale `0.7.0` without yanking old versions.
+- Admission guarded/replay fail-closed fix: `_guarded_bundle_decision_failed` and `_replay_runtime_status` with `runtime_consumable` now fail closed consistently.
+
 ## 0.12.3-alpha - Governed-runtime MVP and SCLite 1.0.2 sync
 
 - Publishes the `0.12.3a0` / `0.12.3-alpha` package line over

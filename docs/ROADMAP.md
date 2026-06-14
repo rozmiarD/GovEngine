@@ -2,8 +2,8 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current package baseline: `govengine==0.12.3a0` (`0.12.3-alpha`), depending on `sclite-core>=1.0.2,<1.1`.
-Published PyPI baseline is `govengine==0.12.3a0`.
+Current package baseline: `govengine==0.13.0` (`0.13.0`), depending on `sclite-core>=1.0.2,<1.1`.
+Published PyPI baseline is `govengine==0.13.0`.
 
 ## Architecture thesis
 
@@ -91,7 +91,7 @@ second host prove it there.
 
 ## Post-0.12.3 governed-runtime MVP
 
-Status: published in `0.12.3-alpha` and retained as the current governed-runtime MVP baseline.
+Status: published in `0.13.0` and retained as the current governed-runtime MVP baseline.
 
 GovEngine already had useful pieces across policy, execution tickets, signing/trust,
 guarded SCLite replay, runner requests/receipts, and dry-run gates. The public
@@ -142,7 +142,7 @@ requirements and negative tests for any optional live backend.
 
 Remaining follow-up for the next alpha release line:
 
-- keep the published `0.12.3-alpha` governed-runtime MVP stable while any
+- keep the published `0.13.0` governed-runtime MVP stable while any
   future additions return to `Unreleased` and pass the normal PyPI alpha gates;
 - keep production replay, audit, and evidence persistence host-owned;
 - keep optional `LocalSubprocessRunner` out of the kernel while readiness stays

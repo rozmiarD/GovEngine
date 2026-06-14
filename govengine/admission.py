@@ -967,7 +967,14 @@ def validate_runtime_admission_proof_inputs(
         raise GovApiError('runtime_admission_proof_not_allowed')
     if _guarded_runtime_status(item.sclite_guarded_strict) != 'passed':
         raise GovApiError('runtime_admission_proof_guarded_strict_missing')
-    if _replay_runtime_status(item.replay_freshness, item.sclite_guarded_strict) != 'fresh':
+    if (
+        _replay_runtime_status(
+            item.replay_freshness,
+            item.sclite_guarded_strict,
+            runtime_consumable=True,
+        )
+        != 'fresh'
+    ):
         raise GovApiError('runtime_admission_proof_replay_freshness_missing')
     if _trust_signal_status(item.trust_decision) not in {'trusted', 'passed', 'ok'}:
         raise GovApiError('runtime_admission_proof_trust_decision_missing')
@@ -1045,7 +1052,11 @@ def compose_runtime_admission_result(
     ticket_status = _ticket_signal_status(ticket_summary)
     trust_status = _trust_signal_status(trust_summary)
     guarded_status = _guarded_runtime_status(guarded_summary)
-    replay_status = _replay_runtime_status(replay_summary, guarded_summary)
+    replay_status = _replay_runtime_status(
+        replay_summary,
+        guarded_summary,
+        runtime_consumable=bool(runtime_consumable),
+    )
 
     runner = RunnerProfile(
         name=str(runner_summary.get('name') or runner_summary.get('profile') or '').strip() or 'missing',
@@ -1337,6 +1348,19 @@ def _trust_signal_status(payload: Mapping[str, Any]) -> str:
     return _signal_status(payload, ('trust_status', 'status', 'verification_status')) or 'unknown'
 
 
+def _guarded_bundle_decision_failed(payload: Mapping[str, Any]) -> bool:
+    """Return True when a guarded-bundle summary reports a failed decision."""
+
+    if not payload:
+        return False
+    decision_status = _signal_status(payload, ('status',))
+    if decision_status in {'blocked', 'failed', 'denied'}:
+        return True
+    if 'allowed' in payload and not _bool_value(payload.get('allowed'), default=True):
+        return True
+    return False
+
+
 def _guarded_runtime_status(payload: Mapping[str, Any]) -> str:
     if not payload:
         return ''
@@ -1348,14 +1372,38 @@ def _guarded_runtime_status(payload: Mapping[str, Any]) -> str:
         or _explicit_false(payload, 'guarded_strict')
     ):
         return 'not_strict'
+    if _guarded_bundle_decision_failed(payload):
+        return 'failed'
     return _signal_status(payload, ('verification_status', 'guarded_status', 'status'))
 
 
-def _replay_runtime_status(replay_payload: Mapping[str, Any], guarded_payload: Mapping[str, Any]) -> str:
-    return (
-        _signal_status(replay_payload, ('replay_status', 'status'))
-        or _signal_status(guarded_payload, ('replay_status',))
-    )
+_REPLAY_FAILURE_STATUSES = frozenset({'replayed', 'stale', 'expired', 'blocked', 'failed'})
+
+
+def _replay_runtime_status(
+    replay_payload: Mapping[str, Any],
+    guarded_payload: Mapping[str, Any],
+    *,
+    runtime_consumable: bool = False,
+) -> str:
+    guarded_replay = _signal_status(guarded_payload, ('replay_status',))
+    replay_only = _signal_status(replay_payload, ('replay_status', 'status'))
+
+    if not runtime_consumable:
+        return replay_only or guarded_replay
+
+    if guarded_replay in _REPLAY_FAILURE_STATUSES:
+        return guarded_replay
+    if replay_only in _REPLAY_FAILURE_STATUSES:
+        return replay_only
+
+    if replay_payload and replay_only:
+        if not guarded_replay:
+            return 'missing'
+        if guarded_replay != replay_only:
+            return 'replayed'
+
+    return guarded_replay or replay_only or 'missing'
 
 
 def _status_in(value: str, allowed: tuple[str, ...]) -> bool:

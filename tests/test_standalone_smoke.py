@@ -125,6 +125,7 @@ def test_end_to_end_governed_runtime_smoke_binds_admission_receipt_and_evidence(
         trust_decision={'status': 'passed', 'trust_status': 'trusted', 'verifier_id': 'host-fixture'},
         sclite_guarded_strict={
             'verification_status': 'passed',
+            'replay_status': 'fresh',
             'guarded': True,
             'strict_lifecycle': True,
             'ticket_id': ticket['ticket_id'],

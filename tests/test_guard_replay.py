@@ -454,3 +454,77 @@ def test_runtime_admission_keeps_review_only_bundle_posture_distinct() -> None:
     assert result.allowed is True
     assert result.status == "allowed"
     assert result.reason_code == "all_required_gates_passed"
+
+
+def test_runtime_admission_blocks_decoupled_replay_freshness_override() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        runtime_consumable=True,
+        sclite_guarded_strict={
+            "status": "blocked",
+            "verification_status": "passed",
+            "replay_status": "replayed",
+        },
+        replay_freshness={"status": "allowed", "replay_status": "fresh"},
+    ))
+
+    assert result.allowed is False
+    assert "missing_or_replayed_guarded_root" in result.blockers
+
+
+def test_runtime_admission_blocks_guarded_blocked_decision_with_passed_verification() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        runtime_consumable=True,
+        sclite_guarded_strict={"status": "blocked", "verification_status": "passed"},
+        replay_freshness={"replay_status": "fresh"},
+    ))
+
+    assert result.allowed is False
+    assert "missing_or_invalid_kernel_guard" in result.blockers
+
+
+def test_runtime_admission_blocks_replay_freshness_without_guarded_replay_signal() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        runtime_consumable=True,
+        sclite_guarded_strict={"verification_status": "passed"},
+        replay_freshness={"replay_status": "fresh"},
+    ))
+
+    assert result.allowed is False
+    assert "missing_or_replayed_guarded_root" in result.blockers
+
+
+def test_runtime_admission_blocks_decoupled_replay_freshness_override() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        runtime_consumable=True,
+        sclite_guarded_strict={
+            "status": "blocked",
+            "verification_status": "passed",
+            "replay_status": "replayed",
+        },
+        replay_freshness={"status": "allowed", "replay_status": "fresh"},
+    ))
+
+    assert result.allowed is False
+    assert "missing_or_replayed_guarded_root" in result.blockers
+
+
+def test_runtime_admission_blocks_guarded_blocked_decision_with_passed_verification() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        runtime_consumable=True,
+        sclite_guarded_strict={"status": "blocked", "verification_status": "passed"},
+        replay_freshness={"replay_status": "fresh"},
+    ))
+
+    assert result.allowed is False
+    assert "missing_or_invalid_kernel_guard" in result.blockers
+
+
+def test_runtime_admission_blocks_replay_freshness_without_guarded_replay_signal() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        runtime_consumable=True,
+        sclite_guarded_strict={"verification_status": "passed"},
+        replay_freshness={"replay_status": "fresh"},
+    ))
+
+    assert result.allowed is False
+    assert "missing_or_replayed_guarded_root" in result.blockers

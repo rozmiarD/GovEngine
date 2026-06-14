@@ -260,7 +260,7 @@ forbidden: GovEngine -> Logdash/OpenClaw/MCP/A2A adapters
 ## Current maturity
 
 The package currently covers dry-run-safe helpers and neutral contract gates in
-kernel in alpha form. The published `govengine==0.12.3a0` (`0.12.3-alpha`) line includes the governed-runtime MVP and roadmap-hardening surfaces described above. Newer work should return to `Unreleased` until the next alpha release.
+kernel in alpha form. The published `govengine==0.13.0` (`0.13.0`) line includes the governed-runtime MVP and roadmap-hardening surfaces described above. Newer work should return to `Unreleased` until the next alpha release.
 
 Those alpha surfaces — canonical runtime admission, host-provided trust ports,
 receipt/evidence binding, audit/replay ports, inspect-only admission review,

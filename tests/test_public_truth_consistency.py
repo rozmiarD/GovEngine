@@ -30,7 +30,7 @@ def test_public_truth_validator_passes() -> None:
         check=True,
     )
 
-    assert result.stdout.strip().startswith('public_truth_ok:govengine==0.12.3a0:')
+    assert result.stdout.strip().startswith('public_truth_ok:govengine==0.13.0:')
 
 
 def test_alpha_readiness_validator_passes() -> None:
@@ -42,7 +42,7 @@ def test_alpha_readiness_validator_passes() -> None:
         check=True,
     )
 
-    assert result.stdout.strip().startswith('alpha_readiness_ok:govengine==0.12.3a0:')
+    assert result.stdout.strip().startswith('alpha_readiness_ok:govengine==0.13.0:')
 
 
 def test_current_public_docs_do_not_reintroduce_pre_alpha_maturity_claims() -> None:
@@ -78,9 +78,9 @@ def test_public_truth_validator_rejects_validation_history_before_current_gate()
             '## Historical validation records\n'
             'Historical expected result for the published `0.1.7` source line:\n'
             '## Current package-line gate\n'
-            'Expected result for the current `0.12.3a0` package line\n'
+            'Expected result for the current `0.13.0` package line\n'
             'not the active gate\n',
-            '0.12.3a0',
+            '0.13.0',
         )
 
 
@@ -186,7 +186,7 @@ def test_public_truth_version_doc_truth_negative_guards() -> None:
 
     released_mvp_changelog = (
         '## Unreleased\n'
-        '## 0.12.3-alpha\n'
+        '## 0.13.0\n'
         '- Added `RuntimeAdmissionResult` and `compose_runtime_admission_result()`.\n'
         '- Added `validate_evidence_review_chain()`.\n'
         '## 0.12.2-alpha\n'
@@ -194,10 +194,10 @@ def test_public_truth_version_doc_truth_negative_guards() -> None:
     negative_cases = (
         (
             'missing_current_release_readme_marker',
-            r'README.md:missing:The `0\.12\.3-alpha` line also adds:',
+            r'README.md:missing:The `0\.13\.0` line also adds:',
             lambda: validator._assert_source_pypi_gap_docs(
                 validator.PUBLISHED_VERSION,
-                'alpha package 0.12.3a0 without the release marker',
+                'alpha package 0.13.0 without the release marker',
                 validator._read('PUBLIC_STATUS.md'),
                 validator._read('docs/ROADMAP.md'),
                 released_mvp_changelog,
@@ -209,7 +209,7 @@ def test_public_truth_version_doc_truth_negative_guards() -> None:
             lambda: validator._assert_changelog_unreleased_api_names(
                 '## Unreleased\n'
                 '- Added `verify_evidence_review_chain()`.\n'
-                '## 0.12.3-alpha\n'
+                '## 0.13.0\n'
             ),
         ),
         (

@@ -76,7 +76,7 @@ Documentation and release gates:
   line, SCLite main, and host contract smokes without importing host runtimes
   into GovEngine.
 - `CHANGELOG.md` records the new verifier and release-readiness work under
-  `0.12.3-alpha`.
+  `0.13.0`.
 
 ## Boundary Audit
 

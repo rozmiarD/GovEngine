@@ -177,7 +177,7 @@ instead of replacing them:
 
 ## Implementation Status And Next Tasks
 
-Delivered in `0.12.3-alpha`:
+Delivered in `0.13.0`:
 
 1. `RuntimeAdmissionResult` exists as the core record;
 2. `validate_runtime_admission_result()` enforces basic status/allowed/blocker

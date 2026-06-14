@@ -14,8 +14,8 @@ from govengine import __version__ as package_version  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '0.12.3-alpha'
-PUBLISHED_VERSION = '0.12.3a0'
+EXPECTED_RELEASE_LABEL = '0.13.0'
+PUBLISHED_VERSION = '0.13.0'
 
 SURFACE_HEADINGS = {
     'Artifact-governance core': 'artifact_governance_core',
@@ -114,11 +114,11 @@ GOVERNED_RUNTIME_RELEASE_MARKERS = (
 
 SOURCE_PYPI_GAP_DOC_MARKERS = {
     'README.md': (
-        'The `0.12.3-alpha` line also adds:',
+        'The `0.13.0` line also adds:',
         '`compose_runtime_admission_result()` composes host-supplied gate summaries',
     ),
     'docs/ROADMAP.md': (
-        'published in `0.12.3-alpha`',
+        'published in `0.13.0`',
         'current governed-runtime MVP baseline',
     ),
 }
@@ -143,7 +143,7 @@ README_MVP_DOC_LINK_MARKERS = (
 
 MVP_DELIVERY_DOC_MARKERS = {
     'docs/RUNTIME_ADMISSION.md': (
-        'Delivered in `0.12.3-alpha`',
+        'Delivered in `0.13.0`',
         'scripts/inspect_runtime_admission.py',
         'The implementation exposes a small immutable record',
     ),
@@ -213,7 +213,9 @@ def _assert_source_pypi_gap_docs(
         public_status,
         f'PyPI package: `govengine=={PUBLISHED_VERSION}` is the published current alpha package.',
     )
-    _assert_contains('README.md', readme, f'python -m pip install govengine=={PUBLISHED_VERSION}')
+    unpinned_install = re.compile(r'python -m pip install govengine(?![=<>\[])')
+    if not unpinned_install.search(readme):
+        raise AssertionError('README.md:missing_unpinned_install_command')
 
 
 def _assert_changelog_unreleased_api_names(changelog: str) -> None:
@@ -309,7 +311,6 @@ def _assert_no_current_stale_status(paths: Iterable[str], version: str) -> None:
 def _assert_readme_package_truth(readme: str, version: str) -> None:
     release_url = f'https://pypi.org/project/govengine/{PUBLISHED_VERSION}/'
     badge = f'package-govengine%20{version}-blueviolet.svg'
-    install_command = f'python -m pip install govengine=={PUBLISHED_VERSION}'
     forbidden_dynamic_badges = (
         'img.shields.io/pypi/v/govengine',
         'label=package%3A%20govengine',
@@ -319,11 +320,10 @@ def _assert_readme_package_truth(readme: str, version: str) -> None:
             raise AssertionError(f'README.md:dynamic_prerelease_unsafe_badge:{marker}')
     _assert_contains('README.md', readme, badge)
     _assert_contains('README.md', readme, release_url)
-    _assert_contains('README.md', readme, install_command)
     unpinned_install = re.compile(r'python -m pip install govengine(?![=<>\[])')
     match = unpinned_install.search(readme)
-    if match:
-        raise AssertionError(f'README.md:unpinned_alpha_install:{match.group(0)}')
+    if not match:
+        raise AssertionError('README.md:missing_unpinned_install_command')
 
 
 def _assert_alpha_maturity_truth(paths: Iterable[str]) -> None:
