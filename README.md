@@ -58,7 +58,16 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 - neutral admission, policy, approval, and audit contracts for host runtime gates;
 - explicit SCLite integration seams;
 - focused standalone pytest coverage and GitHub Actions CI.
-- on current `main`, the governed-runtime MVP helpers also include `RuntimeAdmissionResult`, `compose_runtime_admission_result()`, `validate_runtime_admission_result()`, `normalize_admission_artifact_refs()`, `ReplayClaimStore`, `verify_guard_and_record_replay()`, `validate_runner_receipt_binding()`, `validate_evidence_review_chain()`, GovEngine-owned record digests and signed-record helpers, `AuditLedgerPort` with a development-only `JsonlAuditLedgerAdapter`, runner supervision including `LocalSubprocessRunnerReadiness`, and `scripts/inspect_runtime_admission.py` for read-only admission inspection (listed in `CHANGELOG.md` under `Unreleased` until the next PyPI alpha release).
+
+On current `main` (already in source, still listed under `Unreleased` in `CHANGELOG.md` until the next PyPI alpha release), the governed-runtime MVP also adds:
+
+- **one admission decision you can actually read** — a single `RuntimeAdmissionResult` record that summarizes whether a prepared request may proceed, what blocked it, and what to fix next; helpers compose and validate that record from separate policy, ticket, trust, guard, replay, runner, and receipt signals without running live work themselves;
+- **replay freshness** — remember which verified SCLite guarded roots were already used, so the same protected bundle cannot silently count as “fresh” twice;
+- **receipt and evidence chain checks** — confirm that a runner receipt still points at the right admission and ticket, and that later evidence or review references stay within the bounds of that receipt;
+- **GovEngine-owned record signing for fixtures** — deterministic digests and signed-record helpers for tests and reviewer demos, not production PKI;
+- **a development-only audit trail adapter** — append and verify a local hash-chained audit log during development, without claiming a production database;
+- **runner safety posture** — supervision helpers that keep dry-run as the default and treat an optional local subprocess runner as not ready until explicit host safety gates exist;
+- **operator inspect without executing** — `scripts/inspect_runtime_admission.py` lets you read and summarize an admission record read-only, with no runner request, replay claim, audit write, or live execution.
 
 ## What it intentionally does not include yet
 
