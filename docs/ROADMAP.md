@@ -89,20 +89,37 @@ profile-owned tool, policy, and UX semantics remain in Ravenclaw. New neutral
 extraction should land in typed core/profile surfaces only when the code and a
 second host prove it there.
 
-## Post-0.12.2 governed-runtime MVP direction
+## Post-0.12.2 governed-runtime MVP
 
-The internal 2026-06-06 audit points to one highest-leverage next target:
-formalize a canonical runtime admission result before adding any live runner
-surface. GovEngine already has useful pieces across policy, execution tickets,
-signing/trust, guarded SCLite replay, runner requests/receipts, and dry-run
-gates. The public kernel shape is one bounded machine-readable decision that
-composes those pieces without turning intent into execution authority; the
-initial record and composition helper now exist and need focused negative
-coverage plus later trust/receipt/audit hardening.
+Status: implemented on current `main` and recorded in `CHANGELOG.md` under
+`Unreleased` until the next PyPI alpha release.
 
-The MVP contract is now named `RuntimeAdmissionResult`; the roadmap may still
-use `GovernedExecutionAdmission` as an equivalent concept name. It should
-report:
+GovEngine already had useful pieces across policy, execution tickets, signing/trust,
+guarded SCLite replay, runner requests/receipts, and dry-run gates. The public
+kernel now exposes one bounded machine-readable decision that composes those
+pieces without turning intent into execution authority.
+
+Delivered MVP surface:
+
+- `RuntimeAdmissionResult`, `compose_runtime_admission_result()`,
+  `validate_runtime_admission_result()`, and `normalize_admission_artifact_refs()`;
+- `ReplayClaimStore`, `InMemoryReplayClaimStore`, and
+  `verify_guard_and_record_replay()`;
+- `validate_runner_receipt_binding()` and `validate_evidence_review_chain()`;
+- GovEngine-owned record digests and signed-record helpers;
+- `AuditLedgerPort` and development-only `JsonlAuditLedgerAdapter`;
+- `LocalSubprocessRunnerReadiness` with `not_applicable` as the current local
+  runner posture;
+- `scripts/inspect_runtime_admission.py` and operator docs under
+  `docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`,
+  `docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md`, and
+  `docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md`;
+- focused negative tests for admission composition, replay claim-once behavior,
+  receipt/evidence binding, audit tamper cases, inspect-only workflow, and
+  governed-runtime smoke coverage.
+
+The MVP contract is named `RuntimeAdmissionResult`; `GovernedExecutionAdmission`
+remains an equivalent concept name for hosts and roadmap discussion. It reports:
 
 - status and `allowed`;
 - deterministic reason code;
@@ -119,10 +136,18 @@ report:
 - bounded artifact references or digests.
 
 This admission result is not a live execution backend. It is the reviewable
-decision surface that later trust, receipt, ledger, replay-store, inspect-only,
-and optional runner work must use. Live subprocess execution remains disabled by
-default and out of scope until admission, trust, replay freshness, receipt
-binding, runner safety requirements, and negative tests are complete.
+decision surface that trust, receipt, ledger, replay-store, inspect-only, and
+optional runner work must use. Live subprocess execution remains disabled by
+default and out of scope until a future host adapter satisfies the runner safety
+requirements and negative tests for any optional live backend.
+
+Remaining follow-up for the next alpha release line:
+
+- publish the `Unreleased` governed-runtime MVP through the normal PyPI alpha
+  gates;
+- keep production replay, audit, and evidence persistence host-owned;
+- keep optional `LocalSubprocessRunner` out of the kernel while readiness stays
+  `not_applicable`.
 
 ## Version roadmap
 

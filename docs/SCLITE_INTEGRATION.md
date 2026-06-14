@@ -38,12 +38,11 @@ intent_contract
 
 GovEngine currently provides helpers around the runtime-facing parts of that lifecycle:
 
-- action validation and compilation before contract shaping;
-- policy decision normalization/evaluation;
-- execution-contract shaping and redaction;
-- approved-spec and execution-ticket checks;
+- approved-spec and execution-ticket validation helpers;
+- execution-contract shaping and redaction through `govengine.contracts.execution`;
 - dry-run result assembly;
-- integration seams for SCLite verification;
+- host-provided policy and trust decision shape validation through `govengine.admission` and `govengine.signing` (GovEngine does not own domain policy meaning);
+- integration seams for SCLite lifecycle/review verification;
 - guarded-root replay checks for optional SCLite `kernel_guard_hmac_v1`
   sidecars after SCLite has verified the HMAC guard;
 - `ReplayClaimStore`, a host-neutral claim-once replay freshness port, plus an
@@ -51,7 +50,7 @@ GovEngine currently provides helpers around the runtime-facing parts of that lif
 - `verify_guard_and_record_replay()`, a high-level adapter that verifies the
   SCLite guarded-strict profile and then records replay freshness for one
   runtime-consumable decision;
-- review-bundle verdict mapping through SCLite `0.8.0b2` review and guarded-strict surfaces, preserving the review-bundle contract.
+- review-bundle verdict mapping through the current `sclite-core>=1.0.1,<1.1` review and guarded-strict surfaces, preserving the review-bundle contract.
 
 Host-owned artifact projection is outside GovEngine. A runtime such as
 Ravenclaw constructs its domain-shaped lifecycle artifacts before consuming
