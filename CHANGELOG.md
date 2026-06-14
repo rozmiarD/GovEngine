@@ -57,6 +57,12 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   lifecycle smoke evidence in docs without expanding live-execution claims.
 - Strengthened public-truth and documentation hygiene guards in
   `scripts/validate_public_truth.py` and tests.
+- Added read-only operator verifier scripts for runner receipt bindings and
+  development JSONL audit ledgers, with bounded outputs, stable exit codes, and
+  focused CLI tests.
+- Added the next-alpha release readiness gate, downstream compatibility smoke
+  design, and final roadmap audit decision without publishing, tagging, or
+  adding host runtime imports.
 - Added governed-runtime smoke-chain coverage in standalone tests.
 - Removed Signposter control-plane artifacts (`docs/roadmaps/`,
   `DOCUMENTATION_HYGIENE.md`) from the tracked public surface.

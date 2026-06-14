@@ -19,9 +19,12 @@ from .admission import (
     JsonlAuditLedgerAdapter,
     RuntimeAdmissionResult,
     admission_decision_from_host_gate,
+    audit_ledger_verification_public_summary,
     audit_ledger_entry_digest,
+    audit_record_public_summary,
     compose_runtime_admission_result,
     normalize_admission_artifact_refs,
+    runtime_admission_public_summary,
     validate_admission_decision,
     validate_approval_request,
     validate_audit_record,
@@ -30,6 +33,7 @@ from .admission import (
     validate_audit_ledger_verification_result,
     validate_policy_decision,
     validate_runtime_admission_result,
+    validate_runtime_admission_proof_inputs,
 )
 from .api import GovApiError, GovApiResult
 from .boundary import (
@@ -69,6 +73,7 @@ from .core import (
 from .deconfliction import ArtifactChangeOrder, ArtifactConflict, ConflictDetector
 from .events import EventEnvelope, GovEvent, validate_event_envelope, validate_gov_event
 from .execution.gate import DryRunRunner, ExecutionGate, ExecutionGateInput, RunnerProfile
+from .execution.runner_protocol import runner_receipt_public_summary
 from .execution.supervision import (
     GovRunnerLease,
     GovSupervisionDecision,
@@ -124,7 +129,9 @@ from .review import (
     GovEvidenceQualification,
     GovEvidenceRequirement,
     GovReviewResult,
+    evidence_claim_public_summary,
     qualify_evidence_claim,
+    review_result_public_summary,
     validate_evidence_review_chain,
     validate_evidence_claim,
     validate_evidence_qualification,
@@ -290,6 +297,7 @@ __all__ = [
     'review_bundle_state',
     'review_bundle_transition_decision',
     'review_sclite_bundle',
+    'review_result_public_summary',
     'TransitionDecision',
     'TransitionGate',
     'TransitionPolicy',
@@ -301,6 +309,8 @@ __all__ = [
     'admission_policy_surface',
     'apply_control_decision',
     'audit_ledger_entry_digest',
+    'audit_ledger_verification_public_summary',
+    'audit_record_public_summary',
     'compose_runtime_admission_result',
     'normalize_admission_artifact_refs',
     'control_action_from_host_action',
@@ -313,6 +323,7 @@ __all__ = [
     'domain_profile_sdk_surface',
     'evaluate_local_subprocess_runner_readiness',
     'evaluate_guard_replay',
+    'evidence_claim_public_summary',
     'governance_contract_vocabulary',
     'guard_replay_record_from_guard',
     'govengine_record_digest',
@@ -333,6 +344,8 @@ __all__ = [
     'verify_guard_and_record_replay',
     'verify_signed_govengine_record',
     'runner_lease_from_request',
+    'runner_receipt_public_summary',
+    'runtime_admission_public_summary',
     'runtime_contract_proofs_surface',
     'signed_artifact_from_record',
     'supervision_plan_from_runner_request',
@@ -372,6 +385,7 @@ __all__ = [
     'validate_runtime_contract_proof',
     'validate_scheduler_tick',
     'validate_runtime_admission_result',
+    'validate_runtime_admission_proof_inputs',
     'validate_state_transition',
     'validate_supervised_runner_request',
     'validate_supervision_decision',

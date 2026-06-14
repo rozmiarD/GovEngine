@@ -33,10 +33,18 @@ def approved_execution_steps(approved_execution_spec: Dict[str, Any]) -> List[Di
     if not isinstance(execution_plan, list) or not execution_plan:
         raise ValueError('missing_execution_plan')
     out: List[Dict[str, Any]] = []
-    for step in execution_plan:
+    for index, step in enumerate(execution_plan):
         if not isinstance(step, dict):
-            continue
-        normalized_step = {'tool': str(step.get('tool') or ''), 'args': list(step.get('args') or [])}
+            raise ValueError(f'invalid_approved_execution_step:{index}')
+        tool = str(step.get('tool') or '').strip()
+        if not tool:
+            raise ValueError(f'missing_approved_execution_step_tool:{index}')
+        if 'args' not in step:
+            raise ValueError(f'missing_approved_execution_step_args:{index}')
+        raw_args = step.get('args')
+        if not isinstance(raw_args, list):
+            raise ValueError(f'invalid_approved_execution_step_args:{index}')
+        normalized_step = {'tool': tool, 'args': list(raw_args)}
         if step.get('stdin'):
             normalized_step['stdin'] = str(step.get('stdin') or '')
         out.append(normalized_step)

@@ -136,6 +136,7 @@ def test_public_truth_validator_tracks_current_mvp_surface_docs() -> None:
         'docs/ADMISSION_POLICY.md': ('AuditLedgerPort', 'JsonlAuditLedgerAdapter'),
         'docs/SCLITE_INTEGRATION.md': ('ReplayClaimStore', 'claim-once adapter'),
         'docs/RUNNER_SUPERVISION.md': ('Live Runner Safety Specification', 'LocalSubprocessRunner'),
+        'docs/SECURITY_INTEGRATION.md': ('SCLite secure verification', 'not proof and not execution authority'),
     })
 
 

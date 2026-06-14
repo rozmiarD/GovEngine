@@ -295,6 +295,31 @@ def validate_evidence_review_chain(
     return qualified
 
 
+def evidence_claim_public_summary(value: GovEvidenceClaim | Mapping[str, Any]) -> dict[str, Any]:
+    """Return a public-safe evidence claim summary without raw evidence."""
+
+    item = validate_evidence_claim(value)
+    return {
+        'claim_id': item.claim_id,
+        'subject_ref': item.subject_ref,
+        'claim_type': item.claim_type,
+        'receipt_ref_count': len(item.receipt_refs),
+        'evidence_ref_count': len(item.evidence_refs),
+    }
+
+
+def review_result_public_summary(value: GovReviewResult | Mapping[str, Any]) -> dict[str, Any]:
+    """Return a public-safe review result summary without raw review payloads."""
+
+    item = validate_review_result(value)
+    return {
+        'review_id': item.review_id,
+        'subject_ref': item.subject_ref,
+        'verdict': item.verdict,
+        'qualification_ref_count': len(item.qualification_refs),
+    }
+
+
 def _receipt_rank(status: str) -> int:
     return {
         'blocked': 0,

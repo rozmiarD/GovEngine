@@ -20,8 +20,11 @@ from govengine import (
     JsonlAuditLedgerAdapter,
     RuntimeAdmissionResult,
     admission_decision_from_host_gate,
+    audit_ledger_verification_public_summary,
     audit_ledger_entry_digest,
+    audit_record_public_summary,
     compose_runtime_admission_result,
+    runtime_admission_public_summary,
     validate_admission_decision,
     validate_approval_request,
     validate_audit_record,
@@ -29,6 +32,7 @@ from govengine import (
     validate_audit_ledger_entry,
     validate_audit_ledger_verification_result,
     validate_policy_decision,
+    validate_runtime_admission_proof_inputs,
     validate_runtime_admission_result,
 )
 from govengine.admission import normalize_admission_artifact_refs
@@ -131,6 +135,61 @@ def test_policy_approval_and_audit_contracts_are_shape_only() -> None:
     assert policy.as_dict()['controls'] == ['operator_review']
     assert approval.as_dict()['policy_refs'] == ['policy-1']
     assert audit.as_dict()['event_refs'] == ['event-1']
+    assert audit.as_dict()['schema_version'] == 'v0.1'
+
+
+def test_schema_versions_are_explicit_and_unknown_versions_fail_closed() -> None:
+    audit = validate_audit_record({
+        'record_id': 'audit-1',
+        'record_type': 'policy_decision',
+        'subject_ref': 'sha256:task-ref',
+    })
+    entry = validate_audit_ledger_entry({
+        'entry_id': 'ledger-entry-1',
+        'sequence': 0,
+        'record': audit.as_dict(),
+        'record_digest': 'sha256:audit-record',
+    })
+    admission = validate_runtime_admission_result({
+        'admission_id': 'runtime-admission-1',
+        'subject_ref': 'sha256:prepared-contract',
+        'status': 'blocked',
+        'allowed': False,
+        'reason_code': 'blocked',
+        'blockers': ['blocked'],
+    })
+
+    assert audit.schema_version == 'v0.1'
+    assert entry.schema_version == ''
+    assert admission.schema_version == 'v0.1'
+
+    with pytest.raises(GovApiError, match='unknown_audit_record_schema_version:v9'):
+        validate_audit_record({
+            'schema_version': 'v9',
+            'record_id': 'audit-2',
+            'record_type': 'policy_decision',
+            'subject_ref': 'sha256:task-ref',
+        })
+
+    with pytest.raises(GovApiError, match='unknown_audit_ledger_entry_schema_version:v9'):
+        validate_audit_ledger_entry({
+            'schema_version': 'v9',
+            'entry_id': 'ledger-entry-2',
+            'sequence': 0,
+            'record': audit.as_dict(),
+            'record_digest': 'sha256:audit-record',
+        })
+
+    with pytest.raises(GovApiError, match='unknown_runtime_admission_schema_version:v9'):
+        validate_runtime_admission_result({
+            'schema_version': 'v9',
+            'admission_id': 'runtime-admission-2',
+            'subject_ref': 'sha256:prepared-contract',
+            'status': 'blocked',
+            'allowed': False,
+            'reason_code': 'blocked',
+            'blockers': ['blocked'],
+        })
 
 
 def test_policy_approval_and_audit_reject_runtime_ownership_claims() -> None:
@@ -452,6 +511,7 @@ def test_runtime_admission_result_allows_bounded_gate_summaries() -> None:
 
     assert isinstance(result, RuntimeAdmissionResult)
     assert payload['allowed'] is True
+    assert payload['schema_version'] == 'v0.1'
     assert payload['status'] == 'allowed'
     assert payload['blockers'] == []
     assert payload['runner_profile']['profile'] == 'dry_run'
@@ -472,6 +532,67 @@ def test_runtime_admission_result_blocks_with_next_actions() -> None:
     assert result.allowed is False
     assert result.blockers == ('missing_policy_decision',)
     assert result.required_next_actions == ('evaluate_policy',)
+
+
+def test_runtime_admission_public_summary_hides_refs_by_default() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        artifact_refs={
+            'admission_digest': 'sha256:' + ('a' * 64),
+            'path': 'artifacts/runtime-admission.json',
+        },
+    ))
+
+    summary = runtime_admission_public_summary(result)
+    expanded = runtime_admission_public_summary(result, show_artifact_refs=True)
+
+    assert summary == {
+        'schema_version': 'v0.1',
+        'admission_id': 'runtime-admission-composed-1',
+        'subject_ref': 'sha256:prepared-contract',
+        'status': 'allowed',
+        'allowed': True,
+        'reason_code': 'all_required_gates_passed',
+        'blocker_count': 0,
+        'required_next_action_count': 0,
+        'receipt_obligation': 'required',
+    }
+    assert 'artifact_refs' not in summary
+    assert expanded['artifact_refs']['explicit']['admission_digest'] == 'sha256:' + ('a' * 64)
+
+
+def test_audit_public_summaries_hide_records_and_metadata() -> None:
+    record = validate_audit_record({
+        'record_id': 'audit-public-1',
+        'record_type': 'policy_decision',
+        'subject_ref': 'sha256:policy-subject',
+        'decision_ref': 'policy-1',
+        'event_refs': ['event-1', 'event-2'],
+        'metadata': {'retention': 'host-owned'},
+    })
+    verification = validate_audit_ledger_verification_result({
+        'status': 'verified',
+        'verified': True,
+        'checked_entries': 1,
+        'last_entry_id': 'ledger-entry-1',
+        'last_entry_digest': 'sha256:ledger-entry-1',
+    })
+
+    record_summary = audit_record_public_summary(record)
+    verification_summary = audit_ledger_verification_public_summary(verification)
+
+    assert record_summary == {
+        'schema_version': 'v0.1',
+        'record_id': 'audit-public-1',
+        'record_type': 'policy_decision',
+        'subject_ref': 'sha256:policy-subject',
+        'decision_ref': 'policy-1',
+        'reason_code': 'recorded',
+        'event_ref_count': 2,
+    }
+    assert 'metadata' not in record_summary
+    assert verification_summary['checked_entries'] == 1
+    assert verification_summary['last_entry_digest'] == 'sha256:ledger-entry-1'
+    assert 'record' not in verification_summary
 
 
 def test_runtime_admission_result_rejects_status_allowed_mismatch() -> None:
@@ -626,6 +747,63 @@ def test_compose_runtime_admission_result_allows_guarded_fresh_runtime_bundle() 
     assert result.allowed is True
     assert result.sclite_guarded_strict['verification_status'] == 'passed'
     assert result.replay_freshness['replay_status'] == 'fresh'
+
+
+def test_validate_runtime_admission_proof_inputs_accepts_complete_bounded_chain() -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(
+        runtime_consumable=True,
+        sclite_guarded_strict={
+            'status': 'allowed',
+            'verification_status': 'passed',
+            'root_chain_digest': 'sha256:' + ('b' * 64),
+        },
+        replay_freshness={'status': 'allowed', 'replay_status': 'fresh'},
+        artifact_refs={
+            'sclite_guarded_strict': {'root_chain_digest': 'sha256:' + ('b' * 64)},
+            'execution_ticket': {'ticket_id': 'ticket-1'},
+        },
+    ))
+
+    assert validate_runtime_admission_proof_inputs(result) == result
+
+
+@pytest.mark.parametrize(
+    ('overrides', 'error'),
+    (
+        ({'sclite_guarded_strict': {'status': 'blocked'}}, 'runtime_admission_proof_guarded_strict_missing'),
+        (
+            {
+                'runtime_consumable': True,
+                'sclite_guarded_strict': {
+                    'status': 'allowed',
+                    'verification_status': 'passed',
+                    'root_chain_digest': 'sha256:' + ('b' * 64),
+                },
+                'replay_freshness': {'status': 'allowed', 'replay_status': 'fresh'},
+                'receipt_obligation': {'required': True, 'binds': ['admission']},
+                'artifact_refs': {
+                    'sclite_guarded_strict': {'root_chain_digest': 'sha256:' + ('b' * 64)},
+                    'execution_ticket': {'ticket_id': 'ticket-1'},
+                },
+            },
+            'runtime_admission_proof_receipt_binding_incomplete',
+        ),
+        (
+            {
+                'runtime_consumable': True,
+                'sclite_guarded_strict': {'status': 'allowed', 'verification_status': 'passed'},
+                'replay_freshness': {'status': 'allowed', 'replay_status': 'fresh'},
+                'artifact_refs': {'execution_ticket': {'ticket_id': 'ticket-1'}},
+            },
+            'runtime_admission_proof_guard_digest_missing',
+        ),
+    ),
+)
+def test_validate_runtime_admission_proof_inputs_fails_closed(overrides, error) -> None:
+    result = compose_runtime_admission_result(**_runtime_admission_inputs(**overrides))
+
+    with pytest.raises(GovApiError, match=error):
+        validate_runtime_admission_proof_inputs(result)
 
 
 def test_compose_runtime_admission_result_blocks_missing_policy() -> None:
@@ -934,6 +1112,17 @@ def test_inspect_runtime_admission_fails_closed_for_malformed_input(tmp_path) ->
     assert result.returncode == 2
     assert result.stdout == ''
     assert 'runtime_admission_inspect_error: runtime_admission_json_invalid' in result.stderr
+
+
+def test_inspect_runtime_admission_rejects_oversized_input_before_parsing(tmp_path) -> None:
+    path = tmp_path / 'runtime-admission.json'
+    path.write_text(' ' * 32, encoding='utf-8')
+
+    result = _run_inspect(path, '--max-bytes', '8')
+
+    assert result.returncode == 2
+    assert result.stdout == ''
+    assert 'runtime_admission_inspect_error: runtime_admission_input_too_large' in result.stderr
 
 
 def test_inspect_runtime_admission_rejects_forbidden_raw_runtime_data(tmp_path) -> None:

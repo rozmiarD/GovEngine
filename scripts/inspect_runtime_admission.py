@@ -9,6 +9,8 @@ from typing import Any, Mapping
 from govengine.admission import RuntimeAdmissionResult
 from govengine.api import GovApiError
 
+DEFAULT_MAX_BYTES = 1_048_576
+
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -26,11 +28,21 @@ def _parser() -> argparse.ArgumentParser:
         action='store_true',
         help='Include already-bounded artifact references accepted by the admission validator.',
     )
+    parser.add_argument(
+        '--max-bytes',
+        type=int,
+        default=DEFAULT_MAX_BYTES,
+        help='Maximum input size in bytes. Defaults to 1048576.',
+    )
     return parser
 
 
-def _read_record(path: Path) -> Mapping[str, Any]:
+def _read_record(path: Path, *, max_bytes: int = DEFAULT_MAX_BYTES) -> Mapping[str, Any]:
+    if max_bytes < 1:
+        raise GovApiError('runtime_admission_invalid_max_bytes')
     try:
+        if path.stat().st_size > max_bytes:
+            raise GovApiError('runtime_admission_input_too_large')
         payload = json.loads(path.read_text(encoding='utf-8'))
     except OSError as exc:
         raise GovApiError('runtime_admission_read_failed', str(exc)) from exc
@@ -111,8 +123,9 @@ def inspect_runtime_admission(
     *,
     output_format: str = 'text',
     show_artifact_refs: bool = False,
+    max_bytes: int = DEFAULT_MAX_BYTES,
 ) -> str:
-    record = RuntimeAdmissionResult.from_mapping(_read_record(path))
+    record = RuntimeAdmissionResult.from_mapping(_read_record(path, max_bytes=max_bytes))
     summary = _summary(record, show_artifact_refs=show_artifact_refs)
     if output_format == 'json':
         return json.dumps(summary, sort_keys=True, separators=(',', ':')) + '\n'
@@ -126,6 +139,7 @@ def main(argv: list[str] | None = None) -> int:
             Path(args.record),
             output_format=args.format,
             show_artifact_refs=args.show_artifact_refs,
+            max_bytes=args.max_bytes,
         )
     except GovApiError as exc:
         print(f'runtime_admission_inspect_error: {exc.reason_code}', file=sys.stderr)
