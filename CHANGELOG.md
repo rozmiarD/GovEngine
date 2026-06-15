@@ -6,6 +6,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+## 0.14.0
+
+- Publishes the `0.14.0` package line over `sclite-core>=1.0.3,<1.1` after
+  the SCLite 1.0.3 truth-layer release.
 - Canonicalizes lifecycle verified-state naming on `verified_chain` and
   `verified_lifecycle`, while keeping `chain_verified` /
   `lifecycle_verified` as explicit migration aliases.

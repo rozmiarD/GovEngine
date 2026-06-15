@@ -243,7 +243,7 @@ def validate_profile_conformance(value: Mapping[str, Any] | DomainProfile) -> Pr
 def ravenclaw_security_profile() -> DomainProfile:
     return DomainProfile(
         name='ravenclaw-security',
-        version='0.13.0',
+        version='0.14.0',
         owner='ravenclaw',
         resource_types=ResourceTypeRegistry(('host', 'url', 'endpoint', 'web_app')),
         task_families=TaskFamilyRegistry(('recon', 'authz', 'idor', 'workflow', 'content_discovery', 'tls_assessment')),
@@ -284,7 +284,7 @@ def ravenclaw_security_profile() -> DomainProfile:
 def tecrax_infra_ops_profile() -> DomainProfile:
     return DomainProfile(
         name='tecrax-infra-ops',
-        version='0.13.0',
+        version='0.14.0',
         owner='tecrax',
         resource_types=ResourceTypeRegistry(('server', 'service', 'container', 'firewall', 'switch', 'vm', 'backup_job')),
         task_families=TaskFamilyRegistry(('inspect', 'diagnose', 'propose_change', 'dry_run_change', 'verify_fixture', 'rollback_plan')),

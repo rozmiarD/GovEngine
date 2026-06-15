@@ -1,118 +1,80 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.13.0](https://img.shields.io/badge/package-govengine%200.13.0-blueviolet.svg)](https://pypi.org/project/govengine/0.13.0/)
+[![Package: govengine 0.14.0](https://img.shields.io/badge/package-govengine%200.14.0-blueviolet.svg)](https://pypi.org/project/govengine/0.14.0/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Dependency: SCLite >=1.0.2](https://img.shields.io/badge/dependency-SCLite%20%3E%3D1.0.2-informational.svg)](https://github.com/rozmiarD/SCLite)
+[![Dependency: SCLite >=1.0.3](https://img.shields.io/badge/dependency-SCLite%20%3E%3D1.0.3-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-GovEngine is a carrier-agnostic deterministic governed-runtime kernel for portable artifact governance and policy-gated controlled execution.
+GovEngine is an alpha package 0.14.0 (`0.14.0`) for deterministic governance-kernel contracts.
 
-It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, dry-run result assembly, and neutral runtime/control projections. Security-domain action, tool, scope, and signal behavior is host-owned; the published `0.13.0` alpha line keeps former Ravenclaw-derived runtime behavior outside the kernel.
+It consumes **SCLite** as the lower truth layer and exposes reusable Python records, validators, and composition helpers for admission decisions, lifecycle gates, policy/trust summaries, receipt binding, evidence review, replay freshness, and profile conformance. It does not run jobs. It does not own host runtime behavior. The published `0.14.0` alpha line keeps Ravenclaw, Tecrax, carrier adapters, concrete schedulers, credential handling, and live execution outside the kernel.
 
-
-## Why it exists
-
-AI-assisted security workflows need a hard boundary between:
-
-1. what an agent or caller wants;
-2. what policy allows;
-3. what execution shape was prepared;
-4. what was approved;
-5. what was dry-run or executed;
-6. what evidence can be reviewed.
-
-SCLite defines the auditable contract artifacts for that lifecycle. GovEngine is the reusable Python service layer that consumes those contracts and helps a host runtime enforce them without relying on prompt text alone.
-
-## Dependency direction
+## Dependency Direction
 
 ```text
 Ravenclaw -> GovEngine -> SCLite
 ```
 
-- **SCLite** owns schema-backed lifecycle artifacts and validation.
-- **GovEngine** owns reusable governed-execution helpers that consume SCLite artifacts.
-- **Ravenclaw** remains the reference security runtime/control plane and concrete integration host.
-- **Tecrax** is reserved as a future infrastructure-operations runtime/profile on the same foundation.
+- **SCLite** owns artifact lifecycle schemas, canonical descriptors, ordered hash-chain verification, guarded verification, tickets, receipts, and evidence truth records.
+- **GovEngine** owns deterministic governance contracts over those truth records: admission envelopes, policy/trust/replay decisions, lifecycle state mapping, receipt/evidence binding, review qualification, profile conformance, and public-safe contract fixtures.
+- **Ravenclaw** owns the concrete security runtime, operator workflow, storage, adapters, target semantics, and live tool behavior.
+- **Tecrax** is a future governed-autoadmin/domain runtime consumer; its current GovEngine presence is a conformance fixture, not a runtime implementation.
 
-GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, or a protocol adapter.
+GovEngine is not SCLite, Ravenclaw, Tecrax, Logdash, an LLM loop, a scanner, a scheduler, a credential manager, a replay database, a PKI/KMS layer, or a subprocess runner.
 
-## What GovEngine includes now
+## What GovEngine Includes Now
 
-- a public surface registry covering neutral artifact-governance, planning, admission/policy, evidence-review, domain-profile, runtime-proof, and controlled-execution surfaces;
-- serializable kernel/profile/runtime/SCLite boundary contracts and a machine-readable boundary report;
-- execution-contract shaping/redaction helpers;
-- artifact descriptor/state/transition boundary helpers;
-- SCLite lifecycle status bridge and lightweight lifecycle transition gate/controller;
-- canonical lifecycle states `verified_chain` and `verified_lifecycle`, with legacy `chain_verified` / `lifecycle_verified` aliases accepted only as migration shims;
-- guarded-root replay checks for already-verified SCLite Kernel Guard sidecars;
-- high-level guarded-strict verification plus replay-fresh runtime decisions;
-- artifact deconfliction/change-order helpers and lightweight state-index summaries;
-- signature/trust policy bridge helpers with host-provided signer/verifier ports and deterministic demo ports for fixtures;
-- approved-spec and execution-ticket validation helpers;
-- controlled execution gate helpers with dry-run as the default runner path;
-- command-shape helpers;
-- dry-run result assembly helpers;
-- deterministic orchestration handoff, governance event envelope, run-state, and between-step control-decision contracts;
-- neutral runtime-shell contracts for host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata;
-- neutral planning contracts for task, plan-intent, and planner-port handoffs;
-- neutral admission, policy, approval, and audit contracts for host runtime gates;
-- explicit SCLite integration seams;
-- focused standalone pytest coverage and GitHub Actions CI.
+The public surface registry is `govengine.surfaces.public_surface_index()`. It currently reports seven alpha surfaces:
 
-The `0.13.0` line also adds:
+- `artifact_governance_core` for artifact descriptors, lifecycle state mapping, transition decisions, signing/trust records, guarded-root replay decisions, state-index helpers, deconfliction, and the SCLite bridge.
+- `planning_contracts_core` for neutral task, plan-intent, and planner-port handoff records. These are handoff contracts, not a planner.
+- `admission_policy_core` for `RuntimeAdmissionResult`, policy/admission/approval/audit records, proof-input validation, public summaries, bounded artifact references, and the development-only JSONL audit-ledger adapter.
+- `evidence_review_core` for receipt-bounded evidence requirements, claims, qualifications, review results, and evidence-review-chain validation.
+- `domain_profile_sdk` for contract-only domain profile declarations and conformance reports, including Ravenclaw and Tecrax fixture profiles.
+- `runtime_contract_proofs` for public-safe conformance artifacts over Ravenclaw and Tecrax contract shapes. They are fixtures, not runtime authorization.
+- `controlled_execution_core` for approved-spec checks, execution-ticket gates, command-shape normalization, runner request/receipt boundaries, supervision records, dry-run helpers, runtime-shell projections, event/control records, OODA records, and orchestration handoff records.
 
-- **one admission decision you can actually read** — a single `RuntimeAdmissionResult` record that summarizes whether a prepared request may proceed, what blocked it, and what to fix next; helpers compose and validate that record from separate policy, ticket, trust, guard, replay, runner, and receipt signals without running live work themselves;
-- **replay freshness** — remember which verified SCLite guarded roots were already used, so the same protected bundle cannot silently count as “fresh” twice;
-- **receipt and evidence chain checks** — confirm that a runner receipt still points at the right admission and ticket, and that later evidence or review references stay within the bounds of that receipt;
-- **evidence-kind enforcement** — `GovEvidenceRequirement.evidence_kind` is checked during qualification without adding a domain taxonomy or raw evidence store;
-- **GovEngine-owned record signing for fixtures** — deterministic digests and signed-record helpers for tests and reviewer demos, not production PKI;
-- **a development-only audit trail adapter** — append and verify a local hash-chained audit log during development, without claiming a production database;
-- **runner safety posture** — supervision helpers that keep dry-run as the default and treat an optional local subprocess runner as not ready until explicit host safety gates exist;
-- **operator inspect without executing** — `scripts/inspect_runtime_admission.py` lets you read and summarize an admission record read-only, with no runner request, replay claim, audit write, or live execution.
+The `0.14.0` line also adds:
 
-## What it intentionally does not include yet
+- canonical lifecycle vocabulary: `verified_chain` and `verified_lifecycle` are the current names, while `chain_verified` and `lifecycle_verified` remain migration aliases only;
+- stricter signature transition behavior: failed verification can no longer pass solely because a separate trust status says `trusted`;
+- bounded evidence-kind enforcement through `GovEvidenceRequirement.evidence_kind`, without adding a raw evidence store or domain evidence taxonomy;
+- clearer runtime guard failure reporting through the `kernel_guard_required` reason code instead of overloading signature failures;
+- stricter runtime-admission proof inputs for execution-ticket id, ticket digest/reference, guarded root digest, and admission/ticket receipt binding;
+- mypy, ruff, public-truth, alpha-readiness, and documentation anti-drift gates that protect version truth, lifecycle vocabulary, runtime-shell/state-machine separation, and contract-proof classification.
 
-- live subprocess execution backend;
-- raw artifact storage/writes;
-- Logdash UI/API routes;
-- OpenClaw, MCP, A2A, or other protocol adapters;
-- LLM provider integrations;
-- Ravenclaw-specific personas, workspace state, or campaign UX;
-- production-readiness claims;
-- PKI, CA, KMS, key storage, or production identity proof;
-- a shipped `LocalSubprocessRunner` implementation (`LocalSubprocessRunnerReadiness` is a gating contract only);
-- production replay or audit persistence (`ReplayClaimStore` and `JsonlAuditLedgerAdapter` are host-owned or development-only adapters).
+## Current Status
 
-## Current status
+GovEngine is the published `0.14.0` alpha line. The package dependency is `sclite-core>=1.0.3,<1.1`, and the Python import package remains `sclite`.
 
-GovEngine is an **alpha package 0.13.0 (`0.13.0`)**. It keeps the neutral artifact-governance, planning, admission/policy, controlled-execution, runner-supervision, runtime-shell, evidence-review, profile, and proof surfaces while removing the former optional security-profile facade and Ravenclaw-derived helper modules. The published dependency line is `sclite-core>=1.0.2,<1.1`.
+The current kernel is useful for deterministic review of prepared governance records. It is not production runtime readiness and it is not an execution authority. `RuntimeAdmissionResult` is the single canonical admission envelope; `compose_runtime_admission_result()` composes host-supplied gate summaries into that envelope, and `validate_runtime_admission_result()` checks the envelope shape. These helpers do not verify SCLite artifacts, persist replay claims, approve operators, or execute commands by themselves.
 
-## Current roadmap direction
+When hosts need a runtime-consumable path, the intended chain is:
 
-The governed-runtime MVP on `main` includes a canonical `RuntimeAdmissionResult`
-record as the bounded admission decision surface and
-`compose_runtime_admission_result()` as the neutral gate-summary composition
-helper. The helper composes prepared execution contract status, policy
-decision, execution ticket status, trust decision, guarded-strict SCLite
-verification when runtime-consumable, GovEngine replay freshness, runner
-profile, receipt obligation, blockers, next actions, and bounded artifact
-references into that record. `normalize_admission_artifact_refs()` is an alpha
-helper for bounded review references and existing digest strings; it does not
-compute content digests or claim SCLite canonicalization.
+1. SCLite verifies the artifact lifecycle and guarded truth records.
+2. GovEngine maps the lifecycle status and validates proof-input summaries.
+3. GovEngine composes policy, ticket, trust, replay freshness, runner profile, receipt obligation, blockers, and next actions into `RuntimeAdmissionResult`.
+4. Host runtime code decides what to do with that result under its own operator, credential, storage, scheduler, and execution controls.
 
-`compose_runtime_admission_result()` composes host-supplied gate summaries; it does not validate SCLite tickets, verify signatures, record replay state, or execute live work.
+Dry-run remains the default local execution posture. Any live backend belongs outside this package until a separate host/runtime boundary explicitly owns and tests it.
 
-The operator-facing MVP flow is documented in
-[`docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`](docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md).
-It ties admission, trust ports, guarded SCLite verification, replay freshness,
-runner profile, receipt obligation, and evidence/review binding into one
-inspectable dry-run/default-safe chain.
+## Explicit Non-Claims
 
-This roadmap does not make intent execution authority. It keeps profile/domain
-policy meaning, production identity, key management, operator authorization,
-raw evidence storage, and live backend behavior host-owned until explicit
-ports, negative tests, and safety gates justify any additional kernel surface.
+GovEngine does not provide:
+
+- live subprocess execution;
+- raw-intent execution;
+- scanner, exploit, campaign, or target authorization;
+- scheduler, queue persistence, long-running worker, or LLM agent loop;
+- credential handling, private key storage, CA, PKI, KMS, HSM, trust-anchor management, rotation, or revocation;
+- production replay database or production audit database;
+- raw artifact store or raw evidence store;
+- SCLite schema authority, SCLite canonicalization, SCLite hash-chain verification, or SCLite Kernel Guard HMAC verification;
+- Ravenclaw security taxonomy, target semantics, campaign UX, public proof projection, or runtime adapters;
+- Tecrax infrastructure semantics, infrastructure credentials, or runtime adapters;
+- carrier adapters such as OpenClaw, MCP, A2A, HTTP APIs, or UI routes;
+- stable 1.0 API guarantees.
 
 ## Installation
 
@@ -122,8 +84,6 @@ Install the latest published package from PyPI:
 python -m pip install govengine
 ```
 
-GovEngine depends on the PyPI distribution `sclite-core` while preserving the Python import package `sclite`.
-
 For local development:
 
 ```bash
@@ -131,10 +91,13 @@ python -m venv .venv
 . .venv/bin/activate
 python -m pip install -e '.[dev]'
 python -m pytest -q
+python -m mypy govengine
+python -m ruff check .
 python scripts/validate_public_truth.py
+python scripts/validate_alpha_readiness.py
 ```
 
-## Minimal smoke example
+## Minimal Smoke Example
 
 ```python
 from govengine import public_surface_index
@@ -162,46 +125,52 @@ receipt = approved_spec_dry_run_result(
 assert receipt["status"] == "dry-run"
 ```
 
+## Validation
+
+The current package-line gate is intentionally local and deterministic:
+
+```bash
+python -m pytest -q
+python -m mypy govengine
+python -m ruff check .
+python scripts/validate_public_truth.py
+python scripts/validate_alpha_readiness.py
+python scripts/validate_clean_package_install.py --no-editable
+```
+
+`scripts/validate_public_truth.py` keeps package metadata, public docs, dependency truth, public surface names, and release labels aligned. `scripts/validate_alpha_readiness.py` checks the alpha package posture before publication. `scripts/validate_clean_package_install.py --no-editable` validates an installed wheel in isolation and uses scoped `pip check` instead of a broad system interpreter.
+
 ## Documentation
 
-- [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md) — current maturity and non-claims.
-- [`CHANGELOG.md`](CHANGELOG.md) — notable public changes.
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution and boundary rules.
-- [`SECURITY.md`](SECURITY.md) — security reporting and package safety boundaries.
-- [`PUBLISHING.md`](PUBLISHING.md) — publishing/PyPI readiness checklist.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — package shape and dependency boundaries.
-- [`docs/SCLITE_INTEGRATION.md`](docs/SCLITE_INTEGRATION.md) — how GovEngine consumes SCLite.
-- [`docs/API_BOUNDARY.md`](docs/API_BOUNDARY.md) — owned vs excluded surfaces.
-- [`docs/API_STABILITY_MATRIX.md`](docs/API_STABILITY_MATRIX.md) — alpha vs fixture export classification.
-- [`docs/RUNTIME_ADMISSION.md`](docs/RUNTIME_ADMISSION.md) — canonical runtime admission contract direction.
-- [`docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`](docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md) — operator-facing governed-runtime MVP chain.
-- [`docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md`](docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md) — read-only admission inspect workflow.
-- [`docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md`](docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md) — guarded-strict plus replay-fresh example.
-- [`docs/ADMISSION_POLICY.md`](docs/ADMISSION_POLICY.md) — neutral admission, policy, approval, audit, and audit-ledger contracts.
-- [`docs/RECEIPT_BINDING.md`](docs/RECEIPT_BINDING.md) — admission/ticket/request/receipt binding design.
-- [`docs/EVIDENCE_REVIEW.md`](docs/EVIDENCE_REVIEW.md) — receipt-bounded evidence/review contract.
-- [`docs/RUNNER_SUPERVISION.md`](docs/RUNNER_SUPERVISION.md) — runner request, receipt, supervision, and live-runner safety boundaries.
-- [`docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md`](docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md) — local subprocess runner decision record.
-- [`docs/GOVENGINE_KERNEL_BOUNDARY.md`](docs/GOVENGINE_KERNEL_BOUNDARY.md) — kernel/profile/runtime/SCLite ownership split.
-- [`docs/DOMAIN_PROFILE_CONTRACT.md`](docs/DOMAIN_PROFILE_CONTRACT.md) — domain profile contract and conformance rules.
-- [`docs/ORCHESTRATOR_MODEL.md`](docs/ORCHESTRATOR_MODEL.md) — deterministic orchestration boundary and runtime non-claims.
-- [`docs/EVENT_MODEL.md`](docs/EVENT_MODEL.md) — neutral governance event metadata and payload boundaries.
-- [`docs/STATE_MACHINE.md`](docs/STATE_MACHINE.md) — neutral run-state and transition contract.
-- [`docs/CONTROL_MODEL.md`](docs/CONTROL_MODEL.md) — between-step control decisions and state-machine delegation.
-- [`docs/RUNTIME_SHELL.md`](docs/RUNTIME_SHELL.md) — neutral host runtime/control projection contracts.
-- [`docs/VALIDATION.md`](docs/VALIDATION.md) — local checks and non-claims.
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — staged extraction roadmap.
+- [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md) records the active package status and non-claims.
+- [`CHANGELOG.md`](CHANGELOG.md) records release changes.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) records contribution and boundary rules.
+- [`SECURITY.md`](SECURITY.md) records security reporting and package safety boundaries.
+- [`PUBLISHING.md`](PUBLISHING.md) records PyPI release checks.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) explains package shape and dependency boundaries.
+- [`docs/API_BOUNDARY.md`](docs/API_BOUNDARY.md) maps owned and excluded surfaces.
+- [`docs/API_STABILITY_MATRIX.md`](docs/API_STABILITY_MATRIX.md) classifies public exports.
+- [`docs/GOVENGINE_KERNEL_BOUNDARY.md`](docs/GOVENGINE_KERNEL_BOUNDARY.md) defines kernel/profile/runtime/SCLite ownership.
+- [`docs/SCLITE_INTEGRATION.md`](docs/SCLITE_INTEGRATION.md) explains how GovEngine consumes SCLite.
+- [`docs/RUNTIME_ADMISSION.md`](docs/RUNTIME_ADMISSION.md) describes the canonical runtime admission envelope.
+- [`docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md`](docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md) documents read-only admission inspection.
+- [`docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md`](docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md) shows guarded-strict plus replay-fresh admission input.
+- [`docs/RECEIPT_BINDING.md`](docs/RECEIPT_BINDING.md) documents admission/ticket/request/receipt binding.
+- [`docs/EVIDENCE_REVIEW.md`](docs/EVIDENCE_REVIEW.md) documents receipt-bounded evidence review.
+- [`docs/ADMISSION_POLICY.md`](docs/ADMISSION_POLICY.md) documents admission, policy, approval, audit, and audit-ledger contracts.
+- [`docs/RUNNER_SUPERVISION.md`](docs/RUNNER_SUPERVISION.md) documents runner request, receipt, supervision, and live-runner safety boundaries.
+- [`docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md`](docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md) records why no live subprocess runner ships now.
+- [`docs/DOMAIN_PROFILE_CONTRACT.md`](docs/DOMAIN_PROFILE_CONTRACT.md) documents profile contracts and conformance.
+- [`docs/ORCHESTRATOR_MODEL.md`](docs/ORCHESTRATOR_MODEL.md), [`docs/EVENT_MODEL.md`](docs/EVENT_MODEL.md), [`docs/STATE_MACHINE.md`](docs/STATE_MACHINE.md), [`docs/CONTROL_MODEL.md`](docs/CONTROL_MODEL.md), and [`docs/RUNTIME_SHELL.md`](docs/RUNTIME_SHELL.md) separate deterministic handoff/projection records from host runtime execution.
+- [`docs/VALIDATION.md`](docs/VALIDATION.md) records current and historical validation evidence.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) records the staged extraction roadmap.
 
 ## License and provenance
 
-GovEngine is MIT-licensed. It was extracted from Ravenclaw in contract-first
-stages, so [`LICENSE`](LICENSE) preserves the copyright notice for the
-originating Ravenclaw contribution lineage. The author metadata in
-`pyproject.toml` identifies the GovEngine package maintainer; it does not
-replace or reassign the originating copyright notice.
+GovEngine is MIT-licensed. It was extracted from Ravenclaw in contract-first stages, so [`LICENSE`](LICENSE) preserves the copyright notice for the originating Ravenclaw contribution lineage. The author metadata in `pyproject.toml` identifies the GovEngine package maintainer; it does not replace or reassign the originating copyright notice.
 
-## Safety boundary
+## Safety Boundary
 
-GovEngine should preserve deterministic governance over prompt-only behavior. GovEngine must never execute directly from raw intent: execution requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, and allowed runner profile. When a SCLite bundle is runtime-consumable, the execution gate also requires a guarded-strict SCLite verification result and replay-fresh GovEngine decision; review-only bundles can remain on weaker review/integrity postures without becoming execution authority.
+GovEngine should preserve deterministic governance over prompt-only behavior. It must not execute directly from raw intent. Execution by a host runtime requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, allowed runner profile, receipt obligation, and, for runtime-consumable SCLite bundles, guarded-strict verification plus replay-fresh status.
 
-`DryRunRunner`/dry-run behavior remains the default. Live execution backends are disabled by default; any future `LocalSubprocessRunner` must be optional, policy-enabled, negative-tested, and never the default. Controlled execution depends on lifecycle gates and signing/trust gates, with Ravenclaw retaining the concrete runtime adapter until reviewed. Demo signing helpers are fixture ports only: they bind a deterministic signature to an artifact digest for tests/reviewer demos and must not be presented as cryptographic identity, PKI, CA, KMS, or trust-store support.
+The published `0.14.0` alpha line provides records and validators for that boundary. It does not provide the runtime that acts on them.

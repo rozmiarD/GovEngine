@@ -14,8 +14,8 @@ from govengine import __version__ as package_version  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '0.13.0'
-PUBLISHED_VERSION = '0.13.0'
+EXPECTED_RELEASE_LABEL = '0.14.0'
+PUBLISHED_VERSION = '0.14.0'
 
 SURFACE_HEADINGS = {
     'Artifact-governance core': 'artifact_governance_core',
@@ -114,11 +114,11 @@ GOVERNED_RUNTIME_RELEASE_MARKERS = (
 
 SOURCE_PYPI_GAP_DOC_MARKERS = {
     'README.md': (
-        'The `0.13.0` line also adds:',
+        'The `0.14.0` line also adds:',
         '`compose_runtime_admission_result()` composes host-supplied gate summaries',
     ),
     'docs/ROADMAP.md': (
-        'published in `0.13.0`',
+        'published in `0.14.0`',
         'current governed-runtime MVP baseline',
     ),
 }
@@ -143,7 +143,7 @@ README_MVP_DOC_LINK_MARKERS = (
 
 MVP_DELIVERY_DOC_MARKERS = {
     'docs/RUNTIME_ADMISSION.md': (
-        'Delivered in `0.13.0`',
+        'Delivered in `0.14.0`',
         'scripts/inspect_runtime_admission.py',
         'The implementation exposes a small immutable record',
     ),
@@ -348,8 +348,8 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
     for marker in stale_markers:
         if marker in roadmap:
             raise AssertionError(f'docs/ROADMAP.md:stale_current_roadmap_claim:{marker}')
-    _assert_contains('docs/ROADMAP.md', roadmap, '## Current 0.13.x alpha line')
-    _assert_contains('docs/ROADMAP.md', roadmap, 'The current `0.13.x` alpha line')
+    _assert_contains('docs/ROADMAP.md', roadmap, '## Current 0.14.x alpha line')
+    _assert_contains('docs/ROADMAP.md', roadmap, 'The current `0.14.x` alpha line')
     _assert_contains('docs/ROADMAP.md', roadmap, f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`')
 
 

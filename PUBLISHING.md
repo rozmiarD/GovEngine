@@ -2,7 +2,7 @@
 
 GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for future releases without overstating maturity.
 
-Current published PyPI line: `govengine==0.13.0` (`0.13.0`) with `sclite-core>=1.0.2,<1.1`.
+Current published PyPI line: `govengine==0.14.0` (`0.14.0`) with `sclite-core>=1.0.3,<1.1`.
 
 ## Preflight
 
@@ -22,7 +22,7 @@ Current published PyPI line: `govengine==0.13.0` (`0.13.0`) with `sclite-core>=1
 
 ## PyPI release notes
 
-- SCLite is published as the PyPI distribution `sclite-core`; the current source GovEngine `0.12.x` alpha package line depends on `sclite-core>=1.0.2,<1.1`.
+- SCLite is published as the PyPI distribution `sclite-core`; the current source GovEngine `0.14.x` alpha package line depends on `sclite-core>=1.0.3,<1.1`.
 - Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
 - `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
 - `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.
