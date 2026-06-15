@@ -38,6 +38,7 @@ Documentation = "https://github.com/rozmiarD/GovEngine#readme"
 dev = [
   "mypy>=1.18,<2",
   "pytest>=8,<9",
+  "ruff>=0.14,<1",
 ]
 
 [tool.mypy]
