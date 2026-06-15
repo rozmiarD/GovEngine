@@ -69,6 +69,12 @@ def test_public_truth_validator_rejects_stale_current_roadmap_baseline() -> None
             'GovEngine stays on the 0.10 alpha stabilization line.\n'
         )
 
+    with pytest.raises(AssertionError, match='stale_current_roadmap_claim'):
+        validator._assert_roadmap_current_release_truth(
+            '## Current 0.12.x alpha line\n'
+            'The current `0.12.x` alpha line retains the neutral kernel shape.\n'
+        )
+
 
 def test_public_truth_validator_rejects_validation_history_before_current_gate() -> None:
     validator = _load_validator()

@@ -39,3 +39,9 @@ them into `record_only` gaps.
 
 GovEngine 0.3 keeps those actions as explicit neutral control records while
 remaining non-authoritative about how a host performs them.
+
+Runtime-shell states are projection states. They are intentionally broader than
+the strict `govengine.state_machine` run-state vocabulary. A host may report a
+projection such as `running` or `cooldown`, but GovEngine's deterministic
+state-machine path still uses `running_dry_run` and never defines
+`running_live`.

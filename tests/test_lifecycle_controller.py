@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from govengine.lifecycle import ArtifactLifecycleController, TransitionGate, artifact_state_for_role
+from govengine.lifecycle import (
+    ArtifactLifecycleController,
+    TransitionGate,
+    artifact_state_for_role,
+    canonical_lifecycle_state,
+)
 
 
 def test_transition_gate_allows_ordered_sclite_lifecycle_step() -> None:
@@ -63,3 +68,32 @@ def test_lifecycle_controller_reports_next_actions() -> None:
     )
 
     assert actions == ("provide_artifact:execution_contract",)
+
+
+def test_transition_gate_uses_canonical_verified_lifecycle_vocabulary() -> None:
+    gate = TransitionGate()
+    decision = gate.evaluate(
+        from_state="evidence_recorded",
+        to_state="verified_chain",
+        artifact_states=(artifact_state_for_role("artifact_chain_manifest"),),
+    )
+
+    assert decision.allowed is True
+    assert decision.from_state == "evidence_recorded"
+    assert decision.to_state == "verified_chain"
+    assert gate.policy.next_states("evidence_recorded") == ("verified_chain",)
+
+
+def test_transition_gate_accepts_legacy_verified_aliases_as_migration_shim() -> None:
+    gate = TransitionGate()
+    decision = gate.evaluate(
+        from_state="chain_verified",
+        to_state="lifecycle_verified",
+        artifact_states=(artifact_state_for_role("artifact_chain_manifest"),),
+    )
+
+    assert canonical_lifecycle_state("chain_verified") == "verified_chain"
+    assert canonical_lifecycle_state("lifecycle_verified") == "verified_lifecycle"
+    assert decision.allowed is True
+    assert decision.from_state == "verified_chain"
+    assert decision.to_state == "verified_lifecycle"

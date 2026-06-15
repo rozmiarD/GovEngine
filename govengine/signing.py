@@ -682,6 +682,10 @@ def signature_transition_decision(
         blockers.append("trust_decision_required")
         next_actions.append("verify_signature_trust")
 
+    if verification is not None and verification.status not in {"passed", "ok"}:
+        blockers.append("verification_status_not_passed")
+        next_actions.append("obtain_valid_trust_decision")
+
     if verification is not None and verification.trust_status not in trust_policy.allowed_trust_statuses:
         blockers.append("trust_status_not_allowed")
         next_actions.append("obtain_valid_trust_decision")

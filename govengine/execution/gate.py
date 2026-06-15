@@ -86,7 +86,7 @@ class ExecutionGate:
                 reason_code=(
                     ReasonCode.REPLAY_DETECTED.value
                     if replay_not_fresh
-                    else ReasonCode.SIGNATURE_REQUIRED.value
+                    else ReasonCode.KERNEL_GUARD_REQUIRED.value
                 ),
                 from_state="execution_gated",
                 to_state="runner_allowed_live" if live else "runner_allowed_dry_run",

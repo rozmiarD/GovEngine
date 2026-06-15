@@ -36,8 +36,30 @@ Documentation = "https://github.com/rozmiarD/GovEngine#readme"
 
 [project.optional-dependencies]
 dev = [
+  "mypy>=1.18,<2",
   "pytest>=8,<9",
 ]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["govengine"]
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disable_error_code = [
+  "arg-type",
+  "assignment",
+  "import-untyped",
+  "misc",
+  "no-any-return",
+  "return-value",
+  "type-var",
+  "union-attr",
+]
+ignore_missing_imports = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_return_any = false
+warn_unused_ignores = true
 
 [tool.setuptools]
 packages = ["govengine", "govengine.contracts", "govengine.execution"]

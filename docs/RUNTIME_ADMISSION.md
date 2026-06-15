@@ -70,6 +70,8 @@ to:
   `missing_or_invalid_kernel_guard`, `missing_or_replayed_guarded_root`,
   `missing_runner_profile`, `runner_profile_not_allowed`,
   `live_backend_disabled`, and `receipt_obligation_required`.
+  Runtime-consumable guard failures use top-level reason code
+  `kernel_guard_required`; replay freshness failures use `replay_detected`.
 - `required_next_actions`: ordered action codes such as `obtain_policy_decision`,
   `approve_execution_ticket`, `verify_trust_decision`,
   `verify_guarded_strict_bundle`, `record_guard_replay_freshness`,
@@ -136,7 +138,10 @@ satisfied.
 After admission composition, hosts may call
 `validate_runtime_admission_proof_inputs()` on an already-allowed record to
 check that expected proof-input summaries and references are present. That helper
-does not verify SCLite artifacts, signatures, or replay persistence.
+does not verify SCLite artifacts, signatures, or replay persistence. The
+allowed proof-input path requires a guarded-strict root-chain digest, execution
+ticket id, execution ticket digest or bounded ticket digest reference, and
+receipt binding that includes both admission and ticket.
 
 ## Boundary Rules
 
@@ -211,12 +216,10 @@ Delivered in `0.13.0`:
 
 Remaining work:
 
-1. publish the governed-runtime MVP as the next alpha PyPI line when operator
-   release gates pass;
-2. keep live backend support disabled by default;
-3. keep production replay, audit, and evidence persistence host-owned beyond the
+1. keep live backend support disabled by default;
+2. keep production replay, audit, and evidence persistence host-owned beyond the
    development adapters;
-4. keep optional `LocalSubprocessRunner` out of the kernel until host-owned live
+3. keep optional `LocalSubprocessRunner` out of the kernel until host-owned live
    profile authorization and safety gates are implemented and tested.
 
 The result is usable by hosts for receipt, audit-ledger, replay-store,

@@ -342,12 +342,14 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
     stale_markers = (
         '## Current implemented baseline: 0.10.x alpha',
         'GovEngine stays on the 0.10 alpha stabilization line',
+        '## Current 0.12.x alpha line',
+        'The current `0.12.x` alpha line',
     )
     for marker in stale_markers:
         if marker in roadmap:
             raise AssertionError(f'docs/ROADMAP.md:stale_current_roadmap_claim:{marker}')
-    _assert_contains('docs/ROADMAP.md', roadmap, '## Current 0.12.x alpha line')
-    _assert_contains('docs/ROADMAP.md', roadmap, 'The current `0.12.x` alpha line')
+    _assert_contains('docs/ROADMAP.md', roadmap, '## Current 0.13.x alpha line')
+    _assert_contains('docs/ROADMAP.md', roadmap, 'The current `0.13.x` alpha line')
     _assert_contains('docs/ROADMAP.md', roadmap, f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`')
 
 

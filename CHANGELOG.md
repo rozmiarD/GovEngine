@@ -6,6 +6,23 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Canonicalizes lifecycle verified-state naming on `verified_chain` and
+  `verified_lifecycle`, while keeping `chain_verified` /
+  `lifecycle_verified` as explicit migration aliases.
+- Hardens signature transition decisions so failed verification status cannot
+  pass solely because `trust_status` is `trusted`.
+- Enforces `GovEvidenceRequirement.evidence_kind` during review qualification
+  using bounded claim metadata or claim type only; no raw evidence store or
+  domain taxonomy is added.
+- Splits runtime-consumable guard failures onto the `kernel_guard_required`
+  reason code instead of reporting them as `signature_required`.
+- Tightens allowed runtime-admission proof inputs to require an execution
+  ticket id and ticket digest/reference plus guarded root digest and
+  admission/ticket receipt binding.
+- Adds mypy and documentation anti-drift gates for version truth, lifecycle
+  vocabulary, runtime-shell/state-machine separation, and contract-proof
+  classification.
+
 ## 0.13.0
 
 - PyPI default install fix: publishes stable `0.13.0` so `pip install govengine` resolves above stale `0.7.0` without yanking old versions.

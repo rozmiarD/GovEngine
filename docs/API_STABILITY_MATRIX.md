@@ -12,6 +12,26 @@ Status meanings:
 
 GovEngine is still alpha. This matrix is not a production readiness claim, and it does not grant live execution, PKI/KMS, credential, raw evidence storage, scheduler, carrier, Ravenclaw, OpenClaw, MCP, or A2A ownership.
 
+## v1.5 Candidate Kernel Contract Subset
+
+The v1.5 candidate subset is a compatibility target inside the alpha surface,
+not a stable API declaration yet. It is limited to deterministic governance
+kernel contracts: `RuntimeAdmissionResult`,
+`compose_runtime_admission_result()`, `validate_runtime_admission_result()`,
+`validate_runtime_admission_proof_inputs()`,
+`normalize_admission_artifact_refs()`, `ArtifactDescriptor`,
+`ArtifactState`, `TransitionDecision`, `ReasonCode`,
+`canonical_lifecycle_state()`, `TransitionGate`,
+`validate_evidence_review_chain()`, `qualify_evidence_claim()`,
+`VerificationResult`, `signature_transition_decision()`,
+`ReplayClaimStore`, `verify_guard_and_record_replay()`,
+`validate_runner_receipt_binding()`, and public-safe summary helpers.
+
+The subset must remain one admission envelope. It must not introduce a second
+runtime admission record, live executor, scheduler, planner, PKI/KMS/key
+manager, replay database, raw evidence store, or host-specific Ravenclaw/Tecrax
+runtime behavior.
+
 | Stability | Source | Exports | Boundary note |
 | --- | --- | --- | --- |
 | alpha | govengine.admission | `AuditLedgerAppendResult`, `AuditLedgerEntry`, `AuditLedgerPort`, `AuditLedgerVerificationResult`, `GovAdmissionDecision`, `GovApprovalRequest`, `GovAuditRecord`, `GovPolicyDecision`, `JsonlAuditLedgerAdapter`, `RuntimeAdmissionResult`, `admission_decision_from_host_gate`, `audit_ledger_entry_digest`, `audit_ledger_verification_public_summary`, `audit_record_public_summary`, `compose_runtime_admission_result`, `normalize_admission_artifact_refs`, `runtime_admission_public_summary`, `validate_admission_decision`, `validate_approval_request`, `validate_audit_record`, `validate_audit_ledger_append_result`, `validate_audit_ledger_entry`, `validate_audit_ledger_verification_result`, `validate_policy_decision`, `validate_runtime_admission_result`, `validate_runtime_admission_proof_inputs` | Neutral admission/policy/runtime-admission records, bounded audit-ledger port contracts, a JSONL hash-chain development adapter, bounded reference normalization, public-safe projection helpers, proof-input completeness checks, and gate-summary composition only; host owns policy meaning, approval workflow, live backend behavior, production audit persistence/concurrency, raw evidence storage, SCLite canonicalization, and production trust/key boundaries. |
@@ -27,7 +47,7 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 | alpha | govengine.execution.runner_protocol | `runner_receipt_public_summary` | Public-safe runner receipt summary over bounded binding refs and digest counts only; no raw stdout/stderr publication and no execution authority. |
 | alpha | govengine.execution.supervision | `GovRunnerLease`, `GovSupervisionDecision`, `GovSupervisionPlan`, `LocalSubprocessRunnerReadiness`, `evaluate_local_subprocess_runner_readiness`, `runner_lease_from_request`, `supervision_plan_from_runner_request`, `validate_runner_lease`, `validate_runner_receipt_binding`, `validate_runner_receipt_for_request`, `validate_supervised_runner_request`, `validate_supervision_decision`, `validate_supervision_plan` | Runner request, lease, supervision, readiness, and receipt boundary helpers; live subprocess execution remains not applicable until the missing host-owned safety prerequisites are closed. |
 | alpha | govengine.execution_backend | `CommandResult`, `GovExecutionBackend` | Host-neutral backend protocol/result helpers. |
-| alpha | govengine.lifecycle | `ArtifactLifecycleController`, `TransitionGate`, `TransitionPolicy` | Lightweight lifecycle gate/controller helpers; SCLite remains lifecycle authority. |
+| alpha | govengine.lifecycle | `ArtifactLifecycleController`, `TransitionGate`, `TransitionPolicy`, `canonical_lifecycle_state` | Lightweight lifecycle gate/controller helpers; `verified_chain` and `verified_lifecycle` are canonical while legacy aliases are migration shims; SCLite remains lifecycle authority. |
 | alpha | govengine.ooda | `GovObservation`, `GovOodaController`, `GovOodaDecision`, `GovOrientation` | Neutral OODA records/controller; no scheduler or agent framework ownership. |
 | alpha | govengine.orchestration | `OrchestrationStep`, `OrchestratorBoundary`, `orchestrator_boundary_contract`, `validate_orchestration_step` | Deterministic orchestration handoff records only. |
 | alpha | govengine.planning | `GovPlanIntentContract`, `GovTaskContract`, `PlannerPort`, `task_contract_from_host_task`, `validate_plan_intent_contract`, `validate_planner_port`, `validate_task_contract` | Planner-to-runtime contract shapes; no planner implementation ownership. |
@@ -38,7 +58,7 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 | alpha | govengine.runtime_shell | `GovControlAction`, `GovQueueLane`, `GovQueueSnapshot`, `GovRuntimeSnapshot`, `GovSchedulerTick`, `control_action_from_host_action`, `queue_snapshot_from_lanes`, `validate_control_action`, `validate_queue_snapshot`, `validate_runtime_snapshot`, `validate_scheduler_tick` | Host-provided runtime shell projection; no scheduler/storage/live-execution authority. |
 | alpha | govengine.sclite_contracts lazy exports | `GovSCLiteLifecycleVerifier`, `review_bundle_state`, `review_bundle_transition_decision`, `review_sclite_bundle`, `verify_lifecycle_manifest` | Lazy SCLite bridge exports; SCLite owns lifecycle and review verification. |
 | alpha | govengine.scope_ports | `FunctionalScopePort`, `GovScopePort` | Host-neutral scope port protocols/helpers. |
-| alpha | govengine.signing | `KeyResolutionRequest`, `KeyResolutionResult`, `KeyResolverPort`, `SignatureEnvelope`, `SignedArtifact`, `SigningPolicy`, `TrustPolicy`, `TrustStoreDecision`, `TrustStorePort`, `VerificationResult`, `canonical_govengine_record`, `govengine_record_digest`, `signed_artifact_from_record`, `verify_signed_govengine_record` | Host-provided signer/verifier/key-resolver/trust-store decision records plus deterministic serialization/digest and signed-envelope helpers for GovEngine-owned records only; no SCLite canonicalization, PKI/KMS, or key-store ownership. |
+| alpha | govengine.signing | `KeyResolutionRequest`, `KeyResolutionResult`, `KeyResolverPort`, `SignatureEnvelope`, `SignedArtifact`, `SigningPolicy`, `TrustPolicy`, `TrustStoreDecision`, `TrustStorePort`, `VerificationResult`, `canonical_govengine_record`, `govengine_record_digest`, `signed_artifact_from_record`, `signature_transition_decision`, `verify_signed_govengine_record` | Host-provided signer/verifier/key-resolver/trust-store decision records plus deterministic serialization/digest, signed-envelope helpers, and signature transition decisioning for GovEngine-owned records only; no SCLite canonicalization, PKI/KMS, or key-store ownership. |
 | fixture | govengine.signing demo helpers | `DemoDigestSigner`, `DemoDigestVerifier`, `demo_sign_and_verify`, `demo_sign_govengine_record` | Deterministic demo-only signer/verifier helpers; not cryptographic identity proof. |
 | alpha | govengine.state_index | `ArtifactStateIndex` | Lightweight artifact state summary helper. |
 | alpha | govengine.state_machine | `GovRunState`, `StateTransition`, `apply_state_transition`, `validate_run_state`, `validate_state_transition` | Neutral run-state transitions; no persistence/scheduler/live-execution authority. |
@@ -48,7 +68,7 @@ GovEngine is still alpha. This matrix is not a production readiness claim, and i
 Current summary:
 
 - stable exports: 0
-- alpha exports: 187
+- alpha exports: 189
 - fixture exports: 4
 - deprecated exports: 0
 - internal-exposed exports: 0

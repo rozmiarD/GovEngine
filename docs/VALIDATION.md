@@ -21,6 +21,7 @@ Local-only gates that CI does not fully replace:
 ```bash
 python -m pip install -e '.[dev]'
 python -m pytest -q
+python -m mypy govengine
 python scripts/validate_public_truth.py
 python scripts/validate_alpha_readiness.py
 ```
@@ -102,6 +103,7 @@ It must pass before any tag or package upload is considered:
 ```bash
 env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_public_truth.py
 env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_alpha_readiness.py
+env PYTHONDONTWRITEBYTECODE=1 python3 -m mypy govengine
 env PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -q -p no:cacheprovider
 ruff check .
 git diff --check
@@ -159,6 +161,7 @@ not the active gate.
 Expected result for the current `0.13.0` package line (`0.13.0`):
 
 - full pytest passes in the source tree;
+- `python -m mypy govengine` passes for the package surface;
 - `scripts/validate_clean_package_install.py` passes, rejects retired module paths from the installed artifact, and runs `pip check` inside its newly created virtual environment;
 - `python scripts/validate_public_truth.py` passes;
 - `python scripts/validate_alpha_readiness.py` passes;
@@ -182,6 +185,17 @@ Expected result for the current `0.13.0` package line (`0.13.0`):
   helpers;
 - runtime-consumable execution-gate tests require guarded-strict verification
   plus replay-fresh status before a bundle can be consumed for execution;
+- runtime-consumable guard failures report `kernel_guard_required`, while replay
+  freshness failures report `replay_detected`;
+- lifecycle tests require canonical `verified_chain` and `verified_lifecycle`
+  vocabulary and keep old `chain_verified` / `lifecycle_verified` names as
+  explicit migration aliases only;
+- signature tests require successful verification status as well as allowed
+  trust status;
+- evidence-review tests enforce `evidence_kind` as a bounded requirement field;
+- runtime-admission proof-input tests require guarded root digest, execution
+  ticket id, execution ticket digest or ticket digest reference, and
+  admission/ticket receipt binding;
 - runner receipt binding tests require admission, ticket, request, receipt,
   and digest references before a receipt can be treated as runtime evidence;
 - evidence-review chain tests require the evidence claim and optional review
@@ -210,6 +224,7 @@ Use these checks for operator/runbook-only updates:
 ```bash
 python scripts/validate_public_truth.py
 python scripts/validate_alpha_readiness.py
+python -m mypy govengine
 python -m pytest tests/ -q
 ruff check .
 git diff --check

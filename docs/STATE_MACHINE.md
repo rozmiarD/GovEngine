@@ -70,3 +70,8 @@ GovEngine uses two related but distinct state vocabularies:
 
 Hosts map their own persistence and process control onto these neutral shapes.
 GovEngine validates records; it does not own a host state store.
+
+`running` in `govengine.runtime_shell` is a host projection state only. It is not
+equivalent to `running_dry_run`, and it must not be copied into
+`govengine.state_machine.RUN_STATES`. The strict state machine has no
+`running_live` state.

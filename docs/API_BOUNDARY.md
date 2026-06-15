@@ -20,7 +20,7 @@ The top-level export stability classification lives in [API_STABILITY_MATRIX.md]
 `validate_runner_receipt_binding()` check approved-spec runner supervision,
 receipt, and bounded admission/ticket/request/receipt binding boundaries without
 accepting raw intent or granting live backend ownership.
-`govengine.review.qualify_evidence_claim()` checks neutral evidence claims against receipt bounds without accepting raw targets, raw output, commands, credentials, storage, carrier payloads, or live-execution claims.
+`govengine.review.qualify_evidence_claim()` checks neutral evidence claims against receipt bounds and the bounded `evidence_kind` requirement without accepting raw targets, raw output, commands, credentials, storage, carrier payloads, or live-execution claims.
 `govengine.profiles.validate_profile_conformance()` checks contract-only domain profile declarations without granting domain taxonomy, carrier adapter, credential, product UX, or live-execution ownership.
 `govengine.contract_proofs.validate_runtime_contract_proof()` checks public-safe multi-profile contract proof fixtures without granting adapter, credential, scheduler, storage, live-execution, or new OODA ownership.
 
@@ -86,7 +86,7 @@ Neutral runtime-proof modules:
 
 - `govengine.contract_proofs`
 
-Claim: public-safe Ravenclaw and Tecrax proof fixtures plus neutral governance vocabulary over existing planning, runner supervision, runtime snapshot, review-result, and artifact change-order contracts. Non-claims: carrier adapter ownership, domain runtime ownership, scheduler/queue/storage ownership, credential/PKI/KMS/key-store ownership, default live subprocess execution, command authority, live execution, or a new OODA surface.
+Claim: public-safe Ravenclaw and Tecrax proof fixtures, treated as conformance artifacts, plus neutral governance vocabulary over existing planning, runner supervision, runtime snapshot, review-result, and artifact change-order contracts. Non-claims: carrier adapter ownership, domain runtime ownership, scheduler/queue/storage ownership, credential/PKI/KMS/key-store ownership, default live subprocess execution, command authority, live execution, runtime authorization, or a new OODA surface.
 
 ### Controlled-execution core
 
@@ -117,8 +117,8 @@ GovEngine owns:
 - `govengine.admission` — neutral admission-decision, runtime-admission, policy-decision, approval-request, audit-record, audit-ledger port validators, and JSONL hash-chain development adapter without domain policy meaning, approval workflow, production audit storage/concurrency, command, credential, protocol adapter, or live-execution authority.
 - `govengine.review` — neutral evidence-requirement, evidence-claim, evidence-qualification, review-result, and evidence-review-chain validators without SCLite review verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage, command, credential, adapter, or live-execution authority.
 - `govengine.profiles` — contract-only domain profile declarations, registries, fixture profiles, and conformance reports without domain taxonomy, product UX, credential, adapter, or live-execution ownership.
-- `govengine.contract_proofs` — public-safe runtime contract proof fixtures and neutral governance vocabulary over existing contracts without adapter, credential, scheduler, storage, live-execution, domain runtime, or new OODA ownership.
-- `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers.
+- `govengine.contract_proofs` — public-safe runtime contract proof fixtures treated as conformance artifacts and neutral governance vocabulary over existing contracts without adapter, credential, scheduler, storage, live-execution, runtime authorization, domain runtime, or new OODA ownership.
+- `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers with canonical `verified_chain` / `verified_lifecycle` state names and legacy alias migration only.
 - `govengine.signing` — signature envelopes, signed GovEngine-owned record envelopes, signing/trust policy objects, GovEngine-owned record serialization/digest helpers, host-provided signer/verifier/key-resolver/trust-store ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
 - `govengine.contracts.execution` — execution-contract shaping and redaction helpers.
 - `govengine.execution.*` — approved-spec, ticket, command-shape, dry-run helpers, and controlled execution gates that keep live backends disabled by default.

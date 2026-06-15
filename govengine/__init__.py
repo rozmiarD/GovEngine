@@ -5,6 +5,8 @@ contracts without importing optional contract-lifecycle dependencies at package
 import time.
 """
 
+from typing import Any
+
 __version__ = '0.13.0'
 
 from .admission import (
@@ -90,7 +92,7 @@ from .execution.supervision import (
     validate_supervision_plan,
 )
 from .execution_backend import CommandResult, GovExecutionBackend
-from .lifecycle import ArtifactLifecycleController, TransitionGate, TransitionPolicy
+from .lifecycle import ArtifactLifecycleController, TransitionGate, TransitionPolicy, canonical_lifecycle_state
 from .ooda import GovObservation, GovOodaController, GovOodaDecision, GovOrientation
 from .orchestration import (
     OrchestrationStep,
@@ -182,6 +184,7 @@ from .signing import (
     demo_sign_govengine_record,
     govengine_record_digest,
     signed_artifact_from_record,
+    signature_transition_decision,
     verify_signed_govengine_record,
 )
 from .state_index import ArtifactStateIndex
@@ -319,6 +322,7 @@ __all__ = [
     'apply_state_transition',
     'boundary_surface_index',
     'canonical_govengine_record',
+    'canonical_lifecycle_state',
     'domain_profile_conformance',
     'domain_profile_sdk_surface',
     'evaluate_local_subprocess_runner_readiness',
@@ -348,6 +352,7 @@ __all__ = [
     'runtime_admission_public_summary',
     'runtime_contract_proofs_surface',
     'signed_artifact_from_record',
+    'signature_transition_decision',
     'supervision_plan_from_runner_request',
     'tecrax_contract_proof',
     'tecrax_infra_ops_profile',
@@ -396,7 +401,7 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> Any:
     if name in {
         'GovSCLiteLifecycleVerifier',
         'review_bundle_state',

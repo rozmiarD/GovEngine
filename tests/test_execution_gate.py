@@ -79,7 +79,7 @@ def test_execution_gate_blocks_runtime_consumable_unguarded_bundle() -> None:
     decision = ExecutionGate().evaluate(_gate_input(runtime_consumable_bundle=True))
 
     assert decision.allowed is False
-    assert decision.reason_code == "signature_required"
+    assert decision.reason_code == "kernel_guard_required"
     assert "missing_or_invalid_kernel_guard" in decision.blockers
     assert "missing_or_replayed_guarded_root" in decision.blockers
 

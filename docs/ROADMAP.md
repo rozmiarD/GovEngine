@@ -62,11 +62,11 @@ Runtimes own UX/integration.
 SCLite owns proof/review artifacts.
 ```
 
-## Current 0.12.x alpha line
+## Current 0.13.x alpha line
 
-The current `0.12.x` alpha line retains the neutral kernel shape, removes
-the former host-shaped lifecycle projection, and retires the Ravenclaw-derived
-optional security facade:
+The current `0.13.x` alpha line retains the neutral kernel shape, keeps
+Ravenclaw-derived runtime behavior host-owned, and keeps the former optional
+security facade retired:
 
 - artifact-governance and SCLite lifecycle/review bridge helpers;
 - kernel/profile/runtime/SCLite boundary reports and conformance checks;

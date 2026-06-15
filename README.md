@@ -8,7 +8,7 @@
 
 GovEngine is a carrier-agnostic deterministic governed-runtime kernel for portable artifact governance and policy-gated controlled execution.
 
-It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, dry-run result assembly, and neutral runtime/control projections. Security-domain action, tool, scope, and signal behavior is host-owned; the published `0.12` alpha line removes the former Ravenclaw-derived compatibility helpers.
+It consumes **SCLite** as its contract lifecycle layer and provides reusable services around artifact state/transition boundaries, policy decisions, execution-contract shaping, execution-ticket checks, command-shape normalization, dry-run result assembly, and neutral runtime/control projections. Security-domain action, tool, scope, and signal behavior is host-owned; the published `0.13.0` alpha line keeps former Ravenclaw-derived runtime behavior outside the kernel.
 
 
 ## Why it exists
@@ -44,6 +44,7 @@ GovEngine is **not** Ravenclaw, Tecrax, Logdash, an LLM agent loop, a scanner, o
 - execution-contract shaping/redaction helpers;
 - artifact descriptor/state/transition boundary helpers;
 - SCLite lifecycle status bridge and lightweight lifecycle transition gate/controller;
+- canonical lifecycle states `verified_chain` and `verified_lifecycle`, with legacy `chain_verified` / `lifecycle_verified` aliases accepted only as migration shims;
 - guarded-root replay checks for already-verified SCLite Kernel Guard sidecars;
 - high-level guarded-strict verification plus replay-fresh runtime decisions;
 - artifact deconfliction/change-order helpers and lightweight state-index summaries;
@@ -64,6 +65,7 @@ The `0.13.0` line also adds:
 - **one admission decision you can actually read** — a single `RuntimeAdmissionResult` record that summarizes whether a prepared request may proceed, what blocked it, and what to fix next; helpers compose and validate that record from separate policy, ticket, trust, guard, replay, runner, and receipt signals without running live work themselves;
 - **replay freshness** — remember which verified SCLite guarded roots were already used, so the same protected bundle cannot silently count as “fresh” twice;
 - **receipt and evidence chain checks** — confirm that a runner receipt still points at the right admission and ticket, and that later evidence or review references stay within the bounds of that receipt;
+- **evidence-kind enforcement** — `GovEvidenceRequirement.evidence_kind` is checked during qualification without adding a domain taxonomy or raw evidence store;
 - **GovEngine-owned record signing for fixtures** — deterministic digests and signed-record helpers for tests and reviewer demos, not production PKI;
 - **a development-only audit trail adapter** — append and verify a local hash-chained audit log during development, without claiming a production database;
 - **runner safety posture** — supervision helpers that keep dry-run as the default and treat an optional local subprocess runner as not ready until explicit host safety gates exist;

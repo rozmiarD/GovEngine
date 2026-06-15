@@ -765,7 +765,7 @@ def test_validate_runtime_admission_proof_inputs_accepts_complete_bounded_chain(
         replay_freshness={'status': 'allowed', 'replay_status': 'fresh'},
         artifact_refs={
             'sclite_guarded_strict': {'root_chain_digest': 'sha256:' + ('b' * 64)},
-            'execution_ticket': {'ticket_id': 'ticket-1'},
+            'execution_ticket': {'ticket_id': 'ticket-1', 'ticket_digest': 'sha256:' + ('c' * 64)},
         },
     ))
 
@@ -789,7 +789,7 @@ def test_validate_runtime_admission_proof_inputs_accepts_complete_bounded_chain(
                 'receipt_obligation': {'required': True, 'binds': ['admission']},
                 'artifact_refs': {
                     'sclite_guarded_strict': {'root_chain_digest': 'sha256:' + ('b' * 64)},
-                    'execution_ticket': {'ticket_id': 'ticket-1'},
+                    'execution_ticket': {'ticket_id': 'ticket-1', 'ticket_digest': 'sha256:' + ('c' * 64)},
                 },
             },
             'runtime_admission_proof_receipt_binding_incomplete',
@@ -803,9 +803,27 @@ def test_validate_runtime_admission_proof_inputs_accepts_complete_bounded_chain(
                     'replay_status': 'fresh',
                 },
                 'replay_freshness': {'status': 'allowed', 'replay_status': 'fresh'},
-                'artifact_refs': {'execution_ticket': {'ticket_id': 'ticket-1'}},
+                'artifact_refs': {'execution_ticket': {'ticket_id': 'ticket-1', 'ticket_digest': 'sha256:' + ('c' * 64)}},
             },
             'runtime_admission_proof_guard_digest_missing',
+        ),
+        (
+            {
+                'runtime_consumable': True,
+                'sclite_guarded_strict': {
+                    'status': 'allowed',
+                    'verification_status': 'passed',
+                    'replay_status': 'fresh',
+                    'root_chain_digest': 'sha256:' + ('b' * 64),
+                },
+                'replay_freshness': {'status': 'allowed', 'replay_status': 'fresh'},
+                'execution_ticket': {'status': 'passed', 'ticket_id': 'ticket-1'},
+                'artifact_refs': {
+                    'sclite_guarded_strict': {'root_chain_digest': 'sha256:' + ('b' * 64)},
+                    'execution_ticket': {'ticket_id': 'ticket-1'},
+                },
+            },
+            'runtime_admission_proof_ticket_digest_missing',
         ),
     ),
 )

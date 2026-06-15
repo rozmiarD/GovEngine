@@ -217,7 +217,10 @@ def qualify_evidence_claim(
     checked_claim = validate_evidence_claim(claim)
     checked_requirement = validate_evidence_requirement(requirement)
     status = _enum(receipt_status, RECEIPT_STATUSES, 'dry-run')
-    if _receipt_rank(status) < _receipt_rank(checked_requirement.min_receipt_status):
+    if not _claim_supports_evidence_kind(checked_claim, checked_requirement.evidence_kind):
+        result = 'unsupported'
+        reason = 'evidence_kind_mismatch'
+    elif _receipt_rank(status) < _receipt_rank(checked_requirement.min_receipt_status):
         result = 'unsupported'
         reason = 'receipt_status_below_requirement'
     elif checked_claim.claim_type == 'live_vulnerability' and status != 'succeeded':
@@ -345,6 +348,22 @@ def _claim_matches_admission(
         str(claim.metadata.get('admission_digest') or '').strip(),
     }
     return bool(expected & observed)
+
+
+def _claim_supports_evidence_kind(claim: GovEvidenceClaim, required_kind: str) -> bool:
+    kind = str(required_kind or 'execution_receipt').strip().lower() or 'execution_receipt'
+    if kind == 'execution_receipt':
+        return bool(claim.receipt_refs)
+    observed = {str(claim.claim_type or '').strip().lower()}
+    metadata_kind = claim.metadata.get('evidence_kind')
+    if isinstance(metadata_kind, str):
+        observed.add(metadata_kind.strip().lower())
+    metadata_kinds = claim.metadata.get('evidence_kinds')
+    if isinstance(metadata_kinds, str):
+        observed.add(metadata_kinds.strip().lower())
+    elif isinstance(metadata_kinds, (list, tuple, set)):
+        observed.update(str(value).strip().lower() for value in metadata_kinds)
+    return kind in observed
 
 
 def _enum(value: Any, allowed: tuple[str, ...], default: str) -> str:

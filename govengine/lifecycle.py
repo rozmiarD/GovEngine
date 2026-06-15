@@ -5,6 +5,11 @@ from typing import Mapping, Sequence
 
 from govengine.core import ArtifactDescriptor, ArtifactState, GovernanceContext, ReasonCode, TransitionDecision
 
+CANONICAL_LIFECYCLE_STATE_ALIASES: Mapping[str, str] = {
+    "chain_verified": "verified_chain",
+    "lifecycle_verified": "verified_lifecycle",
+}
+
 DEFAULT_LIFECYCLE_TRANSITIONS: Mapping[str, tuple[str, ...]] = {
     "missing": ("intent_prepared",),
     "intent_prepared": ("policy_decided",),
@@ -12,8 +17,7 @@ DEFAULT_LIFECYCLE_TRANSITIONS: Mapping[str, tuple[str, ...]] = {
     "execution_contract_prepared": ("execution_ticket_approved",),
     "execution_ticket_approved": ("execution_receipt_recorded",),
     "execution_receipt_recorded": ("evidence_recorded",),
-    "evidence_recorded": ("chain_verified",),
-    "chain_verified": ("lifecycle_verified",),
+    "evidence_recorded": ("verified_chain",),
     "verified_chain": ("verified_lifecycle",),
     "verified_lifecycle": (),
     "blocked": ("intent_prepared", "policy_decided", "execution_contract_prepared", "execution_ticket_approved", "verified_chain"),
@@ -26,11 +30,16 @@ SCLITE_LIFECYCLE_REQUIREMENTS: Mapping[str, tuple[str, ...]] = {
     "execution_ticket_approved": ("intent_contract", "policy_decision", "execution_contract", "execution_ticket"),
     "execution_receipt_recorded": ("execution_contract", "execution_ticket", "execution_receipt"),
     "evidence_recorded": ("execution_ticket", "execution_receipt", "evidence_contract"),
-    "chain_verified": ("artifact_chain_manifest",),
     "verified_chain": ("artifact_chain_manifest",),
     "verified_lifecycle": ("artifact_chain_manifest",),
-    "lifecycle_verified": ("artifact_chain_manifest",),
 }
+
+
+def canonical_lifecycle_state(state: str) -> str:
+    """Return the canonical lifecycle state while accepting legacy aliases."""
+
+    item = str(state or "").strip()
+    return CANONICAL_LIFECYCLE_STATE_ALIASES.get(item, item)
 
 
 @dataclass(frozen=True)
@@ -40,10 +49,10 @@ class TransitionPolicy:
     allowed_transitions: Mapping[str, tuple[str, ...]] = field(default_factory=lambda: dict(DEFAULT_LIFECYCLE_TRANSITIONS))
 
     def allows(self, from_state: str, to_state: str) -> bool:
-        return to_state in self.allowed_transitions.get(from_state, ())
+        return canonical_lifecycle_state(to_state) in self.allowed_transitions.get(canonical_lifecycle_state(from_state), ())
 
     def next_states(self, from_state: str) -> tuple[str, ...]:
-        return tuple(self.allowed_transitions.get(from_state, ()))
+        return tuple(self.allowed_transitions.get(canonical_lifecycle_state(from_state), ()))
 
 
 @dataclass(frozen=True)
@@ -61,6 +70,8 @@ class TransitionGate:
         context: GovernanceContext | None = None,
     ) -> TransitionDecision:
         context = context or GovernanceContext()
+        from_state = canonical_lifecycle_state(from_state)
+        to_state = canonical_lifecycle_state(to_state)
         artifacts = tuple(state.descriptor for state in artifact_states)
         blockers: list[str] = []
         next_actions: list[str] = []

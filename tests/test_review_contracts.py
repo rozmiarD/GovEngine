@@ -62,6 +62,50 @@ def test_live_claim_is_rejected_when_receipt_is_only_dry_run() -> None:
     assert qualification.reason_code == 'live_claim_not_supported_by_receipt'
 
 
+def test_evidence_kind_mismatch_is_not_supported() -> None:
+    qualification = qualify_evidence_claim(
+        {
+            'claim_id': 'claim-kind',
+            'subject_ref': 'sha256:subject',
+            'claim_type': 'execution_truth',
+            'receipt_refs': ['receipt-1'],
+            'metadata': {'evidence_kind': 'execution_receipt'},
+        },
+        {
+            'requirement_id': 'req-review-bundle',
+            'subject_ref': 'sha256:subject',
+            'evidence_kind': 'sclite_review_bundle',
+            'min_receipt_status': 'dry-run',
+        },
+        receipt_status='dry-run',
+    )
+
+    assert qualification.result == 'unsupported'
+    assert qualification.reason_code == 'evidence_kind_mismatch'
+
+
+def test_evidence_kind_can_be_bound_by_claim_metadata() -> None:
+    qualification = qualify_evidence_claim(
+        {
+            'claim_id': 'claim-review-bundle',
+            'subject_ref': 'sha256:subject',
+            'claim_type': 'execution_truth',
+            'receipt_refs': ['receipt-1'],
+            'metadata': {'evidence_kinds': ['execution_receipt', 'sclite_review_bundle']},
+        },
+        {
+            'requirement_id': 'req-review-bundle',
+            'subject_ref': 'sha256:subject',
+            'evidence_kind': 'sclite_review_bundle',
+            'min_receipt_status': 'dry-run',
+        },
+        receipt_status='dry-run',
+    )
+
+    assert qualification.result == 'supported'
+    assert qualification.reason_code == 'receipt_bounds_support_claim'
+
+
 def test_evidence_claim_requires_receipt_refs_and_rejects_raw_output_metadata() -> None:
     with pytest.raises(GovApiError, match='missing_evidence_claim_receipt_ref'):
         validate_evidence_claim({'claim_id': 'claim-1', 'subject_ref': 'sha256:subject'})
@@ -246,4 +290,24 @@ def test_evidence_review_chain_rejects_overclaim_and_review_ref_mismatch() -> No
                 'subject_ref': ADMISSION_DIGEST,
                 'qualification_refs': ['other-qualification'],
             },
+        )
+
+
+def test_evidence_review_chain_rejects_evidence_kind_mismatch() -> None:
+    with pytest.raises(GovApiError, match='evidence_claim_not_supported:evidence_kind_mismatch'):
+        validate_evidence_review_chain(
+            {
+                'claim_id': 'claim-kind-chain',
+                'subject_ref': ADMISSION_DIGEST,
+                'claim_type': 'execution_truth',
+                'receipt_refs': ['receipt-1'],
+                'metadata': {'evidence_kind': 'execution_receipt'},
+            },
+            {
+                'requirement_id': 'req-kind-chain',
+                'subject_ref': ADMISSION_DIGEST,
+                'evidence_kind': 'sclite_review_bundle',
+            },
+            receipt_id='receipt-1',
+            receipt_status='dry-run',
         )

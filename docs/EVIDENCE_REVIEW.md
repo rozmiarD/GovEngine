@@ -22,8 +22,12 @@ claims are rejected in metadata.
 
 `qualify_evidence_claim()` is deliberately conservative: a dry-run receipt can
 support execution-truth review, but it cannot support a live-vulnerability
-claim. SCLite remains the proof/review artifact authority; GovEngine only
-validates neutral review mechanics.
+claim. The requirement `evidence_kind` is enforced as a bounded contract field:
+`execution_receipt` is satisfied by receipt references, and non-default kinds
+must appear in the claim type or bounded claim metadata such as
+`evidence_kind` / `evidence_kinds`. GovEngine does not parse raw evidence or
+define a Ravenclaw/Tecrax taxonomy. SCLite remains the proof/review artifact
+authority; GovEngine only validates neutral review mechanics.
 
 `validate_evidence_review_chain()` verifies the bounded
 admission -> receipt -> evidence -> review references before a claim is treated

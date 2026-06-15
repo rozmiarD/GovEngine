@@ -52,6 +52,12 @@ GovEngine currently provides helpers around the runtime-facing parts of that lif
   runtime-consumable decision;
 - review-bundle verdict mapping through the current `sclite-core>=1.0.2,<1.1` review and guarded-strict surfaces, preserving the review-bundle contract.
 
+GovEngine canonical lifecycle state names are `verified_chain` and
+`verified_lifecycle`. Legacy `chain_verified` and `lifecycle_verified` inputs
+are accepted through `canonical_lifecycle_state()` only as migration shims for
+older Ravenclaw-style consumers. New code and docs must use the canonical
+SCLite-facing names.
+
 Host-owned artifact projection is outside GovEngine. A runtime such as
 Ravenclaw constructs its domain-shaped lifecycle artifacts before consuming
 neutral GovEngine gates and SCLite review/verification services.
@@ -139,6 +145,9 @@ ticket schema, canonicalization, guarded verification, artifact-chain
 verification, and review-bundle authority. `validate_evidence_review_chain()`
 then checks receipt/evidence/review references and receipt status bounds
 without storing raw evidence or re-deciding SCLite review verdicts.
+Allowed runtime-admission proof inputs require both ticket id and ticket digest
+or bounded ticket digest reference before a receipt/evidence path can be treated
+as complete.
 
 Review-only bundles may remain `integrity_only` or `strict_lifecycle`, but a
 runtime-consumable execution ticket must not be accepted from `validate-chain`

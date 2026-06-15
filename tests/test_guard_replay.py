@@ -382,6 +382,7 @@ def test_guarded_fresh_runtime_admission_example_composes_allowed_dry_run(
             },
             "execution_ticket": {
                 "ticket_id": guarded.ticket_id,
+                "ticket_digest": "sha256:" + ("c" * 64),
             },
         },
     ))
@@ -404,6 +405,7 @@ def test_guarded_fresh_runtime_admission_example_composes_allowed_dry_run(
     assert admission.sclite_guarded_strict["guard_root_tag"] == "tag-1"
     assert admission.artifact_refs["sclite_guarded_strict"]["root_chain_digest"] == guarded.root_chain_digest
     assert admission.artifact_refs["execution_ticket"]["ticket_id"] == "ticket-1"
+    assert admission.artifact_refs["execution_ticket"]["digest"] == "sha256:ticket"
 
 
 @pytest.mark.parametrize(
@@ -425,7 +427,7 @@ def test_runtime_admission_blocks_missing_or_non_strict_guarded_bundle(
     ))
 
     assert result.allowed is False
-    assert result.reason_code == "signature_required"
+    assert result.reason_code == "kernel_guard_required"
     assert "missing_or_invalid_kernel_guard" in result.blockers
 
 

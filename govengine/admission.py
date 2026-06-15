@@ -990,6 +990,8 @@ def validate_runtime_admission_proof_inputs(
         raise GovApiError('runtime_admission_proof_guard_digest_missing')
     if not _proof_ref(item.artifact_refs, 'execution_ticket', 'ticket_id'):
         raise GovApiError('runtime_admission_proof_ticket_ref_missing')
+    if not _proof_ref(item.artifact_refs, 'execution_ticket', 'ticket_digest', 'digest'):
+        raise GovApiError('runtime_admission_proof_ticket_digest_missing')
     binds = {str(item) for item in item.receipt_obligation.get('binds', ()) if not isinstance(item, Mapping)}
     if not {'admission', 'ticket'} <= binds:
         raise GovApiError('runtime_admission_proof_receipt_binding_incomplete')
@@ -1489,14 +1491,18 @@ def _receipt_obligation_public_status(payload: Mapping[str, Any]) -> str:
     return str(payload.get('status') or 'missing').strip() or 'missing'
 
 
-def _proof_ref(refs: Mapping[str, Any], group: str, key: str) -> str:
+def _proof_ref(refs: Mapping[str, Any], group: str, *keys: str) -> str:
     value = refs.get(group)
     if not isinstance(value, Mapping):
         return ''
-    item = value.get(key)
-    if isinstance(item, Mapping) or isinstance(item, (list, tuple, set)):
-        return ''
-    return str(item or '').strip()
+    for key in keys:
+        item = value.get(key)
+        if isinstance(item, Mapping) or isinstance(item, (list, tuple, set)):
+            continue
+        normalized = str(item or '').strip()
+        if normalized:
+            return normalized
+    return ''
 
 
 def _dedupe(values: Iterable[Any]) -> tuple[str, ...]:
