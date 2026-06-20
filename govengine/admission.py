@@ -765,6 +765,55 @@ def validate_policy_decision(value: Mapping[str, Any] | GovPolicyDecision) -> Go
     return item
 
 
+def policy_verdict_to_gov_policy_decision(
+    value: Mapping[str, Any] | Any,
+    *,
+    policy_id: str = '',
+    subject_kind: str = 'task',
+) -> GovPolicyDecision:
+    """Project a PolicyEngine verdict into the legacy admission decision shape."""
+
+    raw = _runtime_signal(value)
+    verdict_id = str(policy_id or raw.get('verdict_id') or raw.get('policy_id') or raw.get('id') or '').strip()
+    if not verdict_id:
+        raise GovApiError('missing_policy_verdict_id')
+    subject_ref = str(raw.get('subject_ref') or '').strip()
+    if not subject_ref:
+        raise GovApiError('missing_policy_verdict_subject_ref')
+    decision = _policy_verdict_admission_decision(str(raw.get('decision') or '').strip())
+    reason_code = str(raw.get('reason_code') or decision).strip() or decision
+    obligations = _policy_verdict_items(raw.get('obligations') or ())
+    constraints = _policy_verdict_items(raw.get('constraints') or ())
+    controls = tuple(
+        item
+        for item in (
+            *(f'obligation:{entry}' for entry in obligations),
+            *(f'constraint:{entry}' for entry in constraints),
+        )
+        if item
+    )
+    blockers = _tuple(raw.get('blockers') or ())
+    if decision == 'require_approval' and not blockers:
+        blockers = ('operator_approval_required',)
+    if decision == 'deny' and not blockers:
+        blockers = (reason_code,)
+    return validate_policy_decision(GovPolicyDecision(
+        policy_id=verdict_id,
+        subject_ref=subject_ref,
+        subject_kind=_enum(subject_kind, SUBJECT_KINDS, 'task'),
+        decision=decision,
+        reason_code=reason_code,
+        controls=controls,
+        blockers=blockers,
+        metadata={
+            'policy_verdict_schema_version': str(raw.get('schema_version') or ''),
+            'policy_request_id': str(raw.get('request_id') or ''),
+            'risk_class': str(raw.get('risk_class') or ''),
+            'risk_score': raw.get('risk_score', 0.0),
+        },
+    ))
+
+
 def validate_approval_request(value: Mapping[str, Any] | GovApprovalRequest) -> GovApprovalRequest:
     item = value if isinstance(value, GovApprovalRequest) else GovApprovalRequest.from_mapping(value)
     if item.subject_kind not in SUBJECT_KINDS:
@@ -1251,6 +1300,37 @@ def _runtime_signal(value: Any) -> dict[str, Any]:
         if isinstance(payload, Mapping):
             return _metadata(payload)
     raise GovApiError('invalid_runtime_admission_signal')
+
+
+def _policy_verdict_admission_decision(decision: str) -> str:
+    if decision == 'allow_with_obligations':
+        return 'allow'
+    if decision == 'approval_required':
+        return 'require_approval'
+    if decision in {'allow', 'deny'}:
+        return decision
+    raise GovApiError(f'unknown_policy_verdict_decision:{decision or "missing"}')
+
+
+def _policy_verdict_items(values: Any) -> tuple[str, ...]:
+    if isinstance(values, (str, bytes)) or not isinstance(values, (list, tuple)):
+        return ()
+    items: list[str] = []
+    for value in values:
+        if isinstance(value, Mapping):
+            item_id = str(
+                value.get('obligation_id')
+                or value.get('constraint_id')
+                or value.get('id')
+                or value.get('kind')
+                or value.get('type')
+                or ''
+            ).strip()
+            if item_id:
+                items.append(item_id)
+            continue
+        items.append(str(value).strip())
+    return tuple(item for item in items if item)
 
 
 def _artifact_reference_signal(value: Any) -> dict[str, Any]:

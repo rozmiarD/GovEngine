@@ -126,10 +126,14 @@ def admission_policy_surface() -> GovSurface:
         status='alpha_tested',
         modules=_tuple((
             'govengine.admission',
+            'govengine.policy',
+            'govengine.policy.compiler',
+            'govengine.policy.model',
+            'govengine.policy.runtime',
         )),
         claim=(
-            'Neutral admission, policy-decision, approval-request, audit-record, runtime-admission, and bounded reference helpers for hosts '
-            'that need deterministic runtime gate records without moving domain policy semantics into GovEngine.'
+            'Neutral admission, PolicyEngine request/verdict/compiler/runtime, policy-decision, approval-request, audit-record, runtime-admission, '
+            'and bounded reference helpers for hosts that need deterministic runtime gate records without moving domain policy semantics into GovEngine.'
         ),
         non_claims=_tuple((
             'domain policy meaning ownership',

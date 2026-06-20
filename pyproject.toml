@@ -63,7 +63,15 @@ warn_return_any = false
 warn_unused_ignores = true
 
 [tool.setuptools]
-packages = ["govengine", "govengine.contracts", "govengine.execution"]
+packages = [
+  "govengine",
+  "govengine.contracts",
+  "govengine.execution",
+  "govengine.policy",
+  "govengine.policy.compiler",
+  "govengine.policy.model",
+  "govengine.policy.runtime",
+]
 
 [tool.pytest.ini_options]
 addopts = "-q"
