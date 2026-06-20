@@ -10,39 +10,21 @@ For the current extraction, the host/domain runtime is Ravenclaw. A future infra
 
 ## Governed-runtime MVP chain
 
-The current MVP path is documented for operators in
-[GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md). The full
-integration order and non-claims are in
-[SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md). The short form is:
+Operator steps: [GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md).
+Integration order and non-claims: [SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md).
+Contract reference: [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md),
+[RECEIPT_BINDING.md](RECEIPT_BINDING.md), [EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md).
 
 ```text
-intent
-  -> policy/admission
-  -> SCLite ticket or guarded verification reference
-  -> trust decision
-  -> replay freshness
-  -> runner profile
-  -> receipt obligation
-  -> RuntimeAdmissionResult
-  -> GovRunnerRequest
-  -> GovRunnerReceipt
-  -> validate_runner_receipt_binding()
-  -> validate_evidence_review_chain()
-  -> bounded audit / review references
+intent -> policy/admission -> SCLite ticket/guard -> trust -> replay freshness
+  -> runner profile -> receipt obligation -> RuntimeAdmissionResult
+  -> GovRunnerRequest -> GovRunnerReceipt
+  -> validate_runner_receipt_binding() -> validate_evidence_review_chain()
 ```
 
-`compose_runtime_admission_result()` composes host-supplied gate summaries into
-`RuntimeAdmissionResult`. It does not validate SCLite tickets, verify
-signatures, record replay state, or execute live work. Runtime admission
-composition requires an allowed runner profile and a receipt obligation;
-concrete runner receipts are validated later with
-`validate_runner_receipt_binding()`. Guarded/replay blockers apply during
-composition only when the host sets `runtime_consumable=True`.
-
-GovEngine owns the neutral mechanics that compose and validate this chain. It
-does not own domain policy meaning, operator approval workflow, production
-identity or keys, raw evidence storage, SCLite proof authority, or live backend
-execution.
+`compose_runtime_admission_result()` composes host-supplied gate summaries; it
+does not verify SCLite artifacts, record replay state, or execute work. See the
+linked docs for field-level contracts and operator procedures.
 
 ## Public surface map
 
@@ -66,46 +48,20 @@ outside that registry. See also [API_BOUNDARY.md](API_BOUNDARY.md) and
 
 ### 0. Kernel/profile boundary layer
 
-Module:
-
-- `govengine.boundary`
-
-Purpose:
-
-- make the kernel/profile/runtime/SCLite ownership split serializable;
-- let hosts declare domain-profile ownership without claiming GovEngine core, SCLite authority, live execution authority, credentials, or carrier adapter ownership;
-- provide a tested Ravenclaw profile contract as the current host-profile example.
+Module: `govengine.boundary`. Serializable kernel/profile/runtime/SCLite ownership
+split and domain-profile conformance. See
+[GOVENGINE_KERNEL_BOUNDARY.md](GOVENGINE_KERNEL_BOUNDARY.md).
 
 ### 1. Admission and review contract layer
 
-Modules:
+Modules: `govengine.admission`, `govengine.policy`, `govengine.review`.
 
-- `govengine.admission`
-- `govengine.policy` (compiler, model, runtime)
-- `govengine.review`
-
-Purpose:
-
-- validate neutral admission, policy-decision, approval, audit, evidence, and
-  review records;
-- evaluate declarative policy packs through `PolicyEngine` and project
-  `PolicyVerdict` into `GovPolicyDecision` via
-  `policy_verdict_to_gov_policy_decision()`;
-- compose and validate `RuntimeAdmissionResult` through
-  `compose_runtime_admission_result()`, `validate_runtime_admission_result()`,
-  `validate_runtime_admission_proof_inputs()`, and bounded public summaries;
-- expose `AuditLedgerPort` and a development-only `JsonlAuditLedgerAdapter` for
-  hash-chained audit append/read/verify without production database ownership;
-- validate receipt-bounded evidence and review reference chains through
-  `validate_evidence_review_chain()`;
-- keep security-domain policy meaning and evidence taxonomy in the host runtime.
-
-`validate_runtime_admission_result()` checks record shape and consistency; it
-does not by itself enforce receipt obligation on arbitrary stored records the way
-`compose_runtime_admission_result()` does.
+Validates admission/policy/audit records, evaluates declarative policy packs,
+composes `RuntimeAdmissionResult`, and checks receipt-bounded evidence chains.
+Policy meaning and evidence taxonomy stay host-owned.
 
 See [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md), [POLICY_ENGINE.md](POLICY_ENGINE.md),
-and [EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md).
+[ADMISSION_POLICY.md](ADMISSION_POLICY.md), and [EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md).
 
 ### 2. Contract layer
 
@@ -199,43 +155,21 @@ Purpose:
 
 ### 6. Planning, profile, and proof contract layer
 
-Modules:
-
-- `govengine.planning`
-- `govengine.profiles`
-- `govengine.contract_proofs`
-
-Purpose:
-
-- validate neutral planner-to-runtime handoff contracts without owning a planner
-  implementation;
-- declare contract-only domain profiles and conformance reports for Ravenclaw and
-  Tecrax fixture paths;
-- provide public-safe multi-profile proof fixtures over existing GovEngine
-  contracts.
-
-These surfaces are metadata and validation only. They do not add scheduling,
-carrier adapters, credentials, or live execution authority.
+Modules: `govengine.planning`, `govengine.profiles`, `govengine.contract_proofs`.
+Neutral planner handoff, profile declarations, and public-safe proof fixtures.
+Planning objects and boundaries are documented under **Planning-contracts core**
+in [API_BOUNDARY.md](API_BOUNDARY.md#planning-contracts-core). Profile SDK:
+[DOMAIN_PROFILE_CONTRACT.md](DOMAIN_PROFILE_CONTRACT.md).
 
 ### 7. OODA, orchestration, and runtime-shell control layer
 
-Modules:
-
-- `govengine.ooda`
-- `govengine.orchestration`
-- `govengine.events`
-- `govengine.control`
-- `govengine.runtime_shell`
-
-Purpose:
-
-- observe normalized execution telemetry and operator-control events;
-- orient observations against approved specs, execution tickets, policy decisions, scope, budgets, and host state;
-- decide whether the next step should continue, pause, abort, cooldown, degrade to dry-run, or require owner review;
-- expose deterministic orchestration handoff records, governance event envelopes, run-state transitions, between-step control decisions, and host runtime-shell projections without owning schedulers, queues, storage, credentials, or live execution.
-
-GovEngine provides reusable deterministic contracts here. Host runtimes such as
-Ravenclaw still own wiring those contracts into live control loops.
+Modules: `govengine.ooda`, `govengine.orchestration`, `govengine.events`,
+`govengine.control`, `govengine.runtime_shell`. Deterministic control and
+projection records without schedulers, storage, or live execution. OODA receipt
+bounds: [EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md#ooda-decisions-in-receipts-and-evidence).
+Model docs: [ORCHESTRATOR_MODEL.md](ORCHESTRATOR_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md),
+[STATE_MACHINE.md](STATE_MACHINE.md), [CONTROL_MODEL.md](CONTROL_MODEL.md),
+[RUNTIME_SHELL.md](RUNTIME_SHELL.md).
 
 ## Operator surfaces
 

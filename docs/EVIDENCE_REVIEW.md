@@ -53,3 +53,50 @@ reference check. `validate_evidence_review_chain()` owns the later
 receipt/evidence/review reference check. It does not evaluate SCLite
 review-bundle verdicts. Neither helper evaluates domain vulnerability meaning,
 stores raw evidence, or grants live execution authority.
+
+## OODA decisions in receipts and evidence
+
+GovEngine's OODA controller is a safety/control contract, not a raw telemetry
+publication channel. Hosts may record compact OODA decision summaries in runner
+receipts only after the governed receipt chain is bounded.
+
+### What may be recorded
+
+A host runner may append summary-level fields such as decision, reason code,
+interrupting flag, step index, observation kinds, and orientation booleans/enums
+(scope, policy, ticket, spec, host-health, output-shape, operator-control,
+budget state). Link approved specs, tickets, and artifact descriptors by
+reference — not raw output.
+
+### What must not be recorded
+
+OODA receipt/evidence surfaces must not include raw stdout/stderr, command logs,
+request/response bodies, credentials, private paths, unredacted live targets, full
+telemetry dumps, or LLM prompts/reasoning.
+
+### Receipt and evidence behavior
+
+Interrupting decisions (`pause`, `abort`, `cooldown`, `degrade_to_dry_run`,
+`require_owner_review`) should stop scheduling the next step. Evidence summaries
+may claim that control decisions were evaluated; they must not claim live
+vulnerability evidence, successful exploitation, or authorization beyond approved
+bounds.
+
+### Verification order
+
+Before treating OODA summaries as runtime evidence, verify:
+
+```text
+RuntimeAdmissionResult
+  -> GovRunnerRequest
+  -> GovRunnerReceipt
+  -> GovEvidenceClaim
+  -> GovReviewResult
+```
+
+`validate_runner_receipt_binding()` runs first; `validate_evidence_review_chain()`
+validates receipt/evidence/review references afterward. Neither helper stores raw
+evidence, evaluates SCLite review-bundle verdicts, or grants execution authority.
+
+Hosts remain responsible for redaction, persistence choices, honoring interrupting
+decisions, and linking decisions into SCLite lifecycle receipts when available.

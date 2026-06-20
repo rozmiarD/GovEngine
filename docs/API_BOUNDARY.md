@@ -54,6 +54,10 @@ Neutral planning-contract modules:
 
 - `govengine.planning`
 
+Objects: `GovTaskContract`, `GovPlanIntentContract`, and `PlannerPort` describe
+planner-to-runtime handoff shapes. Hosts provide redacted `target_ref` values
+rather than raw targets.
+
 Claim: neutral task-contract, plan-intent, and planner-port validators that hosts can use for planner-to-runtime handoff review. Non-claims: planner implementation ownership, Ravenclaw security planning semantics ownership, raw target/prompt ownership, queue/scheduler/storage ownership, protocol adapter ownership, command authority, or live execution.
 
 ### Admission-policy core

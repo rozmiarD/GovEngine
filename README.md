@@ -140,6 +140,8 @@ python scripts/validate_clean_package_install.py --no-editable
 
 ## Documentation
 
+Navigation hub: [`docs/README.md`](docs/README.md).
+
 - [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md) records the active package status and non-claims.
 - [`CHANGELOG.md`](CHANGELOG.md) records release changes.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) records contribution and boundary rules.
@@ -149,20 +151,22 @@ python scripts/validate_clean_package_install.py --no-editable
 - [`docs/API_BOUNDARY.md`](docs/API_BOUNDARY.md) maps owned and excluded surfaces.
 - [`docs/API_STABILITY_MATRIX.md`](docs/API_STABILITY_MATRIX.md) classifies public exports.
 - [`docs/GOVENGINE_KERNEL_BOUNDARY.md`](docs/GOVENGINE_KERNEL_BOUNDARY.md) defines kernel/profile/runtime/SCLite ownership.
+- [`docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`](docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md) is the operator runbook for the governed-runtime MVP chain.
+- [`docs/SECURITY_INTEGRATION.md`](docs/SECURITY_INTEGRATION.md) records the required security integration order and non-claims.
 - [`docs/SCLITE_INTEGRATION.md`](docs/SCLITE_INTEGRATION.md) explains how GovEngine consumes SCLite.
 - [`docs/RUNTIME_ADMISSION.md`](docs/RUNTIME_ADMISSION.md) describes the canonical runtime admission envelope.
 - [`docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md`](docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md) documents read-only admission inspection.
 - [`docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md`](docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md) shows guarded-strict plus replay-fresh admission input.
 - [`docs/RECEIPT_BINDING.md`](docs/RECEIPT_BINDING.md) documents admission/ticket/request/receipt binding.
-- [`docs/EVIDENCE_REVIEW.md`](docs/EVIDENCE_REVIEW.md) documents receipt-bounded evidence review.
+- [`docs/EVIDENCE_REVIEW.md`](docs/EVIDENCE_REVIEW.md) documents receipt-bounded evidence review and OODA receipt bounds.
 - [`docs/ADMISSION_POLICY.md`](docs/ADMISSION_POLICY.md) documents admission, policy, approval, audit, and audit-ledger contracts.
 - [`docs/POLICY_ENGINE.md`](docs/POLICY_ENGINE.md) documents the PolicyEngine MVP (request/verdict, compiler, runtime, admission projection).
 - [`docs/RUNNER_SUPERVISION.md`](docs/RUNNER_SUPERVISION.md) documents runner request, receipt, supervision, and live-runner safety boundaries.
 - [`docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md`](docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md) records why no live subprocess runner ships now.
 - [`docs/DOMAIN_PROFILE_CONTRACT.md`](docs/DOMAIN_PROFILE_CONTRACT.md) documents profile contracts and conformance.
 - [`docs/ORCHESTRATOR_MODEL.md`](docs/ORCHESTRATOR_MODEL.md), [`docs/EVENT_MODEL.md`](docs/EVENT_MODEL.md), [`docs/STATE_MACHINE.md`](docs/STATE_MACHINE.md), [`docs/CONTROL_MODEL.md`](docs/CONTROL_MODEL.md), and [`docs/RUNTIME_SHELL.md`](docs/RUNTIME_SHELL.md) separate deterministic handoff/projection records from host runtime execution.
-- [`docs/VALIDATION.md`](docs/VALIDATION.md) records current and historical validation evidence.
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) records the staged extraction roadmap.
+- [`docs/VALIDATION.md`](docs/VALIDATION.md) records the **current** validation gate; historical release evidence is in [`docs/archive/VALIDATION_HISTORY.md`](docs/archive/VALIDATION_HISTORY.md).
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) records the current roadmap; delivered version milestones are in [`docs/archive/ROADMAP_VERSION_HISTORY.md`](docs/archive/ROADMAP_VERSION_HISTORY.md).
 
 ## License and provenance
 

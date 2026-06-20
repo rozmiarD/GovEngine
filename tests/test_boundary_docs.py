@@ -92,13 +92,12 @@ def test_receipt_evidence_docs_track_verification_chain() -> None:
     docs = {
         'api': (ROOT / 'docs' / 'API_BOUNDARY.md').read_text(encoding='utf-8'),
         'evidence': (ROOT / 'docs' / 'EVIDENCE_REVIEW.md').read_text(encoding='utf-8'),
-        'ooda': (ROOT / 'docs' / 'OODA_RECEIPT_EVIDENCE.md').read_text(encoding='utf-8'),
         'sclite': (ROOT / 'docs' / 'SCLITE_INTEGRATION.md').read_text(encoding='utf-8'),
         'validation': (ROOT / 'docs' / 'VALIDATION.md').read_text(encoding='utf-8'),
     }
     normalized_evidence = ' '.join(docs['evidence'].split())
 
-    for key in ('evidence', 'ooda', 'sclite'):
+    for key in ('evidence', 'sclite'):
         assert 'RuntimeAdmissionResult' in docs[key]
         assert 'GovRunnerRequest' in docs[key]
         assert 'GovRunnerReceipt' in docs[key]
@@ -106,6 +105,7 @@ def test_receipt_evidence_docs_track_verification_chain() -> None:
     assert 'GovReviewResult' in docs['evidence']
     assert 'validate_runner_receipt_binding()' in docs['evidence']
     assert 'validate_evidence_review_chain()' in docs['evidence']
+    assert 'OODA decisions in receipts and evidence' in docs['evidence']
     assert 'validate_evidence_review_chain()' in docs['sclite']
     assert 'evidence-review-chain validators' in docs['api']
     assert 'receipt/evidence chain validators' in docs['validation']
