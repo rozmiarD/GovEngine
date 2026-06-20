@@ -3,15 +3,22 @@
 `govengine.admission` defines neutral admission, policy, approval, and audit
 record contracts for host runtimes.
 
-It is a shape and validation layer only. It does not implement a policy engine,
-own profile policy meaning, run operator approval workflows, store audit logs,
-deliver carrier messages, hold credentials, or execute tools.
+`govengine.policy` adds a deterministic **PolicyEngine MVP** (request/verdict
+contracts, declarative pack compiler, fail-closed runtime). See
+[POLICY_ENGINE.md](POLICY_ENGINE.md). Admission record validators remain
+separate from domain policy meaning: hosts map verdicts into `GovPolicyDecision`
+via `policy_verdict_to_gov_policy_decision()`.
+
+GovEngine does not run operator approval workflows, store audit logs, deliver
+carrier messages, hold credentials, or execute tools.
 
 ## Objects
 
 - `GovAdmissionDecision` validates one host-provided go/no-go decision over a
   redacted `subject_ref`.
 - `GovPolicyDecision` validates the policy result attached to a host subject.
+- `policy_verdict_to_gov_policy_decision()` projects a `PolicyVerdict` from
+  `govengine.policy` into `GovPolicyDecision` for admission composition.
 - `GovApprovalRequest` validates approval-request state without owning the
   approval workflow.
 - `GovAuditRecord` validates an append-only audit record shape without owning

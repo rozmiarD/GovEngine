@@ -29,7 +29,7 @@ The public surface registry is `govengine.surfaces.public_surface_index()`. It c
 
 - `artifact_governance_core` for artifact descriptors, lifecycle state mapping, transition decisions, signing/trust records, guarded-root replay decisions, state-index helpers, deconfliction, and the SCLite bridge.
 - `planning_contracts_core` for neutral task, plan-intent, and planner-port handoff records. These are handoff contracts, not a planner.
-- `admission_policy_core` for `RuntimeAdmissionResult`, policy/admission/approval/audit records, proof-input validation, public summaries, bounded artifact references, and the development-only JSONL audit-ledger adapter.
+- `admission_policy_core` for `RuntimeAdmissionResult`, policy/admission/approval/audit records, **PolicyEngine MVP** (`govengine.policy`), proof-input validation, public summaries, bounded artifact references, and the development-only JSONL audit-ledger adapter.
 - `evidence_review_core` for receipt-bounded evidence requirements, claims, qualifications, review results, and evidence-review-chain validation.
 - `domain_profile_sdk` for contract-only domain profile declarations and conformance reports, including Ravenclaw and Tecrax fixture profiles.
 - `runtime_contract_proofs` for public-safe conformance artifacts over Ravenclaw and Tecrax contract shapes. They are fixtures, not runtime authorization.
@@ -37,6 +37,8 @@ The public surface registry is `govengine.surfaces.public_surface_index()`. It c
 
 The `0.14.0` line also adds:
 
+- **PolicyEngine MVP** (`govengine.policy`): declarative policy packs, fail-closed
+  `PolicyEngine.evaluate()`, verdict projection via `policy_verdict_to_gov_policy_decision()`;
 - canonical lifecycle vocabulary: `verified_chain` and `verified_lifecycle` are the current names, while `chain_verified` and `lifecycle_verified` remain migration aliases only;
 - stricter signature transition behavior: failed verification can no longer pass solely because a separate trust status says `trusted`;
 - bounded evidence-kind enforcement through `GovEvidenceRequirement.evidence_kind`, without adding a raw evidence store or domain evidence taxonomy;
@@ -158,6 +160,7 @@ python scripts/validate_clean_package_install.py --no-editable
 - [`docs/RECEIPT_BINDING.md`](docs/RECEIPT_BINDING.md) documents admission/ticket/request/receipt binding.
 - [`docs/EVIDENCE_REVIEW.md`](docs/EVIDENCE_REVIEW.md) documents receipt-bounded evidence review.
 - [`docs/ADMISSION_POLICY.md`](docs/ADMISSION_POLICY.md) documents admission, policy, approval, audit, and audit-ledger contracts.
+- [`docs/POLICY_ENGINE.md`](docs/POLICY_ENGINE.md) documents the PolicyEngine MVP (request/verdict, compiler, runtime, admission projection).
 - [`docs/RUNNER_SUPERVISION.md`](docs/RUNNER_SUPERVISION.md) documents runner request, receipt, supervision, and live-runner safety boundaries.
 - [`docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md`](docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md) records why no live subprocess runner ships now.
 - [`docs/DOMAIN_PROFILE_CONTRACT.md`](docs/DOMAIN_PROFILE_CONTRACT.md) documents profile contracts and conformance.

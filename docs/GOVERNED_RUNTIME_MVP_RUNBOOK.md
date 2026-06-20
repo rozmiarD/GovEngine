@@ -3,8 +3,8 @@
 GovEngine's governed-runtime MVP is a small, host-neutral admission and
 verification chain. It helps a host runtime decide whether a prepared request is
 eligible for a dry-run or controlled runner request. It is not a platform,
-agent loop, live runner, credential store, policy engine, or SCLite
-replacement.
+agent loop, live runner, or credential store. **Policy evaluation** is provided
+by `govengine.policy` (PolicyEngine MVP); SCLite remains the truth layer.
 
 Core invariant:
 
@@ -19,7 +19,7 @@ The operator-facing chain is:
 ```text
 intent
   -> prepared execution contract
-  -> host policy decision
+  -> PolicyEngine verdict (optional declarative pack) -> GovPolicyDecision summary
   -> SCLite execution ticket
   -> trust decision
   -> guarded-strict SCLite verification when runtime-consumable

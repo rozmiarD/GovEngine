@@ -10,15 +10,19 @@ Runtime-consuming hosts should evaluate the security path in this order:
 
 1. SCLite secure verification for strict lifecycle and Kernel Guard status.
 2. GovEngine replay freshness for the guarded root or guarded payload.
-3. Host trust decision for signer, signature, and trust-anchor status.
-4. Execution ticket gate for ticket status and scope binding.
-5. Runtime admission composition through `compose_runtime_admission_result()`
+3. Optional declarative policy: `PolicyEngine.evaluate()` over a compiled pack,
+   projected through `policy_verdict_to_gov_policy_decision()` into the
+   `policy_decision` summary used by runtime admission (see
+   [POLICY_ENGINE.md](POLICY_ENGINE.md)).
+4. Host trust decision for signer, signature, and trust-anchor status.
+5. Execution ticket gate for ticket status and scope binding.
+6. Runtime admission composition through `compose_runtime_admission_result()`
    with host-supplied gate summaries (`runtime_consumable=True` when guarded/
    replay should block).
-6. Runner request creation from an approved execution spec.
-7. Runner receipt binding for admission, ticket, request, and receipt refs.
-8. Evidence and review records bounded by receipt status.
-9. Audit record and audit ledger verification over bounded records.
+7. Runner request creation from an approved execution spec.
+8. Runner receipt binding for admission, ticket, request, and receipt refs.
+9. Evidence and review records bounded by receipt status.
+10. Audit record and audit ledger verification over bounded records.
 
 This order is a safety precondition checklist, not a scheduler.
 `RuntimeAdmissionResult` is not proof and not execution authority. It is a

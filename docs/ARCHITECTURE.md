@@ -56,7 +56,7 @@ outside that registry. See also [API_BOUNDARY.md](API_BOUNDARY.md) and
 | --- | --- |
 | `artifact_governance_core` | `govengine.core`, `govengine.boundary`, `govengine.sclite_contracts`, `govengine.lifecycle`, `govengine.signing`, `govengine.replay`, `govengine.deconfliction`, `govengine.state_index`, `govengine.state_machine`, `govengine.state_store` |
 | `planning_contracts_core` | `govengine.planning` |
-| `admission_policy_core` | `govengine.admission` |
+| `admission_policy_core` | `govengine.admission`, `govengine.policy` (+ compiler/model/runtime) |
 | `evidence_review_core` | `govengine.review` |
 | `domain_profile_sdk` | `govengine.profiles` |
 | `runtime_contract_proofs` | `govengine.contract_proofs` |
@@ -81,12 +81,16 @@ Purpose:
 Modules:
 
 - `govengine.admission`
+- `govengine.policy` (compiler, model, runtime)
 - `govengine.review`
 
 Purpose:
 
 - validate neutral admission, policy-decision, approval, audit, evidence, and
   review records;
+- evaluate declarative policy packs through `PolicyEngine` and project
+  `PolicyVerdict` into `GovPolicyDecision` via
+  `policy_verdict_to_gov_policy_decision()`;
 - compose and validate `RuntimeAdmissionResult` through
   `compose_runtime_admission_result()`, `validate_runtime_admission_result()`,
   `validate_runtime_admission_proof_inputs()`, and bounded public summaries;
@@ -100,8 +104,8 @@ Purpose:
 does not by itself enforce receipt obligation on arbitrary stored records the way
 `compose_runtime_admission_result()` does.
 
-See [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md) and
-[EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md).
+See [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md), [POLICY_ENGINE.md](POLICY_ENGINE.md),
+and [EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md).
 
 ### 2. Contract layer
 

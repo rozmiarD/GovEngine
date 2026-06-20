@@ -6,6 +6,17 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+### Policy engine MVP (`govengine.policy`)
+
+- New public surface: `govengine.policy` with `PolicyRequest`, `PolicyVerdict`, `PolicyObligation`, `PolicyConstraint` (schema `v0.1`)
+- `PolicyCompiler` / `compile_policy_pack`: declarative YAML/JSON policy packs → deterministic `CompiledPolicyPack`; rejects empty packs and conflicting rules on the same conditions
+- `PolicyEngine` / `evaluate_policy`: fail-closed evaluation with built-in invariants (`unsafe_execution_shape`, destructive actions without approval evidence, critical mutating actions without approval)
+- Rule effects: `allow`, `allow_with_obligations`, `approval_required`, `deny`; conditions match dotted paths such as `action.mode` and `resource.criticality`
+- `policy_verdict_to_gov_policy_decision()` projects `PolicyVerdict` into legacy `GovPolicyDecision` for `compose_runtime_admission_result()`
+- Tests: `tests/test_policy_engine.py`
+- Docs: [docs/POLICY_ENGINE.md](docs/POLICY_ENGINE.md); updates to admission/architecture/runbook docs
+- `API_STABILITY_MATRIX.md`: `govengine.policy` row; alpha export count 203
+
 ## 0.14.0
 
 - Publishes the `0.14.0` package line over `sclite-core>=1.0.3,<1.1` after
