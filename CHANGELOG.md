@@ -6,6 +6,8 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+## 0.15.0 - 2026-06-20
+
 ### Policy engine MVP (`govengine.policy`)
 
 - New public surface: `govengine.policy` with `PolicyRequest`, `PolicyVerdict`, `PolicyObligation`, `PolicyConstraint` (schema `v0.1`)
@@ -14,7 +16,7 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 - Rule effects: `allow`, `allow_with_obligations`, `approval_required`, `deny`; conditions match dotted paths such as `action.mode` and `resource.criticality`
 - `policy_verdict_to_gov_policy_decision()` projects `PolicyVerdict` into legacy `GovPolicyDecision` for `compose_runtime_admission_result()`
 - Tests: `tests/test_policy_engine.py`
-- Docs: [docs/POLICY_ENGINE.md](docs/POLICY_ENGINE.md); updates to admission/architecture/runbook docs
+- Docs: [docs/POLICY_ENGINE.md](docs/POLICY_ENGINE.md)
 - `API_STABILITY_MATRIX.md`: `govengine.policy` row; alpha export count 203
 
 ## 0.14.0

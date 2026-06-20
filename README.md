@@ -1,14 +1,14 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.14.0](https://img.shields.io/badge/package-govengine%200.14.0-blueviolet.svg)](https://pypi.org/project/govengine/0.14.0/)
+[![Package: govengine 0.15.0](https://img.shields.io/badge/package-govengine%200.15.0-blueviolet.svg)](https://pypi.org/project/govengine/0.15.0/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Dependency: SCLite >=1.0.3](https://img.shields.io/badge/dependency-SCLite%20%3E%3D1.0.3-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-GovEngine is an alpha package 0.14.0 (`0.14.0`) for deterministic governance-kernel contracts.
+GovEngine is an alpha package 0.15.0 (`0.15.0`) for deterministic governance-kernel contracts.
 
-It consumes **SCLite** as the lower truth layer and exposes reusable Python records, validators, and composition helpers for admission decisions, lifecycle gates, policy/trust summaries, receipt binding, evidence review, replay freshness, and profile conformance. It does not run jobs. It does not own host runtime behavior. The published `0.14.0` alpha line keeps Ravenclaw, Tecrax, carrier adapters, concrete schedulers, credential handling, and live execution outside the kernel.
+It consumes **SCLite** as the lower truth layer and exposes reusable Python records, validators, and composition helpers for admission decisions, lifecycle gates, policy/trust summaries, receipt binding, evidence review, replay freshness, and profile conformance. It does not run jobs. It does not own host runtime behavior. The published `0.15.0` alpha line keeps Ravenclaw, Tecrax, carrier adapters, concrete schedulers, credential handling, and live execution outside the kernel.
 
 ## Dependency Direction
 
@@ -35,20 +35,16 @@ The public surface registry is `govengine.surfaces.public_surface_index()`. It c
 - `runtime_contract_proofs` for public-safe conformance artifacts over Ravenclaw and Tecrax contract shapes. They are fixtures, not runtime authorization.
 - `controlled_execution_core` for approved-spec checks, execution-ticket gates, command-shape normalization, runner request/receipt boundaries, supervision records, dry-run helpers, runtime-shell projections, event/control records, OODA records, and orchestration handoff records.
 
-The `0.14.0` line also adds:
+The `0.15.0` line also adds:
 
 - **PolicyEngine MVP** (`govengine.policy`): declarative policy packs, fail-closed
   `PolicyEngine.evaluate()`, verdict projection via `policy_verdict_to_gov_policy_decision()`;
-- canonical lifecycle vocabulary: `verified_chain` and `verified_lifecycle` are the current names, while `chain_verified` and `lifecycle_verified` remain migration aliases only;
-- stricter signature transition behavior: failed verification can no longer pass solely because a separate trust status says `trusted`;
-- bounded evidence-kind enforcement through `GovEvidenceRequirement.evidence_kind`, without adding a raw evidence store or domain evidence taxonomy;
-- clearer runtime guard failure reporting through the `kernel_guard_required` reason code instead of overloading signature failures;
-- stricter runtime-admission proof inputs for execution-ticket id, ticket digest/reference, guarded root digest, and admission/ticket receipt binding;
-- mypy, ruff, public-truth, alpha-readiness, and documentation anti-drift gates that protect version truth, lifecycle vocabulary, runtime-shell/state-machine separation, and contract-proof classification.
+- retains the `0.14.0` governed-runtime MVP (`RuntimeAdmissionResult`, receipt/evidence
+  binding, audit ledger port, inspect-only workflow) without changing its contract shape.
 
 ## Current Status
 
-GovEngine is the published `0.14.0` alpha line. The package dependency is `sclite-core>=1.0.3,<1.1`, and the Python import package remains `sclite`.
+GovEngine is the published `0.15.0` alpha line. The package dependency is `sclite-core>=1.0.3,<1.1`, and the Python import package remains `sclite`.
 
 The current kernel is useful for deterministic review of prepared governance records. It is not production runtime readiness and it is not an execution authority. `RuntimeAdmissionResult` is the single canonical admission envelope; `compose_runtime_admission_result()` composes host-supplied gate summaries into that envelope, and `validate_runtime_admission_result()` checks the envelope shape. These helpers do not verify SCLite artifacts, persist replay claims, approve operators, or execute commands by themselves.
 
@@ -176,4 +172,4 @@ GovEngine is MIT-licensed. It was extracted from Ravenclaw in contract-first sta
 
 GovEngine should preserve deterministic governance over prompt-only behavior. It must not execute directly from raw intent. Execution by a host runtime requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, allowed runner profile, receipt obligation, and, for runtime-consumable SCLite bundles, guarded-strict verification plus replay-fresh status.
 
-The published `0.14.0` alpha line provides records and validators for that boundary. It does not provide the runtime that acts on them.
+The published `0.15.0` alpha line provides records and validators for that boundary. It does not provide the runtime that acts on them.

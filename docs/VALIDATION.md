@@ -158,7 +158,7 @@ Only this section states current validation expectations. The versioned
 sections under **Historical validation records** are retained release evidence,
 not the active gate.
 
-Expected result for the current `0.14.0` package line (`0.14.0`):
+Expected result for the current `0.15.0` package line (`0.15.0`):
 
 - full pytest passes in the source tree;
 - `python -m mypy govengine` passes for the package surface;
@@ -208,7 +208,8 @@ Expected result for the current `0.14.0` package line (`0.14.0`):
 - inspect-only admission workflow tests must validate and summarize
   `RuntimeAdmissionResult` records without creating runner requests, receipts,
   replay claims, audit entries, target contact, or live execution authority;
-- no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced.
+- no queue persistence, scheduler loop, carrier adapter, credential store, runtime storage, live command, or live execution authority is introduced;
+- PolicyEngine MVP tests pass for `govengine.policy` compile/evaluate paths and `policy_verdict_to_gov_policy_decision()` projection.
 
 ## Operator/runbook docs gate
 
@@ -231,6 +232,15 @@ git diff --check
 ```
 
 ## Historical validation records
+
+Historical expected result for the `0.14.0` package line (`0.14.0`):
+
+- full pytest passes in the source tree;
+- `python -m mypy govengine` passes for the package surface;
+- `scripts/validate_clean_package_install.py` passes, rejects retired module paths from the installed artifact, and runs `pip check` inside its newly created virtual environment;
+- `python scripts/validate_public_truth.py` passes;
+- `python scripts/validate_alpha_readiness.py` passes;
+- governed-runtime MVP surfaces (`RuntimeAdmissionResult`, receipt/evidence binding, audit ledger port, inspect-only workflow) pass without PolicyEngine MVP (`govengine.policy` landed in `0.15.0`).
 
 Historical expected result for the published `0.1.7` source line:
 

@@ -2,8 +2,8 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current package baseline: `govengine==0.14.0` (`0.14.0`), depending on `sclite-core>=1.0.3,<1.1`.
-Published PyPI baseline is `govengine==0.14.0`.
+Current package baseline: `govengine==0.15.0` (`0.15.0`), depending on `sclite-core>=1.0.3,<1.1`.
+Published PyPI baseline is `govengine==0.15.0`.
 
 ## Architecture thesis
 
@@ -62,9 +62,19 @@ Runtimes own UX/integration.
 SCLite owns proof/review artifacts.
 ```
 
-## Current 0.14.x alpha line
+## Current 0.15.x alpha line
 
-The current `0.14.x` alpha line retains the neutral kernel shape, keeps
+The current `0.15.x` alpha line adds **PolicyEngine MVP** (`govengine.policy`)
+on top of the governed-runtime MVP baseline published in `0.14.0`:
+
+- declarative policy packs compiled by `PolicyCompiler` / `compile_policy_pack`;
+- fail-closed `PolicyEngine` / `evaluate_policy` with built-in invariants;
+- `policy_verdict_to_gov_policy_decision()` projection into legacy admission records;
+- docs in `docs/POLICY_ENGINE.md` and tests in `tests/test_policy_engine.py`.
+
+Status: PolicyEngine MVP published in `0.15.0`.
+
+The line retains the neutral kernel shape from `0.14.x`, keeps
 Ravenclaw-derived runtime behavior host-owned, and keeps the former optional
 security facade retired:
 
@@ -142,8 +152,9 @@ requirements and negative tests for any optional live backend.
 
 Remaining follow-up for the next alpha release line:
 
-- keep the published `0.14.0` governed-runtime MVP stable while any
-  future additions return to `Unreleased` and pass the normal PyPI alpha gates;
+- keep the published `0.15.0` PolicyEngine MVP and `0.14.0` governed-runtime MVP
+  stable while any future additions return to `Unreleased` and pass the normal PyPI
+  alpha gates;
 - keep production replay, audit, and evidence persistence host-owned;
 - keep optional `LocalSubprocessRunner` out of the kernel while readiness stays
   `not_applicable`.
