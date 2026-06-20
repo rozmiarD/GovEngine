@@ -41,6 +41,9 @@ dev = [
   "ruff>=0.14,<1",
 ]
 
+[project.scripts]
+govengine-policy = "govengine.policy.cli:main"
+
 [tool.mypy]
 python_version = "3.11"
 files = ["govengine"]

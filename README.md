@@ -38,7 +38,9 @@ The public surface registry is `govengine.surfaces.public_surface_index()`. It c
 The `0.15.0` line also adds:
 
 - **PolicyEngine MVP** (`govengine.policy`): declarative policy packs, fail-closed
-  `PolicyEngine.evaluate()`, verdict projection via `policy_verdict_to_gov_policy_decision()`;
+  `PolicyEngine.evaluate()`, verdict projection via `policy_verdict_to_gov_policy_decision()`,
+  JSON Schema authoring helpers, baseline policy scaffolds, and the `govengine-policy`
+  validation/scaffold CLI;
 - retains the `0.14.0` governed-runtime MVP (`RuntimeAdmissionResult`, receipt/evidence
   binding, audit ledger port, inspect-only workflow) without changing its contract shape.
 

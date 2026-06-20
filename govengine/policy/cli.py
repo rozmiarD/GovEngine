@@ -1,0 +1,120 @@
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+from govengine.api import GovApiError
+from govengine.policy.authoring import (
+    DEFAULT_POLICY_MAX_BYTES,
+    read_policy_pack,
+    render_policy_pack_json,
+    validate_policy_pack,
+)
+from govengine.policy.baselines import available_baseline_policy_names, baseline_policy_pack
+from govengine.policy.schema import POLICY_SCHEMA_KINDS, policy_json_schema
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog='govengine-policy',
+        description='Author and validate GovEngine policy packs without executing work.',
+    )
+    sub = parser.add_subparsers(dest='command', required=True)
+
+    scaffold = sub.add_parser('scaffold', help='Emit a baseline policy pack as canonical JSON.')
+    scaffold.add_argument('baseline', choices=available_baseline_policy_names())
+    scaffold.add_argument('--policy-id', default='', help='Override the baseline policy_id.')
+    scaffold.add_argument('--version', default='', help='Override the baseline version.')
+    scaffold.add_argument('--output', type=Path, help='Write JSON to this path instead of stdout.')
+
+    schema = sub.add_parser('schema', help='Emit a JSON Schema document.')
+    schema.add_argument('kind', nargs='?', choices=POLICY_SCHEMA_KINDS, default='policy-pack')
+
+    validate = sub.add_parser('validate', help='Validate and compile a policy pack JSON file.')
+    validate.add_argument('policy_pack', type=Path)
+    validate.add_argument('--json', action='store_true', help='Emit machine-readable JSON.')
+    validate.add_argument('--max-bytes', type=int, default=DEFAULT_POLICY_MAX_BYTES)
+
+    compile_cmd = sub.add_parser('compile', help='Validate and emit the normalized compiled policy pack.')
+    compile_cmd.add_argument('policy_pack', type=Path)
+    compile_cmd.add_argument('--json', action='store_true', help='Emit only the compiled policy JSON.')
+    compile_cmd.add_argument('--max-bytes', type=int, default=DEFAULT_POLICY_MAX_BYTES)
+    return parser
+
+
+def _write_or_print(content: str, output: Path | None) -> None:
+    if output is None:
+        print(content, end='')
+        return
+    output.write_text(content, encoding='utf-8')
+
+
+def _validate_report(path: Path, *, max_bytes: int) -> dict[str, Any]:
+    pack = read_policy_pack(path, max_bytes=max_bytes)
+    result = validate_policy_pack(pack)
+    policy_pack = result.policy_pack
+    return {
+        'artifact_type': 'govengine_policy_pack_validation',
+        'schema_version': 'v0.1',
+        'status': 'passed' if result.ok else 'failed',
+        'reason_code': result.reason_code,
+        'diagnostics': list(result.diagnostics),
+        'policy_id': policy_pack.policy_id if policy_pack else str(pack.get('policy_id') or ''),
+        'version': policy_pack.version if policy_pack else str(pack.get('version') or ''),
+        'rule_count': len(policy_pack.rules) if policy_pack else 0,
+        'non_claims': [
+            'Does not execute work.',
+            'Does not verify SCLite artifacts or canonicalize evidence.',
+            'Does not run operator approval workflow.',
+        ],
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = _parser().parse_args(argv)
+    try:
+        if args.command == 'scaffold':
+            pack = baseline_policy_pack(args.baseline, policy_id=args.policy_id, version=args.version)
+            _write_or_print(render_policy_pack_json(pack), args.output)
+            return 0
+        if args.command == 'schema':
+            print(json.dumps(policy_json_schema(args.kind), indent=2, sort_keys=True))
+            return 0
+        if args.command == 'validate':
+            report = _validate_report(args.policy_pack, max_bytes=args.max_bytes)
+            if args.json:
+                print(json.dumps(report, indent=2, sort_keys=True))
+            else:
+                print(
+                    f"policy_validate_{report['status']}:"
+                    f"{report['policy_id']}:rules={report['rule_count']}:"
+                    f"reason={report['reason_code']}"
+                )
+                for diagnostic in report['diagnostics']:
+                    print(f'diagnostic: {diagnostic}')
+            return 0 if report['status'] == 'passed' else 2
+        if args.command == 'compile':
+            pack = read_policy_pack(args.policy_pack, max_bytes=args.max_bytes)
+            result = validate_policy_pack(pack)
+            if not result.ok or result.policy_pack is None:
+                print(f'policy_compile_error: {result.reason_code}', file=sys.stderr)
+                return 2
+            content = render_policy_pack_json(result.policy_pack.as_dict())
+            if args.json:
+                print(content, end='')
+            else:
+                print(f'policy_compile_ok:{result.policy_pack.policy_id}:rules={len(result.policy_pack.rules)}')
+                print(content, end='')
+            return 0
+    except (GovApiError, OSError, KeyError) as exc:
+        reason = getattr(exc, 'reason_code', str(exc))
+        print(f'policy_authoring_error: {reason}', file=sys.stderr)
+        return 2
+    return 2
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

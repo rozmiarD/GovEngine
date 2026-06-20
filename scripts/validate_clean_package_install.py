@@ -16,6 +16,7 @@ import importlib.util
 from importlib.resources import files
 import govengine
 from govengine import public_surface_index
+from govengine.policy import baseline_policy_pack, validate_policy_pack
 
 expected = [
     'artifact_governance_core',
@@ -51,9 +52,10 @@ def absent(module):
 assert govengine.__version__ == '0.15.0'
 assert [surface.name for surface in public_surface_index()] == expected
 assert all(absent(module) for module in retired)
+assert validate_policy_pack(baseline_policy_pack('governed-runtime')).ok
 assert not files('govengine').joinpath('capability_recipes.yaml').is_file()
 assert not files('govengine').joinpath('tool_registry.yaml').is_file()
-print('installed_surface_smoke_ok:govengine==0.15.0:surfaces=7')
+print('installed_surface_smoke_ok:govengine==0.15.0:surfaces=7:policy_authoring=ok')
 """
 
 

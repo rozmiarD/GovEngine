@@ -15,6 +15,9 @@ evidence store, scheduler, or execution authority.
 | `govengine.policy.model` | `PolicyRequest`, `PolicyVerdict`, `PolicyObligation`, `PolicyConstraint`; validators |
 | `govengine.policy.compiler` | `PolicyCompiler`, `CompiledPolicyPack`, `CompileResult`, `PolicyRule` |
 | `govengine.policy.runtime` | `PolicyEngine`, `evaluate_policy()` |
+| `govengine.policy.baselines` | deterministic baseline policy pack generator |
+| `govengine.policy.schema` | JSON Schema documents for authoring and host validation |
+| `govengine.policy.cli` | `govengine-policy` authoring CLI |
 
 Top-level imports are re-exported from `govengine` and listed in
 [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md).
@@ -74,6 +77,52 @@ Compiler rejects:
 - **conflicting rules** that share identical conditions but differ in `effect`
 
 Compiled rules are sorted by `priority` (lower first).
+
+## Authoring CLI
+
+The package ships an authoring CLI. It is deliberately **JSON-first**: JSON is
+the canonical GovEngine policy interchange format, and JSON files are also
+YAML-compatible for hosts that want to store them under `.yaml`. GovEngine does
+not parse domain profile YAML or take over host taxonomy ownership.
+
+Generate a baseline:
+
+```bash
+govengine-policy scaffold governed-runtime --output policy.json
+```
+
+Available baselines:
+
+- `readonly`
+- `mutating-approval`
+- `destructive-deny`
+- `bounded-output`
+- `governed-runtime`
+
+Validate a policy pack:
+
+```bash
+govengine-policy validate policy.json
+govengine-policy validate policy.json --json
+```
+
+Emit the JSON Schema used for authoring tools:
+
+```bash
+govengine-policy schema policy-pack
+govengine-policy schema policy-request
+govengine-policy schema policy-verdict
+```
+
+Normalize a compiled pack:
+
+```bash
+govengine-policy compile policy.json --json
+```
+
+The CLI never executes work, contacts SCLite, writes audit ledgers, or invokes a
+runner. Validation is performed through the same `PolicyCompiler` used by the
+runtime path.
 
 ## Runtime evaluation
 
