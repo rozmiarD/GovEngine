@@ -41,6 +41,10 @@ The `0.15.0` line also adds:
   `PolicyEngine.evaluate()`, verdict projection via `policy_verdict_to_gov_policy_decision()`,
   JSON Schema authoring helpers, baseline policy scaffolds, and the `govengine-policy`
   validation/scaffold CLI;
+- **policy enforcement plan**: deterministic pack/verdict/plan digest binding,
+  an existing `GovAdmissionDecision` reference, and fail-closed projection of a
+  small neutral control set for host runners; GovEngine does not execute or claim
+  host enforcement;
 - retains the `0.14.0` governed-runtime MVP (`RuntimeAdmissionResult`, receipt/evidence
   binding, audit ledger port, inspect-only workflow) without changing its contract shape.
 

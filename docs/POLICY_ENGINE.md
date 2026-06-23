@@ -15,6 +15,7 @@ evidence store, scheduler, or execution authority.
 | `govengine.policy.model` | `PolicyRequest`, `PolicyVerdict`, `PolicyObligation`, `PolicyConstraint`; validators |
 | `govengine.policy.compiler` | `PolicyCompiler`, `CompiledPolicyPack`, `CompileResult`, `PolicyRule` |
 | `govengine.policy.runtime` | `PolicyEngine`, `evaluate_policy()` |
+| `govengine.policy.enforcement` | Policy pack/verdict digest binding, `PolicyEnforcementPlan`, existing admission binding, neutral control projection |
 | `govengine.policy.baselines` | deterministic baseline policy pack generator |
 | `govengine.policy.schema` | JSON Schema documents for authoring and host validation |
 | `govengine.policy.cli` | `govengine-policy` authoring CLI |
@@ -165,6 +166,36 @@ for existing admission composition:
 Pass the resulting summary into `compose_runtime_admission_result()` as
 `policy_decision`. GovEngine still does not execute work or store audit logs.
 
+## Policy enforcement plan and admission binding
+
+`admit_policy_execution(pack, verdict)` is the fail-closed boundary between a
+PolicyEngine verdict and a host runner. It binds the compiled pack and verdict
+with GovEngine-owned `sha256:` record digests and returns a
+`PolicyEnforcementPlan`. `policy_enforcement_admission(plan)` projects that plan
+into the existing `GovAdmissionDecision` contract; it does not introduce a second
+runtime admission envelope. The matching validators reject pack, version,
+verdict, control, plan, admission, or digest drift.
+
+Supported control projection:
+
+| Policy item | Runtime projection | Required host behavior |
+| --- | --- | --- |
+| obligation `receipt` or `receipt_required` | `receipt_required: true` | emit a terminal runner receipt |
+| obligation/constraint `output_digest_required` | `output_digest_required: true` | bind each executed step to a bounded output digest |
+| constraint `output_limit` | `max_output_bytes` | cap the persisted/redacted output record |
+| constraint `timeout` | `timeout_seconds` | apply the tighter timeout at the supported IO boundary |
+| constraint `max_steps` | `max_steps` | reject a workflow exceeding the admitted step count |
+
+Repeated numeric limits project to the smallest positive value. Unknown kinds,
+non-positive limits, invalid boolean controls, deny, and approval-required
+verdicts produce `status: blocked`. The plan and admission record contain no
+commands, credentials, raw output, target URL, or domain taxonomy.
+
+The projection is not proof that a host enforced it. A host must validate the
+plan and admission immediately before execution, enforce all controls, and bind
+both references into its request and receipt. SCLite remains responsible for
+canonical evidence and review artifacts.
+
 ## Boundary (non-claims)
 
 GovEngine policy MVP does **not**:
@@ -173,6 +204,7 @@ GovEngine policy MVP does **not**:
 - run operator approval workflows or persist audit ledgers (see `govengine.admission` ports)
 - verify SCLite tickets, signatures, or guarded bundles
 - authorize live subprocess/SSH/API execution by itself
+- claim that a projected control was enforced by a host runner
 
 Hosts remain responsible for mapping runtime events into `PolicyRequest`,
 supplying approval evidence refs, and acting on verdicts under their own

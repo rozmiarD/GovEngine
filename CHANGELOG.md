@@ -6,6 +6,20 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+### Policy enforcement plan and existing-admission binding
+
+- Added `PolicyEnforcementPlan` and `RuntimeControlProjection` as the GovEngine-owned
+  binding between a compiled policy pack, a PolicyEngine verdict, and
+  host-enforceable neutral controls. Admission uses the existing
+  `GovAdmissionDecision` contract rather than introducing another envelope.
+- Added deterministic GovEngine record digests for compiled policy packs,
+  verdicts, enforcement plans, and admission decisions, plus drift validation.
+- Supported projections are `receipt`/`receipt_required`,
+  `output_digest_required`, `output_limit`, `timeout`, and `max_steps`;
+  unsupported or malformed controls produce a blocked plan and matching denied admission.
+- GovEngine still performs no subprocess, SSH, HTTP, SCLite canonicalization, or
+  domain-specific execution. The host runner must enforce every projected control.
+
 ## 0.15.0 - 2026-06-20
 
 ### Policy engine MVP (`govengine.policy`)
