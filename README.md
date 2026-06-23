@@ -6,20 +6,22 @@
 [![Dependency: SCLite >=1.0.3](https://img.shields.io/badge/dependency-SCLite%20%3E%3D1.0.3-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-GovEngine is an alpha package 0.15.0 (`0.15.0`) for deterministic governance-kernel contracts.
+GovEngine is an alpha package 0.16.0 (`0.16.0`) source line for deterministic governance-kernel contracts.
 
-It consumes **SCLite** as the lower truth layer and exposes reusable Python records, validators, and composition helpers for admission decisions, lifecycle gates, policy/trust summaries, receipt binding, evidence review, replay freshness, and profile conformance. It does not run jobs. It does not own host runtime behavior. The published `0.15.0` alpha line keeps Ravenclaw, Tecrax, carrier adapters, concrete schedulers, credential handling, and live execution outside the kernel.
+It consumes **SCLite** as the lower truth layer and exposes reusable Python records, validators, and composition helpers for admission decisions, lifecycle gates, policy/trust summaries, receipt binding, evidence review, replay freshness, and profile conformance. It does not run jobs. It does not own host runtime behavior. Carrier adapters, concrete schedulers, credentials, domain semantics, and live execution remain outside the kernel.
 
 ## Dependency Direction
 
 ```text
-Ravenclaw -> GovEngine -> SCLite
+Tecrax profile -> RExecOp runtime -> GovEngine governance -> SCLite truth
+Other host runtimes ----------------> GovEngine governance -> SCLite truth
 ```
 
 - **SCLite** owns artifact lifecycle schemas, canonical descriptors, ordered hash-chain verification, guarded verification, tickets, receipts, and evidence truth records.
 - **GovEngine** owns deterministic governance contracts over those truth records: admission envelopes, policy/trust/replay decisions, lifecycle state mapping, receipt/evidence binding, review qualification, profile conformance, and public-safe contract fixtures.
-- **Ravenclaw** owns the concrete security runtime, operator workflow, storage, adapters, target semantics, and live tool behavior.
-- **Tecrax** is a future governed-autoadmin/domain runtime consumer; its current GovEngine presence is a conformance fixture, not a runtime implementation.
+- **RExecOp** owns domain-neutral workflow interpretation, lifecycle, connector dispatch, execution mechanics, deterministic reaction mechanics, and runtime receipts.
+- **Tecrax** owns infrastructure intent, connector semantics, observations, findings, normalization, validation, and runbooks. GovEngine retains a synthetic Tecrax conformance fixture; the operational profile itself lives in Tecrax.
+- **Ravenclaw** is a legacy consumer outside the current RExecOp/Tecrax roadmap.
 
 GovEngine is not SCLite, Ravenclaw, Tecrax, Logdash, an LLM loop, a scanner, a scheduler, a credential manager, a replay database, a PKI/KMS layer, or a subprocess runner.
 
@@ -35,12 +37,15 @@ The public surface registry is `govengine.surfaces.public_surface_index()`. It c
 - `runtime_contract_proofs` for public-safe conformance artifacts over Ravenclaw and Tecrax contract shapes. They are fixtures, not runtime authorization.
 - `controlled_execution_core` for approved-spec checks, execution-ticket gates, command-shape normalization, runner request/receipt boundaries, supervision records, dry-run helpers, runtime-shell projections, event/control records, OODA records, and orchestration handoff records.
 
-The `0.15.0` line also adds:
+The published `0.15.0` line adds:
 
 - **PolicyEngine MVP** (`govengine.policy`): declarative policy packs, fail-closed
   `PolicyEngine.evaluate()`, verdict projection via `policy_verdict_to_gov_policy_decision()`,
   JSON Schema authoring helpers, baseline policy scaffolds, and the `govengine-policy`
-  validation/scaffold CLI;
+  validation/scaffold CLI.
+
+The `0.16.0` source line adds:
+
 - **policy enforcement plan**: deterministic pack/verdict/plan digest binding,
   an existing `GovAdmissionDecision` reference, and fail-closed projection of a
   small neutral control set for host runners; GovEngine does not execute or claim
@@ -50,7 +55,11 @@ The `0.15.0` line also adds:
 
 ## Current Status
 
-GovEngine is the published `0.15.0` alpha line. The package dependency is `sclite-core>=1.0.3,<1.1`, and the Python import package remains `sclite`.
+Current source line: `0.16.0`. Latest published PyPI line: `govengine==0.15.0`.
+The package dependency remains `sclite-core>=1.0.3,<1.1`, and the Python import
+package remains `sclite`. The published wheel does not contain the enforcement-plan
+API added on `main`; consumers of B2 must use the coordinated source line until an
+operator-approved `0.16.0` publication exists.
 
 The current kernel is useful for deterministic review of prepared governance records. It is not production runtime readiness and it is not an execution authority. `RuntimeAdmissionResult` is the single canonical admission envelope; `compose_runtime_admission_result()` composes host-supplied gate summaries into that envelope, and `validate_runtime_admission_result()` checks the envelope shape. These helpers do not verify SCLite artifacts, persist replay claims, approve operators, or execute commands by themselves.
 
@@ -87,6 +96,9 @@ Install the latest published package from PyPI:
 ```bash
 python -m pip install govengine
 ```
+
+That installs `0.15.0` and is suitable for the published PolicyEngine MVP, not
+the unreleased B2 enforcement-plan contract.
 
 For local development:
 
@@ -182,4 +194,4 @@ GovEngine is MIT-licensed. It was extracted from Ravenclaw in contract-first sta
 
 GovEngine should preserve deterministic governance over prompt-only behavior. It must not execute directly from raw intent. Execution by a host runtime requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, allowed runner profile, receipt obligation, and, for runtime-consumable SCLite bundles, guarded-strict verification plus replay-fresh status.
 
-The published `0.15.0` alpha line provides records and validators for that boundary. It does not provide the runtime that acts on them.
+The `0.16.0` source line provides records and validators for that boundary. It does not provide the runtime that acts on them, and it is not yet a published PyPI release.

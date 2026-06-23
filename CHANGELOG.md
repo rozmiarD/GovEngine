@@ -6,6 +6,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Advanced the source package to `0.16.0` so the enforcement-plan API cannot
+  be mistaken for the already published `0.15.0` wheel. Publication remains a
+  separate operator-approved action.
+
 ### Policy enforcement plan and existing-admission binding
 
 - Added `PolicyEnforcementPlan` and `RuntimeControlProjection` as the GovEngine-owned

@@ -14,7 +14,7 @@ from govengine import __version__ as package_version  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '0.15.0'
+EXPECTED_RELEASE_LABEL = '0.16.0'
 PUBLISHED_VERSION = '0.15.0'
 
 SURFACE_HEADINGS = {
@@ -114,12 +114,12 @@ GOVERNED_RUNTIME_RELEASE_MARKERS = (
 
 SOURCE_PYPI_GAP_DOC_MARKERS = {
     'README.md': (
-        'The `0.15.0` line also adds:',
-        'PolicyEngine MVP (`govengine.policy`)',
+        'Current source line: `0.16.0`',
+        'Latest published PyPI line: `govengine==0.15.0`',
     ),
     'docs/ROADMAP.md': (
-        'published in `0.15.0`',
-        'PolicyEngine MVP',
+        '## Current 0.16.x source line',
+        'Published PyPI baseline is `govengine==0.15.0`',
     ),
 }
 
@@ -194,11 +194,9 @@ def _assert_source_pypi_gap_docs(
     roadmap: str,
     changelog: str,
 ) -> None:
-    if version != PUBLISHED_VERSION:
+    if version == PUBLISHED_VERSION:
         return
-    _assert_contains('CHANGELOG.md', changelog, f'## {EXPECTED_RELEASE_LABEL}')
-    if not _changelog_has_current_governed_runtime_mvp(changelog):
-        return
+    _assert_contains('CHANGELOG.md', _changelog_unreleased_section(changelog), 'PolicyEnforcementPlan')
     for path, markers in SOURCE_PYPI_GAP_DOC_MARKERS.items():
         text = {'README.md': readme, 'docs/ROADMAP.md': roadmap}[path]
         for marker in markers:
@@ -211,7 +209,7 @@ def _assert_source_pypi_gap_docs(
     _assert_contains(
         'PUBLIC_STATUS.md',
         public_status,
-        f'PyPI package: `govengine=={PUBLISHED_VERSION}` is the published current alpha package.',
+        f'Latest published PyPI package: `govengine=={PUBLISHED_VERSION}`.',
     )
     unpinned_install = re.compile(r'python -m pip install govengine(?![=<>\[])')
     if not unpinned_install.search(readme):
@@ -310,7 +308,7 @@ def _assert_no_current_stale_status(paths: Iterable[str], version: str) -> None:
 
 def _assert_readme_package_truth(readme: str, version: str) -> None:
     release_url = f'https://pypi.org/project/govengine/{PUBLISHED_VERSION}/'
-    badge = f'package-govengine%20{version}-blueviolet.svg'
+    badge = f'package-govengine%20{PUBLISHED_VERSION}-blueviolet.svg'
     forbidden_dynamic_badges = (
         'img.shields.io/pypi/v/govengine',
         'label=package%3A%20govengine',
@@ -350,8 +348,8 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
     for marker in stale_markers:
         if marker in roadmap:
             raise AssertionError(f'docs/ROADMAP.md:stale_current_roadmap_claim:{marker}')
-    _assert_contains('docs/ROADMAP.md', roadmap, '## Current 0.15.x alpha line')
-    _assert_contains('docs/ROADMAP.md', roadmap, 'The current `0.15.x` alpha line')
+    _assert_contains('docs/ROADMAP.md', roadmap, '## Current 0.16.x source line')
+    _assert_contains('docs/ROADMAP.md', roadmap, 'The current `0.16.x` source line')
     _assert_contains('docs/ROADMAP.md', roadmap, f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`')
 
 
@@ -444,7 +442,7 @@ def main() -> int:
     _assert_roadmap_current_release_truth(roadmap)
     _assert_contains('PUBLIC_STATUS.md', public_status, f'Source/package version: `{version}`.')
     _assert_contains('PUBLIC_STATUS.md', public_status, f'Release label: `{release_label}`.')
-    _assert_contains('PUBLIC_STATUS.md', public_status, f'PyPI package: `govengine=={PUBLISHED_VERSION}` is the published current alpha package.')
+    _assert_contains('PUBLIC_STATUS.md', public_status, f'Latest published PyPI package: `govengine=={PUBLISHED_VERSION}`.')
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
     _assert_contains('PUBLISHING.md', publishing, 'scripts/validate_clean_package_install.py')
@@ -500,10 +498,10 @@ def main() -> int:
             raise AssertionError(f'govengine/{relative}:retired_security_module_present')
     if 'security_profile_helpers' in surface_names:
         raise AssertionError('security_profile_helpers:retired_surface_present')
-    _assert_contains('PUBLIC_STATUS.md', public_status, 'Ravenclaw owns lifecycle artifact projection from its runtime payloads')
+    _assert_contains('PUBLIC_STATUS.md', public_status, 'Host runtimes own lifecycle artifact projection')
     _assert_contains('docs/API_BOUNDARY.md', api_boundary, 'Host-owned lifecycle projection is outside GovEngine')
     _assert_contains('docs/SCLITE_INTEGRATION.md', sclite_integration, 'Host-owned artifact projection is outside GovEngine')
-    _assert_contains('docs/DOMAIN_PROFILE_CONTRACT.md', domain_profile, 'dry-run/local-fixture skeleton used for conformance pressure')
+    _assert_contains('docs/DOMAIN_PROFILE_CONTRACT.md', domain_profile, 'synthetic Tecrax conformance fixture')
     if 'unreleased deterministic demo signer/verifier ports' in public_status:
         raise AssertionError('PUBLIC_STATUS.md:published_demo_ports_marked_unreleased')
     _assert_contains(

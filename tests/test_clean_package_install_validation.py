@@ -39,7 +39,11 @@ def test_clean_package_install_validator_dry_run_documents_clean_env_plan(tmp_pa
     assert commands[0].endswith(f'-m venv {venv}')
     assert any('sclite-owner-update' in command for command in commands)
     assert any('pip install -e .[dev]' in command for command in commands)
-    assert any('installed_surface_smoke_ok:govengine==0.15.0:surfaces=7:policy_authoring=ok' in command for command in commands)
+    assert any(
+        'installed_surface_smoke_ok:govengine==0.16.0:surfaces=7:policy_authoring=ok'
+        in command
+        for command in commands
+    )
     assert any(command.endswith('scripts/validate_public_truth.py') for command in commands)
     assert any(command.endswith('scripts/validate_alpha_readiness.py') for command in commands)
     assert any('-m pytest -q -o cache_dir=' in command for command in commands)

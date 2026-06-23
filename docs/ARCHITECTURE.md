@@ -6,7 +6,7 @@ GovEngine is a deterministic governed-runtime kernel in alpha form. It is design
 host runtime -> GovEngine -> SCLite
 ```
 
-For the current extraction, the host/domain runtime is Ravenclaw. A future infrastructure-operations runtime/profile is reserved as Tecrax. Later carriers may include OpenClaw, MCP/A2A-style transports, or other local harnesses, but GovEngine should not become a carrier-specific adapter or a domain product shell.
+RExecOp is the current domain-neutral host runtime and Tecrax is its infrastructure-operations profile. Ravenclaw is a legacy consumer outside the current RExecOp/Tecrax roadmap. Other host runtimes may consume the same contracts, but GovEngine must not become a carrier-specific adapter or a domain product shell.
 
 ## Governed-runtime MVP chain
 
@@ -198,7 +198,7 @@ forbidden: GovEngine -> Logdash/OpenClaw/MCP/A2A adapters
 ## Current maturity
 
 The package currently covers dry-run-safe helpers and neutral contract gates as
-a kernel in alpha form. The published `govengine==0.15.0` (`0.15.0`) line
+a kernel in alpha form. The `govengine==0.16.0` source line
 includes the PolicyEngine MVP, the governed-runtime MVP from `0.14.0`, and
 roadmap-hardening surfaces described above. Newer work should return to
 `Unreleased` until the next alpha release.

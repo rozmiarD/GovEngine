@@ -158,7 +158,7 @@ Only this section states current validation expectations. The versioned
 sections under **Historical validation records** are retained release evidence,
 not the active gate.
 
-Expected result for the current `0.15.0` package line (`0.15.0`):
+Expected result for the current `0.16.0` package line (`0.16.0`):
 
 - full pytest passes in the source tree;
 - `python -m mypy govengine` passes for the package surface;
@@ -173,8 +173,8 @@ Expected result for the current `0.15.0` package line (`0.15.0`):
 - Ravenclaw public downstream validation passes against the local alpha package line, using explicit runtime paths such as `RAVENCLAW_REPORTS_DIR`, `RAVENCLAW_TMP_DIR`, `RAVENCLAW_LOGDASH_DB`, and `RAVENCLAW_PIPELINE_CONFIG` when the checkout should remain clean/read-only;
 - retired security facade/module paths are absent and cannot re-enter the neutral public surface index;
 - public surface status markers are alpha-labelled and
-  `govengine.sclite_adapter` is absent because Ravenclaw owns projection from
-  its runtime payloads to public SCLite lifecycle artifacts;
+  `govengine.sclite_adapter` is absent because host runtimes own projection
+  from runtime payloads to public SCLite lifecycle artifacts;
 - guarded-bundle runtime flow tests prove first use of a verified SCLite guard
   can be recorded as fresh and a second use of the same `root_tag` is blocked;
 - replay claim-store tests prove the development claim-once port records the

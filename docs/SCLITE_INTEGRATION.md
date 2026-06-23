@@ -153,7 +153,10 @@ Review-only bundles may remain `integrity_only` or `strict_lifecycle`, but a
 runtime-consumable execution ticket must not be accepted from `validate-chain`
 alone.
 
-GovEngine also does not execute live targets by itself. A host runtime such as Ravenclaw remains responsible for concrete execution adapters, artifact persistence, operator approval UX, and public snapshot/demo publishing.
+GovEngine also does not execute live targets by itself. RExecOp or another host
+runtime remains responsible for concrete execution adapters, artifact
+persistence, operator interaction, and bundle emission; SCLite remains the
+canonical artifact/review authority.
 
 ## Why this split matters
 

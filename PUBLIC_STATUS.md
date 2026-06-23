@@ -7,9 +7,14 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Source/package version: `0.15.0`.
-- Release label: `0.15.0`.
-- PyPI package: `govengine==0.15.0` is the published current alpha package.
+- Source/package version: `0.16.0`.
+- Source distribution candidate: `govengine==0.16.0` (not published).
+- Release label: `0.16.0`.
+- Release status: source candidate; not published.
+- Latest published PyPI package: `govengine==0.15.0`.
+- Source/PyPI gap: enforcement-plan contracts on `main` are not present in the
+  `0.15.0` wheel; coordinated consumers must use source until an explicitly
+  approved `0.16.0` publication.
 - SCLite integration: present through helper seams via source dependency `sclite-core>=1.0.3,<1.1`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.
@@ -27,7 +32,7 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
 - Core artifact governance boundaries: initial portable dataclasses for artifact descriptors/envelopes/state, governance context, transition decisions, and execution prerequisites.
-- SCLite lifecycle/review bridge: neutral descriptor/state/transition and review-bundle verdict mapping delegate verification and review semantics to SCLite. Ravenclaw owns lifecycle artifact projection from its runtime payloads and its public proof generation.
+- SCLite lifecycle/review bridge: neutral descriptor/state/transition and review-bundle verdict mapping delegate verification and review semantics to SCLite. Host runtimes own lifecycle artifact projection from runtime payloads; RExecOp owns that projection for its operations.
 - Guard replay helper: `govengine.replay` records observed SCLite Kernel Guard
   roots through host-supplied JSON state so runtimes can reject repeated
   `root_tag` values in require-fresh mode without moving HMAC verification,
@@ -59,7 +64,7 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `govengine==0.15.0`.
+- PyPI publication: completed through `govengine==0.15.0`; `0.16.0` is source-only.
 
 ## What is public-safe today
 
@@ -73,7 +78,7 @@ GovEngine can be reviewed as a small Python package for:
 - artifact deconfliction/change-order and state-index summaries;
 - public surface metadata for current alpha API boundary review;
 - neutral planning/task contract validators for hosts that need a planner-to-runtime handoff without moving domain planning semantics into GovEngine;
-- contract-only domain profile declarations and conformance reports for Ravenclaw and a Tecrax dry-run/local-fixture skeleton;
+- contract-only domain profile declarations and synthetic conformance reports for Ravenclaw and Tecrax, without duplicating the operational Tecrax profile;
 - public-safe runtime contract proof fixtures that show Ravenclaw and Tecrax using the same neutral GovEngine/SCLite contract flow;
 - execution-ticket and approved-spec validation helpers;
 - runner request/receipt shapes;

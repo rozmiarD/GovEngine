@@ -5,6 +5,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+PUBLISHED_VERSION = '0.15.0'
 
 
 def _read(relative: str) -> str:
@@ -27,7 +28,8 @@ def test_current_public_docs_track_package_version() -> None:
     assert f'govengine=={version}' in docs['docs/ROADMAP.md']
     assert f'govengine=={version}' in docs['PUBLIC_STATUS.md']
     assert f'Expected result for the current `{version}` package line' in docs['docs/VALIDATION.md']
-    assert f'published `{version}` alpha line' in docs['README.md']
+    assert f'Current source line: `{version}`' in docs['README.md']
+    assert f'Latest published PyPI line: `govengine=={PUBLISHED_VERSION}`' in docs['README.md']
     assert 'Current 0.12.x alpha line' not in docs['docs/ROADMAP.md']
     assert 'published `0.12` alpha line' not in docs['README.md']
 

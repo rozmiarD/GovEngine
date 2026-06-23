@@ -2,7 +2,7 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current package baseline: `govengine==0.15.0` (`0.15.0`), depending on `sclite-core>=1.0.3,<1.1`.
+Current package baseline: `govengine==0.16.0` (`0.16.0`), depending on `sclite-core>=1.0.3,<1.1`.
 Published PyPI baseline is `govengine==0.15.0`.
 
 ## Architecture thesis
@@ -56,23 +56,26 @@ GovEngine does **not** own:
 Rule of thumb:
 
 ```text
-GovEngine owns mechanics.
+GovEngine owns governance, PolicyEngine, admission, obligations and constraints.
 Profiles own meaning.
-Runtimes own UX/integration.
+Runtimes own lifecycle, execution and integration mechanics.
 SCLite owns proof/review artifacts.
 ```
 
-## Current 0.15.x alpha line
+## Current 0.16.x source line
 
-The current `0.15.x` alpha line adds **PolicyEngine MVP** (`govengine.policy`)
-on top of the governed-runtime MVP baseline published in `0.14.0`:
+The current `0.16.x` source line adds digest-bound policy enforcement plans on
+top of the PolicyEngine MVP published in `0.15.0`:
 
-- declarative policy packs compiled by `PolicyCompiler` / `compile_policy_pack`;
-- fail-closed `PolicyEngine` / `evaluate_policy` with built-in invariants;
-- `policy_verdict_to_gov_policy_decision()` projection into legacy admission records;
-- docs in `docs/POLICY_ENGINE.md` and tests in `tests/test_policy_engine.py`.
+- deterministic pack, verdict, plan and admission digests;
+- `PolicyEnforcementPlan` bound to the existing `GovAdmissionDecision`;
+- neutral projections for receipt, output digest, output limit, timeout and
+  maximum-step controls;
+- fail-closed malformed or unsupported controls;
+- docs in `docs/POLICY_ENGINE.md` and tests in `tests/test_policy_enforcement.py`.
 
-Status: PolicyEngine MVP published in `0.15.0`.
+Status: source implementation and tests complete; PyPI publication remains at
+`0.15.0` and requires a separate operator-approved release.
 
 The line retains the neutral kernel shape from `0.14.x`, keeps
 Ravenclaw-derived runtime behavior host-owned, and keeps the former optional
@@ -150,11 +153,10 @@ optional runner work must use. Live subprocess execution remains disabled by
 default and out of scope until a future host adapter satisfies the runner safety
 requirements and negative tests for any optional live backend.
 
-Remaining follow-up for the next alpha release line:
+Remaining follow-up for the next release line:
 
-- keep the published `0.15.0` PolicyEngine MVP and `0.14.0` governed-runtime MVP
-  stable while any future additions return to `Unreleased` and pass the normal PyPI
-  alpha gates;
+- publish the source-only `0.16.0` enforcement-plan API before consumers raise
+  their released dependency floor;
 - keep production replay, audit, and evidence persistence host-owned;
 - keep optional `LocalSubprocessRunner` out of the kernel while readiness stays
   `not_applicable`.
@@ -188,7 +190,10 @@ Tecrax should supply infrastructure meaning:
 - task families: `inspect`, `diagnose`, `propose_change`, `dry_run_change`, `verify_fixture`, `rollback_plan`;
 - planning stages: `observe`, `diagnose`, `plan_change`, `validate_dry_run`, `approval_required`, `verify_fixture`, `rollback_plan_ready`.
 
-Initial Tecrax work should be dry-run/local-fixture only until GovEngine runner supervision and SCLite review bundles are mature. It must not bring service inventories, host credentials, change-management authority, live infrastructure control, or product UX into GovEngine core.
+Operational Tecrax read-only slices now run through RExecOp; the GovEngine copy
+remains only a synthetic conformance fixture. Tecrax must not bring service
+inventories, host credentials, domain thresholds, live infrastructure control,
+or product UX into GovEngine core.
 
 ## Carrier adapters
 

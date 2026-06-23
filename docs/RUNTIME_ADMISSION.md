@@ -185,7 +185,7 @@ instead of replacing them:
 Delivered in `0.14.0`:
 
 1. `RuntimeAdmissionResult` exists as the core record;
-2. `validate_runtime_admission_result()` enforces basic status/allowed/blocker
+2. `validate_runtime_admission_result()` enforces core status/allowed/blocker
    consistency;
 3. `compose_runtime_admission_result()` composes bounded gate summaries into the
    record;
