@@ -1,12 +1,12 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.15.0](https://img.shields.io/badge/package-govengine%200.15.0-blueviolet.svg)](https://pypi.org/project/govengine/0.15.0/)
+[![Package: govengine 0.16.0](https://img.shields.io/badge/package-govengine%200.16.0-blueviolet.svg)](https://pypi.org/project/govengine/0.16.0/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Dependency: SCLite >=1.0.3](https://img.shields.io/badge/dependency-SCLite%20%3E%3D1.0.3-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-GovEngine is an alpha package 0.16.0 (`0.16.0`) source line for deterministic governance-kernel contracts.
+GovEngine is an alpha package 0.16.0 (`0.16.0`) release line for deterministic governance-kernel contracts.
 
 It consumes **SCLite** as the lower truth layer and exposes reusable Python records, validators, and composition helpers for admission decisions, lifecycle gates, policy/trust summaries, receipt binding, evidence review, replay freshness, and profile conformance. It does not run jobs. It does not own host runtime behavior. Carrier adapters, concrete schedulers, credentials, domain semantics, and live execution remain outside the kernel.
 
@@ -37,14 +37,14 @@ The public surface registry is `govengine.surfaces.public_surface_index()`. It c
 - `runtime_contract_proofs` for public-safe conformance artifacts over Ravenclaw and Tecrax contract shapes. They are fixtures, not runtime authorization.
 - `controlled_execution_core` for approved-spec checks, execution-ticket gates, command-shape normalization, runner request/receipt boundaries, supervision records, dry-run helpers, runtime-shell projections, event/control records, OODA records, and orchestration handoff records.
 
-The published `0.15.0` line adds:
+The published `0.15.0` line added:
 
 - **PolicyEngine MVP** (`govengine.policy`): declarative policy packs, fail-closed
   `PolicyEngine.evaluate()`, verdict projection via `policy_verdict_to_gov_policy_decision()`,
   JSON Schema authoring helpers, baseline policy scaffolds, and the `govengine-policy`
   validation/scaffold CLI.
 
-The `0.16.0` source line adds:
+The published `0.16.0` line adds:
 
 - **policy enforcement plan**: deterministic pack/verdict/plan digest binding,
   an existing `GovAdmissionDecision` reference, and fail-closed projection of a
@@ -55,11 +55,10 @@ The `0.16.0` source line adds:
 
 ## Current Status
 
-Current source line: `0.16.0`. Latest published PyPI line: `govengine==0.15.0`.
+Current source line: `0.16.0`. Latest published PyPI line: `govengine==0.16.0`.
 The package dependency remains `sclite-core>=1.0.3,<1.1`, and the Python import
-package remains `sclite`. The published wheel does not contain the enforcement-plan
-API added on `main`; consumers of B2 must use the coordinated source line until an
-operator-approved `0.16.0` publication exists.
+package remains `sclite`. The published wheel contains the digest-bound
+enforcement-plan API used by coordinated B2 consumers.
 
 The current kernel is useful for deterministic review of prepared governance records. It is not production runtime readiness and it is not an execution authority. `RuntimeAdmissionResult` is the single canonical admission envelope; `compose_runtime_admission_result()` composes host-supplied gate summaries into that envelope, and `validate_runtime_admission_result()` checks the envelope shape. These helpers do not verify SCLite artifacts, persist replay claims, approve operators, or execute commands by themselves.
 
@@ -97,8 +96,8 @@ Install the latest published package from PyPI:
 python -m pip install govengine
 ```
 
-That installs `0.15.0` and is suitable for the published PolicyEngine MVP, not
-the unreleased B2 enforcement-plan contract.
+That installs `0.16.0`, including the PolicyEngine MVP and B2 enforcement-plan
+contracts.
 
 For local development:
 
@@ -194,4 +193,4 @@ GovEngine is MIT-licensed. It was extracted from Ravenclaw in contract-first sta
 
 GovEngine should preserve deterministic governance over prompt-only behavior. It must not execute directly from raw intent. Execution by a host runtime requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, allowed runner profile, receipt obligation, and, for runtime-consumable SCLite bundles, guarded-strict verification plus replay-fresh status.
 
-The `0.16.0` source line provides records and validators for that boundary. It does not provide the runtime that acts on them, and it is not yet a published PyPI release.
+The published `0.16.0` line provides records and validators for that boundary. It does not provide the runtime that acts on them.

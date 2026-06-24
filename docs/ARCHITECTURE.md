@@ -198,7 +198,7 @@ forbidden: GovEngine -> Logdash/OpenClaw/MCP/A2A adapters
 ## Current maturity
 
 The package currently covers dry-run-safe helpers and neutral contract gates as
-a kernel in alpha form. The `govengine==0.16.0` source line
+a kernel in alpha form. The published `govengine==0.16.0` line
 includes the PolicyEngine MVP, the governed-runtime MVP from `0.14.0`, and
 roadmap-hardening surfaces described above. Newer work should return to
 `Unreleased` until the next alpha release.

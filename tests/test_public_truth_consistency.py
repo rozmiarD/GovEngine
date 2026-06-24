@@ -190,23 +190,7 @@ def test_public_truth_version_doc_truth_negative_guards() -> None:
         'stale_mvp_direction_claim',
     }
 
-    source_gap_changelog = (
-        '## Unreleased\n'
-        '- Added `PolicyEnforcementPlan`.\n'
-        '## 0.15.0\n'
-    )
     negative_cases = (
-        (
-            'missing_current_release_readme_marker',
-            r'README.md:missing:Current source line: `0\.16\.0`',
-            lambda: validator._assert_source_pypi_gap_docs(
-                validator.EXPECTED_RELEASE_LABEL,
-                'alpha package 0.16.0 without the source marker',
-                validator._read('PUBLIC_STATUS.md'),
-                validator._read('docs/ROADMAP.md'),
-                source_gap_changelog,
-            ),
-        ),
         (
             'stale_unreleased_api_name',
             'CHANGELOG.md:unreleased_stale_api_name:verify_evidence_review_chain',

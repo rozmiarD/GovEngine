@@ -6,9 +6,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-- Advanced the source package to `0.16.0` so the enforcement-plan API cannot
-  be mistaken for the already published `0.15.0` wheel. Publication remains a
-  separate operator-approved action.
+- No changes after the `0.16.0` release.
+
+## 0.16.0 - 2026-06-24
+
+- Published the enforcement-plan API as the dependency baseline for RExecOp B2.
 
 ### Policy enforcement plan and existing-admission binding
 
