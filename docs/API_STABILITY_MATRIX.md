@@ -65,11 +65,12 @@ runtime behavior.
 | alpha | govengine.state_machine | `GovRunState`, `StateTransition`, `apply_state_transition`, `validate_run_state`, `validate_state_transition` | Neutral run-state transitions; no persistence/scheduler/live-execution authority. |
 | alpha | govengine.state_store | `GovStateStore` | Neutral JSON state helper primitive; production persistence remains host-owned. |
 | alpha | govengine.surfaces | `GovSurface`, `admission_policy_surface`, `domain_profile_sdk_surface`, `public_surface_index`, `runtime_contract_proofs_surface` | Machine-readable public surface registry. |
+| alpha | govengine.triggers | `TRIGGER_PLANNING_REQUEST_SCHEMA_VERSION`, `TriggerPlanningRequest`, `admit_trigger_planning`, `trigger_planning_admission_digest`, `trigger_planning_request_digest`, `validate_trigger_planning_admission`, `validate_trigger_planning_request` | Trigger-planning admission vocabulary over bounded event/rule digests only; RExecOp owns trigger mechanics, profiles own event meaning, and SCLite owns evidence truth. |
 
 Current summary:
 
 - stable exports: 0
-- alpha exports: 214
+- alpha exports: 221
 - fixture exports: 4
 - deprecated exports: 0
 - internal-exposed exports: 0

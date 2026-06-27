@@ -193,6 +193,15 @@ from .runtime_shell import (
     validate_scheduler_tick,
 )
 from .scope_ports import FunctionalScopePort, GovScopePort
+from .triggers import (
+    TRIGGER_PLANNING_REQUEST_SCHEMA_VERSION,
+    TriggerPlanningRequest,
+    admit_trigger_planning,
+    trigger_planning_admission_digest,
+    trigger_planning_request_digest,
+    validate_trigger_planning_admission,
+    validate_trigger_planning_request,
+)
 from .signing import (
     DemoDigestSigner,
     DemoDigestVerifier,
@@ -342,6 +351,8 @@ __all__ = [
     'TransitionDecision',
     'TransitionGate',
     'TransitionPolicy',
+    'TRIGGER_PLANNING_REQUEST_SCHEMA_VERSION',
+    'TriggerPlanningRequest',
     'TrustPolicy',
     'TrustStoreDecision',
     'TrustStorePort',
@@ -349,6 +360,7 @@ __all__ = [
     'admission_decision_from_host_gate',
     'admission_policy_surface',
     'admit_policy_execution',
+    'admit_trigger_planning',
     'apply_control_decision',
     'audit_ledger_entry_digest',
     'audit_ledger_verification_public_summary',
@@ -404,6 +416,8 @@ __all__ = [
     'supervision_plan_from_runner_request',
     'tecrax_contract_proof',
     'tecrax_infra_ops_profile',
+    'trigger_planning_admission_digest',
+    'trigger_planning_request_digest',
     'validate_admission_decision',
     'validate_approval_request',
     'validate_audit_record',
@@ -448,6 +462,8 @@ __all__ = [
     'validate_supervision_decision',
     'validate_supervision_plan',
     'validate_task_contract',
+    'validate_trigger_planning_admission',
+    'validate_trigger_planning_request',
     'verify_lifecycle_manifest',
     'profile_conformance_report',
 ]

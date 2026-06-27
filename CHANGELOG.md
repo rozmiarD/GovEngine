@@ -6,6 +6,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Added `govengine.triggers` with `TriggerPlanningRequest` and
+  `admit_trigger_planning()` for bounded trigger-planning admission over
+  event/rule digests. The surface does not implement scheduling, event intake,
+  execution, domain trigger meaning, or SCLite evidence truth.
+
 ## 0.16.1 - 2026-06-27
 
 - Added the PEP 561 `py.typed` marker and wired the existing `ruff`/`mypy`

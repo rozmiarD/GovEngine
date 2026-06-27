@@ -159,6 +159,32 @@ GovEngine owns only the neutral admission composition mechanics, validation
 shape, reason codes, blockers, next actions, bounded references, and future
 ports needed by host runtimes.
 
+## Trigger Planning Admission
+
+`govengine.triggers.TriggerPlanningRequest` is the bounded admission vocabulary
+for trigger decisions that may create an operation plan. It is not a scheduler,
+event bus, discovery engine, execution gate, or profile semantics layer.
+
+The request carries only event/rule identifiers and digests, the trigger
+decision, and the requested operation intent/mode when the decision is
+`plan_operation`. It must not carry raw event payloads, private targets,
+credentials, commands, stdout/stderr, URLs, or scheduler state.
+
+`admit_trigger_planning()` returns the existing `GovAdmissionDecision` envelope:
+
+- `plan_operation` is allowed only for `dry_run` or `read_only` operation modes
+  with a bound rule digest and operation intent;
+- `ignore`, `escalate`, `drop_duplicate`, and `cooldown_blocked` are
+  `record_only` decisions and do not grant operation planning authority;
+- validation is fail-closed for missing event/rule digests, unsupported
+  decisions, mutation modes, raw metadata, or drift between request and
+  admission.
+
+RExecOp remains responsible for event intake, dedupe, cooldown and operation
+planning mechanics. Profiles such as Tecrax remain responsible for domain event
+meaning and rule packs. SCLite remains responsible for evidence and receipt
+truth.
+
 ## Relationship To Existing Modules
 
 The implementation composes host-supplied summaries from existing surfaces
