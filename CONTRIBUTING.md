@@ -1,6 +1,6 @@
 # Contributing to GovEngine
 
-GovEngine is an alpha package (`0.16.0`) governed-runtime kernel. Contributions should preserve the package boundary:
+GovEngine is an alpha package (`0.16.1`) governed-runtime kernel. Contributions should preserve the package boundary:
 
 ```text
 domain profile -> host runtime -> GovEngine -> SCLite

@@ -49,13 +49,13 @@ def absent(module):
     except ModuleNotFoundError:
         return True
 
-assert govengine.__version__ == '0.16.0'
+assert govengine.__version__ == '0.16.1'
 assert [surface.name for surface in public_surface_index()] == expected
 assert all(absent(module) for module in retired)
 assert validate_policy_pack(baseline_policy_pack('governed-runtime')).ok
 assert not files('govengine').joinpath('capability_recipes.yaml').is_file()
 assert not files('govengine').joinpath('tool_registry.yaml').is_file()
-print('installed_surface_smoke_ok:govengine==0.16.0:surfaces=7:policy_authoring=ok')
+print('installed_surface_smoke_ok:govengine==0.16.1:surfaces=7:policy_authoring=ok')
 """
 
 

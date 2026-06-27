@@ -7,13 +7,13 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Source/package version: `0.16.0`.
-- Published distribution: `govengine==0.16.0`.
-- Release label: `0.16.0`.
+- Source/package version: `0.16.1`.
+- Published distribution: `govengine==0.16.1`.
+- Release label: `0.16.1`.
 - Release status: published alpha.
-- Latest published PyPI package: `govengine==0.16.0`.
-- Source/PyPI gap: closed for the `0.16.0` B2 enforcement-plan contract line.
-- SCLite integration: present through helper seams via source dependency `sclite-core>=1.0.3,<1.1`.
+- Latest published PyPI package: `govengine==0.16.1`.
+- Source/PyPI gap: closed for the `0.16.1` B2 enforcement-plan contract line.
+- SCLite integration: present through helper seams via source dependency `sclite-core>=1.0.5,<1.1`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.
 - Event model: initial `govengine.events` envelopes define transport-neutral governance metadata without raw prompts, credentials, live commands, carrier payloads, or scheduling claims.
@@ -62,7 +62,7 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `govengine==0.16.0`.
+- PyPI publication: completed through `govengine==0.16.1`.
 
 ## What is public-safe today
 

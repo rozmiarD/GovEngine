@@ -6,9 +6,17 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+## 0.16.1 - 2026-06-27
+
 - Added the PEP 561 `py.typed` marker and wired the existing `ruff`/`mypy`
   developer tooling into CI so GovEngine participates in the stack-wide quality
   baseline.
+- Published `govengine==0.16.1` as a packaging and public-truth patch over
+  `sclite-core>=1.0.5,<1.1`.
+- Kept GovEngine ownership unchanged: governance, policy, admission,
+  obligations, constraints, and enforcement-plan contracts only; no scheduler,
+  executor, profile semantics, SCLite truth authority, or live backend was
+  added.
 
 ## 0.16.0 - 2026-06-24
 
