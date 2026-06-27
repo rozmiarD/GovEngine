@@ -33,6 +33,10 @@ jobs:
         run: python scripts/validate_public_truth.py
       - name: Validate alpha readiness
         run: python scripts/validate_alpha_readiness.py
+      - name: Ruff
+        run: python -m ruff check .
+      - name: Mypy
+        run: python -m mypy govengine
       - name: Test
         run: python -m pytest -q
 

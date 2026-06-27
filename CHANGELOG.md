@@ -6,7 +6,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-- No changes after the `0.16.0` release.
+- Added the PEP 561 `py.typed` marker and wired the existing `ruff`/`mypy`
+  developer tooling into CI so GovEngine participates in the stack-wide quality
+  baseline.
 
 ## 0.16.0 - 2026-06-24
 

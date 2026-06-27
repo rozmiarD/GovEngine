@@ -76,6 +76,9 @@ packages = [
   "govengine.policy.runtime",
 ]
 
+[tool.setuptools.package-data]
+govengine = ["py.typed"]
+
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
