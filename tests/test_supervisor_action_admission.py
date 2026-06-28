@@ -121,6 +121,52 @@ def test_supervisor_action_requires_human_signoff_for_recovery_actions() -> None
     assert admission.blockers == ('human_signoff_required',)
 
 
+def test_supervisor_action_allows_signed_manual_recovery_context() -> None:
+    request = SupervisorActionRequest.from_mapping(
+        _request(
+            action='mark_stale',
+            reason='operator_break_glass',
+            observation='manual_recovery',
+            human_signoff=True,
+            actor_ref='operator:local-admin',
+            scope='operation:op-1',
+        )
+    )
+
+    admission = admit_supervisor_action(request)
+
+    assert admission.allowed is True
+    assert admission.outcome == 'allowed'
+    assert admission.signal['actor_ref'] == 'operator:local-admin'
+    assert admission.signal['scope'] == 'operation:op-1'
+
+
+def test_supervisor_action_rejects_signed_recovery_without_actor_or_scope() -> None:
+    with pytest.raises(GovApiError, match='supervisor_action_missing_actor:mark_stale'):
+        SupervisorActionRequest.from_mapping(
+            _request(
+                action='mark_stale',
+                reason='operator_break_glass',
+                observation='manual_recovery',
+                human_signoff=True,
+                actor_ref='',
+                scope='operation:op-1',
+            )
+        )
+
+    with pytest.raises(GovApiError, match='supervisor_action_missing_scope:mark_stale'):
+        SupervisorActionRequest.from_mapping(
+            _request(
+                action='mark_stale',
+                reason='operator_break_glass',
+                observation='manual_recovery',
+                human_signoff=True,
+                actor_ref='operator:local-admin',
+                scope='',
+            )
+        )
+
+
 def test_supervisor_action_rejects_raw_metadata() -> None:
     with pytest.raises(GovApiError, match='forbidden_supervisor_action_metadata:raw_event'):
         validate_supervisor_action_request(_request(metadata={'raw_event': {'subject': 'host-1'}}))

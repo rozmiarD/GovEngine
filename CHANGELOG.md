@@ -6,7 +6,7 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-## 0.16.4 - Supervisor action admission source line
+## 0.16.5 - Supervisor action admission source line
 
 - Added `govengine.supervisor_actions` with `SupervisorActionRequest` and
   `admit_supervisor_action()` for bounded runtime-supervisor admission over
@@ -16,6 +16,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 - `block_autostart` admission now requires the stale-operation age to meet or
   exceed the declared stale-age threshold, so premature runtime blockers are
   denied fail-closed.
+- Signed manual recovery requests now carry bounded `actor_ref` and `scope`
+  fields. Human-signoff supervisor actions are rejected when either field is
+  missing, keeping manual recovery auditable without giving GovEngine runtime
+  execution authority.
 
 ## 0.16.2 - 2026-06-28
 

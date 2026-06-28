@@ -6,7 +6,7 @@
 [![Dependency: SCLite >=1.0.5](https://img.shields.io/badge/dependency-SCLite%20%3E%3D1.0.5-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-GovEngine is an alpha package 0.16.4 (`0.16.4`) source line for deterministic governance-kernel contracts.
+GovEngine is an alpha package 0.16.5 (`0.16.5`) source line for deterministic governance-kernel contracts.
 
 It consumes **SCLite** as the lower truth layer and exposes reusable Python records, validators, and composition helpers for admission decisions, lifecycle gates, policy/trust summaries, receipt binding, evidence review, replay freshness, and profile conformance. It does not run jobs. It does not own host runtime behavior. Carrier adapters, concrete schedulers, credentials, domain semantics, and live execution remain outside the kernel.
 
@@ -55,7 +55,7 @@ The published `0.16.0` line adds:
 
 ## Current Status
 
-Current source line: `0.16.4`. Latest published PyPI line: `govengine==0.16.2`.
+Current source line: `0.16.5`. Latest published PyPI line: `govengine==0.16.2`.
 The package dependency remains `sclite-core>=1.0.5,<1.1`, and the Python import
 package remains `sclite`. The published wheel contains the digest-bound
 enforcement-plan API used by coordinated B2 consumers.

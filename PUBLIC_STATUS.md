@@ -7,13 +7,13 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Source/package version: `0.16.4`.
-- Source distribution target: `govengine==0.16.4`.
+- Source/package version: `0.16.5`.
+- Source distribution target: `govengine==0.16.5`.
 - Published distribution: `govengine==0.16.2`.
-- Release label: `0.16.4`.
-- Release status: published alpha.
+- Release label: `0.16.5`.
+- Release status: source alpha; latest published PyPI remains listed below.
 - Latest published PyPI package: `govengine==0.16.2`.
-- Source/PyPI gap: open for the `0.16.4` supervisor-action contract source line; latest published remains `0.16.2`.
+- Source/PyPI gap: open for the `0.16.5` supervisor-action contract source line; latest published remains `0.16.2`.
 - SCLite integration: present through helper seams via source dependency `sclite-core>=1.0.5,<1.1`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.

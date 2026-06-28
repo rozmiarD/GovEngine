@@ -195,8 +195,10 @@ store or SCLite artifact writer.
 
 The request carries only watchdog record digests, neutral observation/action
 names, bounded retry/stale-age limits, and affected operation/event/inbox
-references. It must not carry raw event payloads, target topology, credentials,
-commands, stdout/stderr, URLs, runtime storage paths or scheduler state.
+references. Signed manual-recovery requests also carry bounded `actor_ref` and
+`scope` values. It must not carry raw event payloads, target topology,
+credentials, commands, stdout/stderr, URLs, runtime storage paths or scheduler
+state.
 
 `admit_supervisor_action()` returns the existing `GovAdmissionDecision`
 envelope:
@@ -207,7 +209,8 @@ envelope:
 - `block_autostart` is allowed only when the observed operation age meets or
   exceeds the declared stale-age threshold;
 - `renew_lease`, `mark_stale`, and `escalate_operator` require explicit human
-  sign-off in this alpha contract;
+  sign-off in this alpha contract, and signed requests must include `actor_ref`
+  plus `scope`;
 - validation is fail-closed for missing watchdog digests, unsupported actions,
   unsafe metadata, missing affected references, limit violations or drift
   between request and admission.

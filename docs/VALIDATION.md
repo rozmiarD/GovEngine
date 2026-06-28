@@ -158,7 +158,7 @@ Only this section states current validation expectations. The versioned
 sections under **Historical validation records** are retained release evidence,
 not the active gate.
 
-Expected result for the current `0.16.4` package line (`0.16.4`):
+Expected result for the current `0.16.5` package line (`0.16.5`):
 
 - full pytest passes in the source tree;
 - `python -m mypy govengine` passes for the package surface;

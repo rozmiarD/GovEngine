@@ -14,7 +14,7 @@ from govengine import __version__ as package_version  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '0.16.4'
+EXPECTED_RELEASE_LABEL = '0.16.5'
 PUBLISHED_VERSION = '0.16.2'
 
 SURFACE_HEADINGS = {
@@ -114,7 +114,7 @@ GOVERNED_RUNTIME_RELEASE_MARKERS = (
 
 SOURCE_PYPI_GAP_DOC_MARKERS = {
     'README.md': (
-        'Current source line: `0.16.4`',
+        'Current source line: `0.16.5`',
         'Latest published PyPI line: `govengine==0.16.2`',
     ),
     'docs/ROADMAP.md': (

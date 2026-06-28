@@ -67,6 +67,8 @@ class SupervisorActionRequest:
     event_ref: str = ''
     trigger_ref: str = ''
     inbox_item_name: str = ''
+    actor_ref: str = ''
+    scope: str = ''
     attempt_count: int = 0
     max_attempts: int = 0
     age_seconds: float = 0.0
@@ -91,6 +93,8 @@ class SupervisorActionRequest:
             event_ref=str(raw.get('event_ref') or '').strip(),
             trigger_ref=str(raw.get('trigger_ref') or '').strip(),
             inbox_item_name=str(raw.get('inbox_item_name') or '').strip(),
+            actor_ref=str(raw.get('actor_ref') or '').strip(),
+            scope=str(raw.get('scope') or '').strip(),
             attempt_count=_int(raw.get('attempt_count')),
             max_attempts=_int(raw.get('max_attempts')),
             age_seconds=_float(raw.get('age_seconds')),
@@ -130,6 +134,11 @@ def validate_supervisor_action_request(
         raise GovApiError(f'supervisor_action_missing_inbox_item:{item.action}')
     if item.action == 'block_autostart' and not item.operation_id:
         raise GovApiError('supervisor_action_missing_operation:block_autostart')
+    if item.action in SUPERVISOR_HUMAN_SIGNOFF_ACTIONS and item.human_signoff:
+        if not item.actor_ref:
+            raise GovApiError(f'supervisor_action_missing_actor:{item.action}')
+        if not item.scope:
+            raise GovApiError(f'supervisor_action_missing_scope:{item.action}')
     if item.attempt_count < 0 or item.max_attempts < 0:
         raise GovApiError('invalid_supervisor_attempt_limits')
     if item.age_seconds < 0 or item.max_age_seconds < 0:
@@ -193,6 +202,8 @@ def admit_supervisor_action(
             'event_ref': checked.event_ref,
             'trigger_ref': checked.trigger_ref,
             'inbox_item_name': checked.inbox_item_name,
+            'actor_ref': checked.actor_ref,
+            'scope': checked.scope,
             'attempt_count': checked.attempt_count,
             'max_attempts': checked.max_attempts,
             'age_seconds': checked.age_seconds,

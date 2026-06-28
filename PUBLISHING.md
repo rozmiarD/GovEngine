@@ -2,7 +2,7 @@
 
 GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for future releases without overstating maturity.
 
-Current source line: `govengine==0.16.4` with `sclite-core>=1.0.5,<1.1`.
+Current source line: `govengine==0.16.5` with `sclite-core>=1.0.5,<1.1`.
 Current published PyPI line: `govengine==0.16.2`.
 
 ## Preflight
