@@ -30,7 +30,7 @@ def test_public_truth_validator_passes() -> None:
         check=True,
     )
 
-    assert result.stdout.strip().startswith('public_truth_ok:govengine==0.16.3:')
+    assert result.stdout.strip().startswith('public_truth_ok:govengine==0.16.4:')
 
 
 def test_alpha_readiness_validator_passes() -> None:
@@ -42,7 +42,7 @@ def test_alpha_readiness_validator_passes() -> None:
         check=True,
     )
 
-    assert result.stdout.strip().startswith('alpha_readiness_ok:govengine==0.16.3:')
+    assert result.stdout.strip().startswith('alpha_readiness_ok:govengine==0.16.4:')
 
 
 def test_current_public_docs_do_not_reintroduce_pre_alpha_maturity_claims() -> None:
@@ -84,9 +84,9 @@ def test_public_truth_validator_rejects_validation_history_before_current_gate()
             '## Historical validation records\n'
             'Historical expected result for the published `0.1.7` source line:\n'
             '## Current package-line gate\n'
-            'Expected result for the current `0.16.3` package line\n'
+            'Expected result for the current `0.16.4` package line\n'
             'not the active gate\n',
-            '0.16.3',
+            '0.16.4',
         )
 
 

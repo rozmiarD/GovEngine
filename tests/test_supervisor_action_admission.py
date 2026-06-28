@@ -29,8 +29,8 @@ def _request(**overrides):
         'observation': 'stuck_operation',
         'affected_kind': 'operation',
         'operation_id': 'op-1',
-        'age_seconds': 120,
-        'max_age_seconds': 300,
+        'age_seconds': 3601,
+        'max_age_seconds': 3600,
     }
     payload.update(overrides)
     return payload
@@ -91,6 +91,17 @@ def test_supervisor_action_denies_retry_budget_exceeded() -> None:
     assert admission.outcome == 'denied'
     assert admission.reason_code == 'supervisor_action_retry_budget_exceeded'
     assert admission.blockers == ('retry_budget_exceeded',)
+
+
+def test_supervisor_action_denies_premature_block_autostart() -> None:
+    request = SupervisorActionRequest.from_mapping(_request(age_seconds=120, max_age_seconds=3600))
+
+    admission = admit_supervisor_action(request)
+
+    assert admission.allowed is False
+    assert admission.outcome == 'denied'
+    assert admission.reason_code == 'supervisor_action_stale_age_not_exceeded'
+    assert admission.blockers == ('stale_age_not_exceeded',)
 
 
 def test_supervisor_action_requires_human_signoff_for_recovery_actions() -> None:

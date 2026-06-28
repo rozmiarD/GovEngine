@@ -202,8 +202,10 @@ commands, stdout/stderr, URLs, runtime storage paths or scheduler state.
 envelope:
 
 - `record_health` is `record_only`;
-- `move_to_dead_letter`, `retry_later`, and `block_autostart` are allowed when
-  bounded retry/stale-age controls are satisfied;
+- `move_to_dead_letter` and `retry_later` are allowed when bounded retry
+  controls are satisfied;
+- `block_autostart` is allowed only when the observed operation age meets or
+  exceeds the declared stale-age threshold;
 - `renew_lease`, `mark_stale`, and `escalate_operator` require explicit human
   sign-off in this alpha contract;
 - validation is fail-closed for missing watchdog digests, unsupported actions,

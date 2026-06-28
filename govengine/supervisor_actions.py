@@ -170,11 +170,11 @@ def admit_supervisor_action(
         outcome = 'denied'
         reason_code = 'supervisor_action_retry_budget_exceeded'
         blockers = ('retry_budget_exceeded',)
-    elif checked.action == 'block_autostart' and not _within_stale_age_limit(checked):
+    elif checked.action == 'block_autostart' and not _stale_age_exceeded(checked):
         allowed = False
         outcome = 'denied'
-        reason_code = 'supervisor_action_stale_age_exceeded'
-        blockers = ('stale_age_limit_exceeded',)
+        reason_code = 'supervisor_action_stale_age_not_exceeded'
+        blockers = ('stale_age_not_exceeded',)
 
     admission = admission_decision_from_host_gate(
         decision_id=f'supervisor-admission:{checked.request_id}',
@@ -246,10 +246,10 @@ def _within_retry_budget(item: SupervisorActionRequest) -> bool:
     return item.attempt_count <= item.max_attempts
 
 
-def _within_stale_age_limit(item: SupervisorActionRequest) -> bool:
+def _stale_age_exceeded(item: SupervisorActionRequest) -> bool:
     if item.max_age_seconds <= 0:
         return True
-    return item.age_seconds <= item.max_age_seconds
+    return item.age_seconds >= item.max_age_seconds
 
 
 def _metadata(value: Any) -> dict[str, Any]:

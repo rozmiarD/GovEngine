@@ -6,13 +6,16 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-## 0.16.3 - Supervisor action admission source line
+## 0.16.4 - Supervisor action admission source line
 
 - Added `govengine.supervisor_actions` with `SupervisorActionRequest` and
   `admit_supervisor_action()` for bounded runtime-supervisor admission over
   watchdog record digests, retry/stale limits and affected operation/event/inbox
   references. The surface does not implement a worker, queue, scheduler,
   recovery tool, infrastructure monitor, runtime store or SCLite artifact writer.
+- `block_autostart` admission now requires the stale-operation age to meet or
+  exceed the declared stale-age threshold, so premature runtime blockers are
+  denied fail-closed.
 
 ## 0.16.2 - 2026-06-28
 
