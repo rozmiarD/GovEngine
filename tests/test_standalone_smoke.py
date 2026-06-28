@@ -43,6 +43,7 @@ def test_public_modules_import() -> None:
         'govengine.control',
         'govengine.runtime_shell',
         'govengine.triggers',
+        'govengine.supervisor_actions',
     ]
     for module in modules:
         importlib.import_module(module)

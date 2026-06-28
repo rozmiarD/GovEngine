@@ -185,6 +185,34 @@ planning mechanics. Profiles such as Tecrax remain responsible for domain event
 meaning and rule packs. SCLite remains responsible for evidence and receipt
 truth.
 
+## Supervisor Action Admission
+
+`govengine.supervisor_actions.SupervisorActionRequest` is the bounded admission
+vocabulary for neutral runtime-supervisor decisions such as worker health
+records, stale inbox dead-lettering, retry-later records and autostart blockers.
+It is not a worker, queue, scheduler, recovery tool, monitoring system, runtime
+store or SCLite artifact writer.
+
+The request carries only watchdog record digests, neutral observation/action
+names, bounded retry/stale-age limits, and affected operation/event/inbox
+references. It must not carry raw event payloads, target topology, credentials,
+commands, stdout/stderr, URLs, runtime storage paths or scheduler state.
+
+`admit_supervisor_action()` returns the existing `GovAdmissionDecision`
+envelope:
+
+- `record_health` is `record_only`;
+- `move_to_dead_letter`, `retry_later`, and `block_autostart` are allowed when
+  bounded retry/stale-age controls are satisfied;
+- `renew_lease`, `mark_stale`, and `escalate_operator` require explicit human
+  sign-off in this alpha contract;
+- validation is fail-closed for missing watchdog digests, unsupported actions,
+  unsafe metadata, missing affected references, limit violations or drift
+  between request and admission.
+
+RExecOp remains responsible for watchdog mechanics and worker/inbox/queue
+state. SCLite remains responsible for watchdog decision truth artifacts.
+
 ## Relationship To Existing Modules
 
 The implementation composes host-supplied summaries from existing surfaces

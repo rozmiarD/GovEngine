@@ -7,7 +7,7 @@ import time.
 
 from typing import Any
 
-__version__ = '0.16.2'
+__version__ = '0.16.3'
 
 from .admission import (
     AuditLedgerAppendResult,
@@ -202,6 +202,15 @@ from .triggers import (
     validate_trigger_planning_admission,
     validate_trigger_planning_request,
 )
+from .supervisor_actions import (
+    SUPERVISOR_ACTION_REQUEST_SCHEMA_VERSION,
+    SupervisorActionRequest,
+    admit_supervisor_action,
+    supervisor_action_admission_digest,
+    supervisor_action_request_digest,
+    validate_supervisor_action_admission,
+    validate_supervisor_action_request,
+)
 from .signing import (
     DemoDigestSigner,
     DemoDigestVerifier,
@@ -352,7 +361,9 @@ __all__ = [
     'TransitionGate',
     'TransitionPolicy',
     'TRIGGER_PLANNING_REQUEST_SCHEMA_VERSION',
+    'SUPERVISOR_ACTION_REQUEST_SCHEMA_VERSION',
     'TriggerPlanningRequest',
+    'SupervisorActionRequest',
     'TrustPolicy',
     'TrustStoreDecision',
     'TrustStorePort',
@@ -361,6 +372,7 @@ __all__ = [
     'admission_policy_surface',
     'admit_policy_execution',
     'admit_trigger_planning',
+    'admit_supervisor_action',
     'apply_control_decision',
     'audit_ledger_entry_digest',
     'audit_ledger_verification_public_summary',
@@ -418,6 +430,8 @@ __all__ = [
     'tecrax_infra_ops_profile',
     'trigger_planning_admission_digest',
     'trigger_planning_request_digest',
+    'supervisor_action_admission_digest',
+    'supervisor_action_request_digest',
     'validate_admission_decision',
     'validate_approval_request',
     'validate_audit_record',
@@ -464,6 +478,8 @@ __all__ = [
     'validate_task_contract',
     'validate_trigger_planning_admission',
     'validate_trigger_planning_request',
+    'validate_supervisor_action_admission',
+    'validate_supervisor_action_request',
     'verify_lifecycle_manifest',
     'profile_conformance_report',
 ]

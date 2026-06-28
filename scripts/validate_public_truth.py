@@ -14,7 +14,7 @@ from govengine import __version__ as package_version  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '0.16.2'
+EXPECTED_RELEASE_LABEL = '0.16.3'
 PUBLISHED_VERSION = '0.16.2'
 
 SURFACE_HEADINGS = {
@@ -114,12 +114,12 @@ GOVERNED_RUNTIME_RELEASE_MARKERS = (
 
 SOURCE_PYPI_GAP_DOC_MARKERS = {
     'README.md': (
-        'Current source line: `0.16.0`',
-        'Latest published PyPI line: `govengine==0.16.0`',
+        'Current source line: `0.16.3`',
+        'Latest published PyPI line: `govengine==0.16.2`',
     ),
     'docs/ROADMAP.md': (
         '## Current 0.16.x release line',
-        'Published PyPI baseline is `govengine==0.16.0`',
+        'Published PyPI baseline is `govengine==0.16.2`',
     ),
 }
 
@@ -196,7 +196,8 @@ def _assert_source_pypi_gap_docs(
 ) -> None:
     if version == PUBLISHED_VERSION:
         return
-    _assert_contains('CHANGELOG.md', _changelog_unreleased_section(changelog), 'PolicyEnforcementPlan')
+    _assert_contains('CHANGELOG.md', _changelog_release_section(changelog), 'SupervisorActionRequest')
+    _assert_contains('CHANGELOG.md', _changelog_release_section(changelog), 'admit_supervisor_action()')
     for path, markers in SOURCE_PYPI_GAP_DOC_MARKERS.items():
         text = {'README.md': readme, 'docs/ROADMAP.md': roadmap}[path]
         for marker in markers:

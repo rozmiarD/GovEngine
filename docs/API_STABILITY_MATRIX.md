@@ -66,6 +66,7 @@ runtime behavior.
 | alpha | govengine.state_store | `GovStateStore` | Neutral JSON state helper primitive; production persistence remains host-owned. |
 | alpha | govengine.surfaces | `GovSurface`, `admission_policy_surface`, `domain_profile_sdk_surface`, `public_surface_index`, `runtime_contract_proofs_surface` | Machine-readable public surface registry. |
 | alpha | govengine.triggers | `TRIGGER_PLANNING_REQUEST_SCHEMA_VERSION`, `TriggerPlanningRequest`, `admit_trigger_planning`, `trigger_planning_admission_digest`, `trigger_planning_request_digest`, `validate_trigger_planning_admission`, `validate_trigger_planning_request` | Trigger-planning admission vocabulary over bounded event/rule digests only; RExecOp owns trigger mechanics, profiles own event meaning, and SCLite owns evidence truth. |
+| alpha | govengine.supervisor_actions | `SUPERVISOR_ACTION_REQUEST_SCHEMA_VERSION`, `SupervisorActionRequest`, `admit_supervisor_action`, `supervisor_action_admission_digest`, `supervisor_action_request_digest`, `validate_supervisor_action_admission`, `validate_supervisor_action_request` | Runtime-supervisor action admission vocabulary over bounded watchdog record digests and limits only; RExecOp owns watchdog mechanics, SCLite owns watchdog decision truth, and GovEngine owns admission/fail-closed policy. |
 
 Current summary:
 
