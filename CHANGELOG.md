@@ -6,10 +6,15 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+## 0.16.2 - 2026-06-28
+
 - Added `govengine.triggers` with `TriggerPlanningRequest` and
   `admit_trigger_planning()` for bounded trigger-planning admission over
   event/rule digests. The surface does not implement scheduling, event intake,
   execution, domain trigger meaning, or SCLite evidence truth.
+- Published `govengine==0.16.2` as the admission-contract baseline required by
+  RExecOp trigger planning while keeping execution, scheduler, profile semantics
+  and SCLite truth outside GovEngine.
 
 ## 0.16.1 - 2026-06-27
 

@@ -1,12 +1,12 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.16.1](https://img.shields.io/badge/package-govengine%200.16.1-blueviolet.svg)](https://pypi.org/project/govengine/0.16.1/)
+[![Package: govengine 0.16.2](https://img.shields.io/badge/package-govengine%200.16.2-blueviolet.svg)](https://pypi.org/project/govengine/0.16.2/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Dependency: SCLite >=1.0.5](https://img.shields.io/badge/dependency-SCLite%20%3E%3D1.0.5-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-GovEngine is an alpha package 0.16.1 (`0.16.1`) release line for deterministic governance-kernel contracts.
+GovEngine is an alpha package 0.16.2 (`0.16.2`) release line for deterministic governance-kernel contracts.
 
 It consumes **SCLite** as the lower truth layer and exposes reusable Python records, validators, and composition helpers for admission decisions, lifecycle gates, policy/trust summaries, receipt binding, evidence review, replay freshness, and profile conformance. It does not run jobs. It does not own host runtime behavior. Carrier adapters, concrete schedulers, credentials, domain semantics, and live execution remain outside the kernel.
 
@@ -55,7 +55,7 @@ The published `0.16.0` line adds:
 
 ## Current Status
 
-Current source line: `0.16.1`. Latest published PyPI line: `govengine==0.16.1`.
+Current source line: `0.16.2`. Latest published PyPI line: `govengine==0.16.2`.
 The package dependency remains `sclite-core>=1.0.5,<1.1`, and the Python import
 package remains `sclite`. The published wheel contains the digest-bound
 enforcement-plan API used by coordinated B2 consumers.
@@ -96,7 +96,7 @@ Install the latest published package from PyPI:
 python -m pip install govengine
 ```
 
-That installs `0.16.1`, including the PolicyEngine MVP and B2 enforcement-plan
+That installs `0.16.2`, including the PolicyEngine MVP and B2 enforcement-plan
 contracts.
 
 For local development:

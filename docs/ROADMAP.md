@@ -2,8 +2,8 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current package baseline: `govengine==0.16.1` (`0.16.1`), depending on `sclite-core>=1.0.5,<1.1`.
-Published PyPI baseline is `govengine==0.16.1`.
+Current package baseline: `govengine==0.16.2` (`0.16.2`), depending on `sclite-core>=1.0.5,<1.1`.
+Published PyPI baseline is `govengine==0.16.2`.
 
 ## Architecture thesis
 
@@ -74,7 +74,7 @@ top of the PolicyEngine MVP published in `0.15.0`:
 - fail-closed malformed or unsupported controls;
 - docs in `docs/POLICY_ENGINE.md` and tests in `tests/test_policy_enforcement.py`.
 
-Status: implementation, tests and PyPI publication are complete for `0.16.1`.
+Status: implementation, tests and PyPI publication are complete for `0.16.2`.
 
 The line retains the neutral kernel shape from `0.14.x`, keeps
 Ravenclaw-derived runtime behavior host-owned, and keeps the former optional
@@ -154,7 +154,7 @@ requirements and negative tests for any optional live backend.
 
 Remaining follow-up for the next release line:
 
-- keep released consumer dependency floors aligned with the published `0.16.1`
+- keep released consumer dependency floors aligned with the published `0.16.2`
   enforcement-plan API;
 - keep production replay, audit, and evidence persistence host-owned;
 - keep optional `LocalSubprocessRunner` out of the kernel while readiness stays
