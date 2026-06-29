@@ -15,7 +15,7 @@ from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_
 from govengine.surfaces import public_surface_index  # noqa: E402
 
 EXPECTED_RELEASE_LABEL = '0.16.5'
-PUBLISHED_VERSION = '0.16.2'
+PUBLISHED_VERSION = '0.16.5'
 
 SURFACE_HEADINGS = {
     'Artifact-governance core': 'artifact_governance_core',
@@ -114,12 +114,12 @@ GOVERNED_RUNTIME_RELEASE_MARKERS = (
 
 SOURCE_PYPI_GAP_DOC_MARKERS = {
     'README.md': (
-        'Current source line: `0.16.5`',
-        'Latest published PyPI line: `govengine==0.16.2`',
+        'Current supported stack line: `0.16.5`',
+        'Current supported stack line: `govengine==0.16.5` with `sclite-core==1.0.8`',
     ),
     'docs/ROADMAP.md': (
         '## Current 0.16.x release line',
-        'Published PyPI baseline is `govengine==0.16.2`',
+        'Published PyPI baseline is `govengine==0.16.5`',
     ),
 }
 
@@ -212,9 +212,9 @@ def _assert_source_pypi_gap_docs(
         public_status,
         f'Latest published PyPI package: `govengine=={PUBLISHED_VERSION}`.',
     )
-    unpinned_install = re.compile(r'python -m pip install govengine(?![=<>\[])')
+    unpinned_install = re.compile(r'python -m pip install govengine==0\.16\.5')
     if not unpinned_install.search(readme):
-        raise AssertionError('README.md:missing_unpinned_install_command')
+        raise AssertionError('README.md:missing_exact_install_command')
 
 
 def _assert_changelog_unreleased_api_names(changelog: str) -> None:
@@ -263,7 +263,7 @@ def _pyproject() -> dict:
 
 
 def _project_dependency(project: dict, name: str) -> str:
-    prefix = f'{name}>='
+    prefix = name
     for dependency in project.get('dependencies', []):
         if str(dependency).startswith(prefix):
             return str(dependency)
@@ -319,7 +319,7 @@ def _assert_readme_package_truth(readme: str, version: str) -> None:
             raise AssertionError(f'README.md:dynamic_prerelease_unsafe_badge:{marker}')
     _assert_contains('README.md', readme, badge)
     _assert_contains('README.md', readme, release_url)
-    unpinned_install = re.compile(r'python -m pip install govengine(?![=<>\[])')
+    unpinned_install = re.compile(r'python -m pip install govengine==0\.16\.5')
     match = unpinned_install.search(readme)
     if not match:
         raise AssertionError('README.md:missing_unpinned_install_command')
@@ -350,7 +350,7 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
         if marker in roadmap:
             raise AssertionError(f'docs/ROADMAP.md:stale_current_roadmap_claim:{marker}')
     _assert_contains('docs/ROADMAP.md', roadmap, '## Current 0.16.x release line')
-    _assert_contains('docs/ROADMAP.md', roadmap, 'The current published `0.16.x` line')
+    _assert_contains('docs/ROADMAP.md', roadmap, 'The current published `0.16.x` single supported line is the single supported GovEngine stack line')
     _assert_contains('docs/ROADMAP.md', roadmap, f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`')
 
 

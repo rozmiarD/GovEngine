@@ -26,7 +26,7 @@ python scripts/validate_public_truth.py
 python scripts/validate_alpha_readiness.py
 ```
 
-GitHub Actions source validation may install the current SCLite source line before the editable GovEngine test dependency set during coordinated prerelease waves. For this release line, clean wheel and PyPI install gates validate the published dependency chain.
+GitHub Actions source validation may install the current SCLite source line before the editable GovEngine test dependency set. The active supported stack line is exact-pinned for package consumers, and clean wheel/PyPI install gates validate that published dependency chain.
 
 ## Clean installed-package gate
 

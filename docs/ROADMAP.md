@@ -2,8 +2,8 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current package baseline: `govengine==0.16.5` (`0.16.5`), depending on `sclite-core>=1.0.5,<1.1`.
-Published PyPI baseline is `govengine==0.16.2`.
+Current package baseline: `govengine==0.16.5` (`0.16.5`), depending on `sclite-core==1.0.8`.
+Published PyPI baseline is `govengine==0.16.5`. Older alpha packages are archived only.
 
 ## Architecture thesis
 
@@ -64,7 +64,7 @@ SCLite owns proof/review artifacts.
 
 ## Current 0.16.x release line
 
-The current published `0.16.x` line adds digest-bound policy enforcement plans on
+The current published `0.16.x` single supported line is the single supported GovEngine stack line and adds digest-bound policy enforcement plans on
 top of the PolicyEngine MVP published in `0.15.0`:
 
 - deterministic pack, verdict, plan and admission digests;
@@ -74,7 +74,7 @@ top of the PolicyEngine MVP published in `0.15.0`:
 - fail-closed malformed or unsupported controls;
 - docs in `docs/POLICY_ENGINE.md` and tests in `tests/test_policy_enforcement.py`.
 
-Status: implementation, tests and PyPI publication are complete for `0.16.2`.
+Status: implementation, tests and PyPI publication are complete for `0.16.5`.
 
 The line retains the neutral kernel shape from `0.14.x`, keeps
 Ravenclaw-derived runtime behavior host-owned, and keeps the former optional
@@ -154,7 +154,7 @@ requirements and negative tests for any optional live backend.
 
 Remaining follow-up for the next release line:
 
-- keep released consumer dependency floors aligned with the published `0.16.2`
+- keep released consumer dependency pins aligned with the published `0.16.5`
   enforcement-plan API;
 - keep production replay, audit, and evidence persistence host-owned;
 - keep optional `LocalSubprocessRunner` out of the kernel while readiness stays

@@ -1,9 +1,9 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.16.2](https://img.shields.io/badge/package-govengine%200.16.2-blueviolet.svg)](https://pypi.org/project/govengine/0.16.2/)
+[![Package: govengine 0.16.5](https://img.shields.io/badge/package-govengine%200.16.5-blueviolet.svg)](https://pypi.org/project/govengine/0.16.5/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Dependency: SCLite >=1.0.5](https://img.shields.io/badge/dependency-SCLite%20%3E%3D1.0.5-informational.svg)](https://github.com/rozmiarD/SCLite)
+[![Dependency: SCLite ==1.0.8](https://img.shields.io/badge/dependency-SCLite%20%3D%3D1.0.8-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
 GovEngine is an alpha package 0.16.5 (`0.16.5`) source line for deterministic governance-kernel contracts.
@@ -55,10 +55,10 @@ The published `0.16.0` line adds:
 
 ## Current Status
 
-Current source line: `0.16.5`. Latest published PyPI line: `govengine==0.16.2`.
-The package dependency remains `sclite-core>=1.0.5,<1.1`, and the Python import
-package remains `sclite`. The published wheel contains the digest-bound
-enforcement-plan API used by coordinated B2 consumers.
+Current supported stack line: `govengine==0.16.5` with `sclite-core==1.0.8`.
+Older GovEngine distributions remain available on PyPI as archived alpha history,
+but they are not an active compatibility line. The published wheel contains the
+digest-bound enforcement-plan API used by coordinated B2 consumers.
 
 The current kernel is useful for deterministic review of prepared governance records. It is not production runtime readiness and it is not an execution authority. `RuntimeAdmissionResult` is the single canonical admission envelope; `compose_runtime_admission_result()` composes host-supplied gate summaries into that envelope, and `validate_runtime_admission_result()` checks the envelope shape. These helpers do not verify SCLite artifacts, persist replay claims, approve operators, or execute commands by themselves.
 
@@ -93,11 +93,10 @@ GovEngine does not provide:
 Install the latest published package from PyPI:
 
 ```bash
-python -m pip install govengine
+python -m pip install govengine==0.16.5
 ```
 
-That installs `0.16.2`, including the PolicyEngine MVP and B2 enforcement-plan
-contracts.
+That installs the single supported alpha stack line, including the PolicyEngine MVP and B2 enforcement-plan contracts.
 
 For local development:
 

@@ -37,7 +37,7 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   developer tooling into CI so GovEngine participates in the stack-wide quality
   baseline.
 - Published `govengine==0.16.1` as a packaging and public-truth patch over
-  `sclite-core>=1.0.5,<1.1`.
+  `sclite-core==1.0.8`.
 - Kept GovEngine ownership unchanged: governance, policy, admission,
   obligations, constraints, and enforcement-plan contracts only; no scheduler,
   executor, profile semantics, SCLite truth authority, or live backend was
