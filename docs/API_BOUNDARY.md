@@ -21,6 +21,7 @@ The top-level export stability classification lives in [API_STABILITY_MATRIX.md]
 receipt, and bounded admission/ticket/request/receipt binding boundaries without
 accepting raw intent or granting live backend ownership.
 `govengine.review.qualify_evidence_claim()` checks neutral evidence claims against receipt bounds and the bounded `evidence_kind` requirement without accepting raw targets, raw output, commands, credentials, storage, carrier payloads, or live-execution claims.
+`govengine.governance_trace.project_governance_trace()` projects digest-bound policy request, verdict, enforcement plan, admission, required controls and evidence requirements for truth-path consumers without storing SCLite artifacts or executing work.
 `govengine.profiles.validate_profile_conformance()` checks contract-only domain profile declarations without granting domain taxonomy, carrier adapter, credential, product UX, or live-execution ownership.
 `govengine.contract_proofs.validate_runtime_contract_proof()` checks public-safe multi-profile contract proof fixtures without granting adapter, credential, scheduler, storage, live-execution, or new OODA ownership.
 

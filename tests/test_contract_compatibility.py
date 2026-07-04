@@ -29,7 +29,7 @@ def test_supported_contract_report_lists_rexecop_surfaces() -> None:
     assert 'supervisor_action_request' in surface_ids
     assert 'governance_trace' in surface_ids
     assert report['rexecop_surfaces']
-    assert 'governance_trace' not in report['rexecop_surfaces']
+    assert 'governance_trace' in report['rexecop_surfaces']
 
 
 def test_validate_supported_contract_version_fail_closed_unknown_major() -> None:
@@ -56,6 +56,7 @@ def test_evaluate_contract_compatibility_passes_for_rexecop_declarations() -> No
                 {'surface_id': 'typed_execution_governance_projection', 'schema_version': 'v0.1'},
                 {'surface_id': 'typed_execution_stack_compatibility', 'schema_version': 'v0.1'},
                 {'surface_id': 'typed_execution_control_catalog', 'schema_version': 'v0.1'},
+                {'surface_id': 'governance_trace', 'schema_version': 'v0.1'},
             ],
         }
     )

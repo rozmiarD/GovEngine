@@ -50,6 +50,12 @@ from .contract_compatibility import (
     validate_contract_compatibility_request,
     validate_supported_contract_version,
 )
+from .governance_trace import (
+    GOVERNANCE_TRACE_SCHEMA_VERSION,
+    GovernanceTrace,
+    policy_request_digest,
+    project_governance_trace,
+)
 from .boundary import (
     BoundaryReport,
     DomainProfileConformance,
@@ -505,6 +511,8 @@ __all__ = [
     'evaluate_guard_replay',
     'evaluate_contract_compatibility',
     'evaluate_policy',
+    'GOVERNANCE_TRACE_SCHEMA_VERSION',
+    'GovernanceTrace',
     'explain_policy_evaluation',
     'evidence_claim_public_summary',
     'governance_contract_vocabulary',
@@ -520,7 +528,9 @@ __all__ = [
     'policy_enforcement_admission_digest',
     'policy_enforcement_plan_digest',
     'policy_pack_digest',
+    'policy_request_digest',
     'policy_verdict_digest',
+    'project_governance_trace',
     'project_runtime_controls',
     'public_surface_index',
     'qualify_evidence_claim',

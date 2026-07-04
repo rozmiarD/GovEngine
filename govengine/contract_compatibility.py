@@ -111,9 +111,9 @@ _CONTRACT_ENTRIES: tuple[dict[str, Any], ...] = (
         'surface_id': 'governance_trace',
         'owner': 'govengine.governance_trace',
         'record_type': 'govengine.governance_trace.GovernanceTrace',
-        'supported_versions': (),
+        'supported_versions': ('v0.1',),
         'rexecop_consumer': True,
-        'status': 'planned',
+        'status': 'supported',
     },
 )
 
