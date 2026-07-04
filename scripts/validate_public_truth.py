@@ -153,6 +153,33 @@ MVP_DELIVERY_DOC_MARKERS = {
     ),
 }
 
+G1_G2_EXPLAIN_DOC_MARKERS = {
+    'README.md': (
+        'govengine-policy explain|simulate --json',
+        'explain_supervisor_action()',
+        'govengine-supervisor explain --json',
+    ),
+    'PUBLIC_STATUS.md': (
+        'govengine-policy explain|simulate --json',
+        'explain_supervisor_action()',
+        'govengine-supervisor explain --json',
+    ),
+    'docs/POLICY_ENGINE.md': (
+        'govengine-policy explain policy.json request.json --json',
+        'PolicyEvaluationExplanation',
+    ),
+    'docs/RUNTIME_ADMISSION.md': (
+        'explain_supervisor_action()',
+        'govengine-supervisor explain request.json --json',
+        'SupervisorActionExplanation',
+    ),
+    'docs/RUNNER_SUPERVISION.md': (
+        'explain_supervisor_action',
+        'govengine-supervisor explain',
+        'RExecOp consumes G2',
+    ),
+}
+
 
 def _changelog_unreleased_section(changelog: str) -> str:
     if '## Unreleased' not in changelog:
@@ -248,6 +275,15 @@ def _assert_readme_mvp_doc_links(readme: str) -> None:
 
 
 def _assert_mvp_delivery_doc_truth(markers: Mapping[str, Iterable[str]] = MVP_DELIVERY_DOC_MARKERS) -> None:
+    for path, expected_markers in markers.items():
+        text = _read(path)
+        for marker in expected_markers:
+            _assert_contains(path, text, marker)
+
+
+def _assert_g1_g2_explain_doc_truth(
+    markers: Mapping[str, Iterable[str]] = G1_G2_EXPLAIN_DOC_MARKERS,
+) -> None:
     for path, expected_markers in markers.items():
         text = _read(path)
         for marker in expected_markers:
@@ -468,6 +504,7 @@ def main() -> int:
     _assert_sclite_integration_current_dependency_truth(sclite_integration, dependency)
     _assert_readme_mvp_doc_links(readme)
     _assert_mvp_delivery_doc_truth()
+    _assert_g1_g2_explain_doc_truth()
     _assert_no_published_line_candidate_drift((
         'README.md',
         'CONTRIBUTING.md',

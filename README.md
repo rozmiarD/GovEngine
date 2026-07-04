@@ -1,7 +1,7 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.16.6](https://img.shields.io/badge/package-govengine%200.16.6-blueviolet.svg)](https://pypi.org/project/govengine/0.16.6/)
+[![Package: govengine 0.16.5](https://img.shields.io/badge/package-govengine%200.16.5-blueviolet.svg)](https://pypi.org/project/govengine/0.16.5/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Dependency: SCLite ==1.0.8](https://img.shields.io/badge/dependency-SCLite%20%3D%3D1.0.8-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
@@ -104,7 +104,7 @@ GovEngine does not provide:
 Install the latest published package from PyPI:
 
 ```bash
-python -m pip install govengine==0.16.6
+python -m pip install govengine==0.16.5
 ```
 
 That installs the single supported alpha stack line, including the PolicyEngine MVP,

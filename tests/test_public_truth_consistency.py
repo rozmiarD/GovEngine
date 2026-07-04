@@ -132,6 +132,46 @@ def test_public_truth_validator_rejects_stale_publishing_dependency_line(monkeyp
         validator._assert_no_published_line_candidate_drift(('PUBLISHING.md',))
 
 
+def test_public_truth_validator_tracks_g1_g2_explain_doc_markers() -> None:
+    validator = _load_validator()
+
+    validator._assert_g1_g2_explain_doc_truth({
+        'README.md': (
+            'govengine-policy explain|simulate --json',
+            'explain_supervisor_action()',
+            'govengine-supervisor explain --json',
+        ),
+        'docs/RUNTIME_ADMISSION.md': (
+            'explain_supervisor_action()',
+            'govengine-supervisor explain request.json --json',
+        ),
+    })
+
+
+def test_public_truth_validator_rejects_missing_g1_g2_explain_doc_marker(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    validator = _load_validator()
+
+    def fake_read(path: str) -> str:
+        if path == 'docs/POLICY_ENGINE.md':
+            return 'PolicyEngine without explain CLI.'
+        return ''
+
+    monkeypatch.setattr(validator, '_read', fake_read)
+
+    with pytest.raises(
+        AssertionError,
+        match='docs/POLICY_ENGINE.md:missing:govengine-policy explain policy.json request.json --json',
+    ):
+        validator._assert_g1_g2_explain_doc_truth({
+            'docs/POLICY_ENGINE.md': (
+                'govengine-policy explain policy.json request.json --json',
+                'PolicyEvaluationExplanation',
+            ),
+        })
+
+
 def test_public_truth_validator_tracks_current_mvp_surface_docs() -> None:
     validator = _load_validator()
 
