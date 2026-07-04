@@ -103,6 +103,16 @@ def _evidence_requirements_from_plan(
 def _required_controls_from_plan(plan: PolicyEnforcementPlan) -> tuple[str, ...]:
     controls = plan.controls
     merged = set(controls.typed_execution_control_ids) | set(controls.control_ids)
+    if controls.receipt_required:
+        merged.add('receipt_required')
+    if controls.output_digest_required:
+        merged.add('output_digest_required')
+    if controls.read_only_required:
+        merged.add('read_only_posture')
+    if controls.no_raw_shell:
+        merged.add('no_raw_shell')
+    if controls.mutation_requires_approval:
+        merged.add('mutation_requires_approval')
     return tuple(sorted(item for item in merged if item))
 
 
