@@ -6,6 +6,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+## 0.16.7 - 2026-07-04 - Typed execution governance, contract compatibility and governance trace
+
+- Published `govengine==0.16.7` on PyPI with `sclite-core==1.0.8`.
+- Added M7 `GovernanceTrace` with `project_governance_trace()` and
+  `policy_request_digest()` for digest-bound truth-path consumers.
 - Extended M6.5 contract catalog with `gov_admission_decision` and admission/
   runtime-control surfaces for RExecOp policy enforcement binding.
 - Added M6.5 central contract compatibility with `supported_contract_report()`,
