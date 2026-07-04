@@ -8,6 +8,7 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## 0.16.6 - 2026-07-04 - Supervisor action explanations for recovery/triage
 
+- Published `govengine==0.16.6` on PyPI with `sclite-core==1.0.8`.
 - Added `govengine.supervisor_explain` with `SupervisorActionExplanation` and
   `explain_supervisor_action()` for stable, redacted supervisor admission
   reasoning over retry budgets, stale-age gates, human sign-off and record-only

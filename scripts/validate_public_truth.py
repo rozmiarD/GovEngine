@@ -15,7 +15,7 @@ from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_
 from govengine.surfaces import public_surface_index  # noqa: E402
 
 EXPECTED_RELEASE_LABEL = '0.16.6'
-PUBLISHED_VERSION = '0.16.5'
+PUBLISHED_VERSION = '0.16.6'
 
 SURFACE_HEADINGS = {
     'Artifact-governance core': 'artifact_governance_core',
@@ -119,7 +119,7 @@ SOURCE_PYPI_GAP_DOC_MARKERS = {
     ),
     'docs/ROADMAP.md': (
         '## Current 0.16.x release line',
-        'Published PyPI baseline is `govengine==0.16.5`',
+        'Published PyPI baseline is `govengine==0.16.6`',
     ),
 }
 
@@ -263,8 +263,10 @@ def _assert_source_pypi_gap_docs(
         public_status,
         f'Latest published PyPI package: `govengine=={PUBLISHED_VERSION}`.',
     )
-    unpinned_install = re.compile(r'python -m pip install govengine==0\.16\.5')
-    if not unpinned_install.search(readme):
+    install_pin = re.compile(
+        rf'python -m pip install govengine=={re.escape(PUBLISHED_VERSION)}'
+    )
+    if not install_pin.search(readme):
         raise AssertionError('README.md:missing_exact_install_command')
 
 
@@ -388,8 +390,10 @@ def _assert_readme_package_truth(readme: str, version: str) -> None:
             raise AssertionError(f'README.md:dynamic_prerelease_unsafe_badge:{marker}')
     _assert_contains('README.md', readme, badge)
     _assert_contains('README.md', readme, release_url)
-    unpinned_install = re.compile(r'python -m pip install govengine==0\.16\.5')
-    match = unpinned_install.search(readme)
+    install_pin = re.compile(
+        rf'python -m pip install govengine=={re.escape(PUBLISHED_VERSION)}'
+    )
+    match = install_pin.search(readme)
     if not match:
         raise AssertionError('README.md:missing_unpinned_install_command')
 
