@@ -17,6 +17,11 @@ from govengine.policy.enforcement import (
     validate_policy_enforcement_admission,
     validate_policy_enforcement_plan,
 )
+from govengine.policy.explain import (
+    POLICY_EXPLANATION_SCHEMA_VERSION,
+    PolicyEvaluationExplanation,
+    explain_policy_evaluation,
+)
 from govengine.policy.model import (
     PolicyConstraint,
     PolicyObligation,
@@ -32,10 +37,12 @@ __all__ = [
     'CompiledPolicyPack',
     'CompileResult',
     'POLICY_SCHEMA_KINDS',
+    'POLICY_EXPLANATION_SCHEMA_VERSION',
     'PolicyCompiler',
     'PolicyConstraint',
     'PolicyEngine',
     'PolicyEnforcementPlan',
+    'PolicyEvaluationExplanation',
     'PolicyObligation',
     'PolicyRequest',
     'PolicyRule',
@@ -47,6 +54,7 @@ __all__ = [
     'baseline_policy_pack',
     'compile_policy_pack',
     'evaluate_policy',
+    'explain_policy_evaluation',
     'policy_json_schema',
     'policy_enforcement_admission',
     'policy_enforcement_admission_digest',

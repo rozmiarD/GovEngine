@@ -15,6 +15,7 @@ evidence store, scheduler, or execution authority.
 | `govengine.policy.model` | `PolicyRequest`, `PolicyVerdict`, `PolicyObligation`, `PolicyConstraint`; validators |
 | `govengine.policy.compiler` | `PolicyCompiler`, `CompiledPolicyPack`, `CompileResult`, `PolicyRule` |
 | `govengine.policy.runtime` | `PolicyEngine`, `evaluate_policy()` |
+| `govengine.policy.explain` | `PolicyEvaluationExplanation`, `explain_policy_evaluation()` redacted decision reasoning |
 | `govengine.policy.enforcement` | Policy pack/verdict digest binding, `PolicyEnforcementPlan`, existing admission binding, neutral control projection |
 | `govengine.policy.baselines` | deterministic baseline policy pack generator |
 | `govengine.policy.schema` | JSON Schema documents for authoring and host validation |
@@ -121,6 +122,13 @@ Normalize a compiled pack:
 govengine-policy compile policy.json --json
 ```
 
+Evaluate and explain one bounded request:
+
+```bash
+govengine-policy explain policy.json request.json --json
+govengine-policy simulate policy.json request.json --json
+```
+
 The CLI never executes work, contacts SCLite, writes audit ledgers, or invokes a
 runner. Validation is performed through the same `PolicyCompiler` used by the
 runtime path.
@@ -142,6 +150,27 @@ verdict = PolicyEngine().evaluate(
 )
 decision = policy_verdict_to_gov_policy_decision(verdict)
 ```
+
+## Explanation output
+
+`explain_policy_evaluation(request, pack)` evaluates through the same
+`PolicyEngine` path and returns `PolicyEvaluationExplanation` schema `v0.1`.
+The explanation is intended for host/runtime UX such as RExecOp review screens,
+without requiring the host runtime to reimplement GovEngine policy reasoning.
+
+It includes:
+
+- decision, reason code, risk class and risk score;
+- `evaluation_path`: `invariant`, `matched_rule`, `no_match` or `verdict`;
+- the selected matched rule, when a rule produced the verdict;
+- redacted rule evaluation metadata showing condition keys and match status,
+  without actual request values;
+- obligations and constraints with support status;
+- unsupported controls that make enforcement fail closed;
+- projected neutral runtime controls and enforcement-plan status/blockers.
+
+It does not expose raw request payload values, execute work, approve operators,
+verify SCLite artifacts, or prove that a host enforced projected controls.
 
 ### Built-in invariants (before rule matching)
 

@@ -35,6 +35,7 @@ def test_public_modules_import() -> None:
         'govengine.policy.compiler',
         'govengine.policy.model',
         'govengine.policy.runtime',
+        'govengine.policy.explain',
         'govengine.policy.baselines',
         'govengine.policy.schema',
         'govengine.policy.authoring',

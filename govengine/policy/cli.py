@@ -14,6 +14,7 @@ from govengine.policy.authoring import (
     validate_policy_pack,
 )
 from govengine.policy.baselines import available_baseline_policy_names, baseline_policy_pack
+from govengine.policy.explain import explain_policy_evaluation
 from govengine.policy.schema import POLICY_SCHEMA_KINDS, policy_json_schema
 
 
@@ -42,6 +43,16 @@ def _parser() -> argparse.ArgumentParser:
     compile_cmd.add_argument('policy_pack', type=Path)
     compile_cmd.add_argument('--json', action='store_true', help='Emit only the compiled policy JSON.')
     compile_cmd.add_argument('--max-bytes', type=int, default=DEFAULT_POLICY_MAX_BYTES)
+
+    for command, help_text in (
+        ('explain', 'Evaluate a policy request and emit a stable redacted explanation JSON.'),
+        ('simulate', 'Alias for explain; simulates policy evaluation without executing work.'),
+    ):
+        explain = sub.add_parser(command, help=help_text)
+        explain.add_argument('policy_pack', type=Path)
+        explain.add_argument('request', type=Path)
+        explain.add_argument('--json', action='store_true', help='Emit machine-readable JSON.')
+        explain.add_argument('--max-bytes', type=int, default=DEFAULT_POLICY_MAX_BYTES)
     return parser
 
 
@@ -71,6 +82,23 @@ def _validate_report(path: Path, *, max_bytes: int) -> dict[str, Any]:
             'Does not run operator approval workflow.',
         ],
     }
+
+
+def _read_json_mapping(path: Path, *, max_bytes: int) -> dict[str, Any]:
+    try:
+        if max_bytes <= 0:
+            raise GovApiError('policy_authoring_invalid_max_bytes')
+        raw = path.read_bytes()
+        if len(raw) > max_bytes:
+            raise GovApiError('policy_request_input_too_large')
+        data = json.loads(raw.decode('utf-8'))
+    except GovApiError:
+        raise
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise GovApiError('policy_request_json_invalid', str(exc)) from exc
+    if not isinstance(data, dict):
+        raise GovApiError('policy_request_json_not_mapping')
+    return {str(key): data[key] for key in data}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -109,6 +137,24 @@ def main(argv: list[str] | None = None) -> int:
                 print(f'policy_compile_ok:{result.policy_pack.policy_id}:rules={len(result.policy_pack.rules)}')
                 print(content, end='')
             return 0
+        if args.command in {'explain', 'simulate'}:
+            pack = read_policy_pack(args.policy_pack, max_bytes=args.max_bytes)
+            result = validate_policy_pack(pack)
+            if not result.ok or result.policy_pack is None:
+                print(f'policy_explain_error: {result.reason_code}', file=sys.stderr)
+                return 2
+            request = _read_json_mapping(args.request, max_bytes=args.max_bytes)
+            explanation = explain_policy_evaluation(request, result.policy_pack)
+            payload = explanation.as_dict()
+            if args.json:
+                print(json.dumps(payload, indent=2, sort_keys=True))
+            else:
+                print(
+                    f"policy_explain_{payload['status']}:"
+                    f"{payload['policy_id']}:{payload['decision']}:"
+                    f"reason={payload['reason_code']}"
+                )
+            return 0 if payload['status'] == 'explained' else 2
     except (GovApiError, OSError, KeyError) as exc:
         reason = getattr(exc, 'reason_code', str(exc))
         print(f'policy_authoring_error: {reason}', file=sys.stderr)
