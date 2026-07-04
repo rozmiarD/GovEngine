@@ -44,6 +44,14 @@ _CONTRACT_ENTRIES: tuple[dict[str, Any], ...] = (
         'status': 'supported',
     },
     {
+        'surface_id': 'gov_admission_decision',
+        'owner': 'govengine.admission',
+        'record_type': 'govengine.admission.GovAdmissionDecision',
+        'supported_versions': ('v0.1',),
+        'rexecop_consumer': True,
+        'status': 'supported',
+    },
+    {
         'surface_id': 'trigger_planning_request',
         'owner': 'govengine.triggers',
         'record_type': 'govengine.triggers.TriggerPlanningRequest',

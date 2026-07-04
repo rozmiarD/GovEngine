@@ -24,6 +24,7 @@ def test_supported_contract_report_lists_rexecop_surfaces() -> None:
     assert 'policy_verdict' in surface_ids
     assert 'policy_enforcement_plan' in surface_ids
     assert 'typed_execution_governance_request' in surface_ids
+    assert 'gov_admission_decision' in surface_ids
     assert 'trigger_planning_request' in surface_ids
     assert 'supervisor_action_request' in surface_ids
     assert 'governance_trace' in surface_ids
@@ -48,6 +49,7 @@ def test_evaluate_contract_compatibility_passes_for_rexecop_declarations() -> No
                 {'surface_id': 'policy_verdict', 'schema_version': 'v0.1'},
                 {'surface_id': 'policy_enforcement_plan', 'schema_version': 'v0.1'},
                 {'surface_id': 'runtime_control_projection', 'schema_version': 'v0.1'},
+                {'surface_id': 'gov_admission_decision', 'schema_version': 'v0.1'},
                 {'surface_id': 'trigger_planning_request', 'schema_version': 'v0.1'},
                 {'surface_id': 'supervisor_action_request', 'schema_version': 'v0.1'},
                 {'surface_id': 'typed_execution_governance_request', 'schema_version': 'v0.1'},

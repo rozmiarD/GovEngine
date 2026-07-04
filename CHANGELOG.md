@@ -6,6 +6,8 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Extended M6.5 contract catalog with `gov_admission_decision` and admission/
+  runtime-control surfaces for RExecOp policy enforcement binding.
 - Added M6.5 central contract compatibility with `supported_contract_report()`,
   `evaluate_contract_compatibility()`, `validate_supported_contract_version()`
   and `govengine-policy compatibility --json` for machine-readable supported
