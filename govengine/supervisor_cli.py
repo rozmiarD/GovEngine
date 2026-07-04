@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 from typing import Any
 
 from govengine.api import GovApiError
+from govengine.cli_errors import emit_cli_failure
 from govengine.supervisor_explain import explain_supervisor_action
 
 DEFAULT_MAX_BYTES = 256 * 1024
@@ -63,9 +63,14 @@ def main(argv: list[str] | None = None) -> int:
                 )
             return 0 if payload['status'] == 'explained' else 2
     except GovApiError as exc:
-        reason = getattr(exc, 'reason_code', str(exc))
-        print(f'supervisor_authoring_error: {reason}', file=sys.stderr)
-        return 2
+        reason = str(getattr(exc, 'reason_code', exc))
+        return emit_cli_failure(
+            command=('govengine-supervisor', 'explain'),
+            reason_code=reason,
+            message=f'supervisor explain failed: {reason}',
+            emit_json=bool(args.json),
+            legacy_prefix='supervisor_authoring_error',
+        )
     return 2
 
 

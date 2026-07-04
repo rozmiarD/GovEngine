@@ -133,6 +133,26 @@ The CLI never executes work, contacts SCLite, writes audit ledgers, or invokes a
 runner. Validation is performed through the same `PolicyCompiler` used by the
 runtime path.
 
+### CLI contract registry (G8)
+
+GovEngine publishes a machine-readable registry for `govengine-policy` and
+`govengine-supervisor` operator CLIs:
+
+- schema: `govengine.cli_contract_registry.v0.1`
+- module: `govengine.cli_contracts.cli_contract_registry()`
+- error envelope: `govengine.cli_error.v0.1` on `--json` failure paths
+
+Exit-code policy:
+
+| Code | Meaning |
+| --- | --- |
+| `0` | success, explained, passed, or catalog emission |
+| `2` | validation/input error, blocked policy outcome, or compatibility failure |
+
+Blocked explain/simulate/compatibility outcomes still emit their bounded JSON
+payload before returning exit code `2`. Input and authoring failures with
+`--json` emit `govengine.cli_error.v0.1` instead of unstructured stderr only.
+
 ## Runtime evaluation
 
 ```python

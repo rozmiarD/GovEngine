@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 from typing import Any
 
 from govengine.api import GovApiError
+from govengine.cli_errors import emit_cli_failure
 from govengine.policy.authoring import (
     DEFAULT_POLICY_MAX_BYTES,
     read_policy_pack,
@@ -138,6 +138,10 @@ def _validate_report(path: Path, *, max_bytes: int) -> dict[str, Any]:
     }
 
 
+def _policy_command(command: str) -> tuple[str, ...]:
+    return ('govengine-policy', command)
+
+
 def _read_json_mapping(path: Path, *, max_bytes: int) -> dict[str, Any]:
     try:
         if max_bytes <= 0:
@@ -182,8 +186,13 @@ def main(argv: list[str] | None = None) -> int:
             pack = read_policy_pack(args.policy_pack, max_bytes=args.max_bytes)
             result = validate_policy_pack(pack)
             if not result.ok or result.policy_pack is None:
-                print(f'policy_compile_error: {result.reason_code}', file=sys.stderr)
-                return 2
+                return emit_cli_failure(
+                    command=_policy_command('compile'),
+                    reason_code=str(result.reason_code),
+                    message=f'policy compile failed: {result.reason_code}',
+                    emit_json=bool(args.json),
+                    legacy_prefix='policy_compile_error',
+                )
             content = render_policy_pack_json(result.policy_pack.as_dict())
             if args.json:
                 print(content, end='')
@@ -195,8 +204,13 @@ def main(argv: list[str] | None = None) -> int:
             pack = read_policy_pack(args.policy_pack, max_bytes=args.max_bytes)
             result = validate_policy_pack(pack)
             if not result.ok or result.policy_pack is None:
-                print(f'policy_explain_error: {result.reason_code}', file=sys.stderr)
-                return 2
+                return emit_cli_failure(
+                    command=_policy_command(str(args.command)),
+                    reason_code=str(result.reason_code),
+                    message=f'policy explain failed: {result.reason_code}',
+                    emit_json=bool(args.json),
+                    legacy_prefix='policy_explain_error',
+                )
             request = _read_json_mapping(args.request, max_bytes=args.max_bytes)
             explanation = explain_policy_evaluation(request, result.policy_pack)
             payload = explanation.as_dict()
@@ -291,9 +305,16 @@ def main(argv: list[str] | None = None) -> int:
                 )
             return 0 if payload['status'] == 'passed' else 2
     except (GovApiError, OSError, KeyError) as exc:
-        reason = getattr(exc, 'reason_code', str(exc))
-        print(f'policy_authoring_error: {reason}', file=sys.stderr)
-        return 2
+        reason = str(getattr(exc, 'reason_code', exc))
+        emit_json = bool(getattr(args, 'json', False))
+        command_name = str(getattr(args, 'command', 'govengine-policy'))
+        return emit_cli_failure(
+            command=_policy_command(command_name),
+            reason_code=reason,
+            message=f'policy authoring failed: {reason}',
+            emit_json=emit_json,
+            legacy_prefix='policy_authoring_error',
+        )
     return 2
 
 
