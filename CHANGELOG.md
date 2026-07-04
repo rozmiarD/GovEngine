@@ -6,6 +6,13 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+## 0.16.8 - 2026-07-04 - Registered plugin backend typed execution admission
+
+- Published `govengine==0.16.8` on PyPI with `sclite-core==1.0.8`.
+- Admit registered RExecOp plugin backends in typed execution governance when
+  `registered_plugin_backend` metadata is present.
+- Fix plugin stack compatibility to honor `declared_capability_descriptors`.
+
 ## 0.16.7 - 2026-07-04 - Typed execution governance, contract compatibility and governance trace
 
 - Published `govengine==0.16.7` on PyPI with `sclite-core==1.0.8`.

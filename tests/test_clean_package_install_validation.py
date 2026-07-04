@@ -40,7 +40,7 @@ def test_clean_package_install_validator_dry_run_documents_clean_env_plan(tmp_pa
     assert any('sclite-owner-update' in command for command in commands)
     assert any('pip install -e .[dev]' in command for command in commands)
     assert any(
-        'installed_surface_smoke_ok:govengine==0.16.7:surfaces=7:policy_authoring=ok'
+        'installed_surface_smoke_ok:govengine==0.16.8:surfaces=7:policy_authoring=ok'
         in command
         for command in commands
     )

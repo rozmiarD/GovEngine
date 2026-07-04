@@ -1009,9 +1009,16 @@ def _typed_execution_policy_controls(
     missing_capabilities: list[str],
 ) -> list[dict[str, Any]]:
     descriptor = request.capability_descriptor
+    descriptor_mapping = (
+        descriptor.as_dict()
+        if isinstance(descriptor, RuntimeCapabilityDescriptor)
+        else dict(descriptor)
+    )
     controls: list[dict[str, Any]] = []
 
     backend_supported = request.backend_class in SUPPORTED_BACKEND_CLASSES
+    if not backend_supported and bool(request.metadata.get('registered_plugin_backend')):
+        backend_supported = _stack_backend_supported(descriptor_mapping)
     allowed_backend_classes = _metadata_string_tuple(
         request.metadata.get('allowed_backend_classes')
     )
@@ -1286,6 +1293,8 @@ def _stack_backend_supported(descriptor: Mapping[str, Any]) -> bool:
             return False
         if egress and egress not in SUPPORTED_EGRESS_CLASSES:
             return False
-        capabilities = descriptor.get('capability_descriptors')
-        return isinstance(capabilities, list) and bool(capabilities)
+        capabilities = descriptor.get('capability_descriptors') or descriptor.get(
+            'declared_capability_descriptors'
+        )
+        return isinstance(capabilities, (list, tuple)) and bool(capabilities)
     return False
