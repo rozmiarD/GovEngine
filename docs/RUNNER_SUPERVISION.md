@@ -29,6 +29,11 @@ semantics into these objects. GovEngine validates the neutral representation;
 the host still owns concrete tool adapters, subprocess behavior, artifact
 storage, operator authorization, live execution authority, and audit retention.
 
+Watchdog supervisor admission and redacted recovery/triage explanations are
+documented in [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md) (`admit_supervisor_action`,
+`explain_supervisor_action`, `govengine-supervisor explain`). RExecOp consumes G2
+through `rexecop explain-error` for watchdog records.
+
 Receipt binding across admission, execution ticket, runner request, receipt, and
 evidence references is defined in [RECEIPT_BINDING.md](RECEIPT_BINDING.md).
 `validate_runner_receipt_binding()` verifies the bounded binding before a

@@ -21,8 +21,8 @@ Start here when navigating `docs/`. Package-level status lives in
 | --- | --- |
 | [GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md) | Operator chain and procedures |
 | [SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md) | Required security evaluation order |
-| [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md) | `RuntimeAdmissionResult` contract |
-| [POLICY_ENGINE.md](POLICY_ENGINE.md) | `govengine.policy` MVP |
+| [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md) | `RuntimeAdmissionResult`, supervisor admission and **supervisor explain (G2)** |
+| [POLICY_ENGINE.md](POLICY_ENGINE.md) | `govengine.policy` MVP and **policy explain/simulate (G1)** |
 | [ADMISSION_POLICY.md](ADMISSION_POLICY.md) | Admission/audit record validators |
 | [RECEIPT_BINDING.md](RECEIPT_BINDING.md) | Runner receipt binding |
 | [EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md) | Evidence/review chain + OODA receipt bounds |
