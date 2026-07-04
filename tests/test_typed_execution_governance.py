@@ -311,7 +311,8 @@ def test_project_typed_execution_policy_overlay_maps_runtime_controls() -> None:
         }
     )
 
-    assert overlay['evidence_requirements']['output_digest_required'] is True
+    assert overlay['output_digest_required'] is True
+    assert 'output_digest_required' not in overlay['evidence_requirements']
     assert overlay['allowed_network_egress'] == ['no_network', 'outbound_http']
     assert overlay['allowed_backend_classes'] == ['static_fixture', 'http_api']
     assert overlay['no_raw_shell'] is True
@@ -362,5 +363,5 @@ def test_map_policy_verdict_to_typed_execution_controls_from_bounded_pack() -> N
     assert plan.controls.output_digest_required is True
     assert plan.controls.no_raw_shell is True
     assert overlay['allowed_network_egress'] == ['no_network']
-    assert overlay['evidence_requirements']['output_digest_required'] is True
+    assert overlay['output_digest_required'] is True
     assert 'no_raw_shell' in overlay['typed_execution_control_ids']

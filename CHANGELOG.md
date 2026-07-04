@@ -6,6 +6,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Policy-pack `output_digest_required` now projects to post-IO receipt enforcement
+  overlay only; pre-IO typed execution admission no longer requires
+  `output_digest_ref` before backend IO.
 - Extended typed execution control catalog with policy-pack mappings:
   `TYPED_EXECUTION_CONTROL_CATALOG_ENTRIES`, `project_typed_execution_policy_overlay()`
   and `map_policy_verdict_to_typed_execution_controls()` bridge

@@ -542,7 +542,6 @@ def project_typed_execution_policy_overlay(
     projection = RuntimeControlProjection.from_mapping(controls)
     evidence: dict[str, Any] = {
         'receipt_required': projection.receipt_required,
-        'output_digest_required': projection.output_digest_required,
     }
     if projection.mutation_requires_approval:
         evidence['mutation_requires_approval'] = True
@@ -551,6 +550,8 @@ def project_typed_execution_policy_overlay(
         'policy_control_ids': list(projection.control_ids),
         'typed_execution_control_ids': list(projection.typed_execution_control_ids),
     }
+    if projection.output_digest_required:
+        overlay['output_digest_required'] = True
     if projection.allowed_network_egress:
         overlay['allowed_network_egress'] = list(projection.allowed_network_egress)
     if projection.allowed_backend_classes:
