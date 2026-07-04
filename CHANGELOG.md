@@ -6,6 +6,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Added M6.5 central contract compatibility with `supported_contract_report()`,
+  `evaluate_contract_compatibility()`, `validate_supported_contract_version()`
+  and `govengine-policy compatibility --json` for machine-readable supported
+  GovEngine contract catalog and fail-closed unknown-major version checks.
 - Policy-pack `output_digest_required` now projects to post-IO receipt enforcement
   overlay only; pre-IO typed execution admission no longer requires
   `output_digest_ref` before backend IO.

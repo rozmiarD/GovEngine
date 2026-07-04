@@ -16,6 +16,10 @@ from govengine.policy.authoring import (
 from govengine.policy.baselines import available_baseline_policy_names, baseline_policy_pack
 from govengine.policy.explain import explain_policy_evaluation
 from govengine.policy.schema import POLICY_SCHEMA_KINDS, policy_json_schema
+from govengine.contract_compatibility import (
+    evaluate_contract_compatibility,
+    supported_contract_report,
+)
 from govengine.profile_governance import explain_profile_governance
 from govengine.typed_execution_governance import (
     TypedExecutionStackCompatibilityReport,
@@ -90,6 +94,19 @@ def _parser() -> argparse.ArgumentParser:
         help='Emit the GovEngine typed execution control catalog.',
     )
     control_catalog.add_argument('--json', action='store_true', help='Emit machine-readable JSON.')
+
+    compatibility = sub.add_parser(
+        'compatibility',
+        help='Emit supported GovEngine contract catalog or evaluate a consumer request.',
+    )
+    compatibility.add_argument(
+        'request',
+        nargs='?',
+        type=Path,
+        help='Optional consumer compatibility request JSON.',
+    )
+    compatibility.add_argument('--json', action='store_true', help='Emit machine-readable JSON.')
+    compatibility.add_argument('--max-bytes', type=int, default=DEFAULT_POLICY_MAX_BYTES)
     return parser
 
 
@@ -206,6 +223,32 @@ def main(argv: list[str] | None = None) -> int:
                     f"compatibility={payload['compatibility']['reason_code']}"
                 )
             return 0 if payload['status'] == 'passed' else 2
+        if args.command == 'compatibility':
+            if args.request is None:
+                payload = supported_contract_report()
+            else:
+                request = _read_json_mapping(args.request, max_bytes=args.max_bytes)
+                compatibility_report = evaluate_contract_compatibility(request)
+                payload = compatibility_report.as_dict()
+            if args.json:
+                print(json.dumps(payload, indent=2, sort_keys=True))
+            else:
+                if args.request is None:
+                    print(
+                        'contract_compatibility_catalog:'
+                        f"contracts={len(payload['contracts'])}:"
+                        f"govengine={payload['govengine_version']}"
+                    )
+                else:
+                    print(
+                        f"contract_compatibility_{payload['status']}:"
+                        f"matched={len(payload['matched_contracts'])}:"
+                        f"unsupported={len(payload['unsupported_contracts'])}:"
+                        f"reason={payload['reason_code']}"
+                    )
+            if args.request is not None and payload.get('status') != 'passed':
+                return 2
+            return 0
         if args.command == 'typed-execution-control-catalog':
             payload = typed_execution_control_catalog()
             if args.json:
