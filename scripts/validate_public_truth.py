@@ -153,6 +153,28 @@ MVP_DELIVERY_DOC_MARKERS = {
     ),
 }
 
+G3_PROFILE_GOVERNANCE_DOC_MARKERS = {
+    'README.md': (
+        'govengine-policy profile-governance',
+        'explain_profile_governance()',
+        'ProfileConnectorCompatibilityReport',
+    ),
+    'PUBLIC_STATUS.md': (
+        'Profile governance projection (G3)',
+        'ProfileConnectorCompatibilityReport',
+        'govengine-policy profile-governance',
+    ),
+    'docs/DOMAIN_PROFILE_CONTRACT.md': (
+        '[PROFILE_GOVERNANCE.md](PROFILE_GOVERNANCE.md)',
+        'Profile governance projection (G3)',
+    ),
+    'docs/PROFILE_GOVERNANCE.md': (
+        'ProfileGovernanceProjection',
+        'ProfileConnectorCompatibilityReport',
+        'govengine-policy profile-governance',
+    ),
+}
+
 G1_G2_EXPLAIN_DOC_MARKERS = {
     'README.md': (
         'govengine-policy explain|simulate --json',
@@ -225,6 +247,8 @@ def _assert_source_pypi_gap_docs(
         return
     _assert_contains('CHANGELOG.md', _changelog_release_section(changelog), 'explain_supervisor_action()')
     _assert_contains('CHANGELOG.md', _changelog_release_section(changelog), 'SupervisorActionExplanation')
+    _assert_contains('CHANGELOG.md', _changelog_release_section(changelog), 'explain_profile_governance()')
+    _assert_contains('CHANGELOG.md', _changelog_release_section(changelog), 'ProfileGovernanceProjection')
     for path, markers in SOURCE_PYPI_GAP_DOC_MARKERS.items():
         text = {'README.md': readme, 'docs/ROADMAP.md': roadmap}[path]
         for marker in markers:
@@ -283,6 +307,15 @@ def _assert_mvp_delivery_doc_truth(markers: Mapping[str, Iterable[str]] = MVP_DE
 
 def _assert_g1_g2_explain_doc_truth(
     markers: Mapping[str, Iterable[str]] = G1_G2_EXPLAIN_DOC_MARKERS,
+) -> None:
+    for path, expected_markers in markers.items():
+        text = _read(path)
+        for marker in expected_markers:
+            _assert_contains(path, text, marker)
+
+
+def _assert_g3_profile_governance_doc_truth(
+    markers: Mapping[str, Iterable[str]] = G3_PROFILE_GOVERNANCE_DOC_MARKERS,
 ) -> None:
     for path, expected_markers in markers.items():
         text = _read(path)
@@ -505,6 +538,7 @@ def main() -> int:
     _assert_readme_mvp_doc_links(readme)
     _assert_mvp_delivery_doc_truth()
     _assert_g1_g2_explain_doc_truth()
+    _assert_g3_profile_governance_doc_truth()
     _assert_no_published_line_candidate_drift((
         'README.md',
         'CONTRIBUTING.md',

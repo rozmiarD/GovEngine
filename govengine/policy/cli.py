@@ -16,6 +16,7 @@ from govengine.policy.authoring import (
 from govengine.policy.baselines import available_baseline_policy_names, baseline_policy_pack
 from govengine.policy.explain import explain_policy_evaluation
 from govengine.policy.schema import POLICY_SCHEMA_KINDS, policy_json_schema
+from govengine.profile_governance import explain_profile_governance
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -53,6 +54,14 @@ def _parser() -> argparse.ArgumentParser:
         explain.add_argument('request', type=Path)
         explain.add_argument('--json', action='store_true', help='Emit machine-readable JSON.')
         explain.add_argument('--max-bytes', type=int, default=DEFAULT_POLICY_MAX_BYTES)
+
+    profile_governance = sub.add_parser(
+        'profile-governance',
+        help='Evaluate profile governance projection and connector compatibility without backend IO.',
+    )
+    profile_governance.add_argument('projection', type=Path)
+    profile_governance.add_argument('--json', action='store_true', help='Emit machine-readable JSON.')
+    profile_governance.add_argument('--max-bytes', type=int, default=DEFAULT_POLICY_MAX_BYTES)
     return parser
 
 
@@ -155,6 +164,20 @@ def main(argv: list[str] | None = None) -> int:
                     f"reason={payload['reason_code']}"
                 )
             return 0 if payload['status'] == 'explained' else 2
+        if args.command == 'profile-governance':
+            projection = _read_json_mapping(args.projection, max_bytes=args.max_bytes)
+            bundle = explain_profile_governance(projection)
+            payload = bundle.as_dict()
+            if args.json:
+                print(json.dumps(payload, indent=2, sort_keys=True))
+            else:
+                print(
+                    f"profile_governance_{payload['status']}:"
+                    f"{payload['profile_name']}:"
+                    f"governance={payload['governance']['reason_code']}:"
+                    f"compatibility={payload['compatibility']['reason_code']}"
+                )
+            return 0 if payload['status'] == 'passed' else 2
     except (GovApiError, OSError, KeyError) as exc:
         reason = getattr(exc, 'reason_code', str(exc))
         print(f'policy_authoring_error: {reason}', file=sys.stderr)

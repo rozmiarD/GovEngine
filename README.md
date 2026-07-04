@@ -53,6 +53,11 @@ The `0.16.x` source line also adds:
   `explain_supervisor_action()`, and `govengine-supervisor explain --json` for
   recovery/triage reason codes over bounded `SupervisorActionRequest` payloads
   without executing recovery or mutating runtime state.
+- **Profile governance projection (G3)**: `ProfileGovernanceProjection`,
+  `ProfileConnectorCompatibilityReport`, `explain_profile_governance()`, and
+  `govengine-policy profile-governance --json` for policy-hook/evidence/runner
+  posture validation and profile/connector capability compatibility without
+  domain semantics or backend IO.
 
 The published `0.16.0` line adds:
 

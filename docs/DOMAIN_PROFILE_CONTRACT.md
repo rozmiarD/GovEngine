@@ -63,3 +63,11 @@ The `ravenclaw_security_profile()` SDK fixture is narrower than Ravenclaw itself
 Tecrax is an external governed infrastructure-operations profile consumed by RExecOp. GovEngine contains only a synthetic Tecrax conformance fixture; the operational intents, observations, connector semantics, findings, validation, and runbooks remain Tecrax-owned. Credential handling, host access, and execution remain runtime/operator-owned and disabled in kernel examples.
 
 The `tecrax_infra_ops_profile()` SDK fixture exists only to prove that GovEngine can validate a second domain profile without absorbing service inventories, credentials, change-management authority, live infrastructure control, or product UX. It is not the operational Tecrax package or its intent catalog.
+
+## Profile governance projection (G3)
+
+For M4 developer-surface work, GovEngine also exposes a bounded profile-governance
+projection and profile/connector compatibility report. See
+[PROFILE_GOVERNANCE.md](PROFILE_GOVERNANCE.md). The projection validates policy
+hooks, evidence expectations, runner posture and supported tracks from host
+projections; it does not interpret domain taxonomy or execute connectors.

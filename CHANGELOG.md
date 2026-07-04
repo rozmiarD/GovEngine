@@ -14,6 +14,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   health actions.
 - Added `govengine-supervisor explain --json` for operator-side inspection of
   bounded `SupervisorActionRequest` payloads without executing recovery.
+- Added G3 profile governance projection with `ProfileGovernanceProjection`,
+  `ProfileConnectorCompatibilityReport`, `explain_profile_governance()` and
+  `govengine-policy profile-governance --json` for policy-hook/evidence/runner
+  posture checks and profile/connector capability compatibility without backend IO.
 
 ## 0.16.5 - Supervisor action admission source line
 
