@@ -218,6 +218,22 @@ envelope:
 RExecOp remains responsible for watchdog mechanics and worker/inbox/queue
 state. SCLite remains responsible for watchdog decision truth artifacts.
 
+### Supervisor Action Explanation
+
+`explain_supervisor_action()` evaluates the same bounded
+`SupervisorActionRequest` path as `admit_supervisor_action()` and returns
+`SupervisorActionExplanation` schema `v0.1` with:
+
+- `recovery_class` for retry, dead-letter, stale lease, block-autostart,
+  manual-record and health-record paths;
+- `gates_checked` for retry budget, stale age and human sign-off gates;
+- `operator_summary`, `reason_code`, `blockers` and bounded
+  `safe_next_actions`;
+- digest-bound `request_digest` and `admission_digest`.
+
+The CLI `govengine-supervisor explain request.json --json` is side-effect free
+and does not execute recovery, mutate runtime state or verify SCLite artifacts.
+
 ## Relationship To Existing Modules
 
 The implementation composes host-supplied summaries from existing surfaces

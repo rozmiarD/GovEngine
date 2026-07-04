@@ -6,6 +6,15 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+## 0.16.6 - Supervisor action explanations for recovery/triage
+
+- Added `govengine.supervisor_explain` with `SupervisorActionExplanation` and
+  `explain_supervisor_action()` for stable, redacted supervisor admission
+  reasoning over retry budgets, stale-age gates, human sign-off and record-only
+  health actions.
+- Added `govengine-supervisor explain --json` for operator-side inspection of
+  bounded `SupervisorActionRequest` payloads without executing recovery.
+
 ## 0.16.5 - Supervisor action admission source line
 
 - Added `govengine.supervisor_actions` with `SupervisorActionRequest` and

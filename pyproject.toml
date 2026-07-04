@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "govengine"
-version = "0.16.5"
+version = "0.16.6"
 description = "Carrier-agnostic artifact governance and controlled-execution services that consume SCLite contract lifecycle artifacts."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -43,6 +43,7 @@ dev = [
 
 [project.scripts]
 govengine-policy = "govengine.policy.cli:main"
+govengine-supervisor = "govengine.supervisor_cli:main"
 
 [tool.mypy]
 python_version = "3.11"

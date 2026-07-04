@@ -7,7 +7,7 @@ import time.
 
 from typing import Any
 
-__version__ = '0.16.5'
+__version__ = '0.16.6'
 
 from .admission import (
     AuditLedgerAppendResult,
@@ -213,6 +213,11 @@ from .supervisor_actions import (
     validate_supervisor_action_admission,
     validate_supervisor_action_request,
 )
+from .supervisor_explain import (
+    SUPERVISOR_EXPLANATION_SCHEMA_VERSION,
+    SupervisorActionExplanation,
+    explain_supervisor_action,
+)
 from .signing import (
     DemoDigestSigner,
     DemoDigestVerifier,
@@ -365,8 +370,10 @@ __all__ = [
     'TransitionPolicy',
     'TRIGGER_PLANNING_REQUEST_SCHEMA_VERSION',
     'SUPERVISOR_ACTION_REQUEST_SCHEMA_VERSION',
+    'SUPERVISOR_EXPLANATION_SCHEMA_VERSION',
     'TriggerPlanningRequest',
     'SupervisorActionRequest',
+    'SupervisorActionExplanation',
     'TrustPolicy',
     'TrustStoreDecision',
     'TrustStorePort',
@@ -376,6 +383,7 @@ __all__ = [
     'admit_policy_execution',
     'admit_trigger_planning',
     'admit_supervisor_action',
+    'explain_supervisor_action',
     'apply_control_decision',
     'audit_ledger_entry_digest',
     'audit_ledger_verification_public_summary',
