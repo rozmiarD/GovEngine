@@ -3,9 +3,14 @@ from __future__ import annotations
 import pytest
 
 from govengine import (
+    PolicyCompiler,
+    PolicyEngine,
+    admit_policy_execution,
     admit_typed_execution,
     evaluate_typed_execution_stack_compatibility,
     explain_typed_execution_governance,
+    map_policy_verdict_to_typed_execution_controls,
+    project_typed_execution_policy_overlay,
     typed_execution_control_catalog,
 )
 from govengine.api import GovApiError
@@ -283,3 +288,79 @@ def test_typed_execution_control_catalog_lists_baseline_controls() -> None:
     assert catalog['schema_version'] == 'v0.1'
     assert 'backend_class_supported' in catalog['controls']
     assert 'http_api' in catalog['supported_backend_classes']
+    assert catalog['entries']
+    assert 'allowed_network_egress' in catalog['policy_constraint_kinds']
+    entry_ids = {item['control_id'] for item in catalog['entries']}
+    assert entry_ids == set(catalog['controls'])
+
+
+def test_project_typed_execution_policy_overlay_maps_runtime_controls() -> None:
+    overlay = project_typed_execution_policy_overlay(
+        {
+            'receipt_required': True,
+            'output_digest_required': True,
+            'no_raw_shell': True,
+            'read_only_required': True,
+            'allowed_network_egress': ['no_network', 'outbound_http'],
+            'allowed_backend_classes': ['static_fixture', 'http_api'],
+            'typed_execution_control_ids': [
+                'output_digest_required',
+                'network_boundary_match',
+            ],
+            'control_ids': ['digest-output', 'network-egress'],
+        }
+    )
+
+    assert overlay['evidence_requirements']['output_digest_required'] is True
+    assert overlay['allowed_network_egress'] == ['no_network', 'outbound_http']
+    assert overlay['allowed_backend_classes'] == ['static_fixture', 'http_api']
+    assert overlay['no_raw_shell'] is True
+    assert 'network_boundary_match' in overlay['typed_execution_control_ids']
+
+
+def test_map_policy_verdict_to_typed_execution_controls_from_bounded_pack() -> None:
+    compiled = PolicyCompiler().compile(
+        {
+            'policy_id': 'typed-execution-read',
+            'version': '1',
+            'rules': [
+                {
+                    'rule_id': 'bounded-read',
+                    'effect': 'allow_with_obligations',
+                    'conditions': {'action.mode': 'read'},
+                    'obligations': [
+                        {'obligation_id': 'receipt', 'kind': 'receipt'},
+                        {
+                            'obligation_id': 'output-digests',
+                            'kind': 'output_digest_required',
+                        },
+                    ],
+                    'constraints': [
+                        {'constraint_id': 'no-shell', 'kind': 'no_raw_shell', 'value': True},
+                        {
+                            'constraint_id': 'network',
+                            'kind': 'allowed_network_egress',
+                            'value': ['no_network'],
+                        },
+                    ],
+                }
+            ],
+        }
+    )
+    assert compiled.policy_pack is not None
+    verdict = PolicyEngine().evaluate(
+        {
+            'request_id': 'request-typed',
+            'subject_ref': 'runner:operation-1',
+            'action': {'mode': 'read'},
+        },
+        compiled.policy_pack,
+    )
+    plan = admit_policy_execution(compiled.policy_pack, verdict)
+    overlay = map_policy_verdict_to_typed_execution_controls(verdict.as_dict())
+
+    assert plan.controls.output_digest_required is True
+    assert plan.controls.no_raw_shell is True
+    assert overlay['allowed_network_egress'] == ['no_network']
+    assert overlay['evidence_requirements']['output_digest_required'] is True
+    assert 'no_raw_shell' in overlay['typed_execution_control_ids']

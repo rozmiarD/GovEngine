@@ -79,6 +79,101 @@ BASELINE_TYPED_EXECUTION_CONTROLS = (
     'mutation_requires_approval',
 )
 
+TYPED_EXECUTION_POLICY_CONSTRAINT_KINDS = (
+    'allowed_backend_classes',
+    'allowed_network_egress',
+    'mutation_requires_approval',
+    'no_raw_shell',
+    'output_digest_required',
+    'read_only_required',
+)
+
+TYPED_EXECUTION_POLICY_OBLIGATION_KINDS = (
+    'output_digest_required',
+    'receipt',
+    'receipt_required',
+)
+
+TYPED_EXECUTION_CONTROL_CATALOG_ENTRIES = (
+    {
+        'control_id': 'backend_class_supported',
+        'policy_constraint_kinds': ('allowed_backend_classes',),
+        'policy_obligation_kinds': (),
+        'evidence_requirement_keys': (),
+        'governance_gate': 'compatibility',
+    },
+    {
+        'control_id': 'no_raw_shell',
+        'policy_constraint_kinds': ('no_raw_shell',),
+        'policy_obligation_kinds': (),
+        'evidence_requirement_keys': (),
+        'governance_gate': 'compatibility',
+    },
+    {
+        'control_id': 'read_only_posture',
+        'policy_constraint_kinds': ('read_only_required',),
+        'policy_obligation_kinds': (),
+        'evidence_requirement_keys': (),
+        'governance_gate': 'governance',
+    },
+    {
+        'control_id': 'capability_descriptor_digest_present',
+        'policy_constraint_kinds': (),
+        'policy_obligation_kinds': (),
+        'evidence_requirement_keys': (),
+        'governance_gate': 'governance',
+    },
+    {
+        'control_id': 'step_execution_spec_digest_present',
+        'policy_constraint_kinds': (),
+        'policy_obligation_kinds': (),
+        'evidence_requirement_keys': (),
+        'governance_gate': 'governance',
+    },
+    {
+        'control_id': 'payload_digest_present',
+        'policy_constraint_kinds': (),
+        'policy_obligation_kinds': (),
+        'evidence_requirement_keys': (),
+        'governance_gate': 'governance',
+    },
+    {
+        'control_id': 'receipt_required',
+        'policy_constraint_kinds': ('receipt_required',),
+        'policy_obligation_kinds': ('receipt', 'receipt_required'),
+        'evidence_requirement_keys': ('receipt_required',),
+        'governance_gate': 'governance',
+    },
+    {
+        'control_id': 'output_digest_required',
+        'policy_constraint_kinds': ('output_digest_required',),
+        'policy_obligation_kinds': ('output_digest_required',),
+        'evidence_requirement_keys': ('output_digest_required',),
+        'governance_gate': 'governance',
+    },
+    {
+        'control_id': 'network_boundary_match',
+        'policy_constraint_kinds': ('allowed_network_egress',),
+        'policy_obligation_kinds': (),
+        'evidence_requirement_keys': (),
+        'governance_gate': 'compatibility',
+    },
+    {
+        'control_id': 'secret_ref_requirements_met',
+        'policy_constraint_kinds': (),
+        'policy_obligation_kinds': (),
+        'evidence_requirement_keys': (),
+        'governance_gate': 'compatibility',
+    },
+    {
+        'control_id': 'mutation_requires_approval',
+        'policy_constraint_kinds': ('mutation_requires_approval',),
+        'policy_obligation_kinds': (),
+        'evidence_requirement_keys': ('approval_evidence_ref',),
+        'governance_gate': 'governance',
+    },
+)
+
 FORBIDDEN_TYPED_EXECUTION_METADATA_KEYS = (
     'api_key',
     'argv',
@@ -428,11 +523,55 @@ def typed_execution_control_catalog() -> dict[str, Any]:
     return {
         'schema_version': TYPED_EXECUTION_CONTROL_CATALOG_SCHEMA_VERSION,
         'controls': list(BASELINE_TYPED_EXECUTION_CONTROLS),
+        'entries': [dict(item) for item in TYPED_EXECUTION_CONTROL_CATALOG_ENTRIES],
+        'policy_constraint_kinds': list(TYPED_EXECUTION_POLICY_CONSTRAINT_KINDS),
+        'policy_obligation_kinds': list(TYPED_EXECUTION_POLICY_OBLIGATION_KINDS),
         'supported_backend_classes': sorted(SUPPORTED_BACKEND_CLASSES),
         'raw_shell_backend_classes': sorted(RAW_SHELL_BACKEND_CLASSES),
         'supported_egress_classes': sorted(SUPPORTED_EGRESS_CLASSES),
         'supported_identity_classes': sorted(SUPPORTED_IDENTITY_CLASSES),
     }
+
+
+def project_typed_execution_policy_overlay(
+    controls: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Project policy-pack runtime controls into typed execution governance overlay."""
+    from govengine.policy.enforcement import RuntimeControlProjection
+
+    projection = RuntimeControlProjection.from_mapping(controls)
+    evidence: dict[str, Any] = {
+        'receipt_required': projection.receipt_required,
+        'output_digest_required': projection.output_digest_required,
+    }
+    if projection.mutation_requires_approval:
+        evidence['mutation_requires_approval'] = True
+    overlay: dict[str, Any] = {
+        'evidence_requirements': evidence,
+        'policy_control_ids': list(projection.control_ids),
+        'typed_execution_control_ids': list(projection.typed_execution_control_ids),
+    }
+    if projection.allowed_network_egress:
+        overlay['allowed_network_egress'] = list(projection.allowed_network_egress)
+    if projection.allowed_backend_classes:
+        overlay['allowed_backend_classes'] = list(projection.allowed_backend_classes)
+    if projection.read_only_required:
+        overlay['read_only_required'] = True
+    if projection.no_raw_shell:
+        overlay['no_raw_shell'] = True
+    return overlay
+
+
+def map_policy_verdict_to_typed_execution_controls(
+    verdict: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Bridge one PolicyVerdict into typed execution policy overlay controls."""
+    from govengine.policy.enforcement import project_runtime_controls
+    from govengine.policy.model import validate_policy_verdict
+
+    checked = validate_policy_verdict(verdict)
+    projection = project_runtime_controls(checked)
+    return project_typed_execution_policy_overlay(projection.as_dict())
 
 
 def validate_typed_execution_stack_compatibility_request(
@@ -872,11 +1011,19 @@ def _typed_execution_policy_controls(
     controls: list[dict[str, Any]] = []
 
     backend_supported = request.backend_class in SUPPORTED_BACKEND_CLASSES
+    allowed_backend_classes = _metadata_string_tuple(
+        request.metadata.get('allowed_backend_classes')
+    )
+    if allowed_backend_classes:
+        backend_supported = backend_supported and request.backend_class in allowed_backend_classes
     controls.append(
         {
             'control': 'backend_class_supported',
             'passed': backend_supported,
-            'details': {'backend_class': request.backend_class},
+            'details': {
+                'backend_class': request.backend_class,
+                'allowed_backend_classes': list(allowed_backend_classes),
+            },
         }
     )
 
@@ -1069,6 +1216,15 @@ def _reject_forbidden_typed_execution_metadata(value: Mapping[str, Any]) -> None
     for nested in value.values():
         if isinstance(nested, Mapping):
             _reject_forbidden_typed_execution_metadata(nested)
+
+
+def _metadata_string_tuple(value: Any) -> tuple[str, ...]:
+    if isinstance(value, str):
+        text = value.strip()
+        return (text,) if text else ()
+    if not isinstance(value, (list, tuple, set)):
+        return ()
+    return tuple(str(item).strip() for item in value if str(item).strip())
 
 
 def _string_tuple(values: Any) -> tuple[str, ...]:

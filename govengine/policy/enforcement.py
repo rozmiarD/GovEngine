@@ -22,9 +22,14 @@ SUPPORTED_POLICY_OBLIGATIONS = frozenset(
 )
 SUPPORTED_POLICY_CONSTRAINTS = frozenset(
     {
+        "allowed_backend_classes",
+        "allowed_network_egress",
         "max_steps",
+        "mutation_requires_approval",
+        "no_raw_shell",
         "output_digest_required",
         "output_limit",
+        "read_only_required",
         "receipt_required",
         "timeout",
     }
@@ -40,6 +45,12 @@ class RuntimeControlProjection:
     max_output_bytes: int = 0
     receipt_required: bool = True
     output_digest_required: bool = False
+    read_only_required: bool = False
+    no_raw_shell: bool = False
+    mutation_requires_approval: bool = False
+    allowed_network_egress: tuple[str, ...] = field(default_factory=tuple)
+    allowed_backend_classes: tuple[str, ...] = field(default_factory=tuple)
+    typed_execution_control_ids: tuple[str, ...] = field(default_factory=tuple)
     control_ids: tuple[str, ...] = field(default_factory=tuple)
 
     @classmethod
@@ -51,6 +62,14 @@ class RuntimeControlProjection:
             max_output_bytes=int(raw.get("max_output_bytes") or 0),
             receipt_required=bool(raw.get("receipt_required", True)),
             output_digest_required=bool(raw.get("output_digest_required", False)),
+            read_only_required=bool(raw.get("read_only_required", False)),
+            no_raw_shell=bool(raw.get("no_raw_shell", False)),
+            mutation_requires_approval=bool(raw.get("mutation_requires_approval", False)),
+            allowed_network_egress=_string_tuple(raw.get("allowed_network_egress") or ()),
+            allowed_backend_classes=_string_tuple(raw.get("allowed_backend_classes") or ()),
+            typed_execution_control_ids=_string_tuple(
+                raw.get("typed_execution_control_ids") or ()
+            ),
             control_ids=_string_tuple(raw.get("control_ids") or ()),
         )
         _validate_projection(item)
@@ -59,6 +78,9 @@ class RuntimeControlProjection:
     def as_dict(self) -> dict[str, Any]:
         out = asdict(self)
         out["control_ids"] = list(self.control_ids)
+        out["allowed_network_egress"] = list(self.allowed_network_egress)
+        out["allowed_backend_classes"] = list(self.allowed_backend_classes)
+        out["typed_execution_control_ids"] = list(self.typed_execution_control_ids)
         return out
 
 
@@ -203,7 +225,13 @@ def project_runtime_controls(verdict: Mapping[str, Any] | PolicyVerdict) -> Runt
     max_output_bytes = 0
     receipt_required = True
     output_digest_required = False
+    read_only_required = False
+    no_raw_shell = False
+    mutation_requires_approval = False
+    allowed_network_egress: set[str] = set()
+    allowed_backend_classes: set[str] = set()
     control_ids: list[str] = []
+    typed_execution_control_ids: list[str] = []
 
     for obligation in checked.obligations:
         if obligation.kind not in SUPPORTED_POLICY_OBLIGATIONS:
@@ -211,8 +239,10 @@ def project_runtime_controls(verdict: Mapping[str, Any] | PolicyVerdict) -> Runt
         control_ids.append(obligation.obligation_id)
         if obligation.kind in {"receipt", "receipt_required"}:
             receipt_required = True
+            typed_execution_control_ids.append("receipt_required")
         elif obligation.kind == "output_digest_required":
             output_digest_required = True
+            typed_execution_control_ids.append("output_digest_required")
 
     for constraint in checked.constraints:
         if constraint.kind not in SUPPORTED_POLICY_CONSTRAINTS:
@@ -232,10 +262,38 @@ def project_runtime_controls(verdict: Mapping[str, Any] | PolicyVerdict) -> Runt
             if constraint.value is not True:
                 raise GovApiError("invalid_policy_constraint:receipt_required")
             receipt_required = True
+            typed_execution_control_ids.append("receipt_required")
         elif constraint.kind == "output_digest_required":
             if not isinstance(constraint.value, bool):
                 raise GovApiError("invalid_policy_constraint:output_digest_required")
             output_digest_required = output_digest_required or constraint.value
+            if constraint.value:
+                typed_execution_control_ids.append("output_digest_required")
+        elif constraint.kind == "read_only_required":
+            if constraint.value is not True:
+                raise GovApiError("invalid_policy_constraint:read_only_required")
+            read_only_required = True
+            typed_execution_control_ids.append("read_only_posture")
+        elif constraint.kind == "no_raw_shell":
+            if constraint.value is not True:
+                raise GovApiError("invalid_policy_constraint:no_raw_shell")
+            no_raw_shell = True
+            typed_execution_control_ids.append("no_raw_shell")
+        elif constraint.kind == "mutation_requires_approval":
+            if constraint.value is not True:
+                raise GovApiError("invalid_policy_constraint:mutation_requires_approval")
+            mutation_requires_approval = True
+            typed_execution_control_ids.append("mutation_requires_approval")
+        elif constraint.kind == "allowed_network_egress":
+            allowed_network_egress.update(
+                _string_list(constraint.value, "allowed_network_egress")
+            )
+            typed_execution_control_ids.append("network_boundary_match")
+        elif constraint.kind == "allowed_backend_classes":
+            allowed_backend_classes.update(
+                _string_list(constraint.value, "allowed_backend_classes")
+            )
+            typed_execution_control_ids.append("backend_class_supported")
 
     projection = RuntimeControlProjection(
         timeout_seconds=timeout_seconds,
@@ -243,6 +301,12 @@ def project_runtime_controls(verdict: Mapping[str, Any] | PolicyVerdict) -> Runt
         max_output_bytes=max_output_bytes,
         receipt_required=receipt_required,
         output_digest_required=output_digest_required,
+        read_only_required=read_only_required,
+        no_raw_shell=no_raw_shell,
+        mutation_requires_approval=mutation_requires_approval,
+        allowed_network_egress=tuple(sorted(allowed_network_egress)),
+        allowed_backend_classes=tuple(sorted(allowed_backend_classes)),
+        typed_execution_control_ids=tuple(sorted(set(typed_execution_control_ids))),
         control_ids=tuple(sorted(set(control_ids))),
     )
     _validate_projection(projection)
@@ -381,6 +445,15 @@ def _minimum_positive_int(current: int, value: Any, kind: str) -> int:
     if candidate <= 0 or candidate != value:
         raise GovApiError(f"invalid_policy_constraint:{kind}")
     return candidate if current <= 0 else min(current, candidate)
+
+
+def _string_list(value: Any, kind: str) -> list[str]:
+    if not isinstance(value, (list, tuple, set)):
+        raise GovApiError(f"invalid_policy_constraint:{kind}")
+    items = [str(item).strip() for item in value if str(item).strip()]
+    if not items:
+        raise GovApiError(f"invalid_policy_constraint:{kind}")
+    return items
 
 
 def _string_tuple(value: Any) -> tuple[str, ...]:

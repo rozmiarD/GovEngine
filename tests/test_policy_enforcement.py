@@ -118,6 +118,40 @@ def test_unsupported_control_is_a_fail_closed_admission() -> None:
         )
 
 
+def test_policy_enforcement_plan_projects_typed_execution_controls() -> None:
+    pack, verdict = _evaluate(
+        constraints=[
+            {'constraint_id': 'no-shell', 'kind': 'no_raw_shell', 'value': True},
+            {
+                'constraint_id': 'network',
+                'kind': 'allowed_network_egress',
+                'value': ['no_network', 'outbound_http'],
+            },
+            {
+                'constraint_id': 'backends',
+                'kind': 'allowed_backend_classes',
+                'value': ['static_fixture', 'http_api'],
+            },
+            {
+                'constraint_id': 'mutation',
+                'kind': 'mutation_requires_approval',
+                'value': True,
+            },
+            {'constraint_id': 'read-only', 'kind': 'read_only_required', 'value': True},
+        ]
+    )
+
+    plan = admit_policy_execution(pack, verdict)
+
+    assert plan.allowed
+    assert plan.controls.no_raw_shell is True
+    assert plan.controls.read_only_required is True
+    assert plan.controls.mutation_requires_approval is True
+    assert plan.controls.allowed_network_egress == ('no_network', 'outbound_http')
+    assert plan.controls.allowed_backend_classes == ('http_api', 'static_fixture')
+    assert 'network_boundary_match' in plan.controls.typed_execution_control_ids
+
+
 def test_policy_enforcement_plan_detects_binding_drift() -> None:
     pack, verdict = _evaluate()
     plan = admit_policy_execution(pack, verdict)

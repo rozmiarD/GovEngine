@@ -6,6 +6,13 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Extended typed execution control catalog with policy-pack mappings:
+  `TYPED_EXECUTION_CONTROL_CATALOG_ENTRIES`, `project_typed_execution_policy_overlay()`
+  and `map_policy_verdict_to_typed_execution_controls()` bridge
+  `PolicyVerdict`/`RuntimeControlProjection` into typed execution evidence,
+  network egress and backend-class controls. Policy enforcement now projects
+  `read_only_required`, `no_raw_shell`, `allowed_network_egress`,
+  `allowed_backend_classes` and `mutation_requires_approval` constraints.
 - Added typed execution stack compatibility with `TypedExecutionStackCompatibilityRequest`,
   `evaluate_typed_execution_stack_compatibility()`, `typed_execution_control_catalog()`
   and `govengine-policy typed-execution-compatibility|typed-execution-control-catalog`

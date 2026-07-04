@@ -26,6 +26,10 @@ _BASELINES: dict[str, dict[str, Any]] = {
                 'conditions': {'action.mode': 'read'},
                 'reason_code': 'read_allowed_with_receipt',
                 'obligations': [{'obligation_id': 'receipt-required', 'kind': 'receipt'}],
+                'constraints': [
+                    {'constraint_id': 'read-only', 'kind': 'read_only_required', 'value': True},
+                    {'constraint_id': 'no-shell', 'kind': 'no_raw_shell', 'value': True},
+                ],
             },
             {
                 'rule_id': 'allow-observe-with-receipt',
@@ -33,6 +37,10 @@ _BASELINES: dict[str, dict[str, Any]] = {
                 'conditions': {'action.mode': 'observe'},
                 'reason_code': 'observe_allowed_with_receipt',
                 'obligations': [{'obligation_id': 'receipt-required', 'kind': 'receipt'}],
+                'constraints': [
+                    {'constraint_id': 'read-only', 'kind': 'read_only_required', 'value': True},
+                    {'constraint_id': 'no-shell', 'kind': 'no_raw_shell', 'value': True},
+                ],
             },
         ],
         'metadata': {
@@ -51,6 +59,13 @@ _BASELINES: dict[str, dict[str, Any]] = {
                 'reason_code': 'mutating_action_requires_approval',
                 'risk_class': 'high',
                 'risk_score': 0.8,
+                'constraints': [
+                    {
+                        'constraint_id': 'mutation-approval',
+                        'kind': 'mutation_requires_approval',
+                        'value': True,
+                    },
+                ],
             },
             {
                 'rule_id': 'require-approval-for-apply',
@@ -59,6 +74,13 @@ _BASELINES: dict[str, dict[str, Any]] = {
                 'reason_code': 'apply_action_requires_approval',
                 'risk_class': 'high',
                 'risk_score': 0.8,
+                'constraints': [
+                    {
+                        'constraint_id': 'mutation-approval',
+                        'kind': 'mutation_requires_approval',
+                        'value': True,
+                    },
+                ],
             },
         ],
         'metadata': {
@@ -105,6 +127,17 @@ _BASELINES: dict[str, dict[str, Any]] = {
                 'constraints': [
                     {'constraint_id': 'bounded-output', 'kind': 'output_limit', 'value': 65536},
                     {'constraint_id': 'digest-output', 'kind': 'output_digest_required', 'value': True},
+                    {'constraint_id': 'no-shell', 'kind': 'no_raw_shell', 'value': True},
+                    {
+                        'constraint_id': 'network-egress',
+                        'kind': 'allowed_network_egress',
+                        'value': [
+                            'local_subprocess',
+                            'no_network',
+                            'outbound_http',
+                            'outbound_ssh',
+                        ],
+                    },
                 ],
             },
         ],
