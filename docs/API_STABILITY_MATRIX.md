@@ -69,11 +69,12 @@ runtime behavior.
 | alpha | govengine.supervisor_actions | `SUPERVISOR_ACTION_REQUEST_SCHEMA_VERSION`, `SupervisorActionRequest`, `admit_supervisor_action`, `supervisor_action_admission_digest`, `supervisor_action_request_digest`, `validate_supervisor_action_admission`, `validate_supervisor_action_request` | Runtime-supervisor action admission vocabulary over bounded watchdog record digests and limits only; RExecOp owns watchdog mechanics, SCLite owns watchdog decision truth, and GovEngine owns admission/fail-closed policy. |
 | alpha | govengine.supervisor_explain | `SUPERVISOR_EXPLANATION_SCHEMA_VERSION`, `SupervisorActionExplanation`, `explain_supervisor_action` | Redacted supervisor admission explanations with recovery/triage reason codes, gate checks and bounded next actions; does not execute recovery or mutate runtime state. |
 | alpha | govengine.profile_governance | `PROFILE_GOVERNANCE_REQUEST_SCHEMA_VERSION`, `PROFILE_GOVERNANCE_PROJECTION_SCHEMA_VERSION`, `PROFILE_CONNECTOR_COMPATIBILITY_SCHEMA_VERSION`, `ProfileGovernanceRequest`, `ProfileGovernanceProjection`, `ProfileConnectorCompatibilityReport`, `ProfileGovernanceBundle`, `validate_profile_governance_request`, `project_profile_governance`, `evaluate_profile_connector_compatibility`, `explain_profile_governance`, `profile_governance_request_digest` | Profile governance projection and profile/connector compatibility reports over bounded host projections; does not interpret domain semantics, execute connectors, or grant admission. |
+| alpha | govengine.typed_execution_governance | `TYPED_EXECUTION_GOVERNANCE_REQUEST_SCHEMA_VERSION`, `TYPED_EXECUTION_GOVERNANCE_PROJECTION_SCHEMA_VERSION`, `TYPED_EXECUTION_CAPABILITY_COMPATIBILITY_SCHEMA_VERSION`, `RUNTIME_CAPABILITY_DESCRIPTOR_SCHEMA_VERSION`, `TypedExecutionGovernanceRequest`, `RuntimeCapabilityDescriptor`, `TypedExecutionGovernanceProjection`, `TypedExecutionCapabilityCompatibilityReport`, `TypedExecutionGovernanceBundle`, `validate_typed_execution_governance_request`, `validate_runtime_capability_descriptor`, `project_typed_execution_governance`, `evaluate_typed_execution_capability_compatibility`, `explain_typed_execution_governance`, `typed_execution_governance_request_digest`, `admit_typed_execution`, `typed_execution_admission_digest`, `validate_typed_execution_admission` | Typed execution governance projection and capability compatibility over digest-bound RExecOp runtime projections; does not execute connectors, resolve secrets, or grant live backend authority. |
 
 Current summary:
 
 - stable exports: 0
-- alpha exports: 223
+- alpha exports: 241
 - fixture exports: 4
 - deprecated exports: 0
 - internal-exposed exports: 0

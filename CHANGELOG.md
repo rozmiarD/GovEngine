@@ -6,6 +6,14 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Added G5 typed execution governance with `TypedExecutionGovernanceRequest`,
+  `RuntimeCapabilityDescriptor`, `TypedExecutionCapabilityCompatibilityReport`,
+  `explain_typed_execution_governance()`, `admit_typed_execution()` and
+  `govengine-policy typed-execution-governance --json` for digest-bound typed
+  execution admission, capability compatibility controls and fail-closed
+  blockers over raw shell, unsupported backends, missing output digest refs,
+  network boundary mismatch and mutation approval evidence without backend IO.
+
 ## 0.16.6 - 2026-07-04 - Supervisor action explanations for recovery/triage
 
 - Published `govengine==0.16.6` on PyPI with `sclite-core==1.0.8`.
