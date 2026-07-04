@@ -6,6 +6,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Added typed execution stack compatibility with `TypedExecutionStackCompatibilityRequest`,
+  `evaluate_typed_execution_stack_compatibility()`, `typed_execution_control_catalog()`
+  and `govengine-policy typed-execution-compatibility|typed-execution-control-catalog`
+  for RExecOp backend descriptor vs GovEngine control coverage without backend IO.
 - Added G5 typed execution governance with `TypedExecutionGovernanceRequest`,
   `RuntimeCapabilityDescriptor`, `TypedExecutionCapabilityCompatibilityReport`,
   `explain_typed_execution_governance()`, `admit_typed_execution()` and

@@ -15,6 +15,8 @@ from govengine.signing import govengine_record_digest
 TYPED_EXECUTION_GOVERNANCE_REQUEST_SCHEMA_VERSION = 'v0.1'
 TYPED_EXECUTION_GOVERNANCE_PROJECTION_SCHEMA_VERSION = 'v0.1'
 TYPED_EXECUTION_CAPABILITY_COMPATIBILITY_SCHEMA_VERSION = 'v0.1'
+TYPED_EXECUTION_STACK_COMPATIBILITY_SCHEMA_VERSION = 'v0.1'
+TYPED_EXECUTION_CONTROL_CATALOG_SCHEMA_VERSION = 'v0.1'
 RUNTIME_CAPABILITY_DESCRIPTOR_SCHEMA_VERSION = 'v0.1'
 
 SUPPORTED_OPERATION_MODES = frozenset(
@@ -252,6 +254,56 @@ class TypedExecutionCapabilityCompatibilityReport:
 
 
 @dataclass(frozen=True)
+class TypedExecutionStackCompatibilityRequest:
+    """Stack-level compatibility input over RExecOp backend descriptors."""
+
+    schema_version: str
+    request_id: str
+    backend_descriptors: tuple[Mapping[str, Any], ...] = ()
+    required_controls: tuple[str, ...] = ()
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            'schema_version': self.schema_version,
+            'request_id': self.request_id,
+            'backend_descriptors': [dict(item) for item in self.backend_descriptors],
+            'required_controls': list(self.required_controls),
+        }
+
+
+@dataclass(frozen=True)
+class TypedExecutionStackCompatibilityReport:
+    schema_version: str
+    status: str
+    request_id: str
+    reason_code: str
+    supported_backends: tuple[str, ...] = ()
+    unsupported_backends: tuple[str, ...] = ()
+    supported_controls: tuple[str, ...] = ()
+    missing_controls: tuple[str, ...] = ()
+    policy_controls: tuple[Mapping[str, Any], ...] = ()
+    blockers: tuple[str, ...] = ()
+    report_digest: str = ''
+    non_claims: tuple[str, ...] = field(default_factory=tuple)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            'schema_version': self.schema_version,
+            'status': self.status,
+            'request_id': self.request_id,
+            'reason_code': self.reason_code,
+            'supported_backends': list(self.supported_backends),
+            'unsupported_backends': list(self.unsupported_backends),
+            'supported_controls': list(self.supported_controls),
+            'missing_controls': list(self.missing_controls),
+            'policy_controls': [dict(item) for item in self.policy_controls],
+            'blockers': list(self.blockers),
+            'report_digest': self.report_digest,
+            'non_claims': list(self.non_claims),
+        }
+
+
+@dataclass(frozen=True)
 class TypedExecutionGovernanceBundle:
     schema_version: str
     status: str
@@ -370,6 +422,138 @@ def validate_typed_execution_governance_request(
     )
     _validate_typed_execution_request_shape(item)
     return item
+
+
+def typed_execution_control_catalog() -> dict[str, Any]:
+    return {
+        'schema_version': TYPED_EXECUTION_CONTROL_CATALOG_SCHEMA_VERSION,
+        'controls': list(BASELINE_TYPED_EXECUTION_CONTROLS),
+        'supported_backend_classes': sorted(SUPPORTED_BACKEND_CLASSES),
+        'raw_shell_backend_classes': sorted(RAW_SHELL_BACKEND_CLASSES),
+        'supported_egress_classes': sorted(SUPPORTED_EGRESS_CLASSES),
+        'supported_identity_classes': sorted(SUPPORTED_IDENTITY_CLASSES),
+    }
+
+
+def validate_typed_execution_stack_compatibility_request(
+    value: Mapping[str, Any] | TypedExecutionStackCompatibilityRequest,
+) -> TypedExecutionStackCompatibilityRequest:
+    if isinstance(value, TypedExecutionStackCompatibilityRequest):
+        return value
+    raw = require_mapping(value, reason_code='invalid_typed_execution_stack_compatibility_request')
+    schema_version = str(raw.get('schema_version') or '').strip()
+    if schema_version != TYPED_EXECUTION_STACK_COMPATIBILITY_SCHEMA_VERSION:
+        raise GovApiError(
+            f'unsupported_typed_execution_stack_compatibility_version:{schema_version}'
+        )
+    return TypedExecutionStackCompatibilityRequest(
+        schema_version=schema_version,
+        request_id=_required_text(raw, 'request_id'),
+        backend_descriptors=_mapping_tuple(raw.get('backend_descriptors') or ()),
+        required_controls=_string_tuple(
+            raw.get('required_controls') or BASELINE_TYPED_EXECUTION_CONTROLS
+        ),
+    )
+
+
+def evaluate_typed_execution_stack_compatibility(
+    request: Mapping[str, Any] | TypedExecutionStackCompatibilityRequest,
+) -> TypedExecutionStackCompatibilityReport:
+    """Evaluate stack-level backend/control compatibility for typed execution G5."""
+    checked = validate_typed_execution_stack_compatibility_request(request)
+    supported_backends: list[str] = []
+    unsupported_backends: list[str] = []
+    backend_controls: list[dict[str, Any]] = []
+
+    for item in checked.backend_descriptors:
+        backend = str(item.get('backend_class') or '').strip()
+        if not backend:
+            unsupported_backends.append('missing_backend_class')
+            continue
+        if backend in RAW_SHELL_BACKEND_CLASSES:
+            unsupported_backends.append(backend)
+            backend_controls.append(
+                {
+                    'control': 'raw_shell_backend_blocked',
+                    'passed': False,
+                    'details': {'backend_class': backend},
+                }
+            )
+            continue
+        passed = _stack_backend_supported(item)
+        backend_controls.append(
+            {
+                'control': 'backend_class_supported',
+                'passed': passed,
+                'details': {
+                    'backend_class': backend,
+                    'certification_tier': item.get('certification_tier'),
+                    'egress_class': item.get('egress_class'),
+                    'identity_class': item.get('identity_class'),
+                },
+            }
+        )
+        if passed:
+            supported_backends.append(backend)
+        else:
+            unsupported_backends.append(backend)
+
+    catalog_controls = set(BASELINE_TYPED_EXECUTION_CONTROLS)
+    required_controls = list(checked.required_controls)
+    missing_controls = [
+        control for control in required_controls if control not in catalog_controls
+    ]
+    control_checks = [
+        {
+            'control': 'typed_execution_control_catalog',
+            'passed': not missing_controls,
+            'details': {
+                'required': required_controls,
+                'missing': missing_controls,
+            },
+        }
+    ]
+    policy_controls = backend_controls + control_checks
+    blockers = [item['control'] for item in policy_controls if not item['passed']]
+    if unsupported_backends:
+        blockers.append('unsupported_backend_descriptors')
+    if missing_controls:
+        blockers.append('missing_typed_execution_controls')
+    status = 'passed' if not blockers else 'blocked'
+    reason_code = (
+        'typed_execution_stack_compatible' if not blockers else blockers[0]
+    )
+    body = {
+        'schema_version': TYPED_EXECUTION_STACK_COMPATIBILITY_SCHEMA_VERSION,
+        'status': status,
+        'request_id': checked.request_id,
+        'reason_code': reason_code,
+        'supported_backends': supported_backends,
+        'unsupported_backends': unsupported_backends,
+        'supported_controls': list(catalog_controls),
+        'missing_controls': missing_controls,
+        'policy_controls': policy_controls,
+        'blockers': blockers,
+    }
+    report_digest = govengine_record_digest(
+        body,
+        record_type='govengine.typed_execution_governance.TypedExecutionStackCompatibilityReport',
+        schema_version=TYPED_EXECUTION_STACK_COMPATIBILITY_SCHEMA_VERSION,
+    )
+    return TypedExecutionStackCompatibilityReport(
+        schema_version=TYPED_EXECUTION_STACK_COMPATIBILITY_SCHEMA_VERSION,
+        status=status,
+        request_id=checked.request_id,
+        reason_code=reason_code,
+        supported_backends=tuple(supported_backends),
+        unsupported_backends=tuple(unsupported_backends),
+        supported_controls=tuple(sorted(catalog_controls)),
+        missing_controls=tuple(missing_controls),
+        policy_controls=tuple(policy_controls),
+        blockers=tuple(blockers),
+        report_digest=report_digest,
+        non_claims=_STACK_COMPATIBILITY_NON_CLAIMS,
+    )
 
 
 def project_typed_execution_governance(
@@ -920,3 +1104,31 @@ _COMPATIBILITY_NON_CLAIMS = (
 )
 
 _BUNDLE_NON_CLAIMS = _GOVERNANCE_NON_CLAIMS + _COMPATIBILITY_NON_CLAIMS
+
+_STACK_COMPATIBILITY_NON_CLAIMS = (
+    'Checks declared RExecOp backend descriptors against GovEngine typed execution controls.',
+    'Does not execute connectors or certify plugin implementations.',
+    'Does not replace per-step typed execution admission before backend IO.',
+)
+
+
+def _stack_backend_supported(descriptor: Mapping[str, Any]) -> bool:
+    backend = str(descriptor.get('backend_class') or '').strip()
+    if backend in SUPPORTED_BACKEND_CLASSES:
+        egress = str(descriptor.get('egress_class') or '').strip()
+        identity = str(descriptor.get('identity_class') or '').strip()
+        if egress and egress not in SUPPORTED_EGRESS_CLASSES:
+            return False
+        if identity and identity not in SUPPORTED_IDENTITY_CLASSES:
+            return False
+        return True
+    if str(descriptor.get('certification_tier') or '').strip() == 'plugin':
+        identity = str(descriptor.get('identity_class') or '').strip()
+        egress = str(descriptor.get('egress_class') or '').strip()
+        if identity != 'plugin_declared':
+            return False
+        if egress and egress not in SUPPORTED_EGRESS_CLASSES:
+            return False
+        capabilities = descriptor.get('capability_descriptors')
+        return isinstance(capabilities, list) and bool(capabilities)
+    return False

@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from govengine import admit_typed_execution, explain_typed_execution_governance
+from govengine import (
+    admit_typed_execution,
+    evaluate_typed_execution_stack_compatibility,
+    explain_typed_execution_governance,
+    typed_execution_control_catalog,
+)
 from govengine.api import GovApiError
 
 
@@ -213,3 +218,68 @@ def test_mutation_allowed_with_approval_evidence_ref() -> None:
 def test_forbidden_metadata_rejected() -> None:
     with pytest.raises(GovApiError, match='forbidden_typed_execution_metadata:command'):
         explain_typed_execution_governance(_request(metadata={'command': 'rm -rf /'}))
+
+
+def _stack_request(**overrides):
+    payload = {
+        'schema_version': 'v0.1',
+        'request_id': 'stack-compat-1',
+        'backend_descriptors': [
+            {
+                'backend_class': 'static_fixture',
+                'egress_class': 'no_network',
+                'identity_class': 'none',
+                'capability_descriptors': ['connector.fixture.static'],
+                'certification_tier': 'core',
+            },
+            {
+                'backend_class': 'http_api',
+                'egress_class': 'outbound_http',
+                'identity_class': 'api_token_optional',
+                'capability_descriptors': [
+                    'connector.http.rest.read',
+                    'connector.http.rest.mutate',
+                ],
+                'certification_tier': 'core',
+            },
+        ],
+    }
+    payload.update(overrides)
+    return payload
+
+
+def test_typed_execution_stack_compatibility_passes_for_builtin_backends() -> None:
+    report = evaluate_typed_execution_stack_compatibility(_stack_request())
+
+    assert report.status == 'passed'
+    assert report.report_digest.startswith('sha256:')
+    assert 'static_fixture' in report.supported_backends
+    assert 'http_api' in report.supported_backends
+
+
+def test_typed_execution_stack_compatibility_blocks_raw_shell_backend() -> None:
+    report = evaluate_typed_execution_stack_compatibility(
+        _stack_request(
+            backend_descriptors=[
+                {
+                    'backend_class': 'shell',
+                    'egress_class': 'local_subprocess',
+                    'identity_class': 'none',
+                    'capability_descriptors': [],
+                    'certification_tier': 'bootstrap',
+                }
+            ]
+        )
+    )
+
+    assert report.status == 'blocked'
+    assert 'shell' in report.unsupported_backends
+    assert 'raw_shell_backend_blocked' in report.blockers
+
+
+def test_typed_execution_control_catalog_lists_baseline_controls() -> None:
+    catalog = typed_execution_control_catalog()
+
+    assert catalog['schema_version'] == 'v0.1'
+    assert 'backend_class_supported' in catalog['controls']
+    assert 'http_api' in catalog['supported_backend_classes']

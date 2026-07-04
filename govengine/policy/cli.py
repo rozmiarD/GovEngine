@@ -17,7 +17,12 @@ from govengine.policy.baselines import available_baseline_policy_names, baseline
 from govengine.policy.explain import explain_policy_evaluation
 from govengine.policy.schema import POLICY_SCHEMA_KINDS, policy_json_schema
 from govengine.profile_governance import explain_profile_governance
-from govengine.typed_execution_governance import explain_typed_execution_governance
+from govengine.typed_execution_governance import (
+    TypedExecutionStackCompatibilityReport,
+    evaluate_typed_execution_stack_compatibility,
+    explain_typed_execution_governance,
+    typed_execution_control_catalog,
+)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -71,6 +76,20 @@ def _parser() -> argparse.ArgumentParser:
     typed_execution.add_argument('projection', type=Path)
     typed_execution.add_argument('--json', action='store_true', help='Emit machine-readable JSON.')
     typed_execution.add_argument('--max-bytes', type=int, default=DEFAULT_POLICY_MAX_BYTES)
+
+    typed_compat = sub.add_parser(
+        'typed-execution-compatibility',
+        help='Evaluate typed execution stack compatibility for backend descriptors.',
+    )
+    typed_compat.add_argument('projection', type=Path)
+    typed_compat.add_argument('--json', action='store_true', help='Emit machine-readable JSON.')
+    typed_compat.add_argument('--max-bytes', type=int, default=DEFAULT_POLICY_MAX_BYTES)
+
+    control_catalog = sub.add_parser(
+        'typed-execution-control-catalog',
+        help='Emit the GovEngine typed execution control catalog.',
+    )
+    control_catalog.add_argument('--json', action='store_true', help='Emit machine-readable JSON.')
     return parser
 
 
@@ -185,6 +204,33 @@ def main(argv: list[str] | None = None) -> int:
                     f"{payload['profile_name']}:"
                     f"governance={payload['governance']['reason_code']}:"
                     f"compatibility={payload['compatibility']['reason_code']}"
+                )
+            return 0 if payload['status'] == 'passed' else 2
+        if args.command == 'typed-execution-control-catalog':
+            payload = typed_execution_control_catalog()
+            if args.json:
+                print(json.dumps(payload, indent=2, sort_keys=True))
+            else:
+                print(
+                    'typed_execution_control_catalog:'
+                    f"controls={len(payload['controls'])}:"
+                    f"backends={len(payload['supported_backend_classes'])}"
+                )
+            return 0
+        if args.command == 'typed-execution-compatibility':
+            projection = _read_json_mapping(args.projection, max_bytes=args.max_bytes)
+            stack_report: TypedExecutionStackCompatibilityReport = (
+                evaluate_typed_execution_stack_compatibility(projection)
+            )
+            payload = stack_report.as_dict()
+            if args.json:
+                print(json.dumps(payload, indent=2, sort_keys=True))
+            else:
+                print(
+                    f"typed_execution_compatibility_{payload['status']}:"
+                    f"supported={len(payload['supported_backends'])}:"
+                    f"unsupported={len(payload['unsupported_backends'])}:"
+                    f"reason={payload['reason_code']}"
                 )
             return 0 if payload['status'] == 'passed' else 2
         if args.command == 'typed-execution-governance':
