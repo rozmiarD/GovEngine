@@ -24,6 +24,13 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Planning contracts: `govengine.planning` defines neutral task-contract, plan-intent, and planner-port validators without planner implementation ownership, raw target/prompt ownership, Ravenclaw security semantics ownership, queue/scheduler/storage ownership, commands, adapters, or live execution.
 - Admission/policy contracts: `govengine.admission` defines neutral admission, policy-decision, approval-request, and audit-record validators; `govengine.policy` adds PolicyEngine request/verdict/compiler/runtime plus digest-bound `PolicyEnforcementPlan`, existing-`GovAdmissionDecision` binding, neutral runtime-control projection, `PolicyEvaluationExplanation`, and `govengine-policy explain|simulate --json` without domain policy meaning, approval workflow, audit storage, adapter, command, or live-execution ownership.
 - Supervisor action admission and explanation: `govengine.supervisor_actions` provides `admit_supervisor_action()`; `govengine.supervisor_explain` provides `explain_supervisor_action()` and `govengine-supervisor explain --json` for recovery/triage reason codes without worker, queue, scheduler, recovery execution, or runtime-store ownership.
+- Automation transition admission and explanation: `govengine.automation`
+  provides `admit_automation_transition()` over bounded child-operation
+  planning requests; `govengine.automation_explain` provides
+  `explain_automation_transition()` and
+  `govengine-policy automation-transition --json` without graph traversal,
+  child-operation creation, runtime mutation, SCLite artifact verification, or
+  LLM execution authority.
 - Evidence review contracts: `govengine.review` defines neutral evidence requirements, claims, qualifications, and review results without SCLite verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage, adapter, command, or live-execution ownership.
 - Domain profile SDK: `govengine.profiles` defines contract-only domain profile declarations, registries, fixture profiles, and conformance reports without domain taxonomy ownership, adapters, credentials, live execution, or product UX.
 - Profile governance projection (G3): `govengine.profile_governance` provides `ProfileGovernanceProjection`, `ProfileConnectorCompatibilityReport`, `explain_profile_governance()` and `govengine-policy profile-governance --json` for policy hooks, evidence expectations, runner posture, supported tracks and profile/connector capability compatibility without backend IO or domain semantics interpretation.

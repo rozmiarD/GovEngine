@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 POLICY_SCRIPT = ROOT / 'scripts' / 'govengine_policy.py'
 
 EXPECTED_COMMAND_SCHEMAS = {
+    'govengine-policy automation-transition': 'govengine.automation_transition_explanation.v0.1',
     'govengine-policy compatibility': 'govengine.contract_compatibility_report.v0.1',
     'govengine-policy compile': 'govengine.policy_pack.v0.1',
     'govengine-policy explain': 'govengine.policy_evaluation_explanation.v0.1',
@@ -31,6 +32,7 @@ EXPECTED_COMMAND_SCHEMAS = {
 }
 
 EXPECTED_COMMAND_GROUPS = {
+    'automation_transition': {'govengine-policy automation-transition'},
     'contract_compatibility': {'govengine-policy compatibility'},
     'policy_authoring': {
         'govengine-policy compile',

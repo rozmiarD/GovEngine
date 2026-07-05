@@ -68,6 +68,22 @@ _CONTRACT_ENTRIES: tuple[dict[str, Any], ...] = (
         'status': 'supported',
     },
     {
+        'surface_id': 'automation_transition_request',
+        'owner': 'govengine.automation',
+        'record_type': 'govengine.automation.AutomationTransitionRequest',
+        'supported_versions': ('v0.1',),
+        'rexecop_consumer': True,
+        'status': 'supported',
+    },
+    {
+        'surface_id': 'automation_transition_explanation',
+        'owner': 'govengine.automation_explain',
+        'record_type': 'govengine.automation_explain.AutomationTransitionExplanation',
+        'supported_versions': ('v0.1',),
+        'rexecop_consumer': True,
+        'status': 'supported',
+    },
+    {
         'surface_id': 'typed_execution_governance_request',
         'owner': 'govengine.typed_execution_governance',
         'record_type': 'govengine.typed_execution_governance.TypedExecutionGovernanceRequest',

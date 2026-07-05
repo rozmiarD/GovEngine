@@ -129,6 +129,13 @@ govengine-policy explain policy.json request.json --json
 govengine-policy simulate policy.json request.json --json
 ```
 
+Evaluate and explain child-operation planning admission without runtime
+mutation:
+
+```bash
+govengine-policy automation-transition automation-request.json --json
+```
+
 The CLI never executes work, contacts SCLite, writes audit ledgers, or invokes a
 runner. Validation is performed through the same `PolicyCompiler` used by the
 runtime path.

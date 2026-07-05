@@ -136,6 +136,18 @@ CLI_CONTRACTS: tuple[CliContract, ...] = (
         ),
     ),
     CliContract(
+        command=('govengine-policy', 'automation-transition'),
+        entrypoint='govengine-policy',
+        schema='govengine.automation_transition_explanation.v0.1',
+        stability='alpha_contract',
+        group='automation_transition',
+        exit_codes=(
+            CliExitCode(_SUCCESS, 'explained'),
+            CliExitCode(_FAILURE, 'blocked_or_input_error'),
+        ),
+        notes=('Child-operation planning admission explanation without runtime mutation.',),
+    ),
+    CliContract(
         command=('govengine-policy', 'compatibility'),
         entrypoint='govengine-policy',
         schema='govengine.contract_compatibility_report.v0.1',

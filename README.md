@@ -53,6 +53,13 @@ The `0.16.x` source line also adds:
   `explain_supervisor_action()`, and `govengine-supervisor explain --json` for
   recovery/triage reason codes over bounded `SupervisorActionRequest` payloads
   without executing recovery or mutating runtime state.
+- **Automation transition admission**: `AutomationTransitionRequest`,
+  `admit_automation_transition()`, `AutomationTransitionExplanation`,
+  `explain_automation_transition()`, and
+  `govengine-policy automation-transition --json` for child-operation planning
+  admission over bounded SCLite `automation_chain.v0.1` refs, depth/child
+  budgets, allowed child intent classes, approval refs, and LLM proposal-only
+  constraints without creating or executing child operations.
 - **Profile governance projection (G3)**: `ProfileGovernanceProjection`,
   `ProfileConnectorCompatibilityReport`, `explain_profile_governance()`, and
   `govengine-policy profile-governance --json` for policy-hook/evidence/runner

@@ -27,6 +27,8 @@ def test_supported_contract_report_lists_rexecop_surfaces() -> None:
     assert 'gov_admission_decision' in surface_ids
     assert 'trigger_planning_request' in surface_ids
     assert 'supervisor_action_request' in surface_ids
+    assert 'automation_transition_request' in surface_ids
+    assert 'automation_transition_explanation' in surface_ids
     assert 'governance_trace' in surface_ids
     assert report['rexecop_surfaces']
     assert 'governance_trace' in report['rexecop_surfaces']
@@ -52,6 +54,8 @@ def test_evaluate_contract_compatibility_passes_for_rexecop_declarations() -> No
                 {'surface_id': 'gov_admission_decision', 'schema_version': 'v0.1'},
                 {'surface_id': 'trigger_planning_request', 'schema_version': 'v0.1'},
                 {'surface_id': 'supervisor_action_request', 'schema_version': 'v0.1'},
+                {'surface_id': 'automation_transition_request', 'schema_version': 'v0.1'},
+                {'surface_id': 'automation_transition_explanation', 'schema_version': 'v0.1'},
                 {'surface_id': 'typed_execution_governance_request', 'schema_version': 'v0.1'},
                 {'surface_id': 'typed_execution_governance_projection', 'schema_version': 'v0.1'},
                 {'surface_id': 'typed_execution_stack_compatibility', 'schema_version': 'v0.1'},

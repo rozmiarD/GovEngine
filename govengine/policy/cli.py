@@ -20,6 +20,7 @@ from govengine.contract_compatibility import (
     evaluate_contract_compatibility,
     supported_contract_report,
 )
+from govengine.automation_explain import explain_automation_transition
 from govengine.profile_governance import explain_profile_governance
 from govengine.typed_execution_governance import (
     TypedExecutionStackCompatibilityReport,
@@ -80,6 +81,14 @@ def _parser() -> argparse.ArgumentParser:
     typed_execution.add_argument('projection', type=Path)
     typed_execution.add_argument('--json', action='store_true', help='Emit machine-readable JSON.')
     typed_execution.add_argument('--max-bytes', type=int, default=DEFAULT_POLICY_MAX_BYTES)
+
+    automation_transition = sub.add_parser(
+        'automation-transition',
+        help='Evaluate child-operation planning admission without runtime mutation.',
+    )
+    automation_transition.add_argument('request', type=Path)
+    automation_transition.add_argument('--json', action='store_true', help='Emit machine-readable JSON.')
+    automation_transition.add_argument('--max-bytes', type=int, default=DEFAULT_POLICY_MAX_BYTES)
 
     typed_compat = sub.add_parser(
         'typed-execution-compatibility',
@@ -263,6 +272,19 @@ def main(argv: list[str] | None = None) -> int:
             if args.request is not None and payload.get('status') != 'passed':
                 return 2
             return 0
+        if args.command == 'automation-transition':
+            request = _read_json_mapping(args.request, max_bytes=args.max_bytes)
+            explanation = explain_automation_transition(request)
+            payload = explanation.as_dict()
+            if args.json:
+                print(json.dumps(payload, indent=2, sort_keys=True))
+            else:
+                print(
+                    f"automation_transition_{payload['status']}:"
+                    f"{payload['request_id']}:"
+                    f"reason={payload['reason_code']}"
+                )
+            return 0 if payload['status'] == 'explained' else 2
         if args.command == 'typed-execution-control-catalog':
             payload = typed_execution_control_catalog()
             if args.json:
