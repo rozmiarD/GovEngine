@@ -6,8 +6,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-### Added
+## 0.16.9 - 2026-07-05 - G8 CLI contract registry and error envelope
 
+- Published `govengine==0.16.9` on PyPI with `sclite-core==1.0.8`.
 - G8 slice 1 (`cda9a27`): `govengine.cli_contract_registry.v0.1` for `govengine-policy`
   and `govengine-supervisor` operator CLIs with format and exit-code matrices.
 - G8 slice 1 (`cda9a27`): `govengine.cli_error.v0.1` envelope on `--json` failure paths for

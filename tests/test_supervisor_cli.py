@@ -2,11 +2,16 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 from govengine.cli_errors import CLI_ERROR_SCHEMA
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _supervisor_command(*args: str) -> list[str]:
+    return [sys.executable, '-m', 'govengine.supervisor_cli', *args]
 
 
 def test_supervisor_cli_explain_success(tmp_path: Path) -> None:
@@ -29,7 +34,7 @@ def test_supervisor_cli_explain_success(tmp_path: Path) -> None:
     )
 
     proc = subprocess.run(
-        ['govengine-supervisor', 'explain', str(request_path), '--json'],
+        _supervisor_command('explain', str(request_path), '--json'),
         cwd=ROOT,
         text=True,
         capture_output=True,
@@ -65,7 +70,7 @@ def test_supervisor_cli_explain_blocked_exits_two(tmp_path: Path) -> None:
     )
 
     proc = subprocess.run(
-        ['govengine-supervisor', 'explain', str(request_path), '--json'],
+        _supervisor_command('explain', str(request_path), '--json'),
         cwd=ROOT,
         text=True,
         capture_output=True,
@@ -83,7 +88,7 @@ def test_supervisor_cli_invalid_request_emits_json_error_envelope(tmp_path: Path
     request_path.write_text('not-json', encoding='utf-8')
 
     proc = subprocess.run(
-        ['govengine-supervisor', 'explain', str(request_path), '--json'],
+        _supervisor_command('explain', str(request_path), '--json'),
         cwd=ROOT,
         text=True,
         capture_output=True,

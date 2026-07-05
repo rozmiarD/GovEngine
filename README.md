@@ -1,12 +1,12 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.16.8](https://img.shields.io/badge/package-govengine%200.16.8-blueviolet.svg)](https://pypi.org/project/govengine/0.16.8/)
+[![Package: govengine 0.16.9](https://img.shields.io/badge/package-govengine%200.16.9-blueviolet.svg)](https://pypi.org/project/govengine/0.16.9/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Dependency: SCLite ==1.0.8](https://img.shields.io/badge/dependency-SCLite%20%3D%3D1.0.8-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-GovEngine is an alpha package 0.16.8 (`0.16.8`) source line for deterministic governance-kernel contracts.
+GovEngine is an alpha package 0.16.9 (`0.16.9`) source line for deterministic governance-kernel contracts.
 
 It consumes **SCLite** as the lower truth layer and exposes reusable Python records, validators, and composition helpers for admission decisions, lifecycle gates, policy/trust summaries, receipt binding, evidence review, replay freshness, and profile conformance. It does not run jobs. It does not own host runtime behavior. Carrier adapters, concrete schedulers, credentials, domain semantics, and live execution remain outside the kernel.
 
@@ -70,8 +70,8 @@ The published `0.16.0` line adds:
 
 ## Current Status
 
-Current supported stack line: `0.16.8`.
-Current supported stack line: `govengine==0.16.8` with `sclite-core==1.0.8`.
+Current supported stack line: `0.16.9`.
+Current supported stack line: `govengine==0.16.9` with `sclite-core==1.0.8`.
 Older GovEngine distributions remain available on PyPI as archived alpha history,
 but they are not an active compatibility line. The published wheel contains the
 digest-bound enforcement-plan API used by coordinated B2 consumers.
@@ -109,13 +109,13 @@ GovEngine does not provide:
 Install the latest published package from PyPI:
 
 ```bash
-python -m pip install govengine==0.16.8
+python -m pip install govengine==0.16.9
 ```
 
 That installs the single supported alpha stack line, including the PolicyEngine MVP,
 B2 enforcement-plan contracts, policy explain/simulate, and supervisor explain.
 When PyPI lags source, coordinated stack work may use `pip install -e` from the
-GovEngine repository at `0.16.8`.
+GovEngine repository at `0.16.9`.
 
 For local development:
 
