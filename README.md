@@ -1,12 +1,12 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.16.10](https://img.shields.io/badge/package-govengine%200.16.10-blueviolet.svg)](https://pypi.org/project/govengine/0.16.10/)
+[![Package: govengine 0.16.11](https://img.shields.io/badge/package-govengine%200.16.11-blueviolet.svg)](https://pypi.org/project/govengine/0.16.11/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Dependency: SCLite ==1.0.8](https://img.shields.io/badge/dependency-SCLite%20%3D%3D1.0.8-informational.svg)](https://github.com/rozmiarD/SCLite)
+[![Dependency: SCLite ==1.0.9](https://img.shields.io/badge/dependency-SCLite%20%3D%3D1.0.9-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-GovEngine is an alpha package 0.16.10 (`0.16.10`) source line for deterministic governance-kernel contracts.
+GovEngine is an alpha package 0.16.11 (`0.16.11`) source line for deterministic governance-kernel contracts.
 
 It consumes **SCLite** as the lower truth layer and exposes reusable Python records, validators, and composition helpers for admission decisions, lifecycle gates, policy/trust summaries, receipt binding, evidence review, replay freshness, and profile conformance. It does not run jobs. It does not own host runtime behavior. Carrier adapters, concrete schedulers, credentials, domain semantics, and live execution remain outside the kernel.
 
@@ -77,8 +77,8 @@ The published `0.16.0` line adds:
 
 ## Current Status
 
-Current supported stack line: `0.16.10`.
-Current supported stack line: `govengine==0.16.10` with `sclite-core==1.0.8`.
+Current supported stack line: `0.16.11`.
+Current supported stack line: `govengine==0.16.11` with `sclite-core==1.0.9`.
 Older GovEngine distributions remain available on PyPI as archived alpha history,
 but they are not an active compatibility line. The published wheel contains the
 digest-bound enforcement-plan API used by coordinated B2 consumers.
@@ -116,13 +116,13 @@ GovEngine does not provide:
 Install the latest published package from PyPI:
 
 ```bash
-python -m pip install govengine==0.16.10
+python -m pip install govengine==0.16.11
 ```
 
 That installs the single supported alpha stack line, including the PolicyEngine MVP,
 B2 enforcement-plan contracts, policy explain/simulate, and supervisor explain.
 When PyPI lags source, coordinated stack work may use `pip install -e` from the
-GovEngine repository at `0.16.10`.
+GovEngine repository at `0.16.11`.
 
 For local development:
 

@@ -6,6 +6,14 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+## 0.16.11 - 2026-07-05 - SCLite automation-chain dependency pin
+
+- Published `govengine==0.16.11` on PyPI with `sclite-core==1.0.9`.
+- **Feature delta:** none since `0.16.10`. This release aligns GovEngine's
+  dependency pin with the public SCLite line that exports
+  `automation_chain.v0.1` helpers consumed by downstream RExecOp reaction
+  chain projections.
+
 ## 0.16.10 - 2026-07-05 - Automation transition admission
 
 - Published `govengine==0.16.10` on PyPI with `sclite-core==1.0.8`.
