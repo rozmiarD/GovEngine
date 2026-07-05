@@ -6,6 +6,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+## 0.16.10 - 2026-07-05 - Automation transition admission
+
+- Published `govengine==0.16.10` on PyPI with `sclite-core==1.0.8`.
 - Added `govengine.automation` with `AutomationTransitionRequest` and
   `admit_automation_transition()` for child-operation planning admission over
   SCLite `automation_chain.v0.1` refs, max-depth limits, child budgets,
