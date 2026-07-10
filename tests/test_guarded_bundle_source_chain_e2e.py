@@ -42,7 +42,7 @@ def test_source_chain_secure_bundle_first_use_then_replay(tmp_path: Path, monkey
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     guard = build_kernel_guard_manifest(
         manifest,
-        key="source-chain-secret",
+        key="source-chain-secret-at-least-32-bytes",
         key_id="source-chain-key",
         nonces=[f"nonce-{index}" for index, _entry in enumerate(manifest["entries"])],
     )
@@ -50,8 +50,8 @@ def test_source_chain_secure_bundle_first_use_then_replay(tmp_path: Path, monkey
     guard_path.write_text(json.dumps(guard, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     store = MemoryStore()
 
-    first = verify_guard_and_record_replay(manifest_path, guard_path=guard_path, key="source-chain-secret", store=store)
-    second = verify_guard_and_record_replay(manifest_path, guard_path=guard_path, key="source-chain-secret", store=store)
+    first = verify_guard_and_record_replay(manifest_path, guard_path=guard_path, key="source-chain-secret-at-least-32-bytes", store=store)
+    second = verify_guard_and_record_replay(manifest_path, guard_path=guard_path, key="source-chain-secret-at-least-32-bytes", store=store)
 
     assert first.allowed is True
     assert first.replay_status == "fresh"
