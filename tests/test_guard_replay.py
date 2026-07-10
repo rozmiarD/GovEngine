@@ -15,6 +15,7 @@ from govengine.replay import (
     evaluate_guard_replay,
     GuardReplayRecord,
     guard_replay_record_from_guard,
+    guard_replay_record_from_verification,
     InMemoryReplayClaimStore,
     ReplayClaimStore,
     record_guard_replay,
@@ -86,6 +87,26 @@ def test_guard_replay_record_from_guard_captures_runtime_ids() -> None:
     assert record.run_id == "run-1"
     assert record.guard_profile == "kernel_guard_hmac_v1"
     assert record.schema_version == "v0.1"
+
+
+def test_guard_replay_record_from_verified_sclite_handoff_needs_no_sidecar_payload() -> None:
+    record = guard_replay_record_from_verification(
+        {
+            "guard_root_tag": "verified-root-tag",
+            "chain_id": "verified-chain",
+            "key_id": "key-20260710",
+            "root_chain_digest": "verified-root-digest",
+            "guard_profile": "kernel_guard_hmac_v1",
+            "ticket_id": "verified-ticket",
+        },
+        run_id="run-1",
+        observed_at="2026-07-10T10:00:00+00:00",
+    )
+
+    assert record.root_tag == "verified-root-tag"
+    assert record.chain_id == "verified-chain"
+    assert record.ticket_id == "verified-ticket"
+    assert record.root_chain_digest == "verified-root-digest"
 
 
 def test_guard_replay_record_accepts_legacy_mapping_without_schema_version() -> None:
@@ -263,7 +284,9 @@ def _install_fake_sclite_secure(monkeypatch: pytest.MonkeyPatch) -> list[dict[st
             "secure_profile": "guarded-strict",
             "root_chain_digest": "root-digest-1",
             "guard_root_tag": json.loads(Path(guard_path).read_text(encoding="utf-8"))["root_tag"],
+            "chain_id": "chain-1",
             "key_id": "key-20260525",
+            "ticket_id": "ticket-1",
             "replay_status": "not_checked",
         }
 
@@ -351,6 +374,48 @@ def test_verify_guard_and_record_replay_requires_strict_lifecycle(tmp_path: Path
 
     assert decision.allowed is False
     assert decision.blocker == "strict_lifecycle_required_for_runtime_consumable_guard"
+
+
+def test_verify_guard_and_record_replay_does_not_reread_verified_bundle_files(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = types.ModuleType("sclite.secure")
+
+    def verify_secure_bundle(*_args, **_kwargs):
+        return {
+            "status": "passed",
+            "secure_profile": "guarded-strict",
+            "root_chain_digest": "verified-root-digest",
+            "guard_root_tag": "verified-root-tag",
+            "chain_id": "verified-chain",
+            "key_id": "verified-key",
+            "ticket_id": "verified-ticket",
+            "replay_status": "not_checked",
+        }
+
+    module.verify_secure_bundle = verify_secure_bundle
+    monkeypatch.setitem(sys.modules, "sclite.secure", module)
+    manifest_path, guard_path = _write_guarded_bundle(tmp_path)
+    selected = {manifest_path.resolve(), guard_path.resolve(), (tmp_path / "execution_ticket.json").resolve()}
+    original_read_text = Path.read_text
+
+    def fail_if_govengine_rereads(path: Path, *args, **kwargs):
+        if path.resolve() in selected:
+            raise AssertionError(f"GovEngine reread verified bundle file: {path}")
+        return original_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", fail_if_govengine_rereads)
+    decision = verify_guard_and_record_replay(
+        manifest_path,
+        guard_path=guard_path,
+        key="secret",
+        store=MemoryStore(),
+    )
+
+    assert decision.allowed is True
+    assert decision.chain_id == "verified-chain"
+    assert decision.ticket_id == "verified-ticket"
 
 
 def test_guarded_fresh_runtime_admission_example_composes_allowed_dry_run(

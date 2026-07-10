@@ -14,7 +14,7 @@ from govengine import __version__ as package_version  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '0.16.11'
+EXPECTED_RELEASE_LABEL = '0.16.12rc1'
 PUBLISHED_VERSION = '0.16.11'
 
 SURFACE_HEADINGS = {
@@ -114,11 +114,11 @@ GOVERNED_RUNTIME_RELEASE_MARKERS = (
 
 SOURCE_PYPI_GAP_DOC_MARKERS = {
     'README.md': (
-        'Current supported stack line: `0.16.11`',
-        'Current supported stack line: `govengine==0.16.11` with `sclite-core==1.0.9`',
+        'Current source candidate: `0.16.12rc1`',
+        'Latest published stack line: `govengine==0.16.11` with `sclite-core==1.0.9`',
     ),
     'docs/ROADMAP.md': (
-        '## Current 0.16.x release line',
+        '## Current 0.16.x candidate line',
         'Published PyPI baseline is `govengine==0.16.11`',
     ),
 }
@@ -245,10 +245,6 @@ def _assert_source_pypi_gap_docs(
 ) -> None:
     if version == PUBLISHED_VERSION:
         return
-    _assert_contains('CHANGELOG.md', _changelog_release_section(changelog), 'explain_supervisor_action()')
-    _assert_contains('CHANGELOG.md', _changelog_release_section(changelog), 'SupervisorActionExplanation')
-    _assert_contains('CHANGELOG.md', _changelog_release_section(changelog), 'explain_profile_governance()')
-    _assert_contains('CHANGELOG.md', _changelog_release_section(changelog), 'ProfileGovernanceProjection')
     for path, markers in SOURCE_PYPI_GAP_DOC_MARKERS.items():
         text = {'README.md': readme, 'docs/ROADMAP.md': roadmap}[path]
         for marker in markers:
@@ -422,7 +418,7 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
     for marker in stale_markers:
         if marker in roadmap:
             raise AssertionError(f'docs/ROADMAP.md:stale_current_roadmap_claim:{marker}')
-    _assert_contains('docs/ROADMAP.md', roadmap, '## Current 0.16.x release line')
+    _assert_contains('docs/ROADMAP.md', roadmap, '## Current 0.16.x candidate line')
     _assert_contains('docs/ROADMAP.md', roadmap, 'The current published `0.16.x` single supported line is the single supported GovEngine stack line')
     _assert_contains('docs/ROADMAP.md', roadmap, f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`')
 

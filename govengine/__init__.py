@@ -7,7 +7,7 @@ import time.
 
 from typing import Any
 
-__version__ = '0.16.11'
+__version__ = '0.16.12rc1'
 
 from .admission import (
     AuditLedgerAppendResult,

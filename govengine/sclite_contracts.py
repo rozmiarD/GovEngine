@@ -5,7 +5,7 @@ from typing import Any, Mapping, Protocol
 
 from govengine.core import ArtifactDescriptor, ArtifactState, ReasonCode, TransitionDecision
 from sclite.bundles import ReviewBundleError, review_bundle
-from sclite.integrity import artifact_descriptor, verify_artifact_chain_manifest
+from sclite.integrity import artifact_descriptor, verify_lifecycle_manifest as verify_sclite_lifecycle_manifest
 from sclite.integrity.chain import ChainVerificationError
 
 
@@ -19,7 +19,7 @@ class GovSCLiteLifecycleVerifier(Protocol):
 def verify_lifecycle_manifest(manifest: Mapping[str, Any], *, root: Path) -> dict[str, Any]:
     """Verify a v0.2 SCLite lifecycle manifest through the GovEngine seam."""
 
-    return verify_artifact_chain_manifest(manifest, root=root)
+    return verify_sclite_lifecycle_manifest(manifest, root=root)
 
 
 def review_sclite_bundle(
@@ -82,7 +82,11 @@ def lifecycle_state_from_manifest(
 
     descriptor = descriptor_from_artifact(manifest, role="artifact_chain_manifest", path=path)
     try:
-        result = verify_artifact_chain_manifest(manifest, root=root, validate_schemas=validate_schemas)
+        result = verify_sclite_lifecycle_manifest(
+            manifest,
+            root=root,
+            validate_schemas=validate_schemas,
+        )
     except ChainVerificationError as exc:
         return ArtifactState(
             descriptor=descriptor,
@@ -93,11 +97,19 @@ def lifecycle_state_from_manifest(
             blocked_reasons=(str(exc),),
             next_actions=("repair_artifact_chain", "rerun_sclite_lifecycle_verification"),
         )
-    semantic_checks = result.get("semantic_checks") if isinstance(result.get("semantic_checks"), list) else []
-    lifecycle_state = "verified_lifecycle" if semantic_checks else "verified_chain"
+    if result.get("lifecycle_status") != "passed":
+        return ArtifactState(
+            descriptor=descriptor,
+            lifecycle_state="blocked",
+            chain_status=str(result.get("chain_status") or "review"),
+            signature_status=_signature_status(manifest),
+            policy_status="unknown",
+            blocked_reasons=(str(result.get("scope_detail") or "strict_lifecycle_not_passed"),),
+            next_actions=("repair_or_review_sclite_lifecycle",),
+        )
     return ArtifactState(
         descriptor=descriptor,
-        lifecycle_state=lifecycle_state,
+        lifecycle_state="verified_lifecycle",
         chain_status=str(result.get("status") or "passed"),
         signature_status=_signature_status(manifest),
         policy_status="unknown",

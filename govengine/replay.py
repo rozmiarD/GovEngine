@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -211,35 +210,28 @@ def guard_replay_record_from_guard(
     })
 
 
-def _load_json_object(path: Path, *, label: str) -> dict[str, Any]:
-    value = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(value, dict):
-        raise GovApiError(f"invalid_{label}_json_root")
-    return value
+def guard_replay_record_from_verification(
+    verification: Mapping[str, Any],
+    *,
+    ticket_id: str = "",
+    run_id: str = "",
+    observed_at: str | None = None,
+    metadata: Mapping[str, Any] | None = None,
+) -> GuardReplayRecord:
+    """Create replay evidence from SCLite's verified handoff without rereading files."""
 
-
-def _ticket_id_from_manifest(manifest_path: Path, manifest: Mapping[str, Any]) -> str:
-    base = manifest_path.parent
-    entries = manifest.get("entries")
-    if not isinstance(entries, list):
-        return ""
-    for entry in entries:
-        if not isinstance(entry, Mapping) or entry.get("role") != "execution_ticket":
-            continue
-        rel_path = str(entry.get("path") or "")
-        if not rel_path:
-            return ""
-        ticket_path = (base / rel_path).resolve()
-        try:
-            ticket_path.relative_to(base.resolve())
-        except ValueError:
-            return ""
-        try:
-            ticket = _load_json_object(ticket_path, label="execution_ticket")
-        except Exception:
-            return ""
-        return str(ticket.get("ticket_id") or "")
-    return ""
+    raw = require_mapping(verification, reason_code="invalid_sclite_verification")
+    return GuardReplayRecord.from_mapping({
+        "root_tag": raw.get("guard_root_tag"),
+        "chain_id": raw.get("chain_id"),
+        "key_id": raw.get("key_id"),
+        "root_chain_digest": raw.get("root_chain_digest") or "",
+        "guard_profile": raw.get("guard_profile") or "kernel_guard_hmac_v1",
+        "ticket_id": ticket_id or raw.get("ticket_id") or "",
+        "run_id": run_id,
+        "observed_at": observed_at or _utc_now(),
+        "metadata": dict(metadata or {}),
+    })
 
 
 def verify_guard_and_record_replay(
@@ -297,8 +289,6 @@ def verify_guard_and_record_replay(
             validate_schemas=True,
             strict_jsonschema=strict_jsonschema,
         )
-        guard_payload = _load_json_object(guard, label="kernel_guard")
-        manifest_payload = _load_json_object(manifest, label="artifact_chain_manifest")
     except Exception as exc:
         return GuardedBundleRuntimeDecision(
             status="blocked",
@@ -308,10 +298,9 @@ def verify_guard_and_record_replay(
             next_action="reject_or_review_unguarded_bundle",
         )
 
-    resolved_ticket_id = ticket_id or _ticket_id_from_manifest(manifest, manifest_payload)
-    record = guard_replay_record_from_guard(
-        guard_payload,
-        ticket_id=resolved_ticket_id,
+    record = guard_replay_record_from_verification(
+        verification,
+        ticket_id=ticket_id,
         run_id=run_id,
         observed_at=observed_at,
         metadata={

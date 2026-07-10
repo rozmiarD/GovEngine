@@ -7,14 +7,14 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Source/package version: `0.16.11`.
-- Source distribution target: `govengine==0.16.11`.
+- Source/package version: `0.16.12rc1`.
+- Source distribution target: `govengine==0.16.12rc1`.
 - Published distribution: `govengine==0.16.11`.
-- Release label: `0.16.11`.
-- Release status: published alpha; single supported stack line.
+- Release label: `0.16.12rc1`.
+- Release status: unpublished alpha hotfix candidate; the latest published stack line remains supported until release approval.
 - Latest published PyPI package: `govengine==0.16.11`.
-- Source/PyPI gap: closed for the active stack line; older PyPI releases are archived and not a supported compatibility matrix.
-- SCLite integration: present through helper seams via active dependency `sclite-core==1.0.9`.
+- Source/PyPI gap: open for the local candidate; published PyPI releases remain the public compatibility matrix until release approval.
+- SCLite integration: present through helper seams via candidate dependency `sclite-core==1.0.10rc1`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.
 - Event model: initial `govengine.events` envelopes define transport-neutral governance metadata without raw prompts, credentials, live commands, carrier payloads, or scheduling claims.
@@ -72,7 +72,7 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `govengine==0.16.11`.
+- PyPI publication: completed through `govengine==0.16.11`; `0.16.12rc1` is not published.
 
 ## What is public-safe today
 

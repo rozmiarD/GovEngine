@@ -6,6 +6,17 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+## 0.16.12rc1 - SCLite strict-lifecycle hotfix candidate
+
+- Requires SCLite strict lifecycle verification, rather than generic
+  hash-chain integrity, before mapping a manifest to `verified_lifecycle` or
+  allowing the corresponding transition.
+- Consumes SCLite's verified guarded-bundle handoff fields directly for replay
+  records, without reopening the manifest, guard, or ticket payload.
+- Pins the unpublished candidate to `sclite-core==1.0.10rc1`. This is a local
+  release candidate; the latest published GovEngine package remains
+  `govengine==0.16.11`.
+
 ## 0.16.11 - 2026-07-05 - SCLite automation-chain dependency pin
 
 - Published `govengine==0.16.11` on PyPI with `sclite-core==1.0.9`.
