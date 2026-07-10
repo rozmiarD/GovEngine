@@ -139,3 +139,17 @@ def test_automation_transition_admission_detects_drift() -> None:
 
     with pytest.raises(GovApiError, match='automation_transition_admission_drift'):
         validate_automation_transition_admission(drifted, request=request)
+
+def test_automation_transition_admission_is_bound_to_exact_chain_request() -> None:
+    admitted_request = AutomationTransitionRequest.from_mapping(_request())
+    admission = admit_automation_transition(admitted_request)
+    different_chain_request = AutomationTransitionRequest.from_mapping(
+        _request(automation_chain_ref=_digest('c'))
+    )
+
+    assert automation_transition_request_digest(
+        admitted_request
+    ) != automation_transition_request_digest(different_chain_request)
+    with pytest.raises(GovApiError, match='automation_transition_admission_drift'):
+        validate_automation_transition_admission(admission, request=different_chain_request)
+

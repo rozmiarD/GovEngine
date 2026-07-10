@@ -6,6 +6,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds regression coverage proving an automation-transition admission is bound
+  to the exact request and automation-chain reference; reuse against a changed
+  chain request fails closed as admission drift.
+
 ## 0.16.12rc1 - Coordinated SCLite strict-verification candidate
 
 - Requires SCLite strict lifecycle verification, rather than generic
