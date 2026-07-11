@@ -13,7 +13,7 @@ from .scope_assertion import (
     scope_decision_digest as scope_decision_digest,
 )
 
-__version__ = '0.16.12rc1'
+__version__ = '0.17.0rc1'
 
 from .admission import (
     AuditLedgerAppendResult,

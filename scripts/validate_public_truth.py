@@ -15,7 +15,7 @@ from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_
 from govengine.surfaces import public_surface_index  # noqa: E402
 from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '0.16.12rc1'
+EXPECTED_RELEASE_LABEL = '0.17.0rc1'
 PUBLISHED_VERSION = '0.16.11'
 
 SURFACE_HEADINGS = {
@@ -115,7 +115,7 @@ GOVERNED_RUNTIME_RELEASE_MARKERS = (
 
 SOURCE_PYPI_GAP_DOC_MARKERS = {
     'README.md': (
-        'Current source candidate: `0.16.12rc1`',
+        'Current source candidate: `0.17.0rc1`',
         'Latest published stack line: `govengine==0.16.11` with `sclite-core==1.0.9`',
     ),
     'docs/ROADMAP.md': (

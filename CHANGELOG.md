@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — SCLite 2.0 candidate
+
+- Pins the SCLite 2.0 candidate after removal of stack-specific owner modules;
+  GovEngine continues to consume only neutral lifecycle verification surfaces.
+
 All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
@@ -17,14 +22,14 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   to the exact request and automation-chain reference; reuse against a changed
   chain request fails closed as admission drift.
 
-## 0.16.12rc1 - Coordinated SCLite strict-verification candidate
+## 0.17.0rc1 - Coordinated SCLite strict-verification candidate
 
 - Requires SCLite strict lifecycle verification, rather than generic
   hash-chain integrity, before mapping a manifest to `verified_lifecycle` or
   allowing the corresponding transition.
 - Consumes SCLite's verified guarded-bundle handoff fields directly for replay
   records, without reopening the manifest, guard, or ticket payload.
-- Pins the unpublished candidate to `sclite-core==1.1.0rc1`. This is a local
+- Pins the unpublished candidate to `sclite-core==2.0.0rc1`. This is a local
   release candidate; the latest published GovEngine package remains
   `govengine==0.16.11`.
 
