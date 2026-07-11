@@ -7,6 +7,12 @@ import time.
 
 from typing import Any
 
+from .scope_assertion import (
+    build_scope_assertion as build_scope_assertion,
+    build_scope_decision as build_scope_decision,
+    scope_decision_digest as scope_decision_digest,
+)
+
 __version__ = '0.16.12rc1'
 
 from .admission import (

@@ -6,6 +6,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds canonical GovEngine scope-decision and assertion builders binding an
+  admission reference, operation subject and exact target into a stable digest.
+  The contract does not claim that a serialized decision authenticates
+  GovEngine identity.
 - Enforces GovEngine's production SCLite imports against the versioned
   wheel-shipped consumer contract; a new top-level or deep import now fails the
   existing public-truth CI gate until reviewed in SCLite's inventory.
