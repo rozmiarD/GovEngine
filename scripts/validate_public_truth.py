@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
 from govengine import __version__ as package_version  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
+from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 
 EXPECTED_RELEASE_LABEL = '0.16.12rc1'
 PUBLISHED_VERSION = '0.16.11'
@@ -476,6 +477,9 @@ def _assert_mvp_surface_docs(markers: Mapping[str, Iterable[str]] = MVP_SURFACE_
 
 
 def main() -> int:
+    import_errors = validate_consumer_imports('govengine', ROOT)
+    if import_errors:
+        raise AssertionError(';'.join(import_errors))
     project = _pyproject()['project']
     version = str(project['version'])
     release_label = EXPECTED_RELEASE_LABEL

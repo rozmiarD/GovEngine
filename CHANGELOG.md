@@ -6,6 +6,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Enforces GovEngine's production SCLite imports against the versioned
+  wheel-shipped consumer contract; a new top-level or deep import now fails the
+  existing public-truth CI gate until reviewed in SCLite's inventory.
 - Adds regression coverage proving an automation-transition admission is bound
   to the exact request and automation-chain reference; reuse against a changed
   chain request fails closed as admission drift.
