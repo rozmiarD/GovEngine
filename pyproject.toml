@@ -24,7 +24,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-  "sclite-core==2.0.0rc1",
+  "sclite-core==2.0.0",
 ]
 
 [project.urls]

@@ -29,7 +29,7 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   allowing the corresponding transition.
 - Consumes SCLite's verified guarded-bundle handoff fields directly for replay
   records, without reopening the manifest, guard, or ticket payload.
-- Pins the unpublished candidate to `sclite-core==2.0.0rc1`. This is a local
+- Pins the unpublished candidate to final `sclite-core==2.0.0`. This is a local
   release candidate; the latest published GovEngine package remains
   `govengine==0.16.11`.
 
