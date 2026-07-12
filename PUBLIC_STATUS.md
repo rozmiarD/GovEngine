@@ -7,10 +7,10 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Source/package version: `0.17.0rc1`.
-- Source distribution target: `govengine==0.17.0rc1`.
+- Source/package version: `0.17.0rc2`.
+- Source distribution target: `govengine==0.17.0rc2`.
 - Published distribution: `govengine==0.16.11`.
-- Release label: `0.17.0rc1`.
+- Release label: `0.17.0rc2`.
 - Release status: unpublished coordinated alpha candidate; the latest published stack line remains supported until release approval.
 - Latest published PyPI package: `govengine==0.16.11`.
 - Source/PyPI gap: open for the local candidate; published PyPI releases remain the public compatibility matrix until release approval.
@@ -72,7 +72,7 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `govengine==0.16.11`; `0.17.0rc1` is not published.
+- PyPI publication: completed through `govengine==0.16.11`; `0.17.0rc2` is not published.
 
 ## What is public-safe today
 

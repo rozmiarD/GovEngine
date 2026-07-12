@@ -75,6 +75,7 @@ BASELINE_TYPED_EXECUTION_CONTROLS = (
     'receipt_required',
     'output_digest_required',
     'network_boundary_match',
+    'network_destination_binding_match',
     'secret_ref_requirements_met',
     'mutation_requires_approval',
 )
@@ -153,6 +154,13 @@ TYPED_EXECUTION_CONTROL_CATALOG_ENTRIES = (
     },
     {
         'control_id': 'network_boundary_match',
+        'policy_constraint_kinds': ('allowed_network_egress',),
+        'policy_obligation_kinds': (),
+        'evidence_requirement_keys': (),
+        'governance_gate': 'compatibility',
+    },
+    {
+        'control_id': 'network_destination_binding_match',
         'policy_constraint_kinds': ('allowed_network_egress',),
         'policy_obligation_kinds': (),
         'evidence_requirement_keys': (),
@@ -259,6 +267,10 @@ class TypedExecutionGovernanceRequest:
     operation_id: str = ''
     evidence_requirements: Mapping[str, Any] = field(default_factory=dict)
     allowed_network_egress: tuple[str, ...] = ()
+    allowed_network_schemes: tuple[str, ...] = ()
+    allowed_address_classes: tuple[str, ...] = ()
+    required_origin_binding_digest: str = ''
+    destination_binding: Mapping[str, Any] = field(default_factory=dict)
     required_capability_descriptors: tuple[str, ...] = ()
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
@@ -280,6 +292,10 @@ class TypedExecutionGovernanceRequest:
             'capability_descriptor': self.capability_descriptor.as_dict(),
             'evidence_requirements': dict(self.evidence_requirements),
             'allowed_network_egress': list(self.allowed_network_egress),
+            'allowed_network_schemes': list(self.allowed_network_schemes),
+            'allowed_address_classes': list(self.allowed_address_classes),
+            'required_origin_binding_digest': self.required_origin_binding_digest,
+            'destination_binding': dict(self.destination_binding),
             'required_capability_descriptors': list(self.required_capability_descriptors),
             'metadata': dict(self.metadata),
         }
@@ -510,6 +526,15 @@ def validate_typed_execution_governance_request(
             reason_code='invalid_typed_execution_evidence_requirements',
         ),
         allowed_network_egress=_string_tuple(raw.get('allowed_network_egress') or ()),
+        allowed_network_schemes=_string_tuple(raw.get('allowed_network_schemes') or ()),
+        allowed_address_classes=_string_tuple(raw.get('allowed_address_classes') or ()),
+        required_origin_binding_digest=str(
+            raw.get('required_origin_binding_digest') or ''
+        ).strip(),
+        destination_binding=require_mapping(
+            raw.get('destination_binding') or {},
+            reason_code='invalid_destination_binding',
+        ),
         required_capability_descriptors=_string_tuple(
             raw.get('required_capability_descriptors') or ()
         ),
@@ -944,6 +969,11 @@ def _validate_typed_execution_request_shape(item: TypedExecutionGovernanceReques
         raise GovApiError('typed_execution_backend_class_mismatch')
     _reject_forbidden_typed_execution_metadata(item.metadata)
     _reject_forbidden_typed_execution_metadata(item.evidence_requirements)
+    if item.required_origin_binding_digest:
+        _require_digest_ref(
+            item.required_origin_binding_digest,
+            'invalid_required_origin_binding_digest',
+        )
 
 
 def _check_required_digests(item: TypedExecutionGovernanceRequest) -> dict[str, Any]:
@@ -1120,6 +1150,43 @@ def _typed_execution_policy_controls(
     )
     if not network_passed:
         controls[-1]['control'] = 'network_boundary_mismatch'
+
+    destination = dict(request.destination_binding)
+    capability_destination = descriptor.network_boundary.get('destination_binding')
+    scheme = str(destination.get('scheme') or '').strip()
+    address_class = str(destination.get('address_class') or '').strip()
+    origin_digest = str(destination.get('origin_binding_digest') or '').strip()
+    destination_required = bool(request.metadata.get('require_destination_binding'))
+    destination_passed = not destination_required
+    if destination:
+        destination_passed = (
+            isinstance(capability_destination, Mapping)
+            and dict(capability_destination) == destination
+            and (not request.allowed_network_schemes or scheme in request.allowed_network_schemes)
+            and (
+                not request.allowed_address_classes
+                or address_class in request.allowed_address_classes
+            )
+            and (
+                not request.required_origin_binding_digest
+                or origin_digest == request.required_origin_binding_digest
+            )
+        )
+    controls.append(
+        {
+            'control': (
+                'network_destination_binding_match'
+                if destination_passed
+                else 'network_destination_binding_mismatch'
+            ),
+            'passed': destination_passed,
+            'details': {
+                'scheme': scheme,
+                'address_class': address_class,
+                'origin_binding_digest': origin_digest,
+            },
+        }
+    )
 
     missing_secret_refs = [
         str(item.get('path') or '')

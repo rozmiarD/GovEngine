@@ -10,7 +10,7 @@ their admission decisions and does not import their removed SCLite modules.
 [![Dependency: SCLite ==1.0.9](https://img.shields.io/badge/dependency-SCLite%20%3D%3D1.0.9-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-GovEngine is an alpha package 0.17.0rc1 source candidate for deterministic governance-kernel contracts.
+GovEngine is an alpha package 0.17.0rc2 source candidate for deterministic governance-kernel contracts.
 
 It consumes **SCLite** as the lower truth layer and exposes reusable Python records, validators, and composition helpers for admission decisions, lifecycle gates, policy/trust summaries, receipt binding, evidence review, replay freshness, and profile conformance. It does not run jobs. It does not own host runtime behavior. Carrier adapters, concrete schedulers, credentials, domain semantics, and live execution remain outside the kernel.
 
@@ -81,8 +81,8 @@ The published `0.16.0` line adds:
 
 ## Current Status
 
-Current source candidate: `0.17.0rc1`.
-Current source candidate pin: `govengine==0.17.0rc1` with final `sclite-core==2.0.0`.
+Current source candidate: `0.17.0rc2`.
+Current source candidate pin: `govengine==0.17.0rc2` with final `sclite-core==2.0.0`.
 Latest published stack line: `govengine==0.16.11` with `sclite-core==1.0.9`.
 Older GovEngine distributions remain available on PyPI as archived alpha history,
 but they are not an active compatibility line. The published wheel contains the
@@ -127,7 +127,7 @@ python -m pip install govengine==0.16.11
 That installs the single supported alpha stack line, including the PolicyEngine MVP,
 B2 enforcement-plan contracts, policy explain/simulate, and supervisor explain.
 When PyPI lags source, coordinated stack work may use `pip install -e` from the
-GovEngine repository at `0.17.0rc1`.
+GovEngine repository at `0.17.0rc2`.
 
 For local development:
 

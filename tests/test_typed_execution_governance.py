@@ -120,6 +120,77 @@ def test_blocked_unsupported_backend() -> None:
     assert 'unsupported_backend_class' in bundle.compatibility.blockers
 
 
+def test_http_destination_binding_is_admitted_without_raw_host() -> None:
+    destination = {
+        'scheme': 'https',
+        'effective_port': 8443,
+        'address_class': 'private',
+        'origin_binding_digest': _digest('d'),
+    }
+    capability = _capability(
+        backend_class='http_api',
+        egress_class='outbound_http',
+        identity_class='api_token_optional',
+        live_backend_posture='live_backend',
+        network_boundary={
+            'egress': 'outbound_http',
+            'destination_binding': destination,
+        },
+        declared_capability_descriptors=['connector.http.rest.read'],
+    )
+    request = _request(
+        backend_class='http_api',
+        capability_descriptor=capability,
+        allowed_network_egress=['outbound_http'],
+        required_capability_descriptors=['connector.http.rest.read'],
+        destination_binding=destination,
+        allowed_network_schemes=['https'],
+        allowed_address_classes=['private'],
+        required_origin_binding_digest=destination['origin_binding_digest'],
+        metadata={'require_destination_binding': True},
+    )
+    admission = admit_typed_execution(request)
+    assert admission.allowed is True
+    assert admission.signal['step_execution_spec_digest'] == request[
+        'step_execution_spec_digest'
+    ]
+    assert 'private-api' not in repr(admission.as_dict())
+
+
+def test_http_destination_binding_drift_is_blocked() -> None:
+    destination = {
+        'scheme': 'https',
+        'effective_port': 443,
+        'address_class': 'dns_name',
+        'origin_binding_digest': _digest('d'),
+    }
+    capability = _capability(
+        backend_class='http_api',
+        egress_class='outbound_http',
+        identity_class='api_token_optional',
+        live_backend_posture='live_backend',
+        network_boundary={
+            'egress': 'outbound_http',
+            'destination_binding': destination,
+        },
+        declared_capability_descriptors=['connector.http.rest.read'],
+    )
+    request = _request(
+        backend_class='http_api',
+        capability_descriptor=capability,
+        allowed_network_egress=['outbound_http'],
+        required_capability_descriptors=['connector.http.rest.read'],
+        destination_binding={**destination, 'effective_port': 444},
+        allowed_network_schemes=['https'],
+        allowed_address_classes=['dns_name'],
+        required_origin_binding_digest=destination['origin_binding_digest'],
+        metadata={'require_destination_binding': True},
+    )
+    bundle = explain_typed_execution_governance(request)
+    assert bundle.status == 'blocked'
+    assert 'network_destination_binding_mismatch' in bundle.compatibility.blockers
+
+
 def test_blocked_missing_output_digest_ref() -> None:
     bundle = explain_typed_execution_governance(
         _request(

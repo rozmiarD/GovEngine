@@ -30,7 +30,7 @@ def test_public_truth_validator_passes() -> None:
         check=True,
     )
 
-    assert result.stdout.strip().startswith('public_truth_ok:govengine==0.17.0rc1:')
+    assert result.stdout.strip().startswith('public_truth_ok:govengine==0.17.0rc2:')
 
 
 def test_alpha_readiness_validator_passes() -> None:
@@ -42,7 +42,7 @@ def test_alpha_readiness_validator_passes() -> None:
         check=True,
     )
 
-    assert result.stdout.strip().startswith('alpha_readiness_ok:govengine==0.17.0rc1:')
+    assert result.stdout.strip().startswith('alpha_readiness_ok:govengine==0.17.0rc2:')
 
 
 def test_current_public_docs_do_not_reintroduce_pre_alpha_maturity_claims() -> None:

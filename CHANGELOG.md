@@ -11,6 +11,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds neutral HTTP destination admission fields for scheme, address class,
+  effective port and origin-binding digest. GovEngine compares only bounded
+  metadata/digests and never receives the raw connector host.
+
 - Adds canonical GovEngine scope-decision and assertion builders binding an
   admission reference, operation subject and exact target into a stable digest.
   The contract does not claim that a serialized decision authenticates
