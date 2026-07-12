@@ -1,14 +1,14 @@
 # GovEngine
 
-The 0.17 candidate consumes SCLite 2.0's neutral lifecycle verifier. Reaction,
-trigger, watchdog and automation contracts remain RExecOp-owned; GovEngine owns
-their admission decisions and does not import their removed SCLite modules.
-
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
 [![Package: govengine 0.16.11](https://img.shields.io/badge/package-govengine%200.16.11-blueviolet.svg)](https://pypi.org/project/govengine/0.16.11/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Dependency: SCLite ==1.0.9](https://img.shields.io/badge/dependency-SCLite%20%3D%3D1.0.9-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
+
+The 0.17 candidate consumes SCLite 2.0's neutral lifecycle verifier. Reaction,
+trigger, watchdog and automation contracts remain RExecOp-owned; GovEngine owns
+their admission decisions and does not import their removed SCLite modules.
 
 GovEngine is an alpha package 0.17.0rc2 source candidate for deterministic governance-kernel contracts.
 
