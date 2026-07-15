@@ -25,6 +25,13 @@ accepting raw intent or granting live backend ownership.
 `govengine.profiles.validate_profile_conformance()` checks contract-only domain profile declarations without granting domain taxonomy, carrier adapter, credential, product UX, or live-execution ownership.
 `govengine.contract_proofs.validate_runtime_contract_proof()` checks public-safe multi-profile contract proof fixtures without granting adapter, credential, scheduler, storage, live-execution, or new OODA ownership.
 
+`GovApiError` exposes a fixed machine-readable `reason_code` and bounded
+`context`. Dynamic values are separated into context; they are not part of the
+reason-code identifier. Digest handling follows
+[`DIGEST_OWNERSHIP.md`](DIGEST_OWNERSHIP.md): full GovEngine-owned records are
+recomputed, while SCLite/host-owned payloads remain delegated or
+reference-only.
+
 Host-owned lifecycle projection is outside GovEngine. Ravenclaw maps its
 runtime payloads into SCLite artifacts and owns its public proof projection;
 GovEngine retains only neutral SCLite descriptor/state/transition and

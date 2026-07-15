@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field, replace
+from hmac import compare_digest
 from typing import Any, Mapping, Protocol, Sequence
 
 from govengine.api import GovApiError, require_mapping
@@ -458,21 +459,29 @@ def validate_runner_receipt_binding(
         admission_digest=admission_digest,
         admission_record_type=admission_record_type,
     )
-    if expected_admission_digest and binding.admission_digest != expected_admission_digest:
+    if expected_admission_digest and not compare_digest(binding.admission_digest, expected_admission_digest):
         raise GovApiError("runner_receipt_binding_admission_digest_mismatch")
 
     expected_ticket_id = _record_identifier(ticket, ticket_id, ("ticket_id", "id"))
     if expected_ticket_id and binding.ticket_id != expected_ticket_id:
         raise GovApiError("runner_receipt_binding_ticket_id_mismatch")
     expected_ticket_digest = _digest_reference(ticket, ticket_digest, ("ticket_digest", "digest", "artifact_digest"))
-    if expected_ticket_digest and binding.ticket_digest != expected_ticket_digest:
+    if expected_ticket_digest and not compare_digest(binding.ticket_digest, expected_ticket_digest):
         raise GovApiError("runner_receipt_binding_ticket_digest_mismatch")
 
-    expected_request_digest = _clean_text(request_digest) or runner_request_digest(request)
-    if binding.request_digest != expected_request_digest:
+    computed_request_digest = runner_request_digest(request)
+    supplied_request_digest = _clean_text(request_digest)
+    if supplied_request_digest and not compare_digest(supplied_request_digest, computed_request_digest):
+        raise GovApiError('runner_request_digest_mismatch')
+    expected_request_digest = computed_request_digest
+    if not compare_digest(binding.request_digest, expected_request_digest):
         raise GovApiError("runner_receipt_binding_request_digest_mismatch")
-    expected_receipt_digest = _clean_text(receipt_digest) or runner_receipt_digest(receipt)
-    if binding.receipt_digest != expected_receipt_digest:
+    computed_receipt_digest = runner_receipt_digest(receipt)
+    supplied_receipt_digest = _clean_text(receipt_digest)
+    if supplied_receipt_digest and not compare_digest(supplied_receipt_digest, computed_receipt_digest):
+        raise GovApiError('runner_receipt_digest_mismatch')
+    expected_receipt_digest = computed_receipt_digest
+    if not compare_digest(binding.receipt_digest, expected_receipt_digest):
         raise GovApiError("runner_receipt_binding_receipt_digest_mismatch")
     return receipt
 
@@ -488,11 +497,12 @@ def _expected_admission_digest(
     admission_record_type: str,
 ) -> str:
     explicit = _clean_text(admission_digest)
-    if explicit:
-        return explicit
     if admission is None:
-        return ""
-    return govengine_record_digest(admission, record_type=admission_record_type)
+        return explicit
+    computed = govengine_record_digest(admission, record_type=admission_record_type)
+    if explicit and not compare_digest(explicit, computed):
+        raise GovApiError('runtime_admission_digest_mismatch')
+    return computed
 
 
 def _record_identifier(value: Any | None, explicit: str, keys: Sequence[str]) -> str:

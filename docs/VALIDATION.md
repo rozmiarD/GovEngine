@@ -24,6 +24,7 @@ python -m pytest -q
 python -m mypy govengine
 python scripts/validate_public_truth.py
 python scripts/validate_alpha_readiness.py
+python scripts/validate_digest_ownership.py
 ```
 
 GitHub Actions source validation may install the current SCLite source line before the editable GovEngine test dependency set. The active supported stack line is exact-pinned for package consumers, and clean wheel/PyPI install gates validate that published dependency chain.
@@ -46,6 +47,20 @@ an isolated installed-package smoke that rejects the retired security modules,
 then runs validators, tests, and `pip check`. A broad system interpreter is not
 a release-readiness environment because unrelated installed tools can make
 its dependency set inconsistent.
+
+## Digest ownership gate
+
+```bash
+python scripts/validate_digest_ownership.py
+```
+
+The gate validates the reviewed digest-boundary inventory in
+[`DIGEST_OWNERSHIP.md`](DIGEST_OWNERSHIP.md). It distinguishes full
+GovEngine-owned payloads that must be recomputed from SCLite/host-owned
+delegated digests, reference-only bindings, and digests produced by GovEngine.
+It runs as part of alpha readiness and fails if an entry has an invalid mode,
+duplicate binding id, or claims GovEngine recomputation of a SCLite-owned
+payload.
 
 ## Read-only operator verifier gates
 
@@ -103,6 +118,7 @@ It must pass before any tag or package upload is considered:
 ```bash
 env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_public_truth.py
 env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_alpha_readiness.py
+env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_digest_ownership.py
 env PYTHONDONTWRITEBYTECODE=1 python3 -m mypy govengine
 env PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -q -p no:cacheprovider
 ruff check .

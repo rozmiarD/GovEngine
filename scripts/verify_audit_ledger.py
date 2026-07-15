@@ -43,6 +43,7 @@ def _summary(
     blockers: tuple[str, ...] = (),
     checked_entries: int = 0,
     last_entry_id: str = '',
+    context: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     return {
         'status': status,
@@ -51,6 +52,7 @@ def _summary(
         'blockers': list(blockers),
         'checked_entries': checked_entries,
         'last_entry_id': last_entry_id,
+        'context': dict(context or {}),
         'writes': 'none',
     }
 
@@ -90,7 +92,13 @@ def verify_audit_ledger_file(path: Path, *, limit: int = 1000, output_format: st
         entries = ledger.read(limit=limit)
         result = ledger.verify(entries)
     except GovApiError as exc:
-        summary = _summary(status='failed', verified=False, reason_code=exc.reason_code, blockers=(exc.reason_code,))
+        summary = _summary(
+            status='failed',
+            verified=False,
+            reason_code=exc.reason_code,
+            blockers=(exc.reason_code,),
+            context=exc.context,
+        )
         return 1, _render(summary, output_format=output_format)
     summary = _summary(
         status=result.status,

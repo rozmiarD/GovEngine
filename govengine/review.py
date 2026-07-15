@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+from hmac import compare_digest
 from typing import Any, Mapping
 
 from govengine.api import GovApiError, require_mapping
@@ -272,7 +273,7 @@ def validate_evidence_review_chain(
     expected_receipt_digest = str(receipt_digest or '').strip()
     if expected_receipt_digest:
         claim_receipt_digest = str(checked_claim.metadata.get('receipt_digest') or '').strip()
-        if claim_receipt_digest != expected_receipt_digest:
+        if not compare_digest(claim_receipt_digest, expected_receipt_digest):
             raise GovApiError('evidence_receipt_digest_mismatch')
 
     qualified = (

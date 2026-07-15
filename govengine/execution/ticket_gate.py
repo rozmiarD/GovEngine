@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from hmac import compare_digest
 from typing import Any, Dict, List, Mapping
 
 
@@ -106,7 +107,7 @@ def validate_execution_ticket_gate(
     contract_digest = _artifact_descriptor(execution_contract)['digest']
     integrity = execution_ticket.get('integrity') if isinstance(execution_ticket.get('integrity'), dict) else {}
     bound_digest = str(integrity.get('ticket_binds_execution_contract_digest') or '').strip()
-    if bound_digest != contract_digest:
+    if not compare_digest(bound_digest, contract_digest):
         raise ValueError('execution_ticket_contract_digest_mismatch')
     shape = execution_contract.get('execution_shape') if isinstance(execution_contract.get('execution_shape'), dict) else {}
     contract_plan = shape.get('plan') if isinstance(shape.get('plan'), list) else []

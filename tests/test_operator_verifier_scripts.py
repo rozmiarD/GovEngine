@@ -26,6 +26,10 @@ ADMISSION_DIGEST = 'sha256:' + 'a' * 64
 TICKET_DIGEST = 'sha256:' + 'b' * 64
 
 
+def _audit_record_digest(record) -> str:
+    return govengine_record_digest(record, record_type='govengine.admission.GovAuditRecord')
+
+
 def _approved_spec() -> dict:
     return {
         'spec_version': '2026-03-18.approved.v1',
@@ -178,7 +182,7 @@ def test_audit_ledger_script_verifies_valid_jsonl_without_raw_records(tmp_path: 
         'subject_ref': 'sha256:runtime-admission',
         'decision_ref': 'runtime-admission-1',
     })
-    ledger.append(record, record_digest='sha256:audit-1')
+    ledger.append(record, record_digest=_audit_record_digest(record))
 
     proc = subprocess.run(
         [sys.executable, str(LEDGER_SCRIPT), str(path), '--format', 'json'],
@@ -207,7 +211,7 @@ def test_audit_ledger_script_blocks_tampered_jsonl(tmp_path: Path) -> None:
         'subject_ref': 'sha256:policy-subject',
         'decision_ref': 'policy-1',
     })
-    ledger.append(record, record_digest='sha256:audit-1')
+    ledger.append(record, record_digest=_audit_record_digest(record))
     [line] = path.read_text(encoding='utf-8').splitlines()
     tampered = json.loads(line)
     tampered['record']['decision_ref'] = 'policy-tampered'
@@ -225,8 +229,8 @@ def test_audit_ledger_script_blocks_tampered_jsonl(tmp_path: Path) -> None:
     assert proc.returncode == 1
     assert data['status'] == 'failed'
     assert data['verified'] is False
-    assert data['reason_code'] == 'audit_ledger_entry_digest_mismatch'
-    assert data['blockers'] == ['audit_ledger_entry_digest_mismatch']
+    assert data['reason_code'] == 'audit_ledger_record_digest_mismatch'
+    assert data['blockers'] == ['audit_ledger_record_digest_mismatch']
 
 
 def test_audit_ledger_script_fails_closed_on_malformed_jsonl(tmp_path: Path) -> None:
@@ -244,7 +248,8 @@ def test_audit_ledger_script_fails_closed_on_malformed_jsonl(tmp_path: Path) -> 
     data = json.loads(proc.stdout)
     assert proc.returncode == 1
     assert data['status'] == 'failed'
-    assert data['reason_code'] == 'invalid_audit_ledger_jsonl:1'
+    assert data['reason_code'] == 'invalid_audit_ledger_jsonl'
+    assert data['context'] == {'detail': '1'}
 
 
 def test_audit_ledger_script_reports_deleted_line_as_blocked(tmp_path: Path) -> None:
@@ -262,8 +267,8 @@ def test_audit_ledger_script_reports_deleted_line_as_blocked(tmp_path: Path) -> 
         'subject_ref': 'sha256:policy-subject',
         'decision_ref': 'policy-1',
     })
-    ledger.append(first, record_digest='sha256:audit-1')
-    ledger.append(second, record_digest='sha256:audit-2')
+    ledger.append(first, record_digest=_audit_record_digest(first))
+    ledger.append(second, record_digest=_audit_record_digest(second))
     _, remaining = path.read_text(encoding='utf-8').splitlines()
     path.write_text(remaining + '\n', encoding='utf-8')
 

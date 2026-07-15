@@ -108,8 +108,8 @@ def test_unsupported_control_is_a_fail_closed_admission() -> None:
 
     assert not plan.allowed
     assert not admission.allowed
-    assert plan.reason_code == "unsupported_policy_constraint:vendor_specific"
-    assert plan.blockers == ("unsupported_policy_constraint:vendor_specific",)
+    assert plan.reason_code == "unsupported_policy_constraint"
+    assert plan.blockers == ("unsupported_policy_constraint",)
     with pytest.raises(GovApiError, match="policy_enforcement_not_ready"):
         validate_policy_enforcement_plan(
             plan,

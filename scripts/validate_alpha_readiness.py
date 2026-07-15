@@ -18,6 +18,7 @@ from govengine.contract_proofs import (  # noqa: E402
     validate_runtime_contract_proof,
 )
 from govengine.surfaces import public_surface_index  # noqa: E402
+from govengine._digest_ownership import validate_digest_ownership_inventory  # noqa: E402
 
 
 EXPECTED_VERSION = '0.17.0rc2'
@@ -62,6 +63,7 @@ def main() -> int:
     version = str(project['version'])
     classifiers = tuple(str(item) for item in project.get('classifiers', ()))
     surfaces = public_surface_index()
+    digest_inventory = validate_digest_ownership_inventory()
     surface_names = [surface.name for surface in surfaces]
 
     _assert(version == EXPECTED_VERSION, f'alpha_version_mismatch:{version}')
@@ -71,6 +73,7 @@ def main() -> int:
     _assert(surface_names == EXPECTED_SURFACES, f'surface_mismatch:{surface_names}')
     _assert(not any(surface.optional_profile for surface in surfaces), 'optional_surface_retained')
     _assert(all(surface.status.startswith('alpha_') for surface in surfaces), 'surface_status_retains_pre_alpha_label')
+    _assert(any(item.binding_id == 'runner.execution_ticket' and item.mode == 'delegated' for item in digest_inventory), 'missing_delegated_ticket_digest_ownership')
 
     vocabulary = validate_governance_contract_vocabulary()
     _assert(tuple(entry.term for entry in vocabulary) == tuple(entry.term for entry in governance_contract_vocabulary()), 'vocabulary_mismatch')

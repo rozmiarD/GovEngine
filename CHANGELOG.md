@@ -30,6 +30,13 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   integration job pinned to a full SCLite commit instead of moving `main`.
 - Makes `GovApiError` propagate safely through context managers rather than
   masking the governance error with `FrozenInstanceError`.
+- Separates stable `GovApiError.reason_code` values from bounded dynamic
+  context while retaining compact string diagnostics.
+- Adds a CI-validated digest ownership inventory. Runner request, receipt and
+  runtime-admission bindings plus audit-record/ledger-entry bindings now
+  recompute full GovEngine-owned payloads; explicit digests can no longer
+  override those computations. SCLite ticket and replay bindings remain
+  delegated references.
 
 - Adds neutral HTTP destination admission fields for scheme, address class,
   effective port and origin-binding digest. GovEngine compares only bounded

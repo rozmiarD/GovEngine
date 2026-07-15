@@ -31,6 +31,28 @@ def test_api_error_is_structured() -> None:
     }
 
 
+def test_api_error_separates_dynamic_detail_from_reason_code() -> None:
+    err = GovApiError('unknown_control_action:operator-supplied-value')
+
+    assert err.reason_code == 'unknown_control_action'
+    assert err.context == {'detail': 'operator-supplied-value'}
+    assert err.as_dict()['reason_code'] == 'unknown_control_action'
+    assert str(err) == 'unknown_control_action:operator-supplied-value'
+
+
+def test_api_error_bounds_dynamic_detail_and_context() -> None:
+    err = GovApiError(
+        'invalid_boundary:' + ('x' * 1024),
+        context={'nested': {'values': ['y' * 1024] * 64}},
+    )
+
+    payload = err.as_dict()
+    assert payload['reason_code'] == 'invalid_boundary'
+    assert len(payload['context']['detail']) <= 256
+    assert len(payload['context']['nested']['values']) <= 32
+    assert len(payload['context']['nested']['values'][0]) <= 256
+
+
 def test_api_error_propagates_through_context_managers_without_masking() -> None:
     @contextmanager
     def passthrough():

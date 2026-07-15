@@ -145,7 +145,7 @@ def test_policy_explain_unsupported_controls_fail_closed() -> None:
     assert "unsupported_policy_obligation:vendor_specific" in explanation["unsupported_controls"]
     assert "unsupported_policy_constraint:vendor_region" in explanation["unsupported_controls"]
     assert explanation["enforcement_plan"]["status"] == "blocked"
-    assert explanation["blockers"] == ["unsupported_policy_obligation:vendor_specific"]
+    assert explanation["blockers"] == ["unsupported_policy_obligation"]
 
 
 def test_policy_cli_explain_outputs_stable_json(tmp_path: Path) -> None:

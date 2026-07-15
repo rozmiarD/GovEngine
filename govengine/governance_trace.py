@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from hmac import compare_digest
 from typing import Any, Mapping
 
 from govengine.api import GovApiError, require_mapping
@@ -143,9 +144,9 @@ def project_governance_trace(
         raise GovApiError('policy_enforcement_admission_drift')
     expected_plan_digest = policy_enforcement_plan_digest(plan)
     expected_admission_digest = policy_enforcement_admission_digest(admission)
-    if plan_digest != expected_plan_digest:
+    if not compare_digest(plan_digest, expected_plan_digest):
         raise GovApiError('policy_enforcement_plan_digest_mismatch')
-    if admission_digest != expected_admission_digest:
+    if not compare_digest(admission_digest, expected_admission_digest):
         raise GovApiError('policy_enforcement_admission_digest_mismatch')
 
     request_digest = policy_request_digest(checked_request)

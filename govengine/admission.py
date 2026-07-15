@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass, field
+from hmac import compare_digest
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Protocol
 
@@ -631,13 +632,13 @@ class JsonlAuditLedgerAdapter:
                     reason_code='audit_ledger_sequence_mismatch',
                     blocker='audit_ledger_sequence_mismatch',
                 )
-            if entry.previous_entry_digest != previous_digest:
+            if not compare_digest(entry.previous_entry_digest, previous_digest):
                 return _audit_ledger_failed(
                     checked,
                     reason_code='audit_ledger_previous_digest_mismatch',
                     blocker='audit_ledger_previous_digest_mismatch',
                 )
-            if entry.entry_digest != audit_ledger_entry_digest(entry):
+            if not compare_digest(entry.entry_digest, audit_ledger_entry_digest(entry)):
                 return _audit_ledger_failed(
                     checked,
                     reason_code='audit_ledger_entry_digest_mismatch',
@@ -847,9 +848,14 @@ def validate_audit_ledger_entry(value: Mapping[str, Any] | AuditLedgerEntry) -> 
         raise GovApiError(f'unknown_audit_ledger_entry_schema_version:{item.schema_version}')
     validate_audit_record(item.record)
     _require_digest_ref(item.record_digest, 'missing_audit_ledger_record_digest', 'invalid_audit_ledger_record_digest')
+    computed_record_digest = _audit_record_digest(item.record)
+    if not compare_digest(item.record_digest, computed_record_digest):
+        raise GovApiError('audit_ledger_record_digest_mismatch')
     _validate_optional_digest_ref(item.event_digest, 'invalid_audit_ledger_event_digest')
     _validate_optional_digest_ref(item.previous_entry_digest, 'invalid_audit_ledger_previous_digest')
     _validate_optional_digest_ref(item.entry_digest, 'invalid_audit_ledger_entry_digest')
+    if item.entry_digest and not compare_digest(item.entry_digest, _audit_ledger_entry_digest_unchecked(item)):
+        raise GovApiError('audit_ledger_entry_digest_mismatch')
     _reject_forbidden_metadata(item.metadata)
     return item
 
@@ -907,6 +913,16 @@ def audit_ledger_entry_digest(value: Mapping[str, Any] | AuditLedgerEntry) -> st
     """
 
     item = value if isinstance(value, AuditLedgerEntry) else AuditLedgerEntry.from_mapping(value)
+    return _audit_ledger_entry_digest_unchecked(item)
+
+
+def _audit_record_digest(record: GovAuditRecord) -> str:
+    from govengine.signing import govengine_record_digest
+
+    return govengine_record_digest(record, record_type='govengine.admission.GovAuditRecord')
+
+
+def _audit_ledger_entry_digest_unchecked(item: AuditLedgerEntry) -> str:
     payload = item.as_dict()
     payload['entry_digest'] = ''
     if not payload.get('schema_version'):

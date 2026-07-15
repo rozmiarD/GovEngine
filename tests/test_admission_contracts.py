@@ -37,9 +37,14 @@ from govengine import (
 )
 from govengine.admission import normalize_admission_artifact_refs
 from govengine.api import GovApiError
+from govengine.signing import govengine_record_digest
 
 ROOT = Path(__file__).resolve().parents[1]
 INSPECT_ADMISSION_SCRIPT = ROOT / 'scripts' / 'inspect_runtime_admission.py'
+
+
+def _audit_record_digest(record: GovAuditRecord) -> str:
+    return govengine_record_digest(record, record_type='govengine.admission.GovAuditRecord')
 
 
 def test_admission_decision_models_host_gate_without_raw_target_or_command() -> None:
@@ -164,7 +169,7 @@ def test_schema_versions_are_explicit_and_unknown_versions_fail_closed() -> None
         'entry_id': 'ledger-entry-1',
         'sequence': 0,
         'record': audit.as_dict(),
-        'record_digest': 'sha256:audit-record',
+        'record_digest': _audit_record_digest(audit),
     })
     admission = validate_runtime_admission_result({
         'admission_id': 'runtime-admission-1',
@@ -240,11 +245,12 @@ def test_audit_ledger_port_contracts_are_shape_only() -> None:
         'event_refs': ['event-1'],
         'metadata': {'retention': 'host_owned'},
     })
+    record_digest = _audit_record_digest(record)
     entry = validate_audit_ledger_entry({
         'entry_id': 'ledger-entry-1',
         'sequence': 1,
         'record': record.as_dict(),
-        'record_digest': 'sha256:audit-record',
+        'record_digest': record_digest,
         'event_digest': 'sha256:event-1',
         'previous_entry_digest': 'sha256:previous-entry',
         'metadata': {'storage': 'host_owned'},
@@ -273,7 +279,7 @@ def test_audit_ledger_port_contracts_are_shape_only() -> None:
             previous_entry_digest: str = '',
         ) -> AuditLedgerAppendResult:
             assert record.record_id == 'audit-1'
-            assert record_digest == 'sha256:audit-record'
+            assert record_digest == _audit_record_digest(record)
             assert event_digest == 'sha256:event-1'
             assert previous_entry_digest == 'sha256:previous-entry'
             return append
@@ -293,11 +299,11 @@ def test_audit_ledger_port_contracts_are_shape_only() -> None:
     assert entry.as_dict()['record']['record_id'] == 'audit-1'
     assert ledger.append(
         record,
-        record_digest='sha256:audit-record',
+        record_digest=record_digest,
         event_digest='sha256:event-1',
         previous_entry_digest='sha256:previous-entry',
     ).entry_digest == 'sha256:ledger-entry-1'
-    assert ledger.read()[0].record_digest == 'sha256:audit-record'
+    assert ledger.read()[0].record_digest == record_digest
     assert ledger.verify(ledger.read()).verified is True
 
 
@@ -323,12 +329,23 @@ def test_audit_ledger_contracts_reject_unsafe_or_incomplete_boundaries() -> None
             'record_digest': 'md5:not-allowed',
         })
 
+    with pytest.raises(GovApiError, match='audit_ledger_record_digest_mismatch'):
+        validate_audit_ledger_entry({
+            'entry_id': 'ledger-entry-1',
+            'sequence': 0,
+            'record': base_record,
+            'record_digest': 'sha256:' + ('0' * 64),
+        })
+
     with pytest.raises(GovApiError, match='forbidden_admission_metadata:storage_path'):
         validate_audit_ledger_entry({
             'entry_id': 'ledger-entry-1',
             'sequence': 0,
             'record': base_record,
-            'record_digest': 'sha256:audit-record',
+            'record_digest': govengine_record_digest(
+                validate_audit_record(base_record),
+                record_type='govengine.admission.GovAuditRecord',
+            ),
             'metadata': {'storage_path': '/tmp/govengine-ledger.jsonl'},
         })
 
@@ -355,6 +372,32 @@ def test_audit_ledger_contracts_reject_unsafe_or_incomplete_boundaries() -> None
         })
 
 
+def test_audit_ledger_recomputes_owned_record_and_entry_digests() -> None:
+    record = validate_audit_record({
+        'record_id': 'audit-1',
+        'record_type': 'policy_decision',
+        'subject_ref': 'sha256:task-ref',
+    })
+    record_digest = govengine_record_digest(
+        record,
+        record_type='govengine.admission.GovAuditRecord',
+    )
+    entry = validate_audit_ledger_entry({
+        'entry_id': 'ledger-entry-1',
+        'sequence': 0,
+        'record': record.as_dict(),
+        'record_digest': record_digest,
+    })
+    entry_digest = audit_ledger_entry_digest(entry)
+
+    with pytest.raises(GovApiError, match='audit_ledger_entry_digest_mismatch'):
+        validate_audit_ledger_entry({
+            **entry.as_dict(),
+            'entry_digest': 'sha256:' + ('0' * 64),
+        })
+
+    assert validate_audit_ledger_entry({**entry.as_dict(), 'entry_digest': entry_digest}).entry_digest == entry_digest
+
 def test_jsonl_audit_ledger_adapter_appends_reads_and_verifies(tmp_path) -> None:
     ledger = JsonlAuditLedgerAdapter(tmp_path / 'audit-ledger.jsonl')
     first = validate_audit_record({
@@ -370,8 +413,8 @@ def test_jsonl_audit_ledger_adapter_appends_reads_and_verifies(tmp_path) -> None
         'decision_ref': 'policy-1',
     })
 
-    first_append = ledger.append(first, record_digest='sha256:audit-1', event_digest='sha256:event-1')
-    second_append = ledger.append(second, record_digest='sha256:audit-2', event_digest='sha256:event-2')
+    first_append = ledger.append(first, record_digest=_audit_record_digest(first), event_digest='sha256:event-1')
+    second_append = ledger.append(second, record_digest=_audit_record_digest(second), event_digest='sha256:event-2')
     entries = ledger.read()
     verification = ledger.verify(entries)
 
@@ -397,8 +440,9 @@ def test_jsonl_audit_ledger_adapter_rejects_wrong_previous_digest(tmp_path) -> N
         'decision_ref': 'approval-1',
     })
 
-    first = ledger.append(record, record_digest='sha256:audit-1')
-    rejected = ledger.append(record, record_digest='sha256:audit-1b', previous_entry_digest='sha256:not-current')
+    record_digest = _audit_record_digest(record)
+    first = ledger.append(record, record_digest=record_digest)
+    rejected = ledger.append(record, record_digest=record_digest, previous_entry_digest='sha256:not-current')
 
     assert first.status == 'appended'
     assert rejected.status == 'rejected'
@@ -417,18 +461,14 @@ def test_jsonl_audit_ledger_adapter_detects_one_field_tamper(tmp_path) -> None:
         'decision_ref': 'policy-1',
     })
 
-    ledger.append(record, record_digest='sha256:audit-1')
+    ledger.append(record, record_digest=_audit_record_digest(record))
     [line] = path.read_text(encoding='utf-8').splitlines()
     tampered = json.loads(line)
     tampered['record']['decision_ref'] = 'policy-tampered'
     path.write_text(json.dumps(tampered, sort_keys=True, separators=(',', ':')) + '\n', encoding='utf-8')
 
-    verification = ledger.verify(ledger.read())
-
-    assert verification.status == 'failed'
-    assert verification.verified is False
-    assert verification.reason_code == 'audit_ledger_entry_digest_mismatch'
-    assert verification.blockers == ('audit_ledger_entry_digest_mismatch',)
+    with pytest.raises(GovApiError, match='audit_ledger_record_digest_mismatch'):
+        ledger.read()
 
 
 def test_jsonl_audit_ledger_adapter_detects_deleted_line(tmp_path) -> None:
@@ -447,8 +487,8 @@ def test_jsonl_audit_ledger_adapter_detects_deleted_line(tmp_path) -> None:
         'decision_ref': 'policy-1',
     })
 
-    ledger.append(first, record_digest='sha256:audit-1')
-    ledger.append(second, record_digest='sha256:audit-2')
+    ledger.append(first, record_digest=_audit_record_digest(first))
+    ledger.append(second, record_digest=_audit_record_digest(second))
     _, remaining = path.read_text(encoding='utf-8').splitlines()
     path.write_text(remaining + '\n', encoding='utf-8')
 
@@ -484,12 +524,12 @@ def test_jsonl_audit_ledger_adapter_detects_chain_restart(tmp_path) -> None:
         'decision_ref': 'policy-1',
     })
 
-    ledger.append(first, record_digest='sha256:audit-1')
+    ledger.append(first, record_digest=_audit_record_digest(first))
     restarted = AuditLedgerEntry(
         entry_id='audit-ledger-entry-restarted',
         sequence=0,
         record=restarted_record,
-        record_digest='sha256:audit-2',
+        record_digest=_audit_record_digest(restarted_record),
         previous_entry_digest='',
         metadata={'adapter': 'jsonl_hash_chain_dev', 'storage': 'development_only'},
     )
@@ -1182,7 +1222,7 @@ def test_inspect_runtime_admission_rejects_forbidden_raw_runtime_data(tmp_path) 
 
     assert result.returncode == 2
     assert result.stdout == ''
-    assert 'runtime_admission_inspect_error: forbidden_admission_metadata:raw_output' in result.stderr
+    assert 'runtime_admission_inspect_error: forbidden_admission_metadata' in result.stderr
     assert 'do-not-print' not in result.stderr
 
 

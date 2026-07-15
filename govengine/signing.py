@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass, field, is_dataclass
 from hashlib import sha256
+from hmac import compare_digest
 from math import isfinite
 from string import hexdigits
 from typing import Any, Mapping, Protocol
@@ -300,7 +301,7 @@ class SignedArtifact:
             raise GovApiError("missing_signed_record_signature")
         if not signature.signer_id:
             raise GovApiError("missing_signed_record_signer")
-        if signature.binds_digest != record_digest:
+        if not compare_digest(signature.binds_digest, record_digest):
             raise GovApiError("signed_record_digest_mismatch")
         metadata = self.metadata if isinstance(self.metadata, Mapping) else {}
         object.__setattr__(self, "record_type", record_type)
@@ -506,7 +507,7 @@ class DemoDigestVerifier:
     def verify(self, descriptor: ArtifactDescriptor, signature: SignatureEnvelope) -> VerificationResult:
         if signature.mode != "detached_demo_digest":
             return VerificationResult(status="failed", trust_status="denied", reason_code="unsupported_signature_mode", verifier_id=self.verifier_id)
-        if signature.binds_digest != descriptor.digest:
+        if not compare_digest(signature.binds_digest, descriptor.digest):
             return VerificationResult(status="failed", trust_status="denied", reason_code="signature_digest_mismatch", verifier_id=self.verifier_id)
         if self.allowed_signer_ids and signature.signer_id not in self.allowed_signer_ids:
             return VerificationResult(status="failed", trust_status="denied", reason_code="signer_not_allowed", verifier_id=self.verifier_id)
@@ -622,7 +623,7 @@ def verify_signed_govengine_record(
         record_type=artifact.record_type,
         schema_version=artifact.schema_version,
     )
-    if computed_digest != artifact.record_digest:
+    if not compare_digest(computed_digest, artifact.record_digest):
         return VerificationResult(
             status="failed",
             trust_status="denied",
@@ -670,7 +671,7 @@ def signature_transition_decision(
         blockers.append("signer_not_allowed")
         next_actions.append("obtain_signature_from_allowed_signer")
 
-    if envelope.binds_digest and envelope.binds_digest != descriptor.digest:
+    if envelope.binds_digest and not compare_digest(envelope.binds_digest, descriptor.digest):
         blockers.append("signature_digest_mismatch")
         next_actions.append("resign_current_descriptor")
 
