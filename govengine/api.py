@@ -33,7 +33,7 @@ class GovApiResult:
         }
 
 
-@dataclass(frozen=True)
+@dataclass
 class GovApiError(Exception):
     """Structured API error for hard boundary failures."""
 

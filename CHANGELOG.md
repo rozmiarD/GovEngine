@@ -11,6 +11,26 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Places the unpublished `0.17.0rc2` candidate on release hold. A corrected
+  candidate must include the fail-closed boundary evidence below.
+- Rejects unknown admission/policy enum values, non-finite JSON numbers,
+  duplicate JSON keys, unsupported Python boundary values and non-string JSON
+  keys instead of normalizing or stringifying them.
+- Stops treating opaque refs, admission digests, text containing `approval`, or
+  host booleans as approval for mutation. The compatibility path remains
+  approval-required until a bound approval attestation exists.
+- Recomputes the GovEngine-owned runtime capability projection digest, rejects
+  host-only plugin registration claims, requires explicit operation capability
+  requirements, and requires an independently digest-bound network policy for
+  non-local egress/destination admission.
+- Adds `scripts/validate_api_stability.py`; the live inventory is 296 alpha + 4
+  fixture exports, plus 3 explicitly classified compatibility callables outside
+  `__all__`.
+- Splits SCLite CI into the released `sclite-core==2.0.0` contract and an edge
+  integration job pinned to a full SCLite commit instead of moving `main`.
+- Makes `GovApiError` propagate safely through context managers rather than
+  masking the governance error with `FrozenInstanceError`.
+
 - Adds neutral HTTP destination admission fields for scheme, address class,
   effective port and origin-binding digest. GovEngine compares only bounded
   metadata/digests and never receives the raw connector host.

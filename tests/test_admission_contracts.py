@@ -52,7 +52,7 @@ def test_admission_decision_models_host_gate_without_raw_target_or_command() -> 
         detail='phase=3;requires=confirmed_signal',
         blockers=['planner_phase_gate'],
         context={'activation_phase': 3, 'expected_depth': 'deep'},
-        signal={'has_confirmed_signal': False, 'preferred_stages': {'validation'}},
+        signal={'has_confirmed_signal': False, 'preferred_stages': ['validation']},
         explainability={'source': 'host_gate_projection'},
         metadata={'target_redacted': True},
     )
@@ -101,6 +101,22 @@ def test_admission_allowed_flag_must_match_outcome() -> None:
             'subject_ref': 'sha256:task-ref',
             'allowed': False,
             'outcome': 'allowed',
+        })
+
+
+def test_admission_and_policy_decisions_reject_unknown_allow_like_enums() -> None:
+    with pytest.raises(GovApiError, match='unknown_admission_outcome:allow_typo'):
+        validate_admission_decision({
+            'decision_id': 'bad-enum-admission',
+            'subject_ref': 'sha256:task-ref',
+            'outcome': 'allow_typo',
+        })
+
+    with pytest.raises(GovApiError, match='unknown_policy_decision:allow_typo'):
+        validate_policy_decision({
+            'policy_id': 'bad-enum-policy',
+            'subject_ref': 'sha256:task-ref',
+            'decision': 'allow_typo',
         })
 
 

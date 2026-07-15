@@ -204,8 +204,8 @@ verify SCLite artifacts, or prove that a host enforced projected controls.
 | Condition | Verdict |
 | --- | --- |
 | `action.unsafe_execution_shape` or `context.execution.unsafe_execution_shape` | `deny` / `unsafe_execution_shape` |
-| `action.destructive` without approval evidence refs | `deny` / `destructive_action_without_approval_evidence` |
-| mutating action on `resource.criticality: critical` without approval evidence | `approval_required` / `critical_mutating_action_requires_approval` |
+| `action.destructive` without a bound approval attestation | `deny` / `destructive_action_without_approval_evidence` |
+| mutating action on `resource.criticality: critical` without a bound approval attestation | `approval_required` / `critical_mutating_action_requires_approval` |
 | no matching rule | `deny` / `no_matching_policy_rule` |
 
 When multiple rules match, evaluation order is: **deny** → **approval_required** → **allow_with_obligations** → first **allow**.
@@ -262,9 +262,12 @@ GovEngine policy MVP does **not**:
 - authorize live subprocess/SSH/API execution by itself
 - claim that a projected control was enforced by a host runner
 
-Hosts remain responsible for mapping runtime events into `PolicyRequest`,
-supplying approval evidence refs, and acting on verdicts under their own
-operator and storage controls.
+Hosts remain responsible for mapping runtime events into `PolicyRequest` and
+acting on verdicts under their own operator and storage controls. Legacy
+strings in `evidence_refs`, admission digests, and context booleans do not prove
+approval and do not release a critical mutation; the compatibility path remains
+`approval_required` until the versioned bound approval-attestation contract is
+implemented.
 
 ## Related
 

@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from govengine._json_boundary import load_bounded_json
 from govengine.api import GovApiError
 from govengine.cli_errors import emit_cli_failure
 from govengine.policy.authoring import (
@@ -158,14 +159,16 @@ def _read_json_mapping(path: Path, *, max_bytes: int) -> dict[str, Any]:
         raw = path.read_bytes()
         if len(raw) > max_bytes:
             raise GovApiError('policy_request_input_too_large')
-        data = json.loads(raw.decode('utf-8'))
-    except GovApiError:
+        data = load_bounded_json(raw, max_bytes=max_bytes)
+    except GovApiError as exc:
+        if exc.reason_code == 'json_boundary_invalid_json':
+            raise GovApiError('policy_request_json_invalid', exc.message) from exc
         raise
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+    except OSError as exc:
         raise GovApiError('policy_request_json_invalid', str(exc)) from exc
     if not isinstance(data, dict):
         raise GovApiError('policy_request_json_not_mapping')
-    return {str(key): data[key] for key in data}
+    return data
 
 
 def main(argv: list[str] | None = None) -> int:

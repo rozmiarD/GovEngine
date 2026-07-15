@@ -74,11 +74,12 @@ runtime behavior.
 | alpha | govengine.contract_compatibility | `SUPPORTED_CONTRACT_REPORT_SCHEMA_VERSION`, `CONTRACT_COMPATIBILITY_REQUEST_SCHEMA_VERSION`, `ContractCompatibilityRequest`, `ContractCompatibilityReport`, `supported_contract_report`, `evaluate_contract_compatibility`, `validate_contract_compatibility_request`, `validate_supported_contract_version`, `contract_major_version` | Central supported-contract catalog and fail-closed consumer compatibility evaluation for stack hosts; does not execute work or validate SCLite storage. |
 | alpha | govengine.governance_trace | `GOVERNANCE_TRACE_SCHEMA_VERSION`, `GovernanceTrace`, `policy_request_digest`, `project_governance_trace` | Digest-bound governance trace projection for truth-path consumers; binds policy request, verdict, enforcement plan, admission, controls and evidence requirements without storing SCLite artifacts or executing work. |
 | alpha | govengine.typed_execution_governance | `TYPED_EXECUTION_GOVERNANCE_REQUEST_SCHEMA_VERSION`, `TYPED_EXECUTION_GOVERNANCE_PROJECTION_SCHEMA_VERSION`, `TYPED_EXECUTION_CAPABILITY_COMPATIBILITY_SCHEMA_VERSION`, `TYPED_EXECUTION_STACK_COMPATIBILITY_SCHEMA_VERSION`, `TYPED_EXECUTION_CONTROL_CATALOG_SCHEMA_VERSION`, `RUNTIME_CAPABILITY_DESCRIPTOR_SCHEMA_VERSION`, `TypedExecutionGovernanceRequest`, `RuntimeCapabilityDescriptor`, `TypedExecutionGovernanceProjection`, `TypedExecutionCapabilityCompatibilityReport`, `TypedExecutionGovernanceBundle`, `TypedExecutionStackCompatibilityRequest`, `TypedExecutionStackCompatibilityReport`, `validate_typed_execution_governance_request`, `validate_runtime_capability_descriptor`, `validate_typed_execution_stack_compatibility_request`, `project_typed_execution_governance`, `project_typed_execution_policy_overlay`, `map_policy_verdict_to_typed_execution_controls`, `evaluate_typed_execution_capability_compatibility`, `evaluate_typed_execution_stack_compatibility`, `explain_typed_execution_governance`, `typed_execution_governance_request_digest`, `typed_execution_control_catalog`, `admit_typed_execution`, `typed_execution_admission_digest`, `validate_typed_execution_admission` | Typed execution governance projection, policy-pack control overlay, per-step capability compatibility and stack-level backend/control compatibility over digest-bound RExecOp runtime projections; does not execute connectors, resolve secrets, or grant live backend authority. |
+| internal-exposed | govengine.scope_assertion compatibility imports | `build_scope_assertion`, `build_scope_decision`, `scope_decision_digest` | Explicit top-level compatibility imports consumed by RExecOp but intentionally excluded from `govengine.__all__`; migrate the consumer before removal or stable classification. |
 
 Current summary:
 
 - stable exports: 0
-- alpha exports: 260
+- alpha exports: 296
 - fixture exports: 4
 - deprecated exports: 0
-- internal-exposed exports: 0
+- internal-exposed exports: 3

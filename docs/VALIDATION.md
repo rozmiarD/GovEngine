@@ -142,9 +142,8 @@ host runtimes.
   `sclite-core` package range and run public truth, alpha readiness, full
   pytest, clean install, and package smoke. This is required for release
   approval.
-- SCLite main smoke: optional CI or manual pre-release gate during coordinated
-  SCLite/GovEngine waves. It may run against
-  `sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main`, but failures
+- SCLite edge smoke: optional CI or manual pre-release gate during coordinated
+  SCLite/GovEngine waves. It must run against an immutable full commit SHA, but failures
   should block only coordinated dependency updates, not ordinary patch releases
   unless the release target explicitly consumes main.
 - Ravenclaw or other host contract smoke: external/manual gate owned by the
@@ -164,6 +163,7 @@ Expected result for the current `0.17.0rc2` package line (`0.17.0rc2`):
 - `python -m mypy govengine` passes for the package surface;
 - `scripts/validate_clean_package_install.py` passes, rejects retired module paths from the installed artifact, and runs `pip check` inside its newly created virtual environment;
 - `python scripts/validate_public_truth.py` passes;
+- `python scripts/validate_api_stability.py` passes; consumer-aware review may add `--consumer-root /path/to/rexecop`;
 - `python scripts/validate_alpha_readiness.py` passes;
 - import smoke checks include `govengine.contract_proofs`, `govengine.profiles`, `govengine.review`, `govengine.replay`, `govengine.execution.supervision`, `govengine.admission`, `govengine.planning`, `govengine.runtime_shell`, and `govengine.scope_ports`;
 - the public surface registry and `docs/API_BOUNDARY.md` agree on the exact public surfaces;

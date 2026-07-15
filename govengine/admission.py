@@ -5,6 +5,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Protocol
 
+from govengine._json_boundary import bounded_json_copy
 from govengine.api import GovApiError, require_mapping
 
 
@@ -192,11 +193,11 @@ class GovAdmissionDecision:
         subject_ref = str(raw.get('subject_ref') or '').strip()
         if not subject_ref:
             raise GovApiError('missing_admission_subject_ref')
-        outcome = _enum(raw.get('outcome'), ADMISSION_OUTCOMES, 'allowed')
+        outcome = _enum(raw.get('outcome'), ADMISSION_OUTCOMES, 'allowed', 'admission_outcome')
         item = cls(
             decision_id=decision_id,
             subject_ref=subject_ref,
-            subject_kind=_enum(raw.get('subject_kind'), SUBJECT_KINDS, 'task'),
+            subject_kind=_enum(raw.get('subject_kind'), SUBJECT_KINDS, 'task', 'admission_subject_kind'),
             outcome=outcome,
             allowed=bool(raw.get('allowed', outcome == 'allowed')),
             reason_code=str(raw.get('reason_code') or outcome).strip() or outcome,
@@ -242,11 +243,11 @@ class GovPolicyDecision:
         subject_ref = str(raw.get('subject_ref') or '').strip()
         if not subject_ref:
             raise GovApiError('missing_policy_subject_ref')
-        decision = _enum(raw.get('decision'), POLICY_DECISIONS, 'allow')
+        decision = _enum(raw.get('decision'), POLICY_DECISIONS, 'allow', 'policy_decision')
         item = cls(
             policy_id=policy_id,
             subject_ref=subject_ref,
-            subject_kind=_enum(raw.get('subject_kind'), SUBJECT_KINDS, 'task'),
+            subject_kind=_enum(raw.get('subject_kind'), SUBJECT_KINDS, 'task', 'policy_subject_kind'),
             decision=decision,
             reason_code=str(raw.get('reason_code') or decision).strip() or decision,
             controls=_tuple(raw.get('controls') or ()),
@@ -291,8 +292,8 @@ class GovApprovalRequest:
         item = cls(
             request_id=request_id,
             subject_ref=subject_ref,
-            subject_kind=_enum(raw.get('subject_kind'), SUBJECT_KINDS, 'task'),
-            state=_enum(raw.get('state'), APPROVAL_STATES, 'requested'),
+            subject_kind=_enum(raw.get('subject_kind'), SUBJECT_KINDS, 'task', 'approval_subject_kind'),
+            state=_enum(raw.get('state'), APPROVAL_STATES, 'requested', 'approval_state'),
             reason_code=str(raw.get('reason_code') or 'operator_approval_required').strip() or 'operator_approval_required',
             requested_by=str(raw.get('requested_by') or '').strip(),
             approver_ref=str(raw.get('approver_ref') or '').strip(),
@@ -336,10 +337,10 @@ class GovAuditRecord:
             raise GovApiError('missing_audit_subject_ref')
         item = cls(
             record_id=record_id,
-            record_type=_enum(raw.get('record_type'), AUDIT_RECORD_TYPES, 'admission_decision'),
+            record_type=_enum(raw.get('record_type'), AUDIT_RECORD_TYPES, 'admission_decision', 'audit_record_type'),
             subject_ref=subject_ref,
             schema_version=str(raw.get('schema_version') or AUDIT_RECORD_SCHEMA_VERSION).strip(),
-            subject_kind=_enum(raw.get('subject_kind'), SUBJECT_KINDS, 'task'),
+            subject_kind=_enum(raw.get('subject_kind'), SUBJECT_KINDS, 'task', 'audit_subject_kind'),
             decision_ref=str(raw.get('decision_ref') or '').strip(),
             reason_code=str(raw.get('reason_code') or 'recorded').strip() or 'recorded',
             event_refs=_tuple(raw.get('event_refs') or ()),
@@ -800,7 +801,7 @@ def policy_verdict_to_gov_policy_decision(
     return validate_policy_decision(GovPolicyDecision(
         policy_id=verdict_id,
         subject_ref=subject_ref,
-        subject_kind=_enum(subject_kind, SUBJECT_KINDS, 'task'),
+        subject_kind=_enum(subject_kind, SUBJECT_KINDS, 'task', 'policy_subject_kind'),
         decision=decision,
         reason_code=reason_code,
         controls=controls,
@@ -1262,9 +1263,18 @@ def admission_decision_from_host_gate(
     ))
 
 
-def _enum(value: Any, allowed: tuple[str, ...], default: str) -> str:
-    normalized = str(value or '').strip().lower() or default
-    return normalized if normalized in allowed else default
+def _enum(
+    value: Any,
+    allowed: tuple[str, ...],
+    default: str,
+    field_name: str,
+) -> str:
+    normalized = str(value or '').strip().lower()
+    if not normalized:
+        return default
+    if normalized not in allowed:
+        raise GovApiError(f'unknown_{field_name}:{normalized}')
+    return normalized
 
 
 def _strict_enum(value: Any, allowed: tuple[str, ...], field_name: str) -> str:
@@ -1628,21 +1638,13 @@ def _metadata(value: Any) -> dict[str, Any]:
         return {}
     if not isinstance(value, Mapping):
         raise GovApiError('invalid_admission_metadata')
-    data = _json_safe_mapping(value)
+    data = bounded_json_copy(value)
     _reject_forbidden_metadata(data)
     return data
 
 
 def _json_safe_mapping(value: Mapping[str, Any]) -> dict[str, Any]:
-    return {str(key): _json_safe_value(item) for key, item in value.items()}
-
-
-def _json_safe_value(value: Any) -> Any:
-    if isinstance(value, Mapping):
-        return _json_safe_mapping(value)
-    if isinstance(value, (list, tuple, set, frozenset)):
-        return [_json_safe_value(item) for item in value]
-    return value
+    return bounded_json_copy(value)
 
 
 def _reject_forbidden_metadata(value: Mapping[str, Any]) -> None:

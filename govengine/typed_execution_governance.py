@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from hmac import compare_digest
 from string import hexdigits
 from typing import Any, Mapping
 
+from govengine._json_boundary import bounded_json_copy
 from govengine.admission import (
     GovAdmissionDecision,
     admission_decision_from_host_gate,
@@ -61,9 +63,7 @@ SUPPORTED_IDENTITY_CLASSES = frozenset(
         'ssh_identity',
     }
 )
-SUPPORTED_LIVE_BACKEND_POSTURES = frozenset(
-    {'fixture_only', 'live_backend', 'mock'}
-)
+SUPPORTED_LIVE_BACKEND_POSTURES = frozenset({'fixture_only', 'live_backend', 'mock'})
 
 BASELINE_TYPED_EXECUTION_CONTROLS = (
     'backend_class_supported',
@@ -234,8 +234,12 @@ class RuntimeCapabilityDescriptor:
             'read_only_backend': self.read_only_backend,
             'live_backend_posture': self.live_backend_posture,
             'network_boundary': dict(self.network_boundary),
-            'secret_ref_requirements': [dict(item) for item in self.secret_ref_requirements],
-            'declared_capability_descriptors': list(self.declared_capability_descriptors),
+            'secret_ref_requirements': [
+                dict(item) for item in self.secret_ref_requirements
+            ],
+            'declared_capability_descriptors': list(
+                self.declared_capability_descriptors
+            ),
             'certification_tier': self.certification_tier,
             'mode': self.mode,
         }
@@ -271,6 +275,8 @@ class TypedExecutionGovernanceRequest:
     allowed_address_classes: tuple[str, ...] = ()
     required_origin_binding_digest: str = ''
     destination_binding: Mapping[str, Any] = field(default_factory=dict)
+    network_policy_binding: Mapping[str, Any] = field(default_factory=dict)
+    network_policy_binding_digest: str = ''
     required_capability_descriptors: tuple[str, ...] = ()
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
@@ -296,7 +302,11 @@ class TypedExecutionGovernanceRequest:
             'allowed_address_classes': list(self.allowed_address_classes),
             'required_origin_binding_digest': self.required_origin_binding_digest,
             'destination_binding': dict(self.destination_binding),
-            'required_capability_descriptors': list(self.required_capability_descriptors),
+            'network_policy_binding': dict(self.network_policy_binding),
+            'network_policy_binding_digest': self.network_policy_binding_digest,
+            'required_capability_descriptors': list(
+                self.required_capability_descriptors
+            ),
             'metadata': dict(self.metadata),
         }
         if self.operation_id:
@@ -354,8 +364,12 @@ class TypedExecutionCapabilityCompatibilityReport:
             'request_id': self.request_id,
             'step_id': self.step_id,
             'reason_code': self.reason_code,
-            'required_capability_descriptors': list(self.required_capability_descriptors),
-            'satisfied_capability_descriptors': list(self.satisfied_capability_descriptors),
+            'required_capability_descriptors': list(
+                self.required_capability_descriptors
+            ),
+            'satisfied_capability_descriptors': list(
+                self.satisfied_capability_descriptors
+            ),
             'missing_capability_descriptors': list(self.missing_capability_descriptors),
             'policy_controls': [dict(item) for item in self.policy_controls],
             'blockers': list(self.blockers),
@@ -457,7 +471,10 @@ def validate_runtime_capability_descriptor(
         raise GovApiError(f'unsupported_identity_class:{identity_class}')
     if egress_class and egress_class not in SUPPORTED_EGRESS_CLASSES:
         raise GovApiError(f'unsupported_egress_class:{egress_class}')
-    if live_backend_posture and live_backend_posture not in SUPPORTED_LIVE_BACKEND_POSTURES:
+    if (
+        live_backend_posture
+        and live_backend_posture not in SUPPORTED_LIVE_BACKEND_POSTURES
+    ):
         raise GovApiError(f'unsupported_live_backend_posture:{live_backend_posture}')
     network_boundary = require_mapping(
         raw.get('network_boundary') or {},
@@ -471,7 +488,9 @@ def validate_runtime_capability_descriptor(
         read_only_backend=bool(raw.get('read_only_backend', False)),
         live_backend_posture=live_backend_posture,
         network_boundary=dict(network_boundary),
-        secret_ref_requirements=_mapping_tuple(raw.get('secret_ref_requirements') or ()),
+        secret_ref_requirements=_mapping_tuple(
+            raw.get('secret_ref_requirements') or ()
+        ),
         declared_capability_descriptors=_string_tuple(
             raw.get('declared_capability_descriptors') or ()
         ),
@@ -480,12 +499,25 @@ def validate_runtime_capability_descriptor(
     )
 
 
+def runtime_capability_descriptor_digest(
+    value: Mapping[str, Any] | RuntimeCapabilityDescriptor,
+) -> str:
+    checked = validate_runtime_capability_descriptor(value)
+    return govengine_record_digest(
+        checked.as_dict(),
+        record_type='govengine.capabilities.RuntimeCapabilityDescriptor',
+    )
+
+
 def validate_typed_execution_governance_request(
     value: Mapping[str, Any] | TypedExecutionGovernanceRequest,
 ) -> TypedExecutionGovernanceRequest:
     if isinstance(value, TypedExecutionGovernanceRequest):
+        _validate_typed_execution_request_shape(value)
         return value
-    raw = require_mapping(value, reason_code='invalid_typed_execution_governance_request')
+    raw = require_mapping(
+        value, reason_code='invalid_typed_execution_governance_request'
+    )
     schema_version = str(raw.get('schema_version') or '').strip()
     if schema_version != TYPED_EXECUTION_GOVERNANCE_REQUEST_SCHEMA_VERSION:
         raise GovApiError(
@@ -513,7 +545,9 @@ def validate_typed_execution_governance_request(
             'missing_capability_descriptor_digest',
         ),
         payload_schema=_required_text(raw, 'payload_schema'),
-        payload_digest=_required_digest(raw, 'payload_digest', 'missing_payload_digest'),
+        payload_digest=_required_digest(
+            raw, 'payload_digest', 'missing_payload_digest'
+        ),
         backend_class=_required_text(raw, 'backend_class'),
         connector=_required_text(raw, 'connector'),
         action=_required_text(raw, 'action'),
@@ -535,6 +569,13 @@ def validate_typed_execution_governance_request(
             raw.get('destination_binding') or {},
             reason_code='invalid_destination_binding',
         ),
+        network_policy_binding=_json_mapping(
+            raw.get('network_policy_binding'),
+            reason_code='invalid_network_policy_binding',
+        ),
+        network_policy_binding_digest=str(
+            raw.get('network_policy_binding_digest') or ''
+        ).strip(),
         required_capability_descriptors=_string_tuple(
             raw.get('required_capability_descriptors') or ()
         ),
@@ -605,7 +646,9 @@ def validate_typed_execution_stack_compatibility_request(
 ) -> TypedExecutionStackCompatibilityRequest:
     if isinstance(value, TypedExecutionStackCompatibilityRequest):
         return value
-    raw = require_mapping(value, reason_code='invalid_typed_execution_stack_compatibility_request')
+    raw = require_mapping(
+        value, reason_code='invalid_typed_execution_stack_compatibility_request'
+    )
     schema_version = str(raw.get('schema_version') or '').strip()
     if schema_version != TYPED_EXECUTION_STACK_COMPATIBILITY_SCHEMA_VERSION:
         raise GovApiError(
@@ -685,9 +728,7 @@ def evaluate_typed_execution_stack_compatibility(
     if missing_controls:
         blockers.append('missing_typed_execution_controls')
     status = 'passed' if not blockers else 'blocked'
-    reason_code = (
-        'typed_execution_stack_compatible' if not blockers else blockers[0]
-    )
+    reason_code = 'typed_execution_stack_compatible' if not blockers else blockers[0]
     body = {
         'schema_version': TYPED_EXECUTION_STACK_COMPATIBILITY_SCHEMA_VERSION,
         'status': status,
@@ -786,7 +827,9 @@ def evaluate_typed_execution_capability_compatibility(
     satisfied: list[str] = []
     missing: list[str] = []
     for capability in checked.required_capability_descriptors:
-        if capability in provided or _matches_declared_capability(capability, descriptor):
+        if capability in provided or _matches_declared_capability(
+            capability, descriptor
+        ):
             satisfied.append(capability)
         else:
             missing.append(capability)
@@ -805,7 +848,9 @@ def evaluate_typed_execution_capability_compatibility(
         'request_id': checked.request_id,
         'step_id': checked.step_id,
         'reason_code': reason_code,
-        'required_capability_descriptors': list(checked.required_capability_descriptors),
+        'required_capability_descriptors': list(
+            checked.required_capability_descriptors
+        ),
         'satisfied_capability_descriptors': satisfied,
         'missing_capability_descriptors': missing,
         'policy_controls': policy_controls,
@@ -893,7 +938,9 @@ def admit_typed_execution(
         if bundle.governance.blockers
         else bundle.compatibility.reason_code
     )
-    blockers = bundle.governance.blockers + bundle.compatibility.blockers
+    blockers = tuple(
+        dict.fromkeys((*bundle.governance.blockers, *bundle.compatibility.blockers))
+    )
     admission = admission_decision_from_host_gate(
         decision_id=f'typed-execution-admission:{checked.request_id}',
         subject_ref=typed_execution_governance_request_digest(checked),
@@ -960,20 +1007,46 @@ def validate_typed_execution_admission(
     return checked
 
 
-def _validate_typed_execution_request_shape(item: TypedExecutionGovernanceRequest) -> None:
+def _validate_typed_execution_request_shape(
+    item: TypedExecutionGovernanceRequest,
+) -> None:
     if item.operation_mode not in SUPPORTED_OPERATION_MODES:
-        raise GovApiError(f'unsupported_typed_execution_operation_mode:{item.operation_mode}')
+        raise GovApiError(
+            f'unsupported_typed_execution_operation_mode:{item.operation_mode}'
+        )
     if item.side_effect_class not in SUPPORTED_SIDE_EFFECT_CLASSES:
         raise GovApiError(f'unsupported_side_effect_class:{item.side_effect_class}')
     if item.backend_class != item.capability_descriptor.backend_class:
         raise GovApiError('typed_execution_backend_class_mismatch')
+    expected_descriptor_digest = runtime_capability_descriptor_digest(
+        item.capability_descriptor
+    )
+    if not compare_digest(
+        expected_descriptor_digest, item.capability_descriptor_digest
+    ):
+        raise GovApiError('capability_descriptor_digest_mismatch')
     _reject_forbidden_typed_execution_metadata(item.metadata)
     _reject_forbidden_typed_execution_metadata(item.evidence_requirements)
+    _reject_forbidden_typed_execution_metadata(item.network_policy_binding)
     if item.required_origin_binding_digest:
         _require_digest_ref(
             item.required_origin_binding_digest,
             'invalid_required_origin_binding_digest',
         )
+    if item.network_policy_binding:
+        _require_digest_ref(
+            item.network_policy_binding_digest,
+            'missing_network_policy_binding_digest',
+        )
+        expected_policy_digest = network_policy_binding_digest(
+            item.network_policy_binding
+        )
+        if not compare_digest(
+            expected_policy_digest, item.network_policy_binding_digest
+        ):
+            raise GovApiError('network_policy_binding_digest_mismatch')
+    elif item.network_policy_binding_digest:
+        raise GovApiError('network_policy_binding_missing')
 
 
 def _check_required_digests(item: TypedExecutionGovernanceRequest) -> dict[str, Any]:
@@ -1010,7 +1083,9 @@ def _check_read_only_posture(item: TypedExecutionGovernanceRequest) -> dict[str,
     }
 
 
-def _check_evidence_requirements(item: TypedExecutionGovernanceRequest) -> dict[str, Any]:
+def _check_evidence_requirements(
+    item: TypedExecutionGovernanceRequest,
+) -> dict[str, Any]:
     evidence = dict(item.evidence_requirements)
     blockers: list[str] = []
     receipt_required = bool(evidence.get('receipt_required', True))
@@ -1021,8 +1096,12 @@ def _check_evidence_requirements(item: TypedExecutionGovernanceRequest) -> dict[
     if output_digest_required and not output_digest_ref:
         blockers.append('missing_output_digest_ref')
     approval_ref = str(evidence.get('approval_evidence_ref') or '').strip()
-    if item.side_effect_class == 'mutation' and not approval_ref:
-        blockers.append('mutation_requires_approval_evidence')
+    if item.side_effect_class == 'mutation':
+        blockers.append(
+            'mutation_requires_approval_attestation'
+            if approval_ref
+            else 'mutation_requires_approval_evidence'
+        )
     return {
         'gate': 'evidence_requirements',
         'passed': not blockers,
@@ -1039,21 +1118,16 @@ def _typed_execution_policy_controls(
     missing_capabilities: list[str],
 ) -> list[dict[str, Any]]:
     descriptor = request.capability_descriptor
-    descriptor_mapping = (
-        descriptor.as_dict()
-        if isinstance(descriptor, RuntimeCapabilityDescriptor)
-        else dict(descriptor)
-    )
     controls: list[dict[str, Any]] = []
 
     backend_supported = request.backend_class in SUPPORTED_BACKEND_CLASSES
-    if not backend_supported and bool(request.metadata.get('registered_plugin_backend')):
-        backend_supported = _stack_backend_supported(descriptor_mapping)
     allowed_backend_classes = _metadata_string_tuple(
         request.metadata.get('allowed_backend_classes')
     )
     if allowed_backend_classes:
-        backend_supported = backend_supported and request.backend_class in allowed_backend_classes
+        backend_supported = (
+            backend_supported and request.backend_class in allowed_backend_classes
+        )
     controls.append(
         {
             'control': 'backend_class_supported',
@@ -1132,24 +1206,40 @@ def _typed_execution_policy_controls(
     )
 
     egress = str(
-        descriptor.network_boundary.get('egress')
-        or descriptor.egress_class
-        or ''
+        descriptor.network_boundary.get('egress') or descriptor.egress_class or ''
     ).strip()
-    allowed = set(request.allowed_network_egress)
-    network_passed = True if not allowed else egress in allowed
+    network_policy = dict(request.network_policy_binding)
+    allowed = set(_metadata_string_tuple(network_policy.get('allowed_network_egress')))
+    independent_network_policy_required = egress in {
+        'outbound_http',
+        'outbound_ssh',
+        'plugin_undeclared',
+    }
+    network_passed = (
+        egress in {'no_network', 'local_subprocess'}
+        and (
+            not request.allowed_network_egress
+            or egress in request.allowed_network_egress
+        )
+        if not independent_network_policy_required
+        else bool(network_policy) and egress in allowed
+    )
     controls.append(
         {
             'control': 'network_boundary_match',
             'passed': network_passed,
             'details': {
                 'egress': egress,
-                'allowed_network_egress': list(request.allowed_network_egress),
+                'allowed_network_egress': sorted(allowed),
             },
         }
     )
     if not network_passed:
-        controls[-1]['control'] = 'network_boundary_mismatch'
+        controls[-1]['control'] = (
+            'network_policy_binding_missing'
+            if independent_network_policy_required and not network_policy
+            else 'network_boundary_mismatch'
+        )
 
     destination = dict(request.destination_binding)
     capability_destination = descriptor.network_boundary.get('destination_binding')
@@ -1158,27 +1248,34 @@ def _typed_execution_policy_controls(
     origin_digest = str(destination.get('origin_binding_digest') or '').strip()
     destination_required = bool(request.metadata.get('require_destination_binding'))
     destination_passed = not destination_required
+    destination_reason = 'network_destination_binding_match'
     if destination:
-        destination_passed = (
-            isinstance(capability_destination, Mapping)
-            and dict(capability_destination) == destination
-            and (not request.allowed_network_schemes or scheme in request.allowed_network_schemes)
-            and (
-                not request.allowed_address_classes
-                or address_class in request.allowed_address_classes
-            )
-            and (
-                not request.required_origin_binding_digest
-                or origin_digest == request.required_origin_binding_digest
-            )
+        allowed_schemes = set(
+            _metadata_string_tuple(network_policy.get('allowed_network_schemes'))
         )
+        allowed_address_classes = set(
+            _metadata_string_tuple(network_policy.get('allowed_address_classes'))
+        )
+        required_origin_digest = str(
+            network_policy.get('required_origin_binding_digest') or ''
+        ).strip()
+        destination_passed = (
+            bool(network_policy)
+            and isinstance(capability_destination, Mapping)
+            and dict(capability_destination) == destination
+            and (not allowed_schemes or scheme in allowed_schemes)
+            and (
+                not allowed_address_classes or address_class in allowed_address_classes
+            )
+            and (not required_origin_digest or origin_digest == required_origin_digest)
+        )
+        if not network_policy:
+            destination_reason = 'network_policy_binding_missing'
+        elif not destination_passed:
+            destination_reason = 'network_destination_binding_mismatch'
     controls.append(
         {
-            'control': (
-                'network_destination_binding_match'
-                if destination_passed
-                else 'network_destination_binding_mismatch'
-            ),
+            'control': destination_reason,
             'passed': destination_passed,
             'details': {
                 'scheme': scheme,
@@ -1205,10 +1302,17 @@ def _typed_execution_policy_controls(
         request.evidence_requirements.get('approval_evidence_ref') or ''
     ).strip()
     mutation_requires_approval = request.side_effect_class == 'mutation'
+    approval_control = 'mutation_requires_approval'
+    if mutation_requires_approval:
+        approval_control = (
+            'mutation_requires_approval_attestation'
+            if approval_ref
+            else 'mutation_requires_approval_evidence'
+        )
     controls.append(
         {
-            'control': 'mutation_requires_approval',
-            'passed': (not mutation_requires_approval) or bool(approval_ref),
+            'control': approval_control,
+            'passed': not mutation_requires_approval,
             'details': {
                 'side_effect_class': request.side_effect_class,
                 'approval_evidence_ref': approval_ref,
@@ -1218,8 +1322,13 @@ def _typed_execution_policy_controls(
 
     controls.append(
         {
-            'control': 'capability_coverage',
-            'passed': not missing_capabilities,
+            'control': (
+                'capability_coverage'
+                if request.required_capability_descriptors
+                else 'operation_capability_requirements_missing'
+            ),
+            'passed': bool(request.required_capability_descriptors)
+            and not missing_capabilities,
             'details': {
                 'required': len(request.required_capability_descriptors),
                 'missing': missing_capabilities,
@@ -1279,17 +1388,37 @@ def _require_digest_ref(value: str, reason_code: str) -> None:
 def _metadata(value: Any) -> dict[str, Any]:
     if value is None:
         return {}
-    raw = require_mapping(value, reason_code='invalid_typed_execution_governance_metadata')
-    return dict(raw)
+    raw = require_mapping(
+        value, reason_code='invalid_typed_execution_governance_metadata'
+    )
+    return bounded_json_copy(raw)
 
 
-def _reject_forbidden_typed_execution_metadata(value: Mapping[str, Any]) -> None:
-    lowered = {str(key).lower() for key in value}
-    for key in FORBIDDEN_TYPED_EXECUTION_METADATA_KEYS:
-        if key in lowered:
-            raise GovApiError(f'forbidden_typed_execution_metadata:{key}')
-    for nested in value.values():
-        if isinstance(nested, Mapping):
+def _json_mapping(value: Any, *, reason_code: str) -> dict[str, Any]:
+    if value is None:
+        return {}
+    raw = require_mapping(value, reason_code=reason_code)
+    return bounded_json_copy(raw)
+
+
+def network_policy_binding_digest(value: Mapping[str, Any]) -> str:
+    """Digest one independently declared network-policy binding."""
+    return govengine_record_digest(
+        value,
+        record_type='govengine.typed_execution.NetworkPolicyBinding',
+    )
+
+
+def _reject_forbidden_typed_execution_metadata(value: Any) -> None:
+    if isinstance(value, Mapping):
+        lowered = {str(key).lower() for key in value}
+        for key in FORBIDDEN_TYPED_EXECUTION_METADATA_KEYS:
+            if key in lowered:
+                raise GovApiError(f'forbidden_typed_execution_metadata:{key}')
+        for nested in value.values():
+            _reject_forbidden_typed_execution_metadata(nested)
+    elif isinstance(value, (list, tuple)):
+        for nested in value:
             _reject_forbidden_typed_execution_metadata(nested)
 
 
@@ -1315,11 +1444,17 @@ def _string_tuple(values: Any) -> tuple[str, ...]:
 def _mapping_tuple(values: Any) -> tuple[dict[str, Any], ...]:
     try:
         return tuple(
-            dict(require_mapping(value, reason_code='invalid_typed_execution_governance_mapping'))
+            dict(
+                require_mapping(
+                    value, reason_code='invalid_typed_execution_governance_mapping'
+                )
+            )
             for value in values
         )
     except TypeError as exc:
-        raise GovApiError('invalid_typed_execution_governance_mapping_sequence') from exc
+        raise GovApiError(
+            'invalid_typed_execution_governance_mapping_sequence'
+        ) from exc
 
 
 _GOVERNANCE_NON_CLAIMS = (

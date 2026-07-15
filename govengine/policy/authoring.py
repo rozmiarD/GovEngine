@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
+from govengine._json_boundary import load_bounded_json
 from govengine.api import GovApiError
 from govengine.policy.compiler import CompileResult, PolicyCompiler
 
@@ -18,11 +19,16 @@ def read_policy_pack(path: str | Path, *, max_bytes: int = DEFAULT_POLICY_MAX_BY
     try:
         if source.stat().st_size > max_bytes:
             raise GovApiError('policy_pack_input_too_large')
-        payload = json.loads(source.read_text(encoding='utf-8'))
+        payload = load_bounded_json(
+            source.read_text(encoding='utf-8'),
+            max_bytes=max_bytes,
+        )
+    except GovApiError as exc:
+        if exc.reason_code == 'json_boundary_invalid_json':
+            raise GovApiError('policy_pack_json_invalid', exc.message) from exc
+        raise
     except OSError as exc:
         raise GovApiError('policy_pack_read_failed', str(exc)) from exc
-    except json.JSONDecodeError as exc:
-        raise GovApiError('policy_pack_json_invalid', exc.msg) from exc
     if not isinstance(payload, Mapping):
         raise GovApiError('policy_pack_json_not_mapping')
     return payload

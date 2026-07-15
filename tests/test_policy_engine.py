@@ -5,8 +5,10 @@ import pytest
 from govengine import (
     PolicyCompiler,
     PolicyEngine,
+    PolicyVerdict,
     policy_verdict_to_gov_policy_decision,
     validate_policy_request,
+    validate_policy_verdict,
 )
 from govengine.api import GovApiError
 
@@ -91,6 +93,57 @@ def test_policy_engine_requires_approval_for_critical_mutation_without_evidence(
     assert verdict.decision == 'approval_required'
     assert verdict.reason_code == 'critical_mutating_action_requires_approval'
     assert verdict.blockers == ('operator_approval_required',)
+
+
+@pytest.mark.parametrize(
+    'request_patch',
+    [
+        {'evidence_refs': ['not-an-approval']},
+        {'evidence_refs': ['approval:opaque-reference']},
+        {'context': {'approval': True}},
+        {'context': {'evidence': {'operator_approval': True}}},
+    ],
+)
+def test_policy_engine_does_not_treat_opaque_claims_as_approval(request_patch) -> None:
+    request = {
+        'request_id': 'request-opaque-approval',
+        'subject_ref': 'artifact://task/opaque-approval',
+        'action': {'mode': 'mutating'},
+        'resource': {'criticality': 'critical'},
+        **request_patch,
+    }
+
+    verdict = PolicyEngine().evaluate(request, _compiled_pack())
+
+    assert verdict.decision == 'approval_required'
+    assert verdict.reason_code == 'critical_mutating_action_requires_approval'
+
+
+def test_policy_verdict_rejects_non_finite_risk_score() -> None:
+    with pytest.raises(GovApiError, match='invalid_policy_risk_score'):
+        validate_policy_verdict(PolicyVerdict(
+            verdict_id='verdict-nan',
+            request_id='request-nan',
+            subject_ref='artifact://task/nan',
+            decision='allow',
+            risk_score=float('nan'),
+        ))
+
+
+def test_policy_boundary_rejects_unsupported_json_values_and_keys() -> None:
+    with pytest.raises(GovApiError, match='json_boundary_unsupported_type'):
+        validate_policy_request({
+            'request_id': 'request-set',
+            'subject_ref': 'artifact://task/set',
+            'metadata': {'items': {'not', 'json'}},
+        })
+
+    with pytest.raises(GovApiError, match='json_boundary_non_string_key'):
+        validate_policy_request({
+            'request_id': 'request-key',
+            'subject_ref': 'artifact://task/key',
+            'action': {1: 'read'},
+        })
 
 
 def test_policy_engine_denies_unsafe_and_unmatched_requests() -> None:

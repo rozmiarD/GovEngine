@@ -5,6 +5,10 @@ GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for futu
 Current candidate line: `govengine==0.17.0rc2` with final `sclite-core==2.0.0`.
 Current published PyPI line: `govengine==0.16.11`. Older alpha releases are archived only.
 
+`0.17.0rc2` is on release hold and must not be uploaded. Resume publication
+only with a new candidate after the fail-closed boundary suite and all release
+gates pass.
+
 ## Preflight
 
 - [ ] For maintainer releases from the operator-controlled publish tree, effective git identity is `Krzysztof Probola <32790662+rozmiarD@users.noreply.github.com>`; external contributors use their own GitHub-associated identity.
@@ -12,12 +16,13 @@ Current published PyPI line: `govengine==0.16.11`. Older alpha releases are arch
 - [ ] Published Git history is preserved: no force-push, history rewrite, date rewrite, or tag rewrite to fix authorship/contribution graphs. Use corrective commits instead.
 - [ ] `CHANGELOG.md`, `PUBLIC_STATUS.md`, `README.md`, `docs/VALIDATION.md`, `docs/ROADMAP.md`, `docs/API_BOUNDARY.md`, `govengine/surfaces.py`, and `pyproject.toml` agree on version/status and claim only tested behavior.
 - [ ] `python scripts/validate_public_truth.py` passes.
+- [ ] `python scripts/validate_api_stability.py` passes; run it with the RExecOp consumer root for coordinated releases.
 - [ ] `python scripts/validate_alpha_readiness.py` passes for alpha release lines.
 - [ ] `python -m pytest -q` passes.
 - [ ] `python scripts/validate_clean_package_install.py --venv /tmp/govengine-clean-release --dev --sclite-source /path/to/SCLite --no-editable` passes from a new virtual environment path, including its isolated installed-package retirement smoke.
 - [ ] `scripts/verify_runner_receipt_binding.py` and `scripts/verify_audit_ledger.py` are treated as read-only verifier smoke helpers if their records are used as release evidence; they must not generate runner requests, append ledger records, or expose raw payloads.
 - [ ] Maintainer/security review confirms there are no open P0/P1 security findings. Passing tests alone is not release approval when a P0/P1 finding is open.
-- [ ] Downstream smoke evidence is classified before release: SCLite released-line is required, SCLite main is optional/coordinated unless targeted, and Ravenclaw/Tecrax host contract smokes remain external host-owned checks.
+- [ ] Downstream smoke evidence is classified before release: SCLite released-line is required, SCLite edge is pinned to a full commit SHA, and Ravenclaw/Tecrax host contract smokes remain external host-owned checks.
 - [ ] Build artifacts are generated from a clean tree.
 - [ ] No generated `build/`, `dist/`, `*.egg-info`, caches, private state, or Ravenclaw workspace files are committed unless intentionally package metadata.
 

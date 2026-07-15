@@ -138,12 +138,10 @@ def _is_critical(resource: Mapping[str, Any]) -> bool:
 
 
 def _has_approval_evidence(request: PolicyRequest) -> bool:
-    if any('approval' in ref for ref in request.evidence_refs):
-        return True
-    evidence = request.context.get('evidence')
-    if isinstance(evidence, Mapping):
-        return bool(evidence.get('approval') or evidence.get('operator_approval'))
-    return bool(request.context.get('approval') or request.context.get('operator_approval'))
+    # Legacy refs and booleans do not prove that an authorized principal
+    # approved this exact subject. G2 introduces a bound ApprovalAttestation;
+    # until then mutation remains approval-required on this compatibility path.
+    return False
 
 
 def _verdict_from_rule(

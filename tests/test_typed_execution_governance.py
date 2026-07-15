@@ -14,6 +14,8 @@ from govengine import (
     typed_execution_control_catalog,
 )
 from govengine.api import GovApiError
+from govengine.signing import govengine_record_digest
+from govengine.typed_execution_governance import runtime_capability_descriptor_digest
 
 
 def _digest(seed: str) -> str:
@@ -47,7 +49,9 @@ def _request(**overrides):
         'step_id': 'inspect_state',
         'operation_mode': 'dry_run',
         'step_execution_spec_digest': _digest('a'),
-        'capability_descriptor_digest': _digest('b'),
+        'capability_descriptor_digest': runtime_capability_descriptor_digest(
+            capability
+        ),
         'payload_schema': 'rexecop.static_fixture_execution_spec.v0.1',
         'payload_digest': _digest('c'),
         'backend_class': capability['backend_class'],
@@ -78,6 +82,13 @@ def test_allowed_read_only_typed_execution_spec() -> None:
     assert admission.allowed is True
     assert admission.outcome == 'allowed'
     assert admission.reason_code == 'typed_execution_admission_allowed'
+
+
+def test_capability_descriptor_digest_mismatch_is_rejected() -> None:
+    with pytest.raises(GovApiError, match='capability_descriptor_digest_mismatch'):
+        explain_typed_execution_governance(
+            _request(capability_descriptor_digest=_digest('f'))
+        )
 
 
 def test_blocked_raw_shell_backend() -> None:
@@ -120,6 +131,29 @@ def test_blocked_unsupported_backend() -> None:
     assert 'unsupported_backend_class' in bundle.compatibility.blockers
 
 
+def test_host_registration_boolean_does_not_certify_plugin_backend() -> None:
+    capability = _capability(
+        backend_class='unreviewed_plugin',
+        egress_class='plugin_undeclared',
+        network_boundary={'egress': 'plugin_undeclared', 'host_declared': False},
+        declared_capability_descriptors=['connector.plugin.unreviewed'],
+        certification_tier='plugin',
+        identity_class='plugin_declared',
+    )
+    bundle = explain_typed_execution_governance(
+        _request(
+            backend_class='unreviewed_plugin',
+            capability_descriptor=capability,
+            allowed_network_egress=['plugin_undeclared'],
+            required_capability_descriptors=['connector.plugin.unreviewed'],
+            metadata={'registered_plugin_backend': True},
+        )
+    )
+
+    assert bundle.status == 'blocked'
+    assert 'unsupported_backend_class' in bundle.compatibility.blockers
+
+
 def test_http_destination_binding_is_admitted_without_raw_host() -> None:
     destination = {
         'scheme': 'https',
@@ -138,6 +172,12 @@ def test_http_destination_binding_is_admitted_without_raw_host() -> None:
         },
         declared_capability_descriptors=['connector.http.rest.read'],
     )
+    network_policy = {
+        'allowed_network_egress': ['outbound_http'],
+        'allowed_network_schemes': ['https'],
+        'allowed_address_classes': ['private'],
+        'required_origin_binding_digest': destination['origin_binding_digest'],
+    }
     request = _request(
         backend_class='http_api',
         capability_descriptor=capability,
@@ -147,14 +187,56 @@ def test_http_destination_binding_is_admitted_without_raw_host() -> None:
         allowed_network_schemes=['https'],
         allowed_address_classes=['private'],
         required_origin_binding_digest=destination['origin_binding_digest'],
+        network_policy_binding=network_policy,
+        network_policy_binding_digest=govengine_record_digest(
+            network_policy,
+            record_type='govengine.typed_execution.NetworkPolicyBinding',
+        ),
         metadata={'require_destination_binding': True},
     )
     admission = admit_typed_execution(request)
     assert admission.allowed is True
-    assert admission.signal['step_execution_spec_digest'] == request[
-        'step_execution_spec_digest'
-    ]
+    assert (
+        admission.signal['step_execution_spec_digest']
+        == request['step_execution_spec_digest']
+    )
     assert 'private-api' not in repr(admission.as_dict())
+
+
+def test_destination_cannot_supply_its_own_allowlist() -> None:
+    destination = {
+        'scheme': 'https',
+        'effective_port': 443,
+        'address_class': 'public',
+        'origin_binding_digest': _digest('d'),
+    }
+    capability = _capability(
+        backend_class='http_api',
+        egress_class='outbound_http',
+        identity_class='api_token_optional',
+        live_backend_posture='live_backend',
+        network_boundary={
+            'egress': 'outbound_http',
+            'destination_binding': destination,
+        },
+        declared_capability_descriptors=['connector.http.rest.read'],
+    )
+    bundle = explain_typed_execution_governance(
+        _request(
+            backend_class='http_api',
+            capability_descriptor=capability,
+            allowed_network_egress=['outbound_http'],
+            required_capability_descriptors=['connector.http.rest.read'],
+            destination_binding=destination,
+            allowed_network_schemes=['https'],
+            allowed_address_classes=['public'],
+            required_origin_binding_digest=destination['origin_binding_digest'],
+            metadata={'require_destination_binding': True},
+        )
+    )
+
+    assert bundle.status == 'blocked'
+    assert 'network_policy_binding_missing' in bundle.compatibility.blockers
 
 
 def test_http_destination_binding_drift_is_blocked() -> None:
@@ -175,6 +257,12 @@ def test_http_destination_binding_drift_is_blocked() -> None:
         },
         declared_capability_descriptors=['connector.http.rest.read'],
     )
+    network_policy = {
+        'allowed_network_egress': ['outbound_http'],
+        'allowed_network_schemes': ['https'],
+        'allowed_address_classes': ['dns_name'],
+        'required_origin_binding_digest': destination['origin_binding_digest'],
+    }
     request = _request(
         backend_class='http_api',
         capability_descriptor=capability,
@@ -184,6 +272,11 @@ def test_http_destination_binding_drift_is_blocked() -> None:
         allowed_network_schemes=['https'],
         allowed_address_classes=['dns_name'],
         required_origin_binding_digest=destination['origin_binding_digest'],
+        network_policy_binding=network_policy,
+        network_policy_binding_digest=govengine_record_digest(
+            network_policy,
+            record_type='govengine.typed_execution.NetworkPolicyBinding',
+        ),
         metadata={'require_destination_binding': True},
     )
     bundle = explain_typed_execution_governance(request)
@@ -223,6 +316,7 @@ def test_blocked_network_boundary_mismatch() -> None:
             }
         ],
     )
+    network_policy = {'allowed_network_egress': ['no_network']}
     bundle = explain_typed_execution_governance(
         _request(
             backend_class='http_api',
@@ -230,6 +324,11 @@ def test_blocked_network_boundary_mismatch() -> None:
             capability_descriptor=capability,
             allowed_network_egress=['no_network'],
             required_capability_descriptors=['connector.http.rest.read'],
+            network_policy_binding=network_policy,
+            network_policy_binding_digest=govengine_record_digest(
+                network_policy,
+                record_type='govengine.typed_execution.NetworkPolicyBinding',
+            ),
         )
     )
 
@@ -268,7 +367,7 @@ def test_blocked_mutation_requiring_approval() -> None:
     assert admission.outcome == 'denied'
 
 
-def test_mutation_allowed_with_approval_evidence_ref() -> None:
+def test_mutation_is_not_allowed_with_opaque_approval_evidence_ref() -> None:
     capability = _capability(
         read_only_backend=False,
         live_backend_posture='fixture_only',
@@ -287,13 +386,33 @@ def test_mutation_allowed_with_approval_evidence_ref() -> None:
     bundle = explain_typed_execution_governance(request)
     admission = admit_typed_execution(request)
 
-    assert bundle.status == 'passed'
-    assert admission.allowed is True
+    assert bundle.status == 'blocked'
+    assert 'mutation_requires_approval_attestation' in bundle.governance.blockers
+    assert admission.allowed is False
+    assert admission.blockers.count('mutation_requires_approval_attestation') == 1
 
 
 def test_forbidden_metadata_rejected() -> None:
     with pytest.raises(GovApiError, match='forbidden_typed_execution_metadata:command'):
         explain_typed_execution_governance(_request(metadata={'command': 'rm -rf /'}))
+
+
+def test_forbidden_metadata_inside_list_is_rejected() -> None:
+    with pytest.raises(
+        GovApiError, match='forbidden_typed_execution_metadata:password'
+    ):
+        explain_typed_execution_governance(
+            _request(metadata={'items': [{'password': 'redacted-test-value'}]})
+        )
+
+
+def test_operation_capability_requirements_must_be_explicit() -> None:
+    bundle = explain_typed_execution_governance(
+        _request(required_capability_descriptors=[])
+    )
+
+    assert bundle.status == 'blocked'
+    assert 'operation_capability_requirements_missing' in bundle.compatibility.blockers
 
 
 def _stack_request(**overrides):
@@ -408,7 +527,11 @@ def test_map_policy_verdict_to_typed_execution_controls_from_bounded_pack() -> N
                         },
                     ],
                     'constraints': [
-                        {'constraint_id': 'no-shell', 'kind': 'no_raw_shell', 'value': True},
+                        {
+                            'constraint_id': 'no-shell',
+                            'kind': 'no_raw_shell',
+                            'value': True,
+                        },
                         {
                             'constraint_id': 'network',
                             'kind': 'allowed_network_egress',

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+import math
 from typing import Any, Mapping
 
+from govengine._json_boundary import bounded_json_copy
 from govengine.api import GovApiError, require_mapping
 
 
@@ -192,7 +194,7 @@ class PolicyVerdict:
             schema_version=str(raw.get('schema_version') or POLICY_VERDICT_SCHEMA_VERSION).strip(),
             reason_code=str(raw.get('reason_code') or raw.get('decision') or '').strip(),
             risk_class=str(raw.get('risk_class') or 'low').strip(),
-            risk_score=float(raw.get('risk_score') or 0.0),
+            risk_score=_risk_score(raw.get('risk_score', 0.0)),
             obligations=_obligations(raw.get('obligations') or ()),
             constraints=_constraints(raw.get('constraints') or ()),
             blockers=_tuple(raw.get('blockers') or ()),
@@ -236,7 +238,7 @@ def validate_policy_verdict(value: Mapping[str, Any] | PolicyVerdict) -> PolicyV
         raise GovApiError(f'unknown_policy_verdict_decision:{item.decision or "missing"}')
     if item.risk_class not in POLICY_RISK_CLASSES:
         raise GovApiError(f'unknown_policy_risk_class:{item.risk_class}')
-    if item.risk_score < 0.0 or item.risk_score > 1.0:
+    if not math.isfinite(item.risk_score) or item.risk_score < 0.0 or item.risk_score > 1.0:
         raise GovApiError('invalid_policy_risk_score')
     if item.decision == 'deny' and not item.blockers:
         raise GovApiError('policy_deny_without_blocker')
@@ -262,17 +264,20 @@ def _safe_mapping(value: Any, *, reason_code: str) -> dict[str, Any]:
     if value is None:
         return {}
     raw = require_mapping(value, reason_code=reason_code)
-    return {str(key): _json_safe(raw[key]) for key in raw}
+    return bounded_json_copy(raw)
 
 
 def _json_safe(value: Any) -> Any:
-    if isinstance(value, Mapping):
-        return {str(key): _json_safe(item) for key, item in value.items()}
-    if isinstance(value, (list, tuple, set)):
-        return [_json_safe(item) for item in value]
-    if value is None or isinstance(value, (str, int, float, bool)):
-        return value
-    return str(value)
+    return bounded_json_copy(value)
+
+
+def _risk_score(value: Any) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise GovApiError('invalid_policy_risk_score')
+    score = float(value)
+    if not math.isfinite(score):
+        raise GovApiError('invalid_policy_risk_score')
+    return score
 
 
 def _tuple(values: Any) -> tuple[str, ...]:

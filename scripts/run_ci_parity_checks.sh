@@ -33,6 +33,7 @@ run_step() {
 }
 
 run_step public_truth "$PYTHON" scripts/validate_public_truth.py
+run_step api_stability "$PYTHON" scripts/validate_api_stability.py
 run_step alpha_readiness "$PYTHON" scripts/validate_alpha_readiness.py
 run_step ruff "$PYTHON" -m ruff check .
 run_step mypy "$PYTHON" -m mypy govengine

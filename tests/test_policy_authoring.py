@@ -5,11 +5,15 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from govengine import PolicyEngine
+from govengine.api import GovApiError
 from govengine.policy import (
     available_baseline_policy_names,
     baseline_policy_pack,
     policy_json_schema,
+    read_policy_pack,
     render_policy_pack_json,
     validate_policy_pack,
 )
@@ -139,3 +143,28 @@ def test_policy_cli_validate_fails_closed_for_invalid_policy(tmp_path: Path) -> 
     assert proc.returncode == 2
     assert report['status'] == 'failed'
     assert report['reason_code'] == 'conflicting_policy_rules'
+
+
+@pytest.mark.parametrize(
+    ('payload', 'reason_code'),
+    [
+        (
+            '{"policy_id":"first","policy_id":"second","version":"1","rules":[]}',
+            'json_boundary_duplicate_key',
+        ),
+        (
+            '{"policy_id":"nan","version":"1","rules":[],"risk_score":NaN}',
+            'json_boundary_non_finite_number',
+        ),
+    ],
+)
+def test_policy_authoring_rejects_ambiguous_or_non_finite_json(
+    tmp_path: Path,
+    payload: str,
+    reason_code: str,
+) -> None:
+    path = tmp_path / 'invalid-boundary.json'
+    path.write_text(payload, encoding='utf-8')
+
+    with pytest.raises(GovApiError, match=reason_code):
+        read_policy_pack(path)

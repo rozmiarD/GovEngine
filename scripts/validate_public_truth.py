@@ -580,13 +580,17 @@ def main() -> int:
     _assert_contains('docs/DOMAIN_PROFILE_CONTRACT.md', domain_profile, 'synthetic Tecrax conformance fixture')
     if 'unreleased deterministic demo signer/verifier ports' in public_status:
         raise AssertionError('PUBLIC_STATUS.md:published_demo_ports_marked_unreleased')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'sclite-core==2.0.0')
     _assert_contains(
         '.github/workflows/pytest.yml',
         workflow,
-        'sclite-core @ git+https://github.com/rozmiarD/SCLite.git@main',
+        'SCLite.git@2470373c6384c284ab48df7ce763f0938797d155',
     )
+    if 'SCLite.git@main' in workflow:
+        raise AssertionError('.github/workflows/pytest.yml:moving_sclite_main_ref')
     _assert_contains('.github/workflows/pytest.yml', workflow, "python-version: ['3.11', '3.12', '3.13']")
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_public_truth.py')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_api_stability.py')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_alpha_readiness.py')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'package-dry-run:')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'rm -rf dist build *.egg-info')

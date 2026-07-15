@@ -83,6 +83,7 @@ The published `0.16.0` line adds:
 
 Current source candidate: `0.17.0rc2`.
 Current source candidate pin: `govengine==0.17.0rc2` with final `sclite-core==2.0.0`.
+Release posture: `0.17.0rc2` is on hold; fail-closed boundary fixes require a new candidate and complete release evidence.
 Latest published stack line: `govengine==0.16.11` with `sclite-core==1.0.9`.
 Older GovEngine distributions remain available on PyPI as archived alpha history,
 but they are not an active compatibility line. The published wheel contains the

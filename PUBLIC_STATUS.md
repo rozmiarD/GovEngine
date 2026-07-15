@@ -11,7 +11,7 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Source distribution target: `govengine==0.17.0rc2`.
 - Published distribution: `govengine==0.16.11`.
 - Release label: `0.17.0rc2`.
-- Release status: unpublished coordinated alpha candidate; the latest published stack line remains supported until release approval.
+- Release status: **release hold**. The unpublished `0.17.0rc2` candidate must not be published; fail-closed boundary fixes require a new candidate and full release evidence. The latest published stack line remains supported.
 - Latest published PyPI package: `govengine==0.16.11`.
 - Source/PyPI gap: open for the local candidate; published PyPI releases remain the public compatibility matrix until release approval.
 - SCLite integration: present through helper seams via final frozen dependency `sclite-core==2.0.0`.
@@ -35,7 +35,7 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Domain profile SDK: `govengine.profiles` defines contract-only domain profile declarations, registries, fixture profiles, and conformance reports without domain taxonomy ownership, adapters, credentials, live execution, or product UX.
 - Profile governance projection (G3): `govengine.profile_governance` provides `ProfileGovernanceProjection`, `ProfileConnectorCompatibilityReport`, `explain_profile_governance()` and `govengine-policy profile-governance --json` for policy hooks, evidence expectations, runner posture, supported tracks and profile/connector capability compatibility without backend IO or domain semantics interpretation.
 - Runtime contract proofs: `govengine.contract_proofs` defines public-safe Ravenclaw/Tecrax proof fixtures and neutral governance vocabulary over existing GovEngine contracts without adapters, credentials, live execution, schedulers, storage, or new OODA surface.
-- Public truth gate: `scripts/validate_public_truth.py` checks version/dependency/status/surface consistency across package metadata and public docs.
+- Public truth gate: `scripts/validate_public_truth.py` checks version/dependency/status/surface consistency across package metadata and public docs. `scripts/validate_api_stability.py` derives export counts from the matrix rows, detects module-owned top-level callables outside `__all__`, and can scan downstream `from govengine import ...` use.
 - Alpha readiness gate: `scripts/validate_alpha_readiness.py` checks package metadata, alpha classifier, runtime proof fixtures, neutral vocabulary, and public-surface non-claims before alpha releases.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
