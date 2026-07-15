@@ -97,7 +97,9 @@ The current kernel is useful for deterministic review of prepared governance
 records. It is not production runtime readiness and it is not an execution
 authority. `GovernanceRequest v1` is the canonical input candidate for the new
 decision flow and `ApprovalAttestation v1` is its independently bound approval
-record. A `GovernanceDecision` is not implemented yet. `RuntimeAdmissionResult`
+record. Independent `ScopePolicyBinding`, operation capability requirements and
+runtime inventory bindings prevent request-derived allowlists/capabilities. A
+`GovernanceDecision` is not implemented yet. `RuntimeAdmissionResult`
 remains the legacy admission envelope: `compose_runtime_admission_result()`
 composes host-supplied gate summaries and
 `validate_runtime_admission_result()` checks its shape. None of these helpers

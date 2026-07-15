@@ -235,6 +235,11 @@ bindings and reject approval drift/trust/time/revocation failures, but G2-A does
 not yet issue `GovernanceDecision` or any execution permit. Runtime attempt,
 lease, fencing, claim and I/O ownership remains in RExecOp.
 
+The request also carries independent G2-B scope policy, operation capability
+requirements and runtime inventory records. GovEngine recomputes their digests
+and evaluates bounded compatibility. RExecOp remains responsible for inventory
+collection, plugin loading, DNS/redirect/origin enforcement and actual I/O.
+
 The operator-facing path that ties admission, trust ports, guarded SCLite
 verification, replay freshness, runner profile, receipt obligation, and
 evidence/review binding together is documented in

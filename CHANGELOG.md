@@ -11,6 +11,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Separates requested scope from `ScopePolicyBinding` and operation capability
+  requirements from `CapabilityInventoryBinding`. Deterministic scope and
+  compatibility decisions reject self-authorized allowlists, host plugin
+  registration booleans, missing operation requirements and inventory drift;
+  `GovernanceRequest` recomputes and binds all three records.
 - Adds the canonical `GovernanceRequest v1` input and independently
   digest-bound `ApprovalAttestation v1`. Approval validation now binds the
   exact operation, step, attempt, execution spec/facts, target scope, policy

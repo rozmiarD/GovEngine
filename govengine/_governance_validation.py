@@ -122,3 +122,14 @@ def reject_forbidden_governance_input(value: Any) -> None:
     elif isinstance(value, (list, tuple)):
         for nested in value:
             reject_forbidden_governance_input(nested)
+
+
+def reject_unknown_fields(
+    value: Mapping[Any, Any],
+    *,
+    allowed: frozenset[str],
+    reason_code: str,
+) -> None:
+    for key in value:
+        if not isinstance(key, str) or key not in allowed:
+            raise GovApiError(reason_code)

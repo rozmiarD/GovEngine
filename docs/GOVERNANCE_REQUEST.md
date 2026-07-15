@@ -2,8 +2,8 @@
 
 `govengine.governance.GovernanceRequest` is the canonical v1 input for the
 next governance-decision flow. It binds one operation step and attempt to a
-compiled policy pack, bounded execution facts, requested scope, runtime/lease
-identity and optional approval.
+compiled policy pack, bounded execution facts, requested scope, independent
+scope/capability inputs, runtime/lease identity and optional approval.
 
 `GovernanceRequest` is not a decision, execution permit, runtime claim, receipt
 or SCLite truth artifact. G2-A intentionally does not add connector I/O,
@@ -17,6 +17,9 @@ is available:
 - compiled policy pack;
 - bounded execution facts;
 - requested scope;
+- independent scope policy binding;
+- operation capability requirements;
+- runtime capability inventory binding;
 - embedded `ApprovalAttestation`.
 
 The execution-spec, raw-payload and fencing-token digests are opaque bindings
@@ -26,8 +29,8 @@ verification of the underlying bytes.
 
 The request subject digest excludes the approval itself, avoiding a circular
 digest. It includes transaction, operation, step, attempt, policy, execution,
-scope, side-effect, runtime, lease and fencing bindings. An approval for a
-different subject fails closed.
+scope policy, capability requirements/inventory, side-effect, runtime, lease
+and fencing bindings. An approval for a different subject fails closed.
 
 ## Approval validation
 

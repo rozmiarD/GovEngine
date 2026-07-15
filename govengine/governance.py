@@ -6,6 +6,7 @@ from typing import Any, Mapping
 
 from govengine._governance_validation import (
     reject_forbidden_governance_input,
+    reject_unknown_fields,
     optional_text,
     require_sha256_digest,
     required_nonnegative_int,
@@ -15,12 +16,54 @@ from govengine._governance_validation import (
 from govengine._json_boundary import bounded_json_copy
 from govengine.api import GovApiError, require_mapping
 from govengine.approvals import ApprovalAttestation, approval_attestation_digest
+from govengine.capabilities import (
+    CapabilityInventoryBinding,
+    OperationCapabilityRequirements,
+    capability_inventory_binding_digest,
+    operation_capability_requirements_digest,
+)
 from govengine.policy import CompiledPolicyPack, PolicyCompiler, policy_pack_digest
+from govengine.scope_policy import (
+    ScopePolicyBinding,
+    scope_policy_binding_digest,
+    validate_requested_scope,
+)
 from govengine.signing import govengine_record_digest
 
 
 GOVERNANCE_REQUEST_SCHEMA_VERSION = 'v1'
 SUPPORTED_GOVERNANCE_SIDE_EFFECT_CLASSES = frozenset({'read_only', 'mutation'})
+GOVERNANCE_REQUEST_FIELDS = frozenset(
+    {
+        'schema_version',
+        'transaction_id',
+        'operation_id',
+        'step_id',
+        'attempt_id',
+        'policy_pack',
+        'policy_pack_digest',
+        'policy_epoch',
+        'execution_facts',
+        'execution_facts_digest',
+        'execution_spec_digest',
+        'payload_digest',
+        'requested_scope',
+        'requested_scope_digest',
+        'scope_policy_binding',
+        'scope_policy_binding_digest',
+        'capability_requirements',
+        'capability_requirements_digest',
+        'capability_inventory',
+        'capability_inventory_digest',
+        'side_effect_class',
+        'runtime_instance_id',
+        'lease_id',
+        'lease_epoch',
+        'fencing_token_digest',
+        'approval_attestation',
+        'approval_attestation_digest',
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -45,6 +88,12 @@ class GovernanceRequest:
     payload_digest: str
     requested_scope: Mapping[str, Any]
     requested_scope_digest: str
+    scope_policy_binding: ScopePolicyBinding
+    scope_policy_binding_digest: str
+    capability_requirements: OperationCapabilityRequirements
+    capability_requirements_digest: str
+    capability_inventory: CapabilityInventoryBinding
+    capability_inventory_digest: str
     side_effect_class: str
     runtime_instance_id: str
     lease_id: str
@@ -57,6 +106,11 @@ class GovernanceRequest:
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any]) -> 'GovernanceRequest':
         raw = require_mapping(value, reason_code='invalid_governance_request')
+        reject_unknown_fields(
+            raw,
+            allowed=GOVERNANCE_REQUEST_FIELDS,
+            reason_code='unknown_governance_request_field',
+        )
         policy_pack = _compiled_policy_pack(raw.get('policy_pack'))
         facts = _bounded_mapping(
             raw.get('execution_facts'),
@@ -65,6 +119,13 @@ class GovernanceRequest:
         scope = _bounded_mapping(
             raw.get('requested_scope'),
             'invalid_governance_requested_scope',
+        )
+        scope_policy = _scope_policy_binding(raw.get('scope_policy_binding'))
+        capability_requirements = _capability_requirements(
+            raw.get('capability_requirements')
+        )
+        capability_inventory = _capability_inventory(
+            raw.get('capability_inventory')
         )
         raw_attestation = raw.get('approval_attestation')
         if raw_attestation is None:
@@ -143,6 +204,33 @@ class GovernanceRequest:
                 ),
                 'invalid_governance_requested_scope_digest',
             ),
+            scope_policy_binding=scope_policy,
+            scope_policy_binding_digest=require_sha256_digest(
+                required_text(
+                    raw,
+                    'scope_policy_binding_digest',
+                    'missing_scope_policy_binding_digest',
+                ),
+                'invalid_scope_policy_binding_digest',
+            ),
+            capability_requirements=capability_requirements,
+            capability_requirements_digest=require_sha256_digest(
+                required_text(
+                    raw,
+                    'capability_requirements_digest',
+                    'missing_capability_requirements_digest',
+                ),
+                'invalid_capability_requirements_digest',
+            ),
+            capability_inventory=capability_inventory,
+            capability_inventory_digest=require_sha256_digest(
+                required_text(
+                    raw,
+                    'capability_inventory_digest',
+                    'missing_capability_inventory_digest',
+                ),
+                'invalid_capability_inventory_digest',
+            ),
             side_effect_class=required_text(
                 raw,
                 'side_effect_class',
@@ -196,6 +284,12 @@ class GovernanceRequest:
             'payload_digest': self.payload_digest,
             'requested_scope': dict(self.requested_scope),
             'requested_scope_digest': self.requested_scope_digest,
+            'scope_policy_binding': self.scope_policy_binding.as_dict(),
+            'scope_policy_binding_digest': self.scope_policy_binding_digest,
+            'capability_requirements': self.capability_requirements.as_dict(),
+            'capability_requirements_digest': self.capability_requirements_digest,
+            'capability_inventory': self.capability_inventory.as_dict(),
+            'capability_inventory_digest': self.capability_inventory_digest,
             'side_effect_class': self.side_effect_class,
             'runtime_instance_id': self.runtime_instance_id,
             'lease_id': self.lease_id,
@@ -218,8 +312,7 @@ def execution_facts_digest(value: Mapping[str, Any]) -> str:
 
 
 def requested_scope_digest(value: Mapping[str, Any]) -> str:
-    scope = _bounded_mapping(value, 'invalid_governance_requested_scope')
-    reject_forbidden_governance_input(scope)
+    scope = validate_requested_scope(value)
     return govengine_record_digest(
         scope,
         record_type='govengine.governance.RequestedScope',
@@ -286,6 +379,12 @@ def validate_governance_request(
         ('execution_spec_digest', 'invalid_governance_execution_spec_digest'),
         ('payload_digest', 'invalid_governance_payload_digest'),
         ('requested_scope_digest', 'invalid_governance_requested_scope_digest'),
+        ('scope_policy_binding_digest', 'invalid_scope_policy_binding_digest'),
+        (
+            'capability_requirements_digest',
+            'invalid_capability_requirements_digest',
+        ),
+        ('capability_inventory_digest', 'invalid_capability_inventory_digest'),
         ('fencing_token_digest', 'invalid_governance_fencing_token_digest'),
     ):
         require_sha256_digest(getattr(item, key), reason_code)
@@ -313,6 +412,22 @@ def validate_governance_request(
         item.requested_scope_digest,
         'requested_scope_digest_mismatch',
     )
+    _require_equal_digest(
+        scope_policy_binding_digest(item.scope_policy_binding),
+        item.scope_policy_binding_digest,
+        'scope_policy_binding_digest_mismatch',
+    )
+    _require_equal_digest(
+        operation_capability_requirements_digest(item.capability_requirements),
+        item.capability_requirements_digest,
+        'capability_requirements_digest_mismatch',
+    )
+    _require_equal_digest(
+        capability_inventory_binding_digest(item.capability_inventory),
+        item.capability_inventory_digest,
+        'capability_inventory_digest_mismatch',
+    )
+    _validate_scope_capability_bindings(item)
     if item.approval_attestation is None:
         if item.approval_attestation_digest:
             raise GovApiError('approval_attestation_without_payload')
@@ -340,6 +455,33 @@ def _compiled_policy_pack(value: Any) -> CompiledPolicyPack:
     return result.policy_pack
 
 
+def _scope_policy_binding(value: Any) -> ScopePolicyBinding:
+    if isinstance(value, ScopePolicyBinding):
+        return value
+    return ScopePolicyBinding.from_mapping(
+        require_mapping(value, reason_code='invalid_scope_policy_binding')
+    )
+
+
+def _capability_requirements(value: Any) -> OperationCapabilityRequirements:
+    if isinstance(value, OperationCapabilityRequirements):
+        return value
+    return OperationCapabilityRequirements.from_mapping(
+        require_mapping(
+            value,
+            reason_code='invalid_operation_capability_requirements',
+        )
+    )
+
+
+def _capability_inventory(value: Any) -> CapabilityInventoryBinding:
+    if isinstance(value, CapabilityInventoryBinding):
+        return value
+    return CapabilityInventoryBinding.from_mapping(
+        require_mapping(value, reason_code='invalid_capability_inventory_binding')
+    )
+
+
 def _bounded_mapping(value: Any, reason_code: str) -> Mapping[str, Any]:
     raw = require_mapping(value, reason_code=reason_code)
     copied = bounded_json_copy(raw)
@@ -365,6 +507,9 @@ def _subject_record(item: GovernanceRequest) -> Mapping[str, Any]:
         'execution_spec_digest': item.execution_spec_digest,
         'payload_digest': item.payload_digest,
         'requested_scope_digest': item.requested_scope_digest,
+        'scope_policy_binding_digest': item.scope_policy_binding_digest,
+        'capability_requirements_digest': item.capability_requirements_digest,
+        'capability_inventory_digest': item.capability_inventory_digest,
         'side_effect_class': item.side_effect_class,
         'runtime_instance_id': item.runtime_instance_id,
         'lease_id': item.lease_id,
@@ -378,3 +523,27 @@ def _validate_approval_binding(item: GovernanceRequest) -> None:
 
     assert item.approval_attestation is not None
     _validate_request_binding(item.approval_attestation, item)
+
+
+def _validate_scope_capability_bindings(item: GovernanceRequest) -> None:
+    if not compare_digest(
+        item.scope_policy_binding.policy_pack_digest,
+        item.policy_pack_digest,
+    ):
+        raise GovApiError('scope_policy_pack_digest_mismatch')
+    if item.scope_policy_binding.policy_epoch != item.policy_epoch:
+        raise GovApiError('scope_policy_epoch_mismatch')
+    requirements = item.capability_requirements
+    if requirements.operation_id != item.operation_id:
+        raise GovApiError('capability_requirements_operation_id_mismatch')
+    if requirements.step_id != item.step_id:
+        raise GovApiError('capability_requirements_step_id_mismatch')
+    if not compare_digest(
+        requirements.execution_spec_digest,
+        item.execution_spec_digest,
+    ):
+        raise GovApiError('capability_requirements_execution_spec_digest_mismatch')
+    if requirements.side_effect_class != item.side_effect_class:
+        raise GovApiError('capability_requirements_side_effect_class_mismatch')
+    if item.capability_inventory.runtime_instance_id != item.runtime_instance_id:
+        raise GovApiError('capability_inventory_runtime_instance_id_mismatch')

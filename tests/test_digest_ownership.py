@@ -17,8 +17,13 @@ def test_digest_ownership_inventory_covers_critical_boundaries() -> None:
     assert inventory['governance_request.requested_scope'].mode == 'recomputed'
     assert inventory['governance_request.approval_attestation'].mode == 'recomputed'
     assert inventory['approval.subject'].mode == 'recomputed'
+    assert inventory['governance_request.scope_policy_binding'].mode == 'recomputed'
+    assert inventory['governance_request.capability_requirements'].mode == 'recomputed'
+    assert inventory['governance_request.capability_inventory'].mode == 'recomputed'
     assert inventory['governance_request.execution_spec'].mode == 'reference_only'
     assert inventory['governance_request.fencing_token'].owner == 'rexecop'
+    assert inventory['scope_policy.decision'].mode == 'produced'
+    assert inventory['capability.compatibility_decision'].mode == 'produced'
     assert inventory['runner.execution_ticket'].mode == 'delegated'
     assert inventory['replay.root_chain'].owner == 'sclite'
 

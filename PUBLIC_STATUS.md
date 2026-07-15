@@ -28,6 +28,11 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
   issuer trust requirements and a host-owned revocation port. These inputs do
   not yet produce `GovernanceDecision`, verify signature cryptography, claim
   runtime attempts, or authorize execution.
+- Independent scope/capability inputs: `govengine.scope_policy` compares only
+  requested target/network facts with an independent policy binding;
+  `govengine.capabilities` compares explicit operation requirements with an
+  independently sourced runtime inventory. These decisions do not perform DNS
+  enforcement, load plugins, certify signatures or own the runtime registry.
 - Supervisor action admission and explanation: `govengine.supervisor_actions` provides `admit_supervisor_action()`; `govengine.supervisor_explain` provides `explain_supervisor_action()` and `govengine-supervisor explain --json` for recovery/triage reason codes without worker, queue, scheduler, recovery execution, or runtime-store ownership.
 - Automation transition admission and explanation: `govengine.automation`
   provides `admit_automation_transition()` over bounded child-operation

@@ -33,6 +33,12 @@ to GovEngine policy/scope/approval inputs but do not yet produce a
 `GovernanceDecision`. `RuntimeAdmissionResult` therefore remains a legacy
 adapter instead of being expanded into the new protocol.
 
+G2-B adds independent `ScopePolicyBinding`,
+`OperationCapabilityRequirements` and `CapabilityInventoryBinding` inputs plus
+deterministic scope/compatibility decisions. They are bound into
+`GovernanceRequest`; RExecOp still owns runtime inventory collection and all
+pre-I/O network enforcement.
+
 ## Public surface map
 
 The tested public surface registry in `govengine.surfaces` currently exposes

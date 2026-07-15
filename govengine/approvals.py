@@ -9,6 +9,7 @@ from govengine._governance_validation import (
     optional_text,
     parse_aware_timestamp,
     require_sha256_digest,
+    reject_unknown_fields,
     required_nonnegative_int,
     required_text,
     schema_version,
@@ -22,6 +23,30 @@ if TYPE_CHECKING:
 
 
 APPROVAL_ATTESTATION_SCHEMA_VERSION = 'v1'
+APPROVAL_ATTESTATION_FIELDS = frozenset(
+    {
+        'schema_version',
+        'approval_id',
+        'subject_digest',
+        'operation_id',
+        'step_id',
+        'attempt_id',
+        'execution_spec_digest',
+        'execution_facts_digest',
+        'target_scope_digest',
+        'policy_pack_digest',
+        'policy_epoch',
+        'approved_side_effect_class',
+        'approver_ref',
+        'approver_role',
+        'trust_domain',
+        'issued_at',
+        'not_before',
+        'expires_at',
+        'revocation_ref',
+        'signature_ref',
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -57,6 +82,11 @@ class ApprovalAttestation:
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any]) -> 'ApprovalAttestation':
         raw = require_mapping(value, reason_code='invalid_approval_attestation')
+        reject_unknown_fields(
+            raw,
+            allowed=APPROVAL_ATTESTATION_FIELDS,
+            reason_code='unknown_approval_attestation_field',
+        )
         item = cls(
             approval_id=required_text(raw, 'approval_id', 'missing_approval_id'),
             subject_digest=require_sha256_digest(

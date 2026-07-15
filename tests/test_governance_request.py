@@ -14,6 +14,12 @@ from govengine.approvals import (
     approval_attestation_digest,
     validate_approval_attestation,
 )
+from govengine.capabilities import (
+    CapabilityInventoryBinding,
+    OperationCapabilityRequirements,
+    capability_inventory_binding_digest,
+    operation_capability_requirements_digest,
+)
 from govengine.governance import (
     GovernanceRequest,
     execution_facts_digest,
@@ -23,6 +29,7 @@ from govengine.governance import (
     validate_governance_request,
 )
 from govengine.policy import PolicyCompiler, policy_pack_digest
+from govengine.scope_policy import ScopePolicyBinding, scope_policy_binding_digest
 from govengine.signing import govengine_record_digest
 
 
@@ -64,15 +71,73 @@ def _compiled_policy():
 
 def _base_request_mapping() -> dict[str, Any]:
     policy_pack = _compiled_policy()
+    compiled_policy_digest = policy_pack_digest(policy_pack)
     execution_facts = {
         'backend_class': 'http_api',
         'connector': 'connector.inventory',
         'action': 'update',
     }
     requested_scope = {
-        'target': 'service:inventory',
+        'target_namespace': 'service.inventory',
         'environment': 'production',
+        'requested_destination': {
+            'scheme': 'https',
+            'effective_port': 443,
+            'address_class': 'public',
+            'origin_binding_digest': 'sha256:' + '4' * 64,
+        },
     }
+    scope_policy_binding = ScopePolicyBinding.from_mapping(
+        {
+            'schema_version': 'v1',
+            'binding_id': 'scope-policy-1',
+            'policy_pack_digest': compiled_policy_digest,
+            'policy_epoch': 42,
+            'source_ref': 'policy-pack:production-mutation@1',
+            'attestation_ref': 'catalog-attestation:scope-42',
+            'allowed_target_namespaces': ['service.inventory'],
+            'network_allowed': True,
+            'allowed_schemes': ['https'],
+            'allowed_ports': [443],
+            'allowed_address_classes': ['public'],
+            'redirect_policy': 'same_origin',
+            'private_networks_allowed': False,
+        }
+    )
+    capability_requirements = OperationCapabilityRequirements.from_mapping(
+        {
+            'schema_version': 'v1',
+            'requirements_id': 'requirements-1',
+            'operation_id': 'op-123',
+            'step_id': 'step-4',
+            'execution_spec_digest': 'sha256:' + '1' * 64,
+            'required_backend_class': 'http_api',
+            'side_effect_class': 'mutation',
+            'required_capabilities': [
+                'connector.inventory.update',
+                'network.tls.required',
+                'receipt.terminal',
+            ],
+        }
+    )
+    capability_inventory = CapabilityInventoryBinding.from_mapping(
+        {
+            'schema_version': 'v1',
+            'inventory_id': 'runtime-inventory-42',
+            'runtime_instance_id': 'rexecop-1',
+            'runtime_version': '0.3.0rc2',
+            'inventory_epoch': 42,
+            'source_ref': 'runtime-registry:rexecop-1',
+            'attestation_ref': 'runtime-inventory-attestation:42',
+            'backend_classes': ['http_api'],
+            'side_effect_classes': ['read_only', 'mutation'],
+            'capabilities': [
+                'connector.inventory.update',
+                'network.tls.required',
+                'receipt.terminal',
+            ],
+        }
+    )
     return {
         'schema_version': 'v1',
         'transaction_id': 'gov-tx-123',
@@ -80,7 +145,7 @@ def _base_request_mapping() -> dict[str, Any]:
         'step_id': 'step-4',
         'attempt_id': 'attempt-2',
         'policy_pack': policy_pack.as_dict(),
-        'policy_pack_digest': policy_pack_digest(policy_pack),
+        'policy_pack_digest': compiled_policy_digest,
         'policy_epoch': 42,
         'execution_facts': execution_facts,
         'execution_facts_digest': execution_facts_digest(execution_facts),
@@ -88,6 +153,18 @@ def _base_request_mapping() -> dict[str, Any]:
         'payload_digest': 'sha256:' + '2' * 64,
         'requested_scope': requested_scope,
         'requested_scope_digest': requested_scope_digest(requested_scope),
+        'scope_policy_binding': scope_policy_binding.as_dict(),
+        'scope_policy_binding_digest': scope_policy_binding_digest(
+            scope_policy_binding
+        ),
+        'capability_requirements': capability_requirements.as_dict(),
+        'capability_requirements_digest': operation_capability_requirements_digest(
+            capability_requirements
+        ),
+        'capability_inventory': capability_inventory.as_dict(),
+        'capability_inventory_digest': capability_inventory_binding_digest(
+            capability_inventory
+        ),
         'side_effect_class': 'mutation',
         'runtime_instance_id': 'rexecop-1',
         'lease_id': 'lease-55',
@@ -158,6 +235,12 @@ def test_governance_request_round_trip_recomputes_owned_digests() -> None:
         ('execution_facts_digest', 'execution_facts_digest_mismatch'),
         ('requested_scope_digest', 'requested_scope_digest_mismatch'),
         ('approval_attestation_digest', 'approval_attestation_digest_mismatch'),
+        ('scope_policy_binding_digest', 'scope_policy_binding_digest_mismatch'),
+        (
+            'capability_requirements_digest',
+            'capability_requirements_digest_mismatch',
+        ),
+        ('capability_inventory_digest', 'capability_inventory_digest_mismatch'),
     ],
 )
 def test_governance_request_rejects_supplied_owned_digest_drift(
@@ -202,6 +285,55 @@ def test_governance_request_rejects_approval_for_another_subject(
     reason_code: str,
 ) -> None:
     request = _request_mapping_with_approval(attestation_patch={field: value})
+
+    with pytest.raises(GovApiError, match=reason_code):
+        GovernanceRequest.from_mapping(request)
+
+
+@pytest.mark.parametrize(
+    ('record_field', 'patch', 'digest_field', 'reason_code'),
+    [
+        (
+            'scope_policy_binding',
+            {'policy_epoch': 43},
+            'scope_policy_binding_digest',
+            'scope_policy_epoch_mismatch',
+        ),
+        (
+            'capability_requirements',
+            {'operation_id': 'op-other'},
+            'capability_requirements_digest',
+            'capability_requirements_operation_id_mismatch',
+        ),
+        (
+            'capability_requirements',
+            {'execution_spec_digest': 'sha256:' + 'a' * 64},
+            'capability_requirements_digest',
+            'capability_requirements_execution_spec_digest_mismatch',
+        ),
+        (
+            'capability_inventory',
+            {'runtime_instance_id': 'rexecop-other'},
+            'capability_inventory_digest',
+            'capability_inventory_runtime_instance_id_mismatch',
+        ),
+    ],
+)
+def test_governance_request_rejects_scope_or_capability_binding_drift(
+    record_field: str,
+    patch: Mapping[str, Any],
+    digest_field: str,
+    reason_code: str,
+) -> None:
+    request = _base_request_mapping()
+    record = {**request[record_field], **patch}
+    request[record_field] = record
+    if record_field == 'scope_policy_binding':
+        request[digest_field] = scope_policy_binding_digest(record)
+    elif record_field == 'capability_requirements':
+        request[digest_field] = operation_capability_requirements_digest(record)
+    else:
+        request[digest_field] = capability_inventory_binding_digest(record)
 
     with pytest.raises(GovApiError, match=reason_code):
         GovernanceRequest.from_mapping(request)
@@ -310,6 +442,26 @@ def test_governance_request_rejects_nested_secret_material(field: str) -> None:
     )
 
     with pytest.raises(GovApiError, match='forbidden_governance_input:password'):
+        GovernanceRequest.from_mapping(request)
+
+
+def test_governance_request_rejects_self_authorized_scope_policy() -> None:
+    request = _base_request_mapping()
+    request['requested_scope']['allowed_schemes'] = ['https']
+    request['requested_scope_digest'] = govengine_record_digest(
+        request['requested_scope'],
+        record_type='govengine.governance.RequestedScope',
+    )
+
+    with pytest.raises(GovApiError, match='self_authorized_scope_policy'):
+        GovernanceRequest.from_mapping(request)
+
+
+def test_governance_request_rejects_legacy_approval_claim_field() -> None:
+    request = _base_request_mapping()
+    request['approval_evidence_ref'] = 'admission:opaque-reference'
+
+    with pytest.raises(GovApiError, match='unknown_governance_request_field'):
         GovernanceRequest.from_mapping(request)
 
 

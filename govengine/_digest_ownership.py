@@ -35,6 +35,9 @@ DIGEST_OWNERSHIP_INVENTORY = (
     DigestOwnership('governance_request.requested_scope', 'govengine', 'recomputed', True, 'validate_governance_request', 'requested_scope_digest_mismatch'),
     DigestOwnership('governance_request.approval_attestation', 'govengine', 'recomputed', True, 'validate_governance_request', 'approval_attestation_digest_mismatch'),
     DigestOwnership('approval.subject', 'govengine', 'recomputed', True, 'validate_approval_attestation', 'approval_subject_digest_mismatch'),
+    DigestOwnership('governance_request.scope_policy_binding', 'govengine', 'recomputed', True, 'validate_governance_request', 'scope_policy_binding_digest_mismatch'),
+    DigestOwnership('governance_request.capability_requirements', 'govengine', 'recomputed', True, 'validate_governance_request', 'capability_requirements_digest_mismatch'),
+    DigestOwnership('governance_request.capability_inventory', 'govengine', 'recomputed', True, 'validate_governance_request', 'capability_inventory_digest_mismatch'),
 
     # Payloads owned elsewhere: GovEngine validates or compares their references only.
     DigestOwnership('runner.execution_ticket', 'sclite_or_host', 'delegated', False, 'validate_runner_receipt_binding'),
@@ -83,6 +86,11 @@ DIGEST_OWNERSHIP_INVENTORY = (
     DigestOwnership('governance_request.subject', 'govengine', 'produced', True, 'governance_subject_digest'),
     DigestOwnership('governance_request.record', 'govengine', 'produced', True, 'governance_request_digest'),
     DigestOwnership('approval.attestation', 'govengine', 'produced', True, 'approval_attestation_digest'),
+    DigestOwnership('scope_policy.binding', 'govengine', 'produced', True, 'scope_policy_binding_digest'),
+    DigestOwnership('scope_policy.decision', 'govengine', 'produced', True, 'scope_decision_digest'),
+    DigestOwnership('capability.requirements', 'govengine', 'produced', True, 'operation_capability_requirements_digest'),
+    DigestOwnership('capability.inventory', 'govengine', 'produced', True, 'capability_inventory_binding_digest'),
+    DigestOwnership('capability.compatibility_decision', 'govengine', 'produced', True, 'capability_compatibility_decision_digest'),
 )
 
 

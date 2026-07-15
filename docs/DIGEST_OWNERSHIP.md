@@ -15,7 +15,8 @@ not according to the caller's label. The machine-readable inventory is
 The audited families include typed-execution descriptors and network policy,
 runner request/receipt/admission records, signed GovEngine records, audit
 records and ledger entries, policy enforcement and governance trace inputs,
-canonical governance-request policy/facts/scope/approval bindings,
+canonical governance-request policy/facts/scope/approval bindings, independent
+scope-policy and operation-requirement/runtime-inventory bindings,
 SCLite ticket/replay references, RExecOp execution/output references,
 trigger/automation references, and GovEngine-produced projection/report/bundle
 digests.
@@ -34,7 +35,9 @@ digests.
 - `project_governance_trace()` recomputes embedded enforcement-plan and
   admission bindings.
 - `validate_governance_request()` recomputes the full compiled policy pack,
-  bounded execution facts, requested scope and optional approval attestation.
+  bounded execution facts, requested scope, independent scope policy,
+  operation capability requirements, runtime inventory and optional approval
+  attestation.
 - `validate_approval_attestation()` recomputes the request subject and checks
   every approval binding before consulting trust and revocation policy.
 
