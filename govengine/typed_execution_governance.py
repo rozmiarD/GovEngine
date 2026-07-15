@@ -1092,9 +1092,6 @@ def _check_evidence_requirements(
     if not receipt_required:
         blockers.append('receipt_required')
     output_digest_required = bool(evidence.get('output_digest_required', False))
-    output_digest_ref = str(evidence.get('output_digest_ref') or '').strip()
-    if output_digest_required and not output_digest_ref:
-        blockers.append('missing_output_digest_ref')
     approval_ref = str(evidence.get('approval_evidence_ref') or '').strip()
     if item.side_effect_class == 'mutation':
         blockers.append(
@@ -1188,19 +1185,13 @@ def _typed_execution_policy_controls(
     output_digest_required = bool(
         request.evidence_requirements.get('output_digest_required', False)
     )
-    output_digest_ref = str(
-        request.evidence_requirements.get('output_digest_ref') or ''
-    ).strip()
-    output_digest_passed = (not output_digest_required) or bool(output_digest_ref)
     controls.append(
         {
-            'control': 'output_digest_required'
-            if output_digest_passed
-            else 'missing_output_digest_ref',
-            'passed': output_digest_passed,
+            'control': 'output_digest_required',
+            'passed': True,
             'details': {
                 'output_digest_required': output_digest_required,
-                'output_digest_ref': output_digest_ref,
+                'enforcement_phase': 'post_io_receipt_conformance',
             },
         }
     )

@@ -284,7 +284,7 @@ def test_http_destination_binding_drift_is_blocked() -> None:
     assert 'network_destination_binding_mismatch' in bundle.compatibility.blockers
 
 
-def test_blocked_missing_output_digest_ref() -> None:
+def test_output_digest_obligation_is_deferred_to_receipt_conformance() -> None:
     bundle = explain_typed_execution_governance(
         _request(
             evidence_requirements={
@@ -294,9 +294,15 @@ def test_blocked_missing_output_digest_ref() -> None:
         )
     )
 
-    assert bundle.status == 'blocked'
-    assert 'missing_output_digest_ref' in bundle.governance.blockers
-    assert 'missing_output_digest_ref' in bundle.compatibility.blockers
+    assert bundle.status == 'passed'
+    assert 'missing_output_digest_ref' not in bundle.governance.blockers
+    control = next(
+        item
+        for item in bundle.compatibility.policy_controls
+        if item['control'] == 'output_digest_required'
+    )
+    assert control['passed'] is True
+    assert control['details']['enforcement_phase'] == 'post_io_receipt_conformance'
 
 
 def test_blocked_network_boundary_mismatch() -> None:

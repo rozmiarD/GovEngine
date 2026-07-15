@@ -11,6 +11,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Defers `output_digest_required` entirely to post-I/O receipt conformance.
+  Typed-execution admission carries the obligation but no longer expects an
+  output digest that cannot exist before connector I/O.
 - Adds module-scoped `RuntimeReceiptBinding` and `ReceiptConformanceResult`.
   GovEngine recomputes the runtime receipt digest and deterministically checks
   decision, opaque runtime-permit, attempt, runtime, lease, fencing, scope,
