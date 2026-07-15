@@ -15,6 +15,7 @@ INSTALLED_SURFACE_SMOKE = """\
 import importlib.util
 from importlib.resources import files
 import govengine
+import govengine.v1 as govengine_v1
 from govengine import public_surface_index
 from govengine.policy import baseline_policy_pack, validate_policy_pack
 
@@ -50,6 +51,8 @@ def absent(module):
         return True
 
 assert govengine.__version__ == '0.17.0rc2'
+assert len(govengine_v1.__all__) == 32
+assert govengine_v1.PolicyEngine is govengine.PolicyEngine
 assert [surface.name for surface in public_surface_index()] == expected
 assert all(absent(module) for module in retired)
 assert validate_policy_pack(baseline_policy_pack('governed-runtime')).ok

@@ -23,9 +23,15 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   host-only plugin registration claims, requires explicit operation capability
   requirements, and requires an independently digest-bound network policy for
   non-local egress/destination admission.
-- Adds `scripts/validate_api_stability.py`; the live inventory is 296 alpha + 4
-  fixture exports, plus 3 explicitly classified compatibility callables outside
-  `__all__`.
+- Classifies all 300 root exports as 32 v1 candidates, 188 adapters, 61
+  experimental symbols, and 19 fixtures, with no immediate removals; 3
+  compatibility callables outside `__all__` remain separately inventoried.
+- Adds the real 32-symbol `govengine.v1` alpha facade for structured API,
+  PolicyEngine/enforcement, and governance trace symbols. Runtime mechanics,
+  SCLite bridges, adapters, and fixtures remain outside the facade.
+- Extends `scripts/validate_api_stability.py` with owner/migration-note checks,
+  duplicate detection, facade drift checks, and deterministic RExecOp/Tecrax
+  consumer import mapping.
 - Splits SCLite CI into the released `sclite-core==2.0.0` contract and an edge
   integration job pinned to a full SCLite commit instead of moving `main`.
 - Makes `GovApiError` propagate safely through context managers rather than

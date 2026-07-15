@@ -25,6 +25,7 @@ python -m mypy govengine
 python scripts/validate_public_truth.py
 python scripts/validate_alpha_readiness.py
 python scripts/validate_digest_ownership.py
+python scripts/validate_api_stability.py
 ```
 
 GitHub Actions source validation may install the current SCLite source line before the editable GovEngine test dependency set. The active supported stack line is exact-pinned for package consumers, and clean wheel/PyPI install gates validate that published dependency chain.
@@ -61,6 +62,21 @@ delegated digests, reference-only bindings, and digests produced by GovEngine.
 It runs as part of alpha readiness and fails if an entry has an invalid mode,
 duplicate binding id, or claims GovEngine recomputation of a SCLite-owned
 payload.
+
+## API classification and consumer gate
+
+```bash
+python scripts/validate_api_stability.py \
+  --consumer-root /path/to/rexecop \
+  --consumer-root /path/to/tecrax
+```
+
+The gate proves that all 300 root exports have exactly one classification and
+that the 3 compatibility callables outside `__all__` remain inventoried. It
+also requires the 32-symbol `govengine.v1` facade to match the `v1-candidate`
+set and remain below the 40-symbol ceiling. Consumer scanning ignores virtual
+environments and build/cache directories. The reviewed downstream snapshot is
+documented in [`DOWNSTREAM_IMPORT_MAP.md`](DOWNSTREAM_IMPORT_MAP.md).
 
 ## Read-only operator verifier gates
 

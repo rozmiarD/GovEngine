@@ -2,7 +2,14 @@
 
 GovEngine owns reusable governed-execution services. Its public surface should stay carrier-neutral and SCLite-aware.
 
-The top-level export stability classification lives in [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md). It covers the current `govengine.__all__` surface and separately classifies compatibility callables exposed outside `__all__`. `python scripts/validate_api_stability.py` derives counts from the rows, rejects undocumented module-owned callables, and optionally scans consumer roots, so new public imports require an explicit stability decision.
+The top-level export classification lives in [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md). It covers the current `govengine.__all__` surface as `v1-candidate`, `adapter`, `experimental`, `fixture`, or `remove`, and separately inventories compatibility callables exposed outside `__all__`. `python scripts/validate_api_stability.py` derives counts from the rows, rejects undocumented module-owned callables, duplicate classifications, missing owner/migration notes and facade drift, and optionally scans consumer roots. The verified RExecOp/Tecrax usage snapshot lives in [DOWNSTREAM_IMPORT_MAP.md](DOWNSTREAM_IMPORT_MAP.md).
+
+`govengine.v1` is the small alpha candidate facade. It currently exports only
+the structured API envelope, deterministic PolicyEngine compilation,
+evaluation and enforcement contracts, and governance trace projection. It is
+not API-stable yet and intentionally excludes runtime mechanics, SCLite
+bridges, typed-execution compatibility records, profile fixtures and demo
+signing helpers.
 
 `govengine.surfaces.public_surface_index()` is the tested machine-readable map of the current alpha public surface set. It contains the neutral artifact-governance core, planning contracts, admission/policy contracts (including **PolicyEngine MVP**, B2 enforcement-plan contracts in `govengine.policy`, and trigger-planning admission in `govengine.triggers`), evidence review, domain-profile SDK, runtime contract proofs, and controlled-execution core. The published `0.16.0` line retains the prior removal of the Ravenclaw-derived optional security facade; domain behavior belongs in profiles and execution belongs in host runtimes.
 `govengine.boundary.kernel_boundary_report()` is the tested machine-readable boundary report (schema `v0.1`). It combines the kernel/profile/runtime/SCLite ownership contract, known domain-profile contracts such as Ravenclaw, and the current public surface index.

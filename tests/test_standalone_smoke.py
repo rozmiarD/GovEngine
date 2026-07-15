@@ -6,6 +6,7 @@ import importlib
 def test_public_modules_import() -> None:
     modules = [
         'govengine',
+        'govengine.v1',
         'govengine.api',
         'govengine.boundary',
         'govengine.context',

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import ast
+from dataclasses import dataclass
+import importlib
 import inspect
 import re
 import sys
@@ -18,25 +20,57 @@ import govengine  # noqa: E402
 
 MATRIX_PATH = ROOT / 'docs' / 'API_STABILITY_MATRIX.md'
 MATRIX_STATUSES = (
-    'stable',
-    'alpha',
+    'v1-candidate',
+    'adapter',
+    'experimental',
     'fixture',
-    'deprecated',
+    'remove',
     'internal-exposed',
 )
+TOP_LEVEL_CLASSIFICATIONS = MATRIX_STATUSES[:-1]
+IGNORED_CONSUMER_PARTS = frozenset({'.git', '.mypy_cache', '.pytest_cache', '.ruff_cache', '.tox', '.venv', 'build', 'dist', 'venv'})
 
 
-def matrix_inventory(path: Path = MATRIX_PATH) -> dict[str, set[str]]:
-    inventory = {status: set() for status in MATRIX_STATUSES}
+@dataclass(frozen=True)
+class ApiMatrixRecord:
+    classification: str
+    source: str
+    exports: tuple[str, ...]
+    migration_note: str
+
+
+@dataclass(frozen=True)
+class ConsumerImport:
+    import_path: str
+    classification: str
+    owner: str
+    source_file: str
+    line: int
+
+
+def matrix_records(path: Path = MATRIX_PATH) -> tuple[ApiMatrixRecord, ...]:
+    records: list[ApiMatrixRecord] = []
     for line in path.read_text(encoding='utf-8').splitlines():
         if not line.startswith('| '):
             continue
         cells = [cell.strip() for cell in line.strip().strip('|').split('|')]
-        if len(cells) < 3 or cells[0] not in inventory:
+        if len(cells) < 4 or cells[0] not in MATRIX_STATUSES:
             continue
-        inventory[cells[0]].update(
-            re.findall(r'`([A-Za-z_][A-Za-z0-9_]*)`', cells[2])
+        records.append(
+            ApiMatrixRecord(
+                classification=cells[0],
+                source=cells[1],
+                exports=tuple(re.findall(r'`([A-Za-z_][A-Za-z0-9_]*)`', cells[2])),
+                migration_note=cells[3],
+            )
         )
+    return tuple(records)
+
+
+def matrix_inventory(path: Path = MATRIX_PATH) -> dict[str, set[str]]:
+    inventory: dict[str, set[str]] = {status: set() for status in MATRIX_STATUSES}
+    for record in matrix_records(path):
+        inventory[record.classification].update(record.exports)
     return inventory
 
 
@@ -52,16 +86,64 @@ def module_owned_exposed_callables(module: ModuleType = govengine) -> set[str]:
 
 
 def consumer_top_level_imports(root: Path) -> set[str]:
-    imports: set[str] = set()
+    return {
+        record.import_path.removeprefix('govengine.')
+        for record in consumer_import_map(root)
+        if record.owner == 'govengine' and record.import_path != 'govengine'
+    }
+
+
+def consumer_import_map(root: Path, *, matrix_path: Path = MATRIX_PATH) -> tuple[ConsumerImport, ...]:
+    symbol_records: dict[str, ApiMatrixRecord] = {}
+    module_symbol_records: dict[tuple[str, str], ApiMatrixRecord] = {}
+    for record in matrix_records(matrix_path):
+        module = record.source.split()[0]
+        for name in record.exports:
+            symbol_records[name] = record
+            module_symbol_records[(module, name)] = record
+
+    imports: list[ConsumerImport] = []
     for path in sorted(root.rglob('*.py')):
+        if any(part in IGNORED_CONSUMER_PARTS for part in path.parts):
+            continue
         try:
             tree = ast.parse(path.read_text(encoding='utf-8'), filename=str(path))
         except (OSError, UnicodeDecodeError, SyntaxError) as exc:
             raise AssertionError(f'consumer_import_scan_failed:{path}:{exc}') from exc
+        source_file = str(path.relative_to(root))
         for node in ast.walk(tree):
-            if isinstance(node, ast.ImportFrom) and node.module == 'govengine':
-                imports.update(alias.name for alias in node.names)
-    return imports
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.name == 'govengine' or alias.name.startswith('govengine.'):
+                        imports.append(
+                            ConsumerImport(
+                                import_path=alias.name,
+                                classification='package' if alias.name == 'govengine' else 'deep-only',
+                                owner=alias.name,
+                                source_file=source_file,
+                                line=node.lineno,
+                            )
+                        )
+            if not isinstance(node, ast.ImportFrom) or not node.module:
+                continue
+            if node.module != 'govengine' and not node.module.startswith('govengine.'):
+                continue
+            for alias in node.names:
+                import_path = f'{node.module}.{alias.name}'
+                if node.module == 'govengine':
+                    record = symbol_records.get(alias.name)
+                else:
+                    record = module_symbol_records.get((node.module, alias.name)) or symbol_records.get(alias.name)
+                imports.append(
+                    ConsumerImport(
+                        import_path=import_path,
+                        classification=record.classification if record else 'deep-only',
+                        owner=node.module,
+                        source_file=source_file,
+                        line=node.lineno,
+                    )
+                )
+    return tuple(sorted(set(imports), key=lambda item: (item.import_path, item.source_file, item.line)))
 
 
 def validate_api_stability(
@@ -69,13 +151,19 @@ def validate_api_stability(
     matrix_path: Path = MATRIX_PATH,
     consumer_roots: tuple[Path, ...] = (),
 ) -> dict[str, int]:
+    records = matrix_records(matrix_path)
+    seen_exports: dict[str, str] = {}
+    for record in records:
+        if not record.source.startswith('govengine.') or not record.exports or not record.migration_note:
+            raise AssertionError(f'incomplete_api_classification:{record.source}')
+        for name in record.exports:
+            previous = seen_exports.get(name)
+            if previous:
+                raise AssertionError(f'duplicate_api_classification:{name}:{previous}:{record.classification}')
+            seen_exports[name] = record.classification
+
     inventory = matrix_inventory(matrix_path)
-    classified_top_level = set().union(
-        inventory['stable'],
-        inventory['alpha'],
-        inventory['fixture'],
-        inventory['deprecated'],
-    )
+    classified_top_level = set().union(*(inventory[status] for status in TOP_LEVEL_CLASSIFICATIONS))
     if classified_top_level != set(govengine.__all__):
         missing = sorted(set(govengine.__all__) - classified_top_level)
         extra = sorted(classified_top_level - set(govengine.__all__))
@@ -88,6 +176,21 @@ def validate_api_stability(
         raise AssertionError(
             f'api_internal_exposed_inventory_drift:missing={missing}:extra={extra}'
         )
+
+    facade = importlib.import_module('govengine.v1')
+    facade_exports = set(getattr(facade, '__all__', ()))
+    if facade_exports != inventory['v1-candidate']:
+        missing = sorted(inventory['v1-candidate'] - facade_exports)
+        extra = sorted(facade_exports - inventory['v1-candidate'])
+        raise AssertionError(f'v1_facade_matrix_drift:missing={missing}:extra={extra}')
+    if not facade_exports or len(facade_exports) > 40:
+        raise AssertionError(f'invalid_v1_facade_size:{len(facade_exports)}')
+    allowed_v1_modules = ('govengine.api', 'govengine.governance_trace', 'govengine.policy')
+    for name in facade_exports:
+        value = getattr(facade, name)
+        source_module = str(getattr(value, '__module__', ''))
+        if source_module and not source_module.startswith(allowed_v1_modules):
+            raise AssertionError(f'v1_facade_forbidden_owner:{name}:{source_module}')
 
     matrix_text = matrix_path.read_text(encoding='utf-8')
     for status in MATRIX_STATUSES:
@@ -127,7 +230,8 @@ def main(argv: list[str] | None = None) -> int:
     print(
         'api_stability_ok:'
         f"top_level={report['top_level']}:"
-        f"alpha={report['alpha']}:fixture={report['fixture']}:"
+        f"v1_candidate={report['v1-candidate']}:adapter={report['adapter']}:"
+        f"experimental={report['experimental']}:fixture={report['fixture']}:remove={report['remove']}:"
         f"internal_exposed={report['internal-exposed']}:"
         f"consumer_imports={report['consumer_imports']}"
     )
