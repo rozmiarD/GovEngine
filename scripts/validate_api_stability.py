@@ -185,7 +185,13 @@ def validate_api_stability(
         raise AssertionError(f'v1_facade_matrix_drift:missing={missing}:extra={extra}')
     if not facade_exports or len(facade_exports) > 40:
         raise AssertionError(f'invalid_v1_facade_size:{len(facade_exports)}')
-    allowed_v1_modules = ('govengine.api', 'govengine.governance_trace', 'govengine.policy')
+    allowed_v1_modules = (
+        'govengine.api',
+        'govengine.approvals',
+        'govengine.governance',
+        'govengine.governance_trace',
+        'govengine.policy',
+    )
     for name in facade_exports:
         value = getattr(facade, name)
         source_module = str(getattr(value, '__module__', ''))

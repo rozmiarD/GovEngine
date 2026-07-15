@@ -51,7 +51,9 @@ def absent(module):
         return True
 
 assert govengine.__version__ == '0.17.0rc2'
-assert len(govengine_v1.__all__) == 32
+assert len(govengine_v1.__all__) == 38
+assert govengine_v1.GovernanceRequest is govengine.GovernanceRequest
+assert govengine_v1.ApprovalAttestation is govengine.ApprovalAttestation
 assert govengine_v1.PolicyEngine is govengine.PolicyEngine
 assert [surface.name for surface in public_surface_index()] == expected
 assert all(absent(module) for module in retired)

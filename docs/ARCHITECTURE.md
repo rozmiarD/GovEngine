@@ -13,6 +13,7 @@ RExecOp is the current domain-neutral host runtime and Tecrax is its infrastruct
 Operator steps: [GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md).
 Integration order and non-claims: [SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md).
 Contract reference: [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md),
+[GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md),
 [RECEIPT_BINDING.md](RECEIPT_BINDING.md), [EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md).
 
 ```text
@@ -25,6 +26,12 @@ intent -> policy/admission -> SCLite ticket/guard -> trust -> replay freshness
 `compose_runtime_admission_result()` composes host-supplied gate summaries; it
 does not verify SCLite artifacts, record replay state, or execute work. See the
 linked docs for field-level contracts and operator procedures.
+
+G2-A adds `GovernanceRequest v1` and `ApprovalAttestation v1` as the canonical
+input candidates for the replacement flow. They bind one runtime-owned attempt
+to GovEngine policy/scope/approval inputs but do not yet produce a
+`GovernanceDecision`. `RuntimeAdmissionResult` therefore remains a legacy
+adapter instead of being expanded into the new protocol.
 
 ## Public surface map
 
@@ -54,11 +61,13 @@ split and domain-profile conformance. See
 
 ### 1. Admission and review contract layer
 
-Modules: `govengine.admission`, `govengine.policy`, `govengine.review`.
+Modules: `govengine.admission`, `govengine.approvals`, `govengine.governance`,
+`govengine.policy`, `govengine.review`.
 
 Validates admission/policy/audit records, evaluates declarative policy packs,
-composes `RuntimeAdmissionResult`, and checks receipt-bounded evidence chains.
-Policy meaning and evidence taxonomy stay host-owned.
+validates the canonical governance request and independently bound approval,
+composes legacy `RuntimeAdmissionResult`, and checks receipt-bounded evidence
+chains. Policy meaning and evidence taxonomy stay host-owned.
 
 See [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md), [POLICY_ENGINE.md](POLICY_ENGINE.md),
 [ADMISSION_POLICY.md](ADMISSION_POLICY.md), and [EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md).

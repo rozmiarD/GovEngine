@@ -23,6 +23,11 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Runtime shell: `govengine.runtime_shell` defines neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, queue persistence, scheduler ownership, delivery, command, credential, or live-execution authority.
 - Planning contracts: `govengine.planning` defines neutral task-contract, plan-intent, and planner-port validators without planner implementation ownership, raw target/prompt ownership, Ravenclaw security semantics ownership, queue/scheduler/storage ownership, commands, adapters, or live execution.
 - Admission/policy contracts: `govengine.admission` defines neutral admission, policy-decision, approval-request, and audit-record validators; `govengine.policy` adds PolicyEngine request/verdict/compiler/runtime plus digest-bound `PolicyEnforcementPlan`, existing-`GovAdmissionDecision` binding, neutral runtime-control projection, `PolicyEvaluationExplanation`, and `govengine-policy explain|simulate --json` without domain policy meaning, approval workflow, audit storage, adapter, command, or live-execution ownership.
+- Canonical governance input: `govengine.governance` adds digest-bound
+  `GovernanceRequest v1`; `govengine.approvals` adds `ApprovalAttestation v1`,
+  issuer trust requirements and a host-owned revocation port. These inputs do
+  not yet produce `GovernanceDecision`, verify signature cryptography, claim
+  runtime attempts, or authorize execution.
 - Supervisor action admission and explanation: `govengine.supervisor_actions` provides `admit_supervisor_action()`; `govengine.supervisor_explain` provides `explain_supervisor_action()` and `govengine-supervisor explain --json` for recovery/triage reason codes without worker, queue, scheduler, recovery execution, or runtime-store ownership.
 - Automation transition admission and explanation: `govengine.automation`
   provides `admit_automation_transition()` over bounded child-operation

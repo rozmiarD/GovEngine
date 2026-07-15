@@ -12,6 +12,7 @@ Start here when navigating `docs/`. Package-level status lives in
 | [API_BOUNDARY.md](API_BOUNDARY.md) | Module/surface ownership (machine-checked vs registry) |
 | [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md) | Export stability classification |
 | [DOWNSTREAM_IMPORT_MAP.md](DOWNSTREAM_IMPORT_MAP.md) | RExecOp/Tecrax import inventory and migration posture |
+| [GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md) | Canonical G2-A request and approval binding |
 | [GOVENGINE_KERNEL_BOUNDARY.md](GOVENGINE_KERNEL_BOUNDARY.md) | Kernel vs profile vs runtime vs SCLite |
 | [ROADMAP.md](ROADMAP.md) | Current alpha line and near-term direction |
 | [VALIDATION.md](VALIDATION.md) | **Active** release and operator validation gate |

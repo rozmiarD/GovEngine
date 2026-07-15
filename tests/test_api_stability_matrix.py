@@ -42,8 +42,8 @@ def test_api_stability_summary_matches_live_inventory() -> None:
     }
     for status, count in counts.items():
         assert f'- {status} exports: {count}' in text
-    assert sum(counts.values()) == 303
-    assert len(govengine.__all__) == 300
+    assert sum(counts.values()) == 309
+    assert len(govengine.__all__) == 306
 
 
 def test_v1_candidate_is_small_real_facade() -> None:

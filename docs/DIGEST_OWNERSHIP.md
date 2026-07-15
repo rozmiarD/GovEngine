@@ -15,6 +15,7 @@ not according to the caller's label. The machine-readable inventory is
 The audited families include typed-execution descriptors and network policy,
 runner request/receipt/admission records, signed GovEngine records, audit
 records and ledger entries, policy enforcement and governance trace inputs,
+canonical governance-request policy/facts/scope/approval bindings,
 SCLite ticket/replay references, RExecOp execution/output references,
 trigger/automation references, and GovEngine-produced projection/report/bundle
 digests.
@@ -32,8 +33,13 @@ digests.
   host verifier.
 - `project_governance_trace()` recomputes embedded enforcement-plan and
   admission bindings.
+- `validate_governance_request()` recomputes the full compiled policy pack,
+  bounded execution facts, requested scope and optional approval attestation.
+- `validate_approval_attestation()` recomputes the request subject and checks
+  every approval binding before consulting trust and revocation policy.
 
-SCLite tickets and guarded replay roots remain delegated. This repository does
+Execution-spec, raw-payload and fencing-token bytes remain RExecOp-owned opaque
+references. SCLite tickets and guarded replay roots remain delegated. This repository does
 not add SCLite schemas, canonicalizers, or verification behavior.
 
 ## Error contract

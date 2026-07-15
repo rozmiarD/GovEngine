@@ -71,9 +71,9 @@ python scripts/validate_api_stability.py \
   --consumer-root /path/to/tecrax
 ```
 
-The gate proves that all 300 root exports have exactly one classification and
+The gate proves that all 306 root exports have exactly one classification and
 that the 3 compatibility callables outside `__all__` remain inventoried. It
-also requires the 32-symbol `govengine.v1` facade to match the `v1-candidate`
+also requires the 38-symbol `govengine.v1` facade to match the `v1-candidate`
 set and remain below the 40-symbol ceiling. Consumer scanning ignores virtual
 environments and build/cache directories. The reviewed downstream snapshot is
 documented in [`DOWNSTREAM_IMPORT_MAP.md`](DOWNSTREAM_IMPORT_MAP.md).

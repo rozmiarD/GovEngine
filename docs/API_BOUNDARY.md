@@ -228,6 +228,13 @@ itself. After an allowed admission is composed, hosts may call
 summaries are present. That helper does not verify SCLite artifacts or replay
 persistence.
 
+The replacement G2 flow starts with the bounded `GovernanceRequest v1` and
+`ApprovalAttestation v1` inputs described in
+[GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md). They recompute GovEngine-owned
+bindings and reject approval drift/trust/time/revocation failures, but G2-A does
+not yet issue `GovernanceDecision` or any execution permit. Runtime attempt,
+lease, fencing, claim and I/O ownership remains in RExecOp.
+
 The operator-facing path that ties admission, trust ports, guarded SCLite
 verification, replay freshness, runner profile, receipt obligation, and
 evidence/review binding together is documented in

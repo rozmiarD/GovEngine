@@ -9,6 +9,13 @@ adapters remain available through their existing alpha modules only.
 from __future__ import annotations
 
 from .api import GovApiError, GovApiResult
+from .approvals import (
+    ApprovalAttestation,
+    ApprovalRevocationPort,
+    ApprovalTrustPolicy,
+    validate_approval_attestation,
+)
+from .governance import GovernanceRequest, validate_governance_request
 from .governance_trace import (
     GOVERNANCE_TRACE_SCHEMA_VERSION,
     GovernanceTrace,
@@ -45,12 +52,16 @@ from .policy import (
 )
 
 __all__ = [
+    'ApprovalAttestation',
+    'ApprovalRevocationPort',
+    'ApprovalTrustPolicy',
     'CompileResult',
     'CompiledPolicyPack',
     'GOVERNANCE_TRACE_SCHEMA_VERSION',
     'GovApiError',
     'GovApiResult',
     'GovernanceTrace',
+    'GovernanceRequest',
     'PolicyCompiler',
     'PolicyConstraint',
     'PolicyEnforcementPlan',
@@ -77,4 +88,6 @@ __all__ = [
     'validate_policy_enforcement_plan',
     'validate_policy_request',
     'validate_policy_verdict',
+    'validate_approval_attestation',
+    'validate_governance_request',
 ]

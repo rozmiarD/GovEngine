@@ -30,6 +30,11 @@ DIGEST_OWNERSHIP_INVENTORY = (
     DigestOwnership('governance_trace.admission', 'govengine', 'recomputed', True, 'project_governance_trace', 'policy_enforcement_admission_digest_mismatch'),
     DigestOwnership('policy.enforcement_plan.policy_pack_with_payload', 'govengine', 'recomputed', True, 'validate_policy_enforcement_plan', 'policy_enforcement_plan_drift'),
     DigestOwnership('policy.enforcement_plan.verdict_with_payload', 'govengine', 'recomputed', True, 'validate_policy_enforcement_plan', 'policy_enforcement_plan_drift'),
+    DigestOwnership('governance_request.policy_pack', 'govengine', 'recomputed', True, 'validate_governance_request', 'policy_pack_digest_mismatch'),
+    DigestOwnership('governance_request.execution_facts', 'govengine', 'recomputed', True, 'validate_governance_request', 'execution_facts_digest_mismatch'),
+    DigestOwnership('governance_request.requested_scope', 'govengine', 'recomputed', True, 'validate_governance_request', 'requested_scope_digest_mismatch'),
+    DigestOwnership('governance_request.approval_attestation', 'govengine', 'recomputed', True, 'validate_governance_request', 'approval_attestation_digest_mismatch'),
+    DigestOwnership('approval.subject', 'govengine', 'recomputed', True, 'validate_approval_attestation', 'approval_subject_digest_mismatch'),
 
     # Payloads owned elsewhere: GovEngine validates or compares their references only.
     DigestOwnership('runner.execution_ticket', 'sclite_or_host', 'delegated', False, 'validate_runner_receipt_binding'),
@@ -52,6 +57,9 @@ DIGEST_OWNERSHIP_INVENTORY = (
     DigestOwnership('audit.event', 'host', 'reference_only', False, 'validate_audit_ledger_entry'),
     DigestOwnership('policy.enforcement_plan.policy_pack', 'govengine', 'reference_only', False, 'validate_policy_enforcement_plan'),
     DigestOwnership('policy.enforcement_plan.verdict', 'govengine', 'reference_only', False, 'validate_policy_enforcement_plan'),
+    DigestOwnership('governance_request.execution_spec', 'rexecop', 'reference_only', False, 'validate_governance_request'),
+    DigestOwnership('governance_request.payload', 'rexecop', 'reference_only', False, 'validate_governance_request'),
+    DigestOwnership('governance_request.fencing_token', 'rexecop', 'reference_only', False, 'validate_governance_request'),
 
     # Digests emitted from GovEngine-owned output bodies.
     DigestOwnership('audit.previous_entry', 'govengine', 'produced', True, 'JsonlAuditLedgerAdapter.verify'),
@@ -72,6 +80,9 @@ DIGEST_OWNERSHIP_INVENTORY = (
     DigestOwnership('automation.explanation', 'govengine', 'produced', True, 'explain_automation_transition'),
     DigestOwnership('supervisor.explanation', 'govengine', 'produced', True, 'explain_supervisor_action'),
     DigestOwnership('governance_trace.output', 'govengine', 'produced', True, 'project_governance_trace'),
+    DigestOwnership('governance_request.subject', 'govengine', 'produced', True, 'governance_subject_digest'),
+    DigestOwnership('governance_request.record', 'govengine', 'produced', True, 'governance_request_digest'),
+    DigestOwnership('approval.attestation', 'govengine', 'produced', True, 'approval_attestation_digest'),
 )
 
 

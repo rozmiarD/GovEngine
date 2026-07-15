@@ -71,6 +71,13 @@ from .automation_explain import (
     AutomationTransitionExplanation as AutomationTransitionExplanation,
     explain_automation_transition as explain_automation_transition,
 )
+from .approvals import (
+    ApprovalAttestation,
+    ApprovalRevocationPort,
+    ApprovalTrustPolicy,
+    validate_approval_attestation,
+)
+from .governance import GovernanceRequest, validate_governance_request
 from .governance_trace import (
     GOVERNANCE_TRACE_SCHEMA_VERSION,
     GovernanceTrace,
@@ -338,6 +345,9 @@ from .surfaces import (
 )
 
 __all__ = [
+    'ApprovalAttestation',
+    'ApprovalRevocationPort',
+    'ApprovalTrustPolicy',
     'AuditLedgerAppendResult',
     'AuditLedgerEntry',
     'AuditLedgerPort',
@@ -384,6 +394,7 @@ __all__ = [
     'DemoDigestSigner',
     'DemoDigestVerifier',
     'GovernanceContext',
+    'GovernanceRequest',
     'GovExecutionBackend',
     'GovEvent',
     'GovObservation',
@@ -571,6 +582,8 @@ __all__ = [
     'record_guard_replay_file',
     'verify_guard_and_record_replay',
     'verify_signed_govengine_record',
+    'validate_approval_attestation',
+    'validate_governance_request',
     'runner_lease_from_request',
     'runner_receipt_public_summary',
     'runtime_admission_public_summary',

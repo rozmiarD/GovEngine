@@ -35,7 +35,11 @@ The public surface registry is `govengine.surfaces.public_surface_index()`. It c
 
 - `artifact_governance_core` for artifact descriptors, lifecycle state mapping, transition decisions, signing/trust records, guarded-root replay decisions, state-index helpers, deconfliction, and the SCLite bridge.
 - `planning_contracts_core` for neutral task, plan-intent, and planner-port handoff records. These are handoff contracts, not a planner.
-- `admission_policy_core` for `RuntimeAdmissionResult`, policy/admission/approval/audit records, **PolicyEngine MVP** (`govengine.policy`), proof-input validation, public summaries, bounded artifact references, and the development-only JSONL audit-ledger adapter.
+- `admission_policy_core` for canonical `GovernanceRequest` and
+  `ApprovalAttestation` inputs, legacy `RuntimeAdmissionResult`,
+  policy/admission/approval/audit records, **PolicyEngine MVP**
+  (`govengine.policy`), proof-input validation, public summaries, bounded
+  artifact references, and the development-only JSONL audit-ledger adapter.
 - `evidence_review_core` for receipt-bounded evidence requirements, claims, qualifications, review results, and evidence-review-chain validation.
 - `domain_profile_sdk` for contract-only domain profile declarations and conformance reports, including Ravenclaw and Tecrax fixture profiles.
 - `runtime_contract_proofs` for public-safe conformance artifacts over Ravenclaw and Tecrax contract shapes. They are fixtures, not runtime authorization.
@@ -89,14 +93,25 @@ Older GovEngine distributions remain available on PyPI as archived alpha history
 but they are not an active compatibility line. The published wheel contains the
 digest-bound enforcement-plan API used by coordinated B2 consumers.
 
-The current kernel is useful for deterministic review of prepared governance records. It is not production runtime readiness and it is not an execution authority. `RuntimeAdmissionResult` is the single canonical admission envelope; `compose_runtime_admission_result()` composes host-supplied gate summaries into that envelope, and `validate_runtime_admission_result()` checks the envelope shape. These helpers do not verify SCLite artifacts, persist replay claims, approve operators, or execute commands by themselves.
+The current kernel is useful for deterministic review of prepared governance
+records. It is not production runtime readiness and it is not an execution
+authority. `GovernanceRequest v1` is the canonical input candidate for the new
+decision flow and `ApprovalAttestation v1` is its independently bound approval
+record. A `GovernanceDecision` is not implemented yet. `RuntimeAdmissionResult`
+remains the legacy admission envelope: `compose_runtime_admission_result()`
+composes host-supplied gate summaries and
+`validate_runtime_admission_result()` checks its shape. None of these helpers
+verify SCLite artifacts, persist replay claims, execute commands or turn an
+opaque approval claim into operator approval.
 
 When hosts need a runtime-consumable path, the intended chain is:
 
 1. SCLite verifies the artifact lifecycle and guarded truth records.
 2. GovEngine maps the lifecycle status and validates proof-input summaries.
-3. GovEngine composes policy, ticket, trust, replay freshness, runner profile, receipt obligation, blockers, and next actions into `RuntimeAdmissionResult`.
-4. Host runtime code decides what to do with that result under its own operator, credential, storage, scheduler, and execution controls.
+3. New integrations construct and validate a digest-bound `GovernanceRequest`;
+   legacy integrations may still compose `RuntimeAdmissionResult`.
+4. Until `GovernanceDecision` lands, the new request is input validation only
+   and does not authorize runtime I/O.
 
 Dry-run remains the default local execution posture. Any live backend belongs outside this package until a separate host/runtime boundary explicitly owns and tests it.
 

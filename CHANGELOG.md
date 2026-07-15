@@ -11,6 +11,12 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds the canonical `GovernanceRequest v1` input and independently
+  digest-bound `ApprovalAttestation v1`. Approval validation now binds the
+  exact operation, step, attempt, execution spec/facts, target scope, policy
+  epoch and side-effect class, then fails closed on issuer trust, validity or
+  host-provided revocation checks. These records are not execution permits and
+  do not change SCLite or RExecOp ownership.
 - Places the unpublished `0.17.0rc2` candidate on release hold. A corrected
   candidate must include the fail-closed boundary evidence below.
 - Rejects unknown admission/policy enum values, non-finite JSON numbers,
@@ -23,10 +29,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   host-only plugin registration claims, requires explicit operation capability
   requirements, and requires an independently digest-bound network policy for
   non-local egress/destination admission.
-- Classifies all 300 root exports as 32 v1 candidates, 188 adapters, 61
+- Classifies all 306 root exports as 38 v1 candidates, 188 adapters, 61
   experimental symbols, and 19 fixtures, with no immediate removals; 3
   compatibility callables outside `__all__` remain separately inventoried.
-- Adds the real 32-symbol `govengine.v1` alpha facade for structured API,
+- Adds the real 38-symbol `govengine.v1` alpha facade for structured API,
   PolicyEngine/enforcement, and governance trace symbols. Runtime mechanics,
   SCLite bridges, adapters, and fixtures remain outside the facade.
 - Extends `scripts/validate_api_stability.py` with owner/migration-note checks,
