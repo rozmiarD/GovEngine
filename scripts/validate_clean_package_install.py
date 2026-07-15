@@ -22,6 +22,11 @@ from govengine.governance_decision_signing import (
     sign_governance_decision,
 )
 from govengine.policy import baseline_policy_pack, validate_policy_pack
+from govengine.receipt_conformance import (
+    ReceiptConformanceResult,
+    RuntimeReceiptBinding,
+    evaluate_receipt_conformance,
+)
 
 expected = [
     'artifact_governance_core',
@@ -63,6 +68,9 @@ assert govengine_v1.ApprovalAttestation is govengine.ApprovalAttestation
 assert govengine_v1.PolicyEngine is govengine.PolicyEngine
 assert callable(sign_governance_decision)
 assert callable(require_trusted_governance_decision)
+assert callable(evaluate_receipt_conformance)
+assert ReceiptConformanceResult.__module__ == 'govengine.receipt_conformance'
+assert RuntimeReceiptBinding.__module__ == 'govengine.receipt_conformance'
 assert [surface.name for surface in public_surface_index()] == expected
 assert all(absent(module) for module in retired)
 assert validate_policy_pack(baseline_policy_pack('governed-runtime')).ok

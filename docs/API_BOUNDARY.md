@@ -243,6 +243,14 @@ claim. GovEngine exposes module-scoped `sign_governance_decision()` and
 `require_trusted_governance_decision()` helpers for that exact boundary; they
 do not enter the already capped `govengine.v1` facade.
 
+After runtime I/O, module-scoped `govengine.receipt_conformance` accepts a
+bounded `RuntimeReceiptBinding v1` and returns `ReceiptConformanceResult v1`.
+It recomputes the receipt digest, binds decision/runtime permit/attempt/lease/
+fencing/inventory/policy facts and checks output postconditions from the
+decision. The module remains outside the capped facade until the boundary
+freeze; it does not create a runtime permit, persist receipts, or replace
+SCLite truth verification.
+
 The request also carries independent G2-B scope policy, operation capability
 requirements and runtime inventory records. GovEngine recomputes their digests
 and evaluates bounded compatibility. RExecOp remains responsible for inventory

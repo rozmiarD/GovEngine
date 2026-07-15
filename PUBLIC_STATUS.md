@@ -37,6 +37,11 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
   the existing host signer/verifier and trust-policy boundary. Decision digest
   alone remains insufficient; RExecOp must require the trusted signed record
   before claim.
+- Receipt conformance: module-scoped `govengine.receipt_conformance` validates
+  a bounded RExecOp terminal receipt against the canonical decision, opaque
+  runtime permit, attempt/lease/fencing/inventory bindings and output
+  postconditions. It neither emits nor replaces SCLite receipts and does not
+  prove that a compromised runtime reported honest facts.
 - Independent scope/capability inputs: `govengine.scope_policy` compares only
   requested target/network facts with an independent policy binding;
   `govengine.capabilities` compares explicit operation requirements with an

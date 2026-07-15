@@ -129,13 +129,14 @@ def admission_policy_surface() -> GovSurface:
             'govengine.triggers',
             'govengine.supervisor_actions',
             'govengine.typed_execution_governance',
+            'govengine.receipt_conformance',
             'govengine.policy',
             'govengine.policy.compiler',
             'govengine.policy.model',
             'govengine.policy.runtime',
         )),
         claim=(
-            'Neutral admission, trigger-planning admission, supervisor-action admission, typed-execution governance admission, PolicyEngine request/verdict/compiler/runtime, policy-decision, approval-request, audit-record, runtime-admission, '
+            'Neutral admission, trigger-planning admission, supervisor-action admission, typed-execution governance admission, runtime-receipt conformance, PolicyEngine request/verdict/compiler/runtime, policy-decision, approval-request, audit-record, runtime-admission, '
             'and bounded reference helpers for hosts that need deterministic runtime gate records without moving domain policy semantics into GovEngine.'
         ),
         non_claims=_tuple((

@@ -11,6 +11,12 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds module-scoped `RuntimeReceiptBinding` and `ReceiptConformanceResult`.
+  GovEngine recomputes the runtime receipt digest and deterministically checks
+  decision, opaque runtime-permit, attempt, runtime, lease, fencing, scope,
+  inventory and policy bindings plus output-digest/output-limit postconditions.
+  RExecOp remains the runtime receipt producer and SCLite remains the final
+  lifecycle truth authority.
 - Adds module-scoped `sign_governance_decision()` and
   `require_trusted_governance_decision()` over the existing host-owned
   `SignerPort`/`VerifierPort`. The verifier binds the complete decision,

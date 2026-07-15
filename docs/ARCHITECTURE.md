@@ -49,6 +49,14 @@ signed GovEngine record boundary. Module-scoped signing/verification helpers
 provide that fail-closed carrier without adding another PKI or public facade
 wave. SCLite is unchanged.
 
+G3-B adds `RuntimeReceiptBinding v1` and `ReceiptConformanceResult v1` in
+`govengine.receipt_conformance`. RExecOp supplies bounded terminal attempt facts
+and the recomputed digest of its own immutable runtime permit. GovEngine checks
+those facts against the exact allowed `GovernanceDecision` authorization and
+its output-digest/output-limit controls. RExecOp still produces the runtime
+receipt; SCLite still owns the final lifecycle receipt and verification. The
+conformance result proves deterministic binding checks, not runtime honesty.
+
 ## Public surface map
 
 The tested public surface registry in `govengine.surfaces` currently exposes

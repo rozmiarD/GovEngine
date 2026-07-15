@@ -104,7 +104,10 @@ runtime inventory bindings prevent request-derived allowlists/capabilities.
 only an allowed result carries a short-lived attempt/lease/fencing-bound
 consume-once authorization contract. Module-scoped signed-decision helpers
 reuse the existing host signer/verifier boundary; an unsigned digest is not
-issuer identity. `RuntimeAdmissionResult`
+issuer identity. After I/O, `govengine.receipt_conformance` can recompute a
+bounded RExecOp receipt binding and check it against the exact decision,
+runtime permit and output postconditions. This is a deterministic conformance
+result, not a SCLite receipt or proof of host honesty. `RuntimeAdmissionResult`
 remains the legacy admission envelope: `compose_runtime_admission_result()`
 composes host-supplied gate summaries and
 `validate_runtime_admission_result()` checks its shape. None of these helpers
@@ -119,7 +122,9 @@ When hosts need a runtime-consumable path, the intended chain is:
    it through host-provided activation, revocation and signature-verification
    ports; legacy integrations may still compose `RuntimeAdmissionResult`.
 4. RExecOp atomically claims an allowed decision and owns the runtime permit,
-   final pre-I/O checks and execution. GovEngine does not execute I/O.
+   final pre-I/O checks and execution. It then presents the terminal runtime
+   receipt for GovEngine postcondition conformance before projecting digest-only
+   bindings into SCLite. GovEngine does not execute I/O.
 
 Dry-run remains the default local execution posture. Any live backend belongs outside this package until a separate host/runtime boundary explicitly owns and tests it.
 
