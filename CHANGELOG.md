@@ -11,6 +11,12 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds module-scoped `sign_governance_decision()` and
+  `require_trusted_governance_decision()` over the existing host-owned
+  `SignerPort`/`VerifierPort`. The verifier binds the complete decision,
+  signing purpose, decision digest, allowed signer/mode and trust result;
+  unsigned digests and mismatched or untrusted decisions fail closed without
+  expanding the capped v1 facade or changing SCLite.
 - Adds `GovernanceDecision v1` and `evaluate_governance()`. The evaluator
   reuses PolicyEngine enforcement/trace, verifies current policy activation,
   approval trust/revocation/signature, independent scope and capability gates,

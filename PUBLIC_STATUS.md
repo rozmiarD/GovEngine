@@ -32,6 +32,11 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
   capability compatibility. Only `allowed` carries a <=60-second
   attempt/lease/fencing/inventory-bound consume-once authorization contract;
   RExecOp still owns atomic claiming, runtime permits and I/O.
+- Signed decision authority: module-scoped
+  `sign_governance_decision()`/`require_trusted_governance_decision()` reuse
+  the existing host signer/verifier and trust-policy boundary. Decision digest
+  alone remains insufficient; RExecOp must require the trusted signed record
+  before claim.
 - Independent scope/capability inputs: `govengine.scope_policy` compares only
   requested target/network facts with an independent policy binding;
   `govengine.capabilities` compares explicit operation requirements with an
@@ -121,8 +126,8 @@ GovEngine does not currently claim:
 - live exploit or scanner capability;
 - authorization to run tools against targets;
 - production atomic claiming of a `GovernanceDecision` authorization;
-- authenticity of an unsigned decision digest; runtimes must verify a trusted
-  signed GovEngine record before claim;
+- authenticity of an unsigned decision digest; the signed-decision helper must
+  be used before claim;
 - bug-bounty campaign orchestration ownership;
 - protocol adapter correctness;
 - complete API stability;

@@ -51,11 +51,17 @@ identical decision body and digest across supported Python versions.
 nested authorization and recomputes `decision_digest` from the full body. A
 supplied digest cannot override the computed record.
 
-The digest proves record integrity, not GovEngine identity. A runtime trust
-boundary must additionally verify a trusted signed-decision envelope through
-the existing `SignedArtifact`/`VerifierPort` boundary before claiming the
-authorization. G2-C does not embed a second signature or key system in the
-decision contract.
+The digest proves record integrity, not GovEngine identity.
+`sign_governance_decision()` signs the complete validated record through a
+host-owned `SignerPort`. `require_trusted_governance_decision()` then checks
+the exact record type, schema, purpose, decision digest, signing policy,
+cryptographic verifier result and trust policy before returning the decision.
+Another valid decision, an untrusted signer or a failed verifier result is
+rejected.
+
+These helpers reuse the existing `SignedArtifact`/`VerifierPort` boundary; G2
+does not embed a second signature or key system in the decision contract. A
+runtime must call the fail-closed verifier before claiming authorization.
 
 ## Trust and ownership boundaries
 
@@ -64,3 +70,6 @@ decision contract.
 GovEngine defines their fail-closed semantics but does not provide production
 storage, PKI, key custody or remote trust services. SCLite schemas and
 canonical verification remain unchanged.
+
+The deterministic `DemoDigestSigner`/`DemoDigestVerifier` used by tests remain
+fixtures and are not production identity proof.

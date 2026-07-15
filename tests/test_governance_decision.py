@@ -31,8 +31,19 @@ from govengine.governance_decision import (
     evaluate_governance,
     governance_decision_digest,
 )
+from govengine.governance_decision_signing import (
+    SIGNED_GOVERNANCE_DECISION_PURPOSE,
+    require_trusted_governance_decision,
+    sign_governance_decision,
+)
 from govengine.policy import PolicyCompiler, policy_pack_digest
 from govengine.scope_policy import ScopePolicyBinding, scope_policy_binding_digest
+from govengine.signing import (
+    DemoDigestSigner,
+    DemoDigestVerifier,
+    SigningPolicy,
+    TrustPolicy,
+)
 
 
 NOW = datetime(2026, 7, 15, 12, 5, tzinfo=timezone.utc)
@@ -419,3 +430,104 @@ def test_policy_request_is_bound_to_transaction_and_attempt() -> None:
 
     with pytest.raises(GovApiError, match='policy_request_id_mismatch'):
         _evaluate(request)
+
+
+def _decision_signing_policy() -> SigningPolicy:
+    return SigningPolicy(
+        require_signature=True,
+        allowed_modes=('detached_demo_digest',),
+        required_signer_ids=('decision-signer',),
+    )
+
+
+def test_signed_governance_decision_requires_trusted_issuer() -> None:
+    decision = _evaluate(_request_mapping(with_approval=True))
+    artifact = sign_governance_decision(
+        decision,
+        signer=DemoDigestSigner(signer_id='decision-signer'),
+        payload_ref='artifact://governance/decision-123',
+    )
+
+    checked = require_trusted_governance_decision(
+        decision,
+        artifact,
+        verifier=DemoDigestVerifier(
+            verifier_id='decision-verifier',
+            allowed_signer_ids=('decision-signer',),
+        ),
+        signing_policy=_decision_signing_policy(),
+        trust_policy=TrustPolicy(),
+    )
+
+    assert checked == decision
+    assert artifact.metadata['decision_digest'] == decision.decision_digest
+    assert artifact.metadata['purpose'] == SIGNED_GOVERNANCE_DECISION_PURPOSE
+
+
+def test_signed_governance_decision_rejects_another_valid_decision() -> None:
+    allowed = _evaluate(_request_mapping(with_approval=True))
+    denied = _evaluate(
+        _request_mapping(with_approval=True, policy_effect='deny')
+    )
+    artifact = sign_governance_decision(
+        allowed,
+        signer=DemoDigestSigner(signer_id='decision-signer'),
+        payload_ref='artifact://governance/decision-allowed',
+    )
+
+    with pytest.raises(
+        GovApiError,
+        match='governance_decision_signature_decision_digest_mismatch',
+    ):
+        require_trusted_governance_decision(
+            denied,
+            artifact,
+            verifier=DemoDigestVerifier(
+                allowed_signer_ids=('decision-signer',)
+            ),
+            signing_policy=_decision_signing_policy(),
+            trust_policy=TrustPolicy(),
+        )
+
+
+def test_signed_governance_decision_rejects_untrusted_signer() -> None:
+    decision = _evaluate(_request_mapping(with_approval=True))
+    artifact = sign_governance_decision(
+        decision,
+        signer=DemoDigestSigner(signer_id='untrusted-signer'),
+        payload_ref='artifact://governance/decision-untrusted',
+    )
+
+    with pytest.raises(GovApiError, match='governance_decision_signer_not_allowed'):
+        require_trusted_governance_decision(
+            decision,
+            artifact,
+            verifier=DemoDigestVerifier(
+                allowed_signer_ids=('untrusted-signer',)
+            ),
+            signing_policy=_decision_signing_policy(),
+            trust_policy=TrustPolicy(),
+        )
+
+
+def test_signed_governance_decision_rejects_untrusted_verification() -> None:
+    decision = _evaluate(_request_mapping(with_approval=True))
+    artifact = sign_governance_decision(
+        decision,
+        signer=DemoDigestSigner(signer_id='decision-signer'),
+        payload_ref='artifact://governance/decision-untrusted-verifier',
+    )
+
+    with pytest.raises(
+        GovApiError,
+        match='governance_decision_signature_verification_failed',
+    ):
+        require_trusted_governance_decision(
+            decision,
+            artifact,
+            verifier=DemoDigestVerifier(
+                allowed_signer_ids=('another-signer',)
+            ),
+            signing_policy=_decision_signing_policy(),
+            trust_policy=TrustPolicy(),
+        )

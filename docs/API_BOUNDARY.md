@@ -239,7 +239,9 @@ allowed decision carries a short-lived attempt-bound consume-once contract,
 not a runtime permit. Runtime claim, permit and I/O ownership remains in
 RExecOp. The decision digest proves integrity, not issuer identity; the runtime
 must additionally use the existing signed-record verifier boundary before
-claim.
+claim. GovEngine exposes module-scoped `sign_governance_decision()` and
+`require_trusted_governance_decision()` helpers for that exact boundary; they
+do not enter the already capped `govengine.v1` facade.
 
 The request also carries independent G2-B scope policy, operation capability
 requirements and runtime inventory records. GovEngine recomputes their digests

@@ -45,7 +45,9 @@ activation and independent approval signature verification, then composes
 policy, scope and capability results. Only `allowed` embeds a short-lived
 attempt-bound authorization. RExecOp owns atomic claim, runtime permits and
 I/O; before claim it must verify decision authenticity through the existing
-signed GovEngine record boundary. SCLite is unchanged.
+signed GovEngine record boundary. Module-scoped signing/verification helpers
+provide that fail-closed carrier without adding another PKI or public facade
+wave. SCLite is unchanged.
 
 ## Public surface map
 

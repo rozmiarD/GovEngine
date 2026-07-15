@@ -102,7 +102,9 @@ record. Independent `ScopePolicyBinding`, operation capability requirements and
 runtime inventory bindings prevent request-derived allowlists/capabilities.
 `evaluate_governance()` now composes those gates into `GovernanceDecision v1`;
 only an allowed result carries a short-lived attempt/lease/fencing-bound
-consume-once authorization contract. `RuntimeAdmissionResult`
+consume-once authorization contract. Module-scoped signed-decision helpers
+reuse the existing host signer/verifier boundary; an unsigned digest is not
+issuer identity. `RuntimeAdmissionResult`
 remains the legacy admission envelope: `compose_runtime_admission_result()`
 composes host-supplied gate summaries and
 `validate_runtime_admission_result()` checks its shape. None of these helpers
