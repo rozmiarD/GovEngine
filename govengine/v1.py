@@ -16,6 +16,7 @@ from .approvals import (
     validate_approval_attestation,
 )
 from .governance import GovernanceRequest, validate_governance_request
+from .governance_decision import GovernanceDecision, evaluate_governance
 from .governance_trace import (
     GOVERNANCE_TRACE_SCHEMA_VERSION,
     GovernanceTrace,
@@ -60,6 +61,7 @@ __all__ = [
     'GOVERNANCE_TRACE_SCHEMA_VERSION',
     'GovApiError',
     'GovApiResult',
+    'GovernanceDecision',
     'GovernanceTrace',
     'GovernanceRequest',
     'PolicyCompiler',
@@ -75,6 +77,7 @@ __all__ = [
     'admit_policy_execution',
     'compile_policy_pack',
     'evaluate_policy',
+    'evaluate_governance',
     'explain_policy_evaluation',
     'policy_enforcement_admission',
     'policy_enforcement_admission_digest',

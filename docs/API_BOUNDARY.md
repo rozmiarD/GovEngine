@@ -231,9 +231,15 @@ persistence.
 The replacement G2 flow starts with the bounded `GovernanceRequest v1` and
 `ApprovalAttestation v1` inputs described in
 [GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md). They recompute GovEngine-owned
-bindings and reject approval drift/trust/time/revocation failures, but G2-A does
-not yet issue `GovernanceDecision` or any execution permit. Runtime attempt,
-lease, fencing, claim and I/O ownership remains in RExecOp.
+bindings and reject approval drift/trust/time/revocation failures.
+`evaluate_governance()` composes them with policy activation, host-provided
+approval signature verification, scope and capability decisions into
+`GovernanceDecision v1`. A non-allowed decision has no authorization; an
+allowed decision carries a short-lived attempt-bound consume-once contract,
+not a runtime permit. Runtime claim, permit and I/O ownership remains in
+RExecOp. The decision digest proves integrity, not issuer identity; the runtime
+must additionally use the existing signed-record verifier boundary before
+claim.
 
 The request also carries independent G2-B scope policy, operation capability
 requirements and runtime inventory records. GovEngine recomputes their digests

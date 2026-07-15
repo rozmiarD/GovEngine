@@ -17,6 +17,7 @@ runner request/receipt/admission records, signed GovEngine records, audit
 records and ledger entries, policy enforcement and governance trace inputs,
 canonical governance-request policy/facts/scope/approval bindings, independent
 scope-policy and operation-requirement/runtime-inventory bindings,
+canonical governance decisions and embedded attempt-bound authorizations,
 SCLite ticket/replay references, RExecOp execution/output references,
 trigger/automation references, and GovEngine-produced projection/report/bundle
 digests.
@@ -40,6 +41,8 @@ digests.
   attestation.
 - `validate_approval_attestation()` recomputes the request subject and checks
   every approval binding before consulting trust and revocation policy.
+- `GovernanceDecision.from_mapping()` recomputes the complete decision body;
+  the supplied decision digest cannot replace the computed value.
 
 Execution-spec, raw-payload and fencing-token bytes remain RExecOp-owned opaque
 references. SCLite tickets and guarded replay roots remain delegated. This repository does

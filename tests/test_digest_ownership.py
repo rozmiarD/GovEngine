@@ -24,6 +24,8 @@ def test_digest_ownership_inventory_covers_critical_boundaries() -> None:
     assert inventory['governance_request.fencing_token'].owner == 'rexecop'
     assert inventory['scope_policy.decision'].mode == 'produced'
     assert inventory['capability.compatibility_decision'].mode == 'produced'
+    assert inventory['governance_decision.record'].mode == 'recomputed'
+    assert inventory['governance_decision.authorization'].mode == 'produced'
     assert inventory['runner.execution_ticket'].mode == 'delegated'
     assert inventory['replay.root_chain'].owner == 'sclite'
 

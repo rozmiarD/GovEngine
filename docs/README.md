@@ -14,6 +14,7 @@ Start here when navigating `docs/`. Package-level status lives in
 | [DOWNSTREAM_IMPORT_MAP.md](DOWNSTREAM_IMPORT_MAP.md) | RExecOp/Tecrax import inventory and migration posture |
 | [GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md) | Canonical G2-A request and approval binding |
 | [SCOPE_CAPABILITY_BINDINGS.md](SCOPE_CAPABILITY_BINDINGS.md) | Independent scope and capability inputs/decisions |
+| [GOVERNANCE_DECISION.md](GOVERNANCE_DECISION.md) | Canonical G2-C evaluator and attempt-bound authorization |
 | [GOVENGINE_KERNEL_BOUNDARY.md](GOVENGINE_KERNEL_BOUNDARY.md) | Kernel vs profile vs runtime vs SCLite |
 | [ROADMAP.md](ROADMAP.md) | Current alpha line and near-term direction |
 | [VALIDATION.md](VALIDATION.md) | **Active** release and operator validation gate |

@@ -35,8 +35,9 @@ The public surface registry is `govengine.surfaces.public_surface_index()`. It c
 
 - `artifact_governance_core` for artifact descriptors, lifecycle state mapping, transition decisions, signing/trust records, guarded-root replay decisions, state-index helpers, deconfliction, and the SCLite bridge.
 - `planning_contracts_core` for neutral task, plan-intent, and planner-port handoff records. These are handoff contracts, not a planner.
-- `admission_policy_core` for canonical `GovernanceRequest` and
-  `ApprovalAttestation` inputs, legacy `RuntimeAdmissionResult`,
+- `admission_policy_core` for canonical `GovernanceRequest`,
+  `ApprovalAttestation` and `GovernanceDecision` contracts, legacy
+  `RuntimeAdmissionResult`,
   policy/admission/approval/audit records, **PolicyEngine MVP**
   (`govengine.policy`), proof-input validation, public summaries, bounded
   artifact references, and the development-only JSONL audit-ledger adapter.
@@ -98,8 +99,10 @@ records. It is not production runtime readiness and it is not an execution
 authority. `GovernanceRequest v1` is the canonical input candidate for the new
 decision flow and `ApprovalAttestation v1` is its independently bound approval
 record. Independent `ScopePolicyBinding`, operation capability requirements and
-runtime inventory bindings prevent request-derived allowlists/capabilities. A
-`GovernanceDecision` is not implemented yet. `RuntimeAdmissionResult`
+runtime inventory bindings prevent request-derived allowlists/capabilities.
+`evaluate_governance()` now composes those gates into `GovernanceDecision v1`;
+only an allowed result carries a short-lived attempt/lease/fencing-bound
+consume-once authorization contract. `RuntimeAdmissionResult`
 remains the legacy admission envelope: `compose_runtime_admission_result()`
 composes host-supplied gate summaries and
 `validate_runtime_admission_result()` checks its shape. None of these helpers
@@ -110,10 +113,11 @@ When hosts need a runtime-consumable path, the intended chain is:
 
 1. SCLite verifies the artifact lifecycle and guarded truth records.
 2. GovEngine maps the lifecycle status and validates proof-input summaries.
-3. New integrations construct and validate a digest-bound `GovernanceRequest`;
-   legacy integrations may still compose `RuntimeAdmissionResult`.
-4. Until `GovernanceDecision` lands, the new request is input validation only
-   and does not authorize runtime I/O.
+3. New integrations construct a digest-bound `GovernanceRequest` and evaluate
+   it through host-provided activation, revocation and signature-verification
+   ports; legacy integrations may still compose `RuntimeAdmissionResult`.
+4. RExecOp atomically claims an allowed decision and owns the runtime permit,
+   final pre-I/O checks and execution. GovEngine does not execute I/O.
 
 Dry-run remains the default local execution posture. Any live backend belongs outside this package until a separate host/runtime boundary explicitly owns and tests it.
 
@@ -226,6 +230,7 @@ Navigation hub: [`docs/README.md`](docs/README.md).
 - [`docs/EVIDENCE_REVIEW.md`](docs/EVIDENCE_REVIEW.md) documents receipt-bounded evidence review and OODA receipt bounds.
 - [`docs/ADMISSION_POLICY.md`](docs/ADMISSION_POLICY.md) documents admission, policy, approval, audit, and audit-ledger contracts.
 - [`docs/POLICY_ENGINE.md`](docs/POLICY_ENGINE.md) documents the PolicyEngine MVP (request/verdict, compiler, runtime, admission projection).
+- [`docs/GOVERNANCE_DECISION.md`](docs/GOVERNANCE_DECISION.md) documents the canonical decision evaluator and attempt-bound authorization contract.
 - [`docs/RUNNER_SUPERVISION.md`](docs/RUNNER_SUPERVISION.md) documents runner request, receipt, supervision, and live-runner safety boundaries.
 - [`docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md`](docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md) records why no live subprocess runner ships now.
 - [`docs/DOMAIN_PROFILE_CONTRACT.md`](docs/DOMAIN_PROFILE_CONTRACT.md) documents profile contracts and conformance.

@@ -11,6 +11,13 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds `GovernanceDecision v1` and `evaluate_governance()`. The evaluator
+  reuses PolicyEngine enforcement/trace, verifies current policy activation,
+  approval trust/revocation/signature, independent scope and capability gates,
+  and emits authorization only for `allowed`. Authorization is bound to the
+  exact attempt/runtime/lease/fencing/inventory/policy inputs, expires within
+  60 seconds and declares consume-once semantics; RExecOp still owns atomic
+  claim, runtime permits and I/O.
 - Separates requested scope from `ScopePolicyBinding` and operation capability
   requirements from `CapabilityInventoryBinding`. Deterministic scope and
   compatibility decisions reject self-authorized allowlists, host plugin
@@ -34,10 +41,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   host-only plugin registration claims, requires explicit operation capability
   requirements, and requires an independently digest-bound network policy for
   non-local egress/destination admission.
-- Classifies all 306 root exports as 38 v1 candidates, 188 adapters, 61
+- Classifies all 308 root exports as 40 v1 candidates, 188 adapters, 61
   experimental symbols, and 19 fixtures, with no immediate removals; 3
   compatibility callables outside `__all__` remain separately inventoried.
-- Adds the real 38-symbol `govengine.v1` alpha facade for structured API,
+- Adds the real 40-symbol `govengine.v1` alpha facade for structured API,
   PolicyEngine/enforcement, and governance trace symbols. Runtime mechanics,
   SCLite bridges, adapters, and fixtures remain outside the facade.
 - Extends `scripts/validate_api_stability.py` with owner/migration-note checks,

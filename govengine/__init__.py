@@ -78,6 +78,7 @@ from .approvals import (
     validate_approval_attestation,
 )
 from .governance import GovernanceRequest, validate_governance_request
+from .governance_decision import GovernanceDecision, evaluate_governance
 from .governance_trace import (
     GOVERNANCE_TRACE_SCHEMA_VERSION,
     GovernanceTrace,
@@ -394,6 +395,7 @@ __all__ = [
     'DemoDigestSigner',
     'DemoDigestVerifier',
     'GovernanceContext',
+    'GovernanceDecision',
     'GovernanceRequest',
     'GovExecutionBackend',
     'GovEvent',
@@ -549,6 +551,7 @@ __all__ = [
     'evaluate_local_subprocess_runner_readiness',
     'evaluate_guard_replay',
     'evaluate_contract_compatibility',
+    'evaluate_governance',
     'evaluate_policy',
     'GOVERNANCE_TRACE_SCHEMA_VERSION',
     'GovernanceTrace',

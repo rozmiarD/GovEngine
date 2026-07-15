@@ -25,9 +25,13 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Admission/policy contracts: `govengine.admission` defines neutral admission, policy-decision, approval-request, and audit-record validators; `govengine.policy` adds PolicyEngine request/verdict/compiler/runtime plus digest-bound `PolicyEnforcementPlan`, existing-`GovAdmissionDecision` binding, neutral runtime-control projection, `PolicyEvaluationExplanation`, and `govengine-policy explain|simulate --json` without domain policy meaning, approval workflow, audit storage, adapter, command, or live-execution ownership.
 - Canonical governance input: `govengine.governance` adds digest-bound
   `GovernanceRequest v1`; `govengine.approvals` adds `ApprovalAttestation v1`,
-  issuer trust requirements and a host-owned revocation port. These inputs do
-  not yet produce `GovernanceDecision`, verify signature cryptography, claim
-  runtime attempts, or authorize execution.
+  issuer trust requirements and a host-owned revocation port.
+- Canonical governance decision: `govengine.governance_decision` composes
+  PolicyEngine enforcement/trace, current policy epoch, approval trust,
+  host-provided cryptographic signature verification, independent scope and
+  capability compatibility. Only `allowed` carries a <=60-second
+  attempt/lease/fencing/inventory-bound consume-once authorization contract;
+  RExecOp still owns atomic claiming, runtime permits and I/O.
 - Independent scope/capability inputs: `govengine.scope_policy` compares only
   requested target/network facts with an independent policy binding;
   `govengine.capabilities` compares explicit operation requirements with an
@@ -116,6 +120,9 @@ GovEngine does not currently claim:
 - direct execution from raw intent;
 - live exploit or scanner capability;
 - authorization to run tools against targets;
+- production atomic claiming of a `GovernanceDecision` authorization;
+- authenticity of an unsigned decision digest; runtimes must verify a trusted
+  signed GovEngine record before claim;
 - bug-bounty campaign orchestration ownership;
 - protocol adapter correctness;
 - complete API stability;

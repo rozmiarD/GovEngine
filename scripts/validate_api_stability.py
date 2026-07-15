@@ -189,6 +189,7 @@ def validate_api_stability(
         'govengine.api',
         'govengine.approvals',
         'govengine.governance',
+        'govengine.governance_decision',
         'govengine.governance_trace',
         'govengine.policy',
     )

@@ -14,6 +14,7 @@ Operator steps: [GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.m
 Integration order and non-claims: [SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md).
 Contract reference: [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md),
 [GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md),
+[GOVERNANCE_DECISION.md](GOVERNANCE_DECISION.md),
 [RECEIPT_BINDING.md](RECEIPT_BINDING.md), [EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md).
 
 ```text
@@ -29,15 +30,22 @@ linked docs for field-level contracts and operator procedures.
 
 G2-A adds `GovernanceRequest v1` and `ApprovalAttestation v1` as the canonical
 input candidates for the replacement flow. They bind one runtime-owned attempt
-to GovEngine policy/scope/approval inputs but do not yet produce a
-`GovernanceDecision`. `RuntimeAdmissionResult` therefore remains a legacy
-adapter instead of being expanded into the new protocol.
+to GovEngine policy/scope/approval inputs. `RuntimeAdmissionResult` remains a
+legacy adapter instead of being expanded into the new protocol.
 
 G2-B adds independent `ScopePolicyBinding`,
 `OperationCapabilityRequirements` and `CapabilityInventoryBinding` inputs plus
 deterministic scope/compatibility decisions. They are bound into
 `GovernanceRequest`; RExecOp still owns runtime inventory collection and all
 pre-I/O network enforcement.
+
+G2-C adds the canonical `GovernanceDecision v1` evaluator. It reuses the
+PolicyEngine enforcement plan and governance trace, validates current policy
+activation and independent approval signature verification, then composes
+policy, scope and capability results. Only `allowed` embeds a short-lived
+attempt-bound authorization. RExecOp owns atomic claim, runtime permits and
+I/O; before claim it must verify decision authenticity through the existing
+signed GovEngine record boundary. SCLite is unchanged.
 
 ## Public surface map
 
@@ -68,14 +76,16 @@ split and domain-profile conformance. See
 ### 1. Admission and review contract layer
 
 Modules: `govengine.admission`, `govengine.approvals`, `govengine.governance`,
-`govengine.policy`, `govengine.review`.
+`govengine.governance_decision`, `govengine.policy`, `govengine.review`.
 
 Validates admission/policy/audit records, evaluates declarative policy packs,
 validates the canonical governance request and independently bound approval,
+produces the canonical fail-closed governance decision,
 composes legacy `RuntimeAdmissionResult`, and checks receipt-bounded evidence
 chains. Policy meaning and evidence taxonomy stay host-owned.
 
 See [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md), [POLICY_ENGINE.md](POLICY_ENGINE.md),
+[GOVERNANCE_DECISION.md](GOVERNANCE_DECISION.md),
 [ADMISSION_POLICY.md](ADMISSION_POLICY.md), and [EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md).
 
 ### 2. Contract layer

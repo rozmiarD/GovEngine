@@ -1,13 +1,15 @@
 # Governance request and approval attestation
 
 `govengine.governance.GovernanceRequest` is the canonical v1 input for the
-next governance-decision flow. It binds one operation step and attempt to a
+governance-decision flow. It binds one operation step and attempt to a
 compiled policy pack, bounded execution facts, requested scope, independent
 scope/capability inputs, runtime/lease identity and optional approval.
 
 `GovernanceRequest` is not a decision, execution permit, runtime claim, receipt
-or SCLite truth artifact. G2-A intentionally does not add connector I/O,
-consume-once storage, lease ownership or a second runtime permit.
+or SCLite truth artifact. It does not add connector I/O, consume-once storage,
+lease ownership or a second runtime permit. G2-C consumes this record through
+`evaluate_governance()`; see
+[`GOVERNANCE_DECISION.md`](GOVERNANCE_DECISION.md).
 
 ## Digest ownership
 
@@ -48,9 +50,8 @@ and host-provided `ApprovalRevocationPort`. It rejects subject drift, an
 untrusted approver/role/domain, a not-yet-valid or expired attestation, a
 missing signature reference when policy requires one, and a revoked approval.
 
-A signature reference is only a reference. G2-A does not claim cryptographic
-signature verification from its presence. Production signature verification
-must use the existing host-provided signing/verifier boundary before a future
+A signature reference is only a reference. `evaluate_governance()` requires
+the host-provided `ApprovalSignatureVerificationPort` before
 `GovernanceDecision` can authorize a mutation.
 
 ## Legacy boundary

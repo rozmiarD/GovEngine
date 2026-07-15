@@ -61,3 +61,7 @@ digests. GovEngine recomputes each digest and additionally checks:
 The request subject digest includes the three binding digests, so an existing
 approval cannot be moved to another scope policy, requirement set or runtime
 inventory.
+
+`evaluate_governance()` includes both decision digests in
+`GovernanceDecision`; a denied scope or incompatible inventory cannot produce
+authorization.
