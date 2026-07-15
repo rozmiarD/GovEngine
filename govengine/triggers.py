@@ -6,7 +6,7 @@ from typing import Any, Mapping
 
 from govengine.admission import (
     GovAdmissionDecision,
-    admission_decision_from_host_gate,
+    _admission_decision_from_planning_adapter,
     validate_admission_decision,
 )
 from govengine.api import GovApiError, require_mapping
@@ -156,11 +156,11 @@ def admit_trigger_planning(
     if checked.decision in TRIGGER_RECORD_ONLY_DECISIONS:
         outcome = "record_only"
         reason_code = "trigger_planning_record_only"
-    admission = admission_decision_from_host_gate(
+    return _admission_decision_from_planning_adapter(
         decision_id=f"trigger-admission:{checked.request_id}",
         subject_ref=trigger_planning_request_digest(checked),
         subject_kind="generic",
-        allowed=True,
+        outcome=outcome,
         reason_code=reason_code,
         signal={
             "request_id": checked.request_id,
@@ -179,19 +179,6 @@ def admit_trigger_planning(
             "schema_version": checked.schema_version,
         },
     )
-    if outcome != admission.outcome:
-        admission = GovAdmissionDecision(
-            decision_id=admission.decision_id,
-            subject_ref=admission.subject_ref,
-            subject_kind=admission.subject_kind,
-            outcome=outcome,
-            allowed=admission.allowed,
-            reason_code=admission.reason_code,
-            blockers=admission.blockers,
-            signal=admission.signal,
-            metadata=admission.metadata,
-        )
-    return validate_admission_decision(admission)
 
 
 def trigger_planning_admission_digest(

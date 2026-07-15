@@ -11,6 +11,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Routes trigger-planning, supervisor-action and automation-transition gates
+  through one internal planning-admission projection. Their records now carry
+  `governance_flow=planning_admission_adapter.v1` and
+  `execution_authority=false`; they cannot substitute for the canonical
+  attempt-bound `GovernanceDecision` evaluated before connector I/O.
 - Adds module-scoped `DecisionClaimPort` matching the runtime-owned atomic
   decision-digest and nonce claim. The structural port defines claim-once
   semantics without adding GovEngine storage, locking or a second permit.

@@ -6,7 +6,7 @@ from typing import Any, Mapping
 
 from govengine.admission import (
     GovAdmissionDecision,
-    admission_decision_from_host_gate,
+    _admission_decision_from_planning_adapter,
     validate_admission_decision,
 )
 from govengine.api import GovApiError, require_mapping
@@ -161,7 +161,6 @@ def admit_supervisor_action(
     request: Mapping[str, Any] | SupervisorActionRequest,
 ) -> GovAdmissionDecision:
     checked = validate_supervisor_action_request(request)
-    allowed = True
     outcome = 'allowed'
     reason_code = 'supervisor_action_allowed'
     blockers: tuple[str, ...] = ()
@@ -170,27 +169,25 @@ def admit_supervisor_action(
         outcome = 'record_only'
         reason_code = 'supervisor_action_record_only'
     elif checked.action in SUPERVISOR_HUMAN_SIGNOFF_ACTIONS and not checked.human_signoff:
-        allowed = False
         outcome = 'deferred'
         reason_code = 'supervisor_action_requires_human_signoff'
         blockers = ('human_signoff_required',)
     elif checked.action in {'move_to_dead_letter', 'retry_later'} and not _within_retry_budget(checked):
-        allowed = False
         outcome = 'denied'
         reason_code = 'supervisor_action_retry_budget_exceeded'
         blockers = ('retry_budget_exceeded',)
     elif checked.action == 'block_autostart' and not _stale_age_exceeded(checked):
-        allowed = False
         outcome = 'denied'
         reason_code = 'supervisor_action_stale_age_not_exceeded'
         blockers = ('stale_age_not_exceeded',)
 
-    admission = admission_decision_from_host_gate(
+    return _admission_decision_from_planning_adapter(
         decision_id=f'supervisor-admission:{checked.request_id}',
         subject_ref=supervisor_action_request_digest(checked),
         subject_kind='operator_action',
-        allowed=allowed,
+        outcome=outcome,
         reason_code=reason_code,
+        blockers=blockers,
         signal={
             'request_id': checked.request_id,
             'action': checked.action,
@@ -214,19 +211,6 @@ def admit_supervisor_action(
             'schema_version': checked.schema_version,
         },
     )
-    if admission.outcome != outcome or admission.blockers != blockers:
-        admission = GovAdmissionDecision(
-            decision_id=admission.decision_id,
-            subject_ref=admission.subject_ref,
-            subject_kind=admission.subject_kind,
-            outcome=outcome,
-            allowed=allowed,
-            reason_code=admission.reason_code,
-            blockers=blockers,
-            signal=admission.signal,
-            metadata=admission.metadata,
-        )
-    return validate_admission_decision(admission)
 
 
 def supervisor_action_admission_digest(

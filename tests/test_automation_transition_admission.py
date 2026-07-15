@@ -55,6 +55,9 @@ def test_automation_transition_admission_allows_bounded_child_plan() -> None:
     assert admission.outcome == 'allowed'
     assert admission.reason_code == 'automation_transition_allowed'
     assert admission.signal['automation_chain_schema_ref'] == SUPPORTED_AUTOMATION_CHAIN_SCHEMA_REF
+    assert admission.metadata['governance_flow'] == 'planning_admission_adapter.v1'
+    assert admission.metadata['execution_authority'] is False
+    assert 'authorization' not in admission.as_dict()
     assert automation_transition_request_digest(request).startswith('sha256:')
     assert automation_transition_admission_digest(admission).startswith('sha256:')
     assert validate_automation_transition_request(request.as_dict()) == request
@@ -72,6 +75,7 @@ def test_automation_transition_denies_llm_authority() -> None:
     assert admission.outcome == 'denied'
     assert admission.reason_code == 'automation_transition_llm_authority_denied'
     assert admission.blockers == ('llm_authority_denied',)
+    assert admission.metadata['execution_authority'] is False
 
 
 def test_automation_transition_defers_llm_proposal_without_approval() -> None:
@@ -152,4 +156,3 @@ def test_automation_transition_admission_is_bound_to_exact_chain_request() -> No
     ) != automation_transition_request_digest(different_chain_request)
     with pytest.raises(GovApiError, match='automation_transition_admission_drift'):
         validate_automation_transition_admission(admission, request=different_chain_request)
-

@@ -6,7 +6,7 @@ from typing import Any, Mapping
 
 from govengine.admission import (
     GovAdmissionDecision,
-    admission_decision_from_host_gate,
+    _admission_decision_from_planning_adapter,
     validate_admission_decision,
 )
 from govengine.api import GovApiError, require_mapping
@@ -191,48 +191,42 @@ def admit_automation_transition(
     request: Mapping[str, Any] | AutomationTransitionRequest,
 ) -> GovAdmissionDecision:
     checked = validate_automation_transition_request(request)
-    allowed = True
     outcome = 'allowed'
     reason_code = 'automation_transition_allowed'
     blockers: tuple[str, ...] = ()
 
     if checked.automation_chain_schema_ref != SUPPORTED_AUTOMATION_CHAIN_SCHEMA_REF:
-        allowed = False
         outcome = 'denied'
         reason_code = 'automation_transition_unsupported_chain_schema'
         blockers = ('unsupported_automation_chain_schema',)
     elif checked.llm_authority:
-        allowed = False
         outcome = 'denied'
         reason_code = 'automation_transition_llm_authority_denied'
         blockers = ('llm_authority_denied',)
     elif checked.depth > checked.max_depth:
-        allowed = False
         outcome = 'denied'
         reason_code = 'automation_transition_depth_exceeded'
         blockers = ('depth_exceeded',)
     elif checked.child_sequence > checked.max_children:
-        allowed = False
         outcome = 'denied'
         reason_code = 'automation_transition_child_budget_exceeded'
         blockers = ('child_budget_exceeded',)
     elif checked.child_intent_class not in checked.allowed_child_intent_classes:
-        allowed = False
         outcome = 'denied'
         reason_code = 'automation_transition_child_intent_class_denied'
         blockers = ('child_intent_class_denied',)
     elif (checked.llm_proposed or checked.source == 'llm_proposal') and not checked.approval_ref:
-        allowed = False
         outcome = 'deferred'
         reason_code = 'automation_transition_requires_approval'
         blockers = ('approval_required',)
 
-    admission = admission_decision_from_host_gate(
+    return _admission_decision_from_planning_adapter(
         decision_id=f'automation-transition:{checked.request_id}',
         subject_ref=automation_transition_request_digest(checked),
         subject_kind='operator_action',
-        allowed=allowed,
+        outcome=outcome,
         reason_code=reason_code,
+        blockers=blockers,
         signal={
             'request_id': checked.request_id,
             'chain_id': checked.chain_id,
@@ -262,19 +256,6 @@ def admit_automation_transition(
             'schema_version': checked.schema_version,
         },
     )
-    if admission.outcome != outcome or admission.blockers != blockers:
-        admission = GovAdmissionDecision(
-            decision_id=admission.decision_id,
-            subject_ref=admission.subject_ref,
-            subject_kind=admission.subject_kind,
-            outcome=outcome,
-            allowed=allowed,
-            reason_code=admission.reason_code,
-            blockers=blockers,
-            signal=admission.signal,
-            metadata=admission.metadata,
-        )
-    return validate_admission_decision(admission)
 
 
 def automation_transition_admission_digest(

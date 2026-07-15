@@ -1279,6 +1279,44 @@ def admission_decision_from_host_gate(
     ))
 
 
+def _admission_decision_from_planning_adapter(
+    *,
+    decision_id: str,
+    subject_ref: str,
+    subject_kind: str,
+    outcome: str,
+    reason_code: str,
+    blockers: Iterable[Any] = (),
+    signal: Mapping[str, Any] | None = None,
+    metadata: Mapping[str, Any] | None = None,
+) -> GovAdmissionDecision:
+    """Project a bounded planning gate into the shared admission model.
+
+    Trigger, supervisor, and automation gates run before a runtime attempt has
+    the bindings required by ``evaluate_governance``. This internal adapter
+    keeps their result shape consistent without minting execution authority or
+    pretending that a canonical execution transaction was evaluated.
+    """
+
+    checked_outcome = _strict_enum(outcome, ADMISSION_OUTCOMES, 'admission_outcome')
+    adapter_metadata = _metadata(metadata)
+    adapter_metadata['governance_flow'] = 'planning_admission_adapter.v1'
+    adapter_metadata['execution_authority'] = False
+    return validate_admission_decision(
+        GovAdmissionDecision(
+            decision_id=decision_id,
+            subject_ref=subject_ref,
+            subject_kind=subject_kind,
+            outcome=checked_outcome,
+            allowed=checked_outcome not in {'denied', 'deferred'},
+            reason_code=reason_code,
+            blockers=_tuple(blockers),
+            signal=_metadata(signal),
+            metadata=adapter_metadata,
+        )
+    )
+
+
 def _enum(
     value: Any,
     allowed: tuple[str, ...],

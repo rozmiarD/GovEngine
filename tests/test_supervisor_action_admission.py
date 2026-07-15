@@ -45,6 +45,9 @@ def test_supervisor_action_admission_allows_block_autostart() -> None:
     assert admission.outcome == 'allowed'
     assert admission.reason_code == 'supervisor_action_allowed'
     assert admission.signal['operation_id'] == 'op-1'
+    assert admission.metadata['governance_flow'] == 'planning_admission_adapter.v1'
+    assert admission.metadata['execution_authority'] is False
+    assert 'authorization' not in admission.as_dict()
     assert supervisor_action_request_digest(request).startswith('sha256:')
     assert supervisor_action_admission_digest(admission).startswith('sha256:')
     assert validate_supervisor_action_request(request.as_dict()) == request
@@ -119,6 +122,7 @@ def test_supervisor_action_requires_human_signoff_for_recovery_actions() -> None
     assert admission.outcome == 'deferred'
     assert admission.reason_code == 'supervisor_action_requires_human_signoff'
     assert admission.blockers == ('human_signoff_required',)
+    assert admission.metadata['execution_authority'] is False
 
 
 def test_supervisor_action_allows_signed_manual_recovery_context() -> None:

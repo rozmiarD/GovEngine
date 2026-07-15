@@ -12,6 +12,13 @@ via `policy_verdict_to_gov_policy_decision()`.
 GovEngine does not run operator approval workflows, store audit logs, deliver
 carrier messages, hold credentials, or execute tools.
 
+Trigger-planning, supervisor-action and automation-transition admission are
+planning-only adapters. They share one internal projection into
+`GovAdmissionDecision` and carry `execution_authority=false`; none is approval,
+a runtime permit or a substitute for an attempt-bound `GovernanceDecision`.
+Planning stages do not invent an attempt, lease or fencing binding merely to
+call the execution evaluator early.
+
 ## Objects
 
 - `GovAdmissionDecision` validates one host-provided go/no-go decision over a

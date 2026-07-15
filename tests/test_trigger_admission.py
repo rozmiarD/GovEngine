@@ -47,6 +47,9 @@ def test_trigger_planning_admission_allows_readonly_plan_operation() -> None:
     assert admission.outcome == "allowed"
     assert admission.reason_code == "trigger_planning_allowed"
     assert admission.signal["operation_intent"] == "collect_basic_host_inventory"
+    assert admission.metadata["governance_flow"] == "planning_admission_adapter.v1"
+    assert admission.metadata["execution_authority"] is False
+    assert "authorization" not in admission.as_dict()
     assert trigger_planning_request_digest(request).startswith("sha256:")
     assert trigger_planning_admission_digest(admission).startswith("sha256:")
     assert validate_trigger_planning_request(request.as_dict()) == request
@@ -68,6 +71,7 @@ def test_trigger_record_decisions_are_record_only(decision: str) -> None:
     assert admission.allowed is True
     assert admission.outcome == "record_only"
     assert admission.reason_code == "trigger_planning_record_only"
+    assert admission.metadata["execution_authority"] is False
 
 
 def test_trigger_planning_rejects_mutating_operation_mode() -> None:

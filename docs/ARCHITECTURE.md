@@ -57,6 +57,15 @@ its output-digest/output-limit controls. RExecOp still produces the runtime
 receipt; SCLite still owns the final lifecycle receipt and verification. The
 conformance result proves deterministic binding checks, not runtime honesty.
 
+G3-E keeps trigger-planning, supervisor-action and automation-transition gates
+as thin planning adapters over the shared `GovAdmissionDecision` projection.
+They run before the runtime has the attempt, lease, scope and inventory facts
+required by `evaluate_governance()`, so each result is explicitly marked
+`planning_admission_adapter.v1` and `execution_authority=false`. The adapters
+must not invent those runtime bindings or mint authorization. If a planning
+decision creates executable work, RExecOp still submits that operation to the
+canonical evaluator before connector I/O.
+
 ## Public surface map
 
 The tested public surface registry in `govengine.surfaces` currently exposes
