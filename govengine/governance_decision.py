@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from hmac import compare_digest
-from typing import Any, Mapping, Protocol
+from typing import Any, Mapping, Protocol, runtime_checkable
 
 from govengine._governance_validation import (
     parse_aware_timestamp,
@@ -120,6 +120,36 @@ class ApprovalSignatureVerificationPort(Protocol):
         approval_digest: str,
         trust_policy_id: str,
     ) -> bool:
+        ...
+
+
+@runtime_checkable
+class DecisionClaimPort(Protocol):
+    """Host-owned atomic claim-once boundary for runtime consumption.
+
+    The caller must verify decision authenticity, exact runtime bindings and
+    expiry before invoking this port. A production adapter must atomically
+    record both ``decision_digest`` and ``nonce``: it returns ``True`` only
+    when neither value has been claimed, and ``False`` when either value was
+    claimed previously. ``attempt_id`` and ``runtime_instance_id`` are audit
+    bindings, not namespaces that permit reuse. A successful production claim
+    must remain consumed across runtime restart and recovery while the
+    authorization or its attempt can still be recovered; a rejected claim
+    must not reassign or overwrite the existing owner binding.
+
+    GovEngine defines this structural contract only. RExecOp owns persistence,
+    locking, recovery durability, retention and the final pre-I/O call.
+    """
+
+    def claim_governance_decision_once(
+        self,
+        *,
+        decision_digest: str,
+        nonce: str,
+        attempt_id: str,
+        runtime_instance_id: str,
+    ) -> bool:
+        """Atomically claim an unclaimed decision digest and nonce together."""
         ...
 
 

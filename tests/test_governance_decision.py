@@ -26,6 +26,7 @@ from govengine.governance import (
 )
 from govengine.governance_decision import (
     ApprovalSignatureVerificationPort,
+    DecisionClaimPort,
     GovernanceDecision,
     PolicyActivationPort,
     evaluate_governance,
@@ -88,6 +89,23 @@ class _SignatureVerifier(ApprovalSignatureVerificationPort):
             (attestation.approval_id, approval_digest, trust_policy_id)
         )
         return self.valid
+
+
+class _DecisionClaims:
+    def claim_governance_decision_once(
+        self,
+        *,
+        decision_digest: str,
+        nonce: str,
+        attempt_id: str,
+        runtime_instance_id: str,
+    ) -> bool:
+        return bool(decision_digest and nonce and attempt_id and runtime_instance_id)
+
+
+def test_decision_claim_port_is_structural_and_storage_neutral() -> None:
+    assert isinstance(_DecisionClaims(), DecisionClaimPort)
+    assert not isinstance(object(), DecisionClaimPort)
 
 
 def _trust_policy() -> ApprovalTrustPolicy:

@@ -11,6 +11,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds module-scoped `DecisionClaimPort` matching the runtime-owned atomic
+  decision-digest and nonce claim. The structural port defines claim-once
+  semantics without adding GovEngine storage, locking or a second permit.
 - Defers `output_digest_required` entirely to post-I/O receipt conformance.
   Typed-execution admission carries the obligation but no longer expects an
   output digest that cannot exist before connector I/O.

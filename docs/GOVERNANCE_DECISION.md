@@ -39,6 +39,17 @@ or persist it. RExecOp owns the atomic decision claim, its runtime attempt
 permit, the final pre-I/O recheck and all connector execution. Consequently
 `GovernanceAuthorization` is not a second runtime permit.
 
+Module-scoped `DecisionClaimPort` makes that handoff explicit. Its host adapter
+must atomically claim both the decision digest and nonce: exactly the first
+claim may return `True`, and reuse of either value must return `False` even for
+a different attempt or runtime instance. The attempt and runtime identifiers
+are audit bindings, not replay namespaces. Callers verify the signed decision,
+runtime bindings and expiry before the claim. A successful production claim
+remains consumed across restart and recovery while its authorization or
+attempt remains recoverable; a rejected claim does not overwrite its existing
+owner binding. GovEngine provides no storage, lock, retention or recovery
+implementation; those remain RExecOp concerns.
+
 `approval_required` and `denied` decisions never contain authorization.
 
 ## Determinism and JSON validation
@@ -67,9 +78,10 @@ runtime must call the fail-closed verifier before claiming authorization.
 
 `PolicyActivationPort`, `ApprovalRevocationPort` and
 `ApprovalSignatureVerificationPort` are host-provided read boundaries.
-GovEngine defines their fail-closed semantics but does not provide production
-storage, PKI, key custody or remote trust services. SCLite schemas and
-canonical verification remain unchanged.
+`DecisionClaimPort` is a host-provided atomic mutation boundary used only after
+those checks. GovEngine defines their fail-closed semantics but does not
+provide production storage, PKI, key custody or remote trust services. SCLite
+schemas and canonical verification remain unchanged.
 
 The deterministic `DemoDigestSigner`/`DemoDigestVerifier` used by tests remain
 fixtures and are not production identity proof.
