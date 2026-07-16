@@ -1,0 +1,65 @@
+{
+  "binding_digests": "not_applicable",
+  "case_id": "host-claimed-plugin",
+  "expected": {
+    "govengine": {
+      "reason_code": "self_attested_capability_support",
+      "status": "rejected"
+    },
+    "rexecop": {
+      "reason_code": "self_attested_capability_support",
+      "status": "rejected"
+    }
+  },
+  "forbidden_output_keys": [
+    "credential",
+    "password",
+    "raw_output",
+    "raw_target",
+    "secret",
+    "target_url",
+    "token"
+  ],
+  "input": {
+    "inventory": {
+      "attestation_ref": "runtime-inventory-attestation:42",
+      "backend_classes": [
+        "http_api"
+      ],
+      "capabilities": [
+        "connector.inventory.update",
+        "network.tls.required",
+        "receipt.terminal"
+      ],
+      "inventory_epoch": 42,
+      "inventory_id": "runtime-inventory-42",
+      "plugin_registered": true,
+      "runtime_instance_id": "rexecop-1",
+      "runtime_version": "0.3.0rc2",
+      "schema_version": "v1",
+      "side_effect_classes": [
+        "mutation",
+        "read_only"
+      ],
+      "source_ref": "runtime-registry:rexecop-1"
+    },
+    "requirements": {
+      "execution_spec_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "operation_id": "op-123",
+      "required_backend_class": "http_api",
+      "required_capabilities": [
+        "connector.inventory.update",
+        "network.tls.required",
+        "receipt.terminal"
+      ],
+      "requirements_id": "requirements-1",
+      "schema_version": "v1",
+      "side_effect_class": "mutation",
+      "step_id": "step-4"
+    }
+  },
+  "max_schema_version": "v1",
+  "operation": "evaluate_capability",
+  "owner": "govengine",
+  "schema_version": "govengine.conformance_case.v1"
+}

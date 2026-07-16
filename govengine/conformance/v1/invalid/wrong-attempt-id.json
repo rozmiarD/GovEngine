@@ -1,0 +1,123 @@
+{
+  "binding_digests": "not_applicable",
+  "case_id": "wrong-attempt-id",
+  "expected": {
+    "govengine": {
+      "reason_code": "not_applicable",
+      "status": "not_applicable"
+    },
+    "rexecop": {
+      "reason_code": "governance_decision_binding_drift",
+      "status": "rejected"
+    }
+  },
+  "forbidden_output_keys": [
+    "credential",
+    "password",
+    "raw_output",
+    "raw_target",
+    "secret",
+    "target_url",
+    "token"
+  ],
+  "input": {
+    "governance_decision": {
+      "allowed": true,
+      "approval_attestation_digest": "",
+      "authorization": {
+        "attempt_id": "attempt-1",
+        "authorization_id": "gov-auth:decision-1",
+        "capability_inventory_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+        "consume_once": true,
+        "execution_spec_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "expires_at": "2026-07-15T12:05:30+00:00",
+        "fencing_token_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "inventory_epoch": 11,
+        "issued_at": "2026-07-15T12:05:00+00:00",
+        "lease_epoch": 7,
+        "lease_id": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "nonce": "nonce-1",
+        "operation_id": "op-1",
+        "payload_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "policy_epoch": 13,
+        "policy_pack_digest": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+        "requested_scope_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+        "runtime_instance_id": "runtime-1",
+        "schema_version": "v1",
+        "step_id": "step-1"
+      },
+      "blockers": [],
+      "capability_compatibility_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "controls": {
+        "allowed_backend_classes": [],
+        "allowed_network_egress": [],
+        "control_ids": [],
+        "max_output_bytes": 4096,
+        "max_steps": 0,
+        "mutation_requires_approval": false,
+        "no_raw_shell": false,
+        "output_digest_required": true,
+        "read_only_required": false,
+        "receipt_required": true,
+        "timeout_seconds": 0.0,
+        "typed_execution_control_ids": []
+      },
+      "decision_digest": "sha256:83ac9a8cb3b6b03b39d5c69d0e134aa7c5bf7f2eac3a6e832b719b4b3972cdd4",
+      "decision_id": "decision-1",
+      "enforcement_plan_digest": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+      "governance_trace_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "policy_evaluation_digest": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
+      "policy_verdict_digest": "sha256:8888888888888888888888888888888888888888888888888888888888888888",
+      "reason_code": "all_governance_gates_passed",
+      "request_digest": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
+      "required_controls": [],
+      "schema_version": "v1",
+      "scope_decision_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "status": "allowed",
+      "transaction_id": "transaction-1"
+    },
+    "repeat": 1,
+    "runtime_facts": {
+      "attempt_id": "attempt-other",
+      "capability_inventory_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+      "execution_spec_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "fencing_token_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "inventory_epoch": 11,
+      "lease_epoch": 7,
+      "lease_id": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "operation_id": "op-1",
+      "payload_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "requested_scope_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+      "runtime_instance_id": "runtime-1",
+      "step_id": "step-1"
+    },
+    "signed_artifact": {
+      "metadata": {
+        "decision_digest": "sha256:83ac9a8cb3b6b03b39d5c69d0e134aa7c5bf7f2eac3a6e832b719b4b3972cdd4",
+        "purpose": "governance_decision_authority",
+        "transaction_id": "transaction-1"
+      },
+      "payload_ref": "artifact://conformance/decision-1",
+      "record_digest": "sha256:583b156dc7e38793305a90dba3d08b4a4b798eb81766dbe88bb122e0fd37e86b",
+      "record_type": "govengine.governance_decision_signing.SignedGovernanceDecisionRecord",
+      "schema_version": "v1",
+      "signature": {
+        "algorithm": "demo-sha256-digest-binding",
+        "binds_digest": "sha256:583b156dc7e38793305a90dba3d08b4a4b798eb81766dbe88bb122e0fd37e86b",
+        "metadata": {
+          "demo_only": true,
+          "purpose": "governance_decision_authority"
+        },
+        "mode": "detached_demo_digest",
+        "signature": "demo:d2074b5d7f428eecadc991cd29ea6c87fe17167ec925ec370ccc69e550a16955",
+        "signed": true,
+        "signer_id": "conformance-decision-signer"
+      },
+      "signer_id": "conformance-decision-signer"
+    }
+  },
+  "max_schema_version": "v1",
+  "operation": "consume_decision",
+  "owner": "rexecop",
+  "schema_version": "govengine.conformance_case.v1"
+}

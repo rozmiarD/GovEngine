@@ -1,0 +1,49 @@
+{
+  "case_count": 33,
+  "cases": [
+    "invalid/admission-used-as-approval.json",
+    "invalid/approval-different-attempt.json",
+    "invalid/approval-different-spec.json",
+    "invalid/approval-different-target.json",
+    "invalid/approval-expired.json",
+    "invalid/approval-revoked.json",
+    "invalid/backend-derived-requirements.json",
+    "invalid/capability-descriptor-digest-mismatch.json",
+    "invalid/duplicate-json-key.json",
+    "invalid/execution-facts-digest-mismatch.json",
+    "invalid/forbidden-key-inside-list.json",
+    "invalid/host-claimed-plugin.json",
+    "invalid/inventory-drift.json",
+    "invalid/nan-number.json",
+    "invalid/opaque-approval-ref.json",
+    "invalid/policy-epoch-drift.json",
+    "invalid/receipt-missing-output-digest.json",
+    "invalid/receipt-output-over-limit.json",
+    "invalid/receipt-overclaim.json",
+    "invalid/receipt-wrong-decision.json",
+    "invalid/receipt-wrong-runtime-permit.json",
+    "invalid/reused-decision-nonce.json",
+    "invalid/self-authorized-destination.json",
+    "invalid/stale-lease-epoch.json",
+    "invalid/unknown-enum-fail-open.json",
+    "invalid/wrong-attempt-id.json",
+    "invalid/wrong-fencing-token.json",
+    "invalid/wrong-runtime-instance.json",
+    "valid/approval-required.json",
+    "valid/approved-attempt-bound.json",
+    "valid/readonly-http-policy-authorized.json",
+    "valid/readonly-no-network.json",
+    "valid/receipt-conformant.json"
+  ],
+  "corpus_version": "v1",
+  "non_claims": [
+    "Corpus success does not prove a non-Python implementation exists.",
+    "RExecOp remains the reference runtime consumer.",
+    "A malicious in-process host remains inside the trusted computing base."
+  ],
+  "runners": [
+    "govengine",
+    "rexecop"
+  ],
+  "schema_version": "govengine.conformance_manifest.v1"
+}

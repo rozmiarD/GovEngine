@@ -48,3 +48,13 @@ the next minor line, and is removed only in the next major release.
 Legacy alpha/root symbols may be reclassified or removed after downstream
 import scans prove no supported consumer remains. Experimental and fixture
 surfaces have no compatibility guarantee.
+
+## Conformance corpus
+
+The wheel includes `govengine/conformance/v1`. Every case is plain JSON with a
+fixed operation, serialized input, expected outcome for both `govengine` and
+`rexecop`, binding digests or explicit `not_applicable`, maximum schema version
+and forbidden output keys. `scripts/generate_conformance_corpus.py --check`
+prevents generated fixture drift. GovEngine executes every GovEngine-owned
+case and validates RExecOp-owned cases as explicit ownership handoffs; RExecOp
+is the reference runtime consumer for atomic decision claim behavior.

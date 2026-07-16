@@ -1,0 +1,91 @@
+{
+  "binding_digests": {
+    "policy_pack_digest": "sha256:bcca407827c3d862d67bedac9d2a3c5be79b3bee7f50d2f1b35c881d36ebedaf",
+    "policy_verdict_digest": "sha256:69b72bbad92f4afd1351c4b05211ab7ea921d7f7223b8a2fe4f0d5aa0d09e414"
+  },
+  "case_id": "admission-used-as-approval",
+  "expected": {
+    "govengine": {
+      "reason_code": "mutation_requires_approval",
+      "status": "approval_required"
+    },
+    "rexecop": {
+      "reason_code": "mutation_requires_approval",
+      "status": "approval_required"
+    }
+  },
+  "forbidden_output_keys": [
+    "credential",
+    "password",
+    "raw_output",
+    "raw_target",
+    "secret",
+    "target_url",
+    "token"
+  ],
+  "input": {
+    "policy_pack": {
+      "issuer_ref": "organization:example",
+      "metadata": {},
+      "policy_epoch": 42,
+      "policy_id": "production-mutation",
+      "rules": [
+        {
+          "conditions": [
+            {
+              "operator": "eq",
+              "path": "action.mode",
+              "value": "mutation"
+            }
+          ],
+          "constraints": [
+            {
+              "constraint_id": "bounded-output",
+              "kind": "output_limit",
+              "metadata": {},
+              "value": 4096
+            }
+          ],
+          "effect": "approval_required",
+          "obligations": [
+            {
+              "description": "",
+              "kind": "receipt",
+              "metadata": {},
+              "obligation_id": "receipt"
+            }
+          ],
+          "priority": 100,
+          "reason_code": "mutation_requires_approval",
+          "risk_class": "low",
+          "risk_score": 0.0,
+          "rule_id": "govern-mutation"
+        }
+      ],
+      "schema_version": "v1",
+      "supersedes": [],
+      "validity": {
+        "expires_at": "2026-07-15T13:00:00Z",
+        "not_before": "2026-07-15T12:00:00Z"
+      },
+      "version": "1.0.0"
+    },
+    "request": {
+      "action": {
+        "mode": "mutation"
+      },
+      "evidence_refs": [
+        "admission:opaque-reference"
+      ],
+      "request_id": "conformance-approval-required",
+      "resource": {
+        "criticality": "low"
+      },
+      "subject_ref": "artifact://conformance/mutation"
+    }
+  },
+  "max_schema_version": "v1",
+  "operation": "evaluate_policy",
+  "owner": "govengine",
+  "schema_version": "govengine.conformance_case.v1"
+}

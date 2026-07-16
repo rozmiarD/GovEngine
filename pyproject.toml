@@ -69,6 +69,10 @@ warn_unused_ignores = true
 [tool.setuptools]
 packages = [
   "govengine",
+  "govengine.conformance",
+  "govengine.conformance.v1",
+  "govengine.conformance.v1.invalid",
+  "govengine.conformance.v1.valid",
   "govengine.contracts",
   "govengine.execution",
   "govengine.policy",
@@ -78,7 +82,13 @@ packages = [
 ]
 
 [tool.setuptools.package-data]
-govengine = ["py.typed", "v1_compatibility_manifest.json"]
+govengine = [
+  "py.typed",
+  "v1_compatibility_manifest.json",
+]
+"govengine.conformance.v1" = ["*.json"]
+"govengine.conformance.v1.valid" = ["*.json"]
+"govengine.conformance.v1.invalid" = ["*.json"]
 
 [tool.pytest.ini_options]
 addopts = "-q"

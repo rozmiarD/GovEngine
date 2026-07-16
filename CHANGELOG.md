@@ -11,6 +11,12 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds a wheel-shipped, language-neutral v1 conformance corpus with 33
+  generated valid/invalid cases and a deterministic GovEngine runner. The
+  corpus covers JSON fail-closed behavior, policy/approval/scope/capability
+  bindings, decision enums and receipt postconditions; RExecOp-owned
+  attempt/lease/fencing/nonce cases are explicitly marked for its reference
+  runner instead of being simulated in GovEngine.
 - Freezes the candidate `govengine.v1` facade and GovEngine-owned v1 schema
   inventory in a wheel-shipped compatibility manifest. CI now rejects facade
   or schema drift and runs strict mypy over the complete stable-facade path;

@@ -1,0 +1,221 @@
+{
+  "binding_digests": "not_applicable",
+  "case_id": "approval-expired",
+  "expected": {
+    "govengine": {
+      "reason_code": "approval_expired",
+      "status": "rejected"
+    },
+    "rexecop": {
+      "reason_code": "approval_expired",
+      "status": "rejected"
+    }
+  },
+  "forbidden_output_keys": [
+    "credential",
+    "password",
+    "raw_output",
+    "raw_target",
+    "secret",
+    "target_url",
+    "token"
+  ],
+  "input": {
+    "governance_request": {
+      "approval_attestation": {
+        "approval_id": "approval-123",
+        "approved_side_effect_class": "mutation",
+        "approver_ref": "operator:alice",
+        "approver_role": "infrastructure-admin",
+        "attempt_id": "attempt-2",
+        "execution_facts_digest": "sha256:1fe40aa27359dbe1a191653d05bb9608f0381db1ce0003db242a486a85718dde",
+        "execution_spec_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "expires_at": "2026-07-15T12:15:00Z",
+        "issued_at": "2026-07-15T12:00:00Z",
+        "not_before": "2026-07-15T12:00:00Z",
+        "operation_id": "op-123",
+        "policy_epoch": 42,
+        "policy_pack_digest": "sha256:bcca407827c3d862d67bedac9d2a3c5be79b3bee7f50d2f1b35c881d36ebedaf",
+        "revocation_ref": "approval-revocations:v1",
+        "schema_version": "v1",
+        "signature_ref": "sigstore:bundle-123",
+        "step_id": "step-4",
+        "subject_digest": "sha256:672715571a26f4bd0a31119e7ac126f8730a919f81b05a08b8528747272acaf0",
+        "target_scope_digest": "sha256:eb384753dd8559b65d5d1a37929d0380d9b70ddbabd0100c7792d9ab3c094090",
+        "trust_domain": "organization:example"
+      },
+      "approval_attestation_digest": "sha256:3e9a91f4cf43dfa7ddc58ae278575e8e3acecec60efe302961878089f191618b",
+      "attempt_id": "attempt-2",
+      "capability_inventory": {
+        "attestation_ref": "runtime-inventory-attestation:42",
+        "backend_classes": [
+          "http_api"
+        ],
+        "capabilities": [
+          "connector.inventory.update",
+          "network.tls.required",
+          "receipt.terminal"
+        ],
+        "inventory_epoch": 42,
+        "inventory_id": "runtime-inventory-42",
+        "runtime_instance_id": "rexecop-1",
+        "runtime_version": "0.3.0rc2",
+        "schema_version": "v1",
+        "side_effect_classes": [
+          "mutation",
+          "read_only"
+        ],
+        "source_ref": "runtime-registry:rexecop-1"
+      },
+      "capability_inventory_digest": "sha256:0201758be9ef35410a1feaf1eb1c232c68b4e86d9fbfc9f29a193f5dc5f89a49",
+      "capability_requirements": {
+        "execution_spec_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "operation_id": "op-123",
+        "required_backend_class": "http_api",
+        "required_capabilities": [
+          "connector.inventory.update",
+          "network.tls.required",
+          "receipt.terminal"
+        ],
+        "requirements_id": "requirements-1",
+        "schema_version": "v1",
+        "side_effect_class": "mutation",
+        "step_id": "step-4"
+      },
+      "capability_requirements_digest": "sha256:15eead2bce2e8a4e4e608a89e0b74dc8c372a14b3e0d05a681d38f62b86cd69e",
+      "execution_facts": {
+        "action": {
+          "mode": "mutation"
+        },
+        "context": {
+          "environment": "production"
+        },
+        "evidence_refs": [],
+        "metadata": {},
+        "principal": {
+          "kind": "operator"
+        },
+        "request_id": "gov-tx-123",
+        "resource": {
+          "criticality": "low"
+        },
+        "schema_version": "v0.1",
+        "subject_ref": "governance:op-123:step-4:attempt-2"
+      },
+      "execution_facts_digest": "sha256:1fe40aa27359dbe1a191653d05bb9608f0381db1ce0003db242a486a85718dde",
+      "execution_spec_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "fencing_token_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+      "lease_epoch": 9,
+      "lease_id": "lease-55",
+      "operation_id": "op-123",
+      "payload_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "policy_epoch": 42,
+      "policy_pack": {
+        "issuer_ref": "organization:example",
+        "metadata": {},
+        "policy_epoch": 42,
+        "policy_id": "production-mutation",
+        "rules": [
+          {
+            "conditions": [
+              {
+                "operator": "eq",
+                "path": "action.mode",
+                "value": "mutation"
+              }
+            ],
+            "constraints": [
+              {
+                "constraint_id": "bounded-output",
+                "kind": "output_limit",
+                "metadata": {},
+                "value": 4096
+              }
+            ],
+            "effect": "approval_required",
+            "obligations": [
+              {
+                "description": "",
+                "kind": "receipt",
+                "metadata": {},
+                "obligation_id": "receipt"
+              }
+            ],
+            "priority": 100,
+            "reason_code": "mutation_requires_approval",
+            "risk_class": "low",
+            "risk_score": 0.0,
+            "rule_id": "govern-mutation"
+          }
+        ],
+        "schema_version": "v1",
+        "supersedes": [],
+        "validity": {
+          "expires_at": "2026-07-15T13:00:00Z",
+          "not_before": "2026-07-15T12:00:00Z"
+        },
+        "version": "1.0.0"
+      },
+      "policy_pack_digest": "sha256:bcca407827c3d862d67bedac9d2a3c5be79b3bee7f50d2f1b35c881d36ebedaf",
+      "requested_scope": {
+        "environment": "production",
+        "requested_destination": {
+          "address_class": "public",
+          "effective_port": 443,
+          "origin_binding_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          "scheme": "https"
+        },
+        "target_namespace": "service.inventory"
+      },
+      "requested_scope_digest": "sha256:eb384753dd8559b65d5d1a37929d0380d9b70ddbabd0100c7792d9ab3c094090",
+      "runtime_instance_id": "rexecop-1",
+      "schema_version": "v1",
+      "scope_policy_binding": {
+        "allowed_address_classes": [
+          "public"
+        ],
+        "allowed_ports": [
+          443
+        ],
+        "allowed_schemes": [
+          "https"
+        ],
+        "allowed_target_namespaces": [
+          "service.inventory"
+        ],
+        "attestation_ref": "catalog-attestation:scope-42",
+        "binding_id": "scope-policy-1",
+        "network_allowed": true,
+        "policy_epoch": 42,
+        "policy_pack_digest": "sha256:bcca407827c3d862d67bedac9d2a3c5be79b3bee7f50d2f1b35c881d36ebedaf",
+        "private_networks_allowed": false,
+        "redirect_policy": "same_origin",
+        "schema_version": "v1",
+        "source_ref": "policy-pack:production-mutation@1.0.0"
+      },
+      "scope_policy_binding_digest": "sha256:98758b100b794bbf3953ad9c905a75415ecc2a7a5cf1f42550f1cd73d30f88f3",
+      "side_effect_class": "mutation",
+      "step_id": "step-4",
+      "transaction_id": "gov-tx-123"
+    },
+    "now": "2026-07-15T12:15:00+00:00",
+    "revoked": false,
+    "trust_policy": {
+      "policy_id": "production-approvers",
+      "require_signature_ref": true,
+      "trusted_approver_refs": [
+        "operator:alice"
+      ],
+      "trusted_domains": [
+        "organization:example"
+      ],
+      "trusted_roles": [
+        "infrastructure-admin"
+      ]
+    }
+  },
+  "max_schema_version": "v1",
+  "operation": "validate_approval",
+  "owner": "govengine",
+  "schema_version": "govengine.conformance_case.v1"
+}

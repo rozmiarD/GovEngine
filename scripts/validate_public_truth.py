@@ -592,6 +592,11 @@ def main() -> int:
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_public_truth.py')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_api_stability.py')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_v1_freeze.py')
+    _assert_contains(
+        '.github/workflows/pytest.yml',
+        workflow,
+        'python scripts/generate_conformance_corpus.py --check',
+    )
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_alpha_readiness.py')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'Mypy stable facade strict')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python -m mypy --strict')

@@ -1,0 +1,64 @@
+{
+  "binding_digests": {
+    "scope_decision_digest": "sha256:fc6dd43a44a6db2af44ff3a7b7be9765af96832e56df30c942a2ee1afcc49608"
+  },
+  "case_id": "readonly-http-policy-authorized",
+  "expected": {
+    "govengine": {
+      "reason_code": "scope_allowed",
+      "status": "allowed"
+    },
+    "rexecop": {
+      "reason_code": "scope_allowed",
+      "status": "allowed"
+    }
+  },
+  "forbidden_output_keys": [
+    "credential",
+    "password",
+    "raw_output",
+    "raw_target",
+    "secret",
+    "target_url",
+    "token"
+  ],
+  "input": {
+    "requested_scope": {
+      "environment": "production",
+      "requested_destination": {
+        "address_class": "public",
+        "effective_port": 443,
+        "origin_binding_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+        "scheme": "https"
+      },
+      "target_namespace": "service.inventory"
+    },
+    "scope_policy_binding": {
+      "allowed_address_classes": [
+        "public"
+      ],
+      "allowed_ports": [
+        443
+      ],
+      "allowed_schemes": [
+        "https"
+      ],
+      "allowed_target_namespaces": [
+        "service.inventory"
+      ],
+      "attestation_ref": "catalog-attestation:scope-42",
+      "binding_id": "scope-policy-1",
+      "network_allowed": true,
+      "policy_epoch": 42,
+      "policy_pack_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "private_networks_allowed": false,
+      "redirect_policy": "same_origin",
+      "schema_version": "v1",
+      "source_ref": "policy-pack:production-mutation@1.0.0"
+    }
+  },
+  "max_schema_version": "v1",
+  "operation": "evaluate_scope",
+  "owner": "govengine",
+  "schema_version": "govengine.conformance_case.v1"
+}

@@ -489,6 +489,8 @@ class GovernanceDecision:
                 'invalid_governance_decision_digest',
             ),
         )
+        if item.status not in GOVERNANCE_DECISION_STATUSES:
+            raise GovApiError('unknown_governance_decision_status')
         supplied_allowed = raw.get('allowed')
         if not isinstance(supplied_allowed, bool) or supplied_allowed != item.allowed:
             raise GovApiError('governance_decision_allowed_mismatch')

@@ -1,0 +1,52 @@
+{
+  "binding_digests": {
+    "scope_decision_digest": "sha256:50a76c7b96336dafacc867340026f05883d4e9610462fc47aa2d141ae28286e3"
+  },
+  "case_id": "readonly-no-network",
+  "expected": {
+    "govengine": {
+      "reason_code": "scope_allowed",
+      "status": "allowed"
+    },
+    "rexecop": {
+      "reason_code": "scope_allowed",
+      "status": "allowed"
+    }
+  },
+  "forbidden_output_keys": [
+    "credential",
+    "password",
+    "raw_output",
+    "raw_target",
+    "secret",
+    "target_url",
+    "token"
+  ],
+  "input": {
+    "requested_scope": {
+      "environment": "production",
+      "target_namespace": "service.inventory"
+    },
+    "scope_policy_binding": {
+      "allowed_address_classes": [],
+      "allowed_ports": [],
+      "allowed_schemes": [],
+      "allowed_target_namespaces": [
+        "service.inventory"
+      ],
+      "attestation_ref": "catalog-attestation:scope-42",
+      "binding_id": "scope-policy-1",
+      "network_allowed": false,
+      "policy_epoch": 42,
+      "policy_pack_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "private_networks_allowed": false,
+      "redirect_policy": "deny",
+      "schema_version": "v1",
+      "source_ref": "policy-pack:production-mutation@1.0.0"
+    }
+  },
+  "max_schema_version": "v1",
+  "operation": "evaluate_scope",
+  "owner": "govengine",
+  "schema_version": "govengine.conformance_case.v1"
+}

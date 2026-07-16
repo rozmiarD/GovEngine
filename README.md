@@ -227,6 +227,7 @@ Navigation hub: [`docs/README.md`](docs/README.md).
 - [`docs/API_BOUNDARY.md`](docs/API_BOUNDARY.md) maps owned and excluded surfaces.
 - [`docs/API_STABILITY_MATRIX.md`](docs/API_STABILITY_MATRIX.md) classifies public exports.
 - [`docs/API_COMPATIBILITY.md`](docs/API_COMPATIBILITY.md) defines the 1.x facade/schema freeze, migration and deprecation policy.
+- [`docs/CONFORMANCE.md`](docs/CONFORMANCE.md) documents the shared language-neutral v1 corpus and runner ownership.
 - [`docs/GOVENGINE_KERNEL_BOUNDARY.md`](docs/GOVENGINE_KERNEL_BOUNDARY.md) defines kernel/profile/runtime/SCLite ownership.
 - [`docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`](docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md) is the operator runbook for the governed-runtime MVP chain.
 - [`docs/SECURITY_INTEGRATION.md`](docs/SECURITY_INTEGRATION.md) records the required security integration order and non-claims.
