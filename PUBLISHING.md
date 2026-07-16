@@ -99,24 +99,25 @@ Do not upload to PyPI or create public tags until the operator explicitly approv
 
 `.github/workflows/publish.yml` is the only repository workflow allowed to
 upload GovEngine. It is manual, requires a version tag plus matching
-`publish-<tag>` confirmation, uses the protected `pypi` environment and requests
-short-lived OIDC (`id-token: write`). Configure that exact owner/repository/
-workflow/environment tuple as a PyPI Trusted Publisher before use.
+`publish-<tag>` confirmation, binds OIDC to the named `pypi` environment and
+requests a short-lived token (`id-token: write`). Configure that exact
+owner/repository/workflow/environment tuple as a PyPI Trusted Publisher before
+use.
 
 The workflow builds once, runs contract gates, uploads the distributions as an
 Actions artifact, creates GitHub build-provenance attestations and publishes
 through the official PyPI action. It carries no long-lived PyPI token and does
-not use `skip-existing`. Environment approval and the explicit release
-instruction remain mandatory.
+not use `skip-existing`. The explicit release instruction remains mandatory;
+GitHub environment protection rules are an optional repository policy.
 
 ### One-time external setup
 
 Before the first v1 upload, the release operator must verify both external
 trust anchors:
 
-1. GitHub repository environment `pypi` exists and requires approval under the
-   repository release policy. Creating an unprotected name alone is not release
-   approval.
+1. GitHub repository environment `pypi` exists so its name is included in the
+   OIDC identity. Required reviewers or branch restrictions are optional
+   repository policy and are not a PyPI protocol requirement.
 2. PyPI has a Trusted Publisher for owner `rozmiarD`, repository `GovEngine`,
    workflow `publish.yml`, environment `pypi`, and package `govengine`.
 
