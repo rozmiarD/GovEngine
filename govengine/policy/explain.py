@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Mapping
 
 from govengine.api import GovApiError
@@ -9,11 +9,15 @@ from govengine.policy.enforcement import (
     SUPPORTED_POLICY_CONSTRAINTS,
     SUPPORTED_POLICY_OBLIGATIONS,
     admit_policy_execution,
+    policy_pack_digest,
 )
 from govengine.policy.model import PolicyRequest, PolicyVerdict, validate_policy_request
+from govengine.policy.reasons import POLICY_REASON_CODE_REGISTRY_SCHEMA_VERSION
 from govengine.policy.runtime import PolicyEngine, _condition_matches, _matches
+from govengine.signing import govengine_record_digest
 
 POLICY_EXPLANATION_SCHEMA_VERSION = "v0.1"
+POLICY_EXPLANATION_V1_SCHEMA_VERSION = "v1"
 INVARIANT_REASONS = frozenset(
     {
         "unsafe_execution_shape",
@@ -47,9 +51,14 @@ class PolicyEvaluationExplanation:
     enforcement_plan: Mapping[str, Any] = field(default_factory=dict)
     blockers: tuple[str, ...] = field(default_factory=tuple)
     non_claims: tuple[str, ...] = field(default_factory=tuple)
+    policy_pack_digest: str = ""
+    policy_issuer_ref: str = ""
+    policy_epoch: int = 0
+    reason_registry_version: str = ""
+    trace_digest: str = ""
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             "schema_version": self.schema_version,
             "status": self.status,
             "request_id": self.request_id,
@@ -71,6 +80,17 @@ class PolicyEvaluationExplanation:
             "blockers": list(self.blockers),
             "non_claims": list(self.non_claims),
         }
+        if self.schema_version == POLICY_EXPLANATION_V1_SCHEMA_VERSION:
+            payload.update(
+                {
+                    "policy_pack_digest": self.policy_pack_digest,
+                    "policy_issuer_ref": self.policy_issuer_ref,
+                    "policy_epoch": self.policy_epoch,
+                    "reason_registry_version": self.reason_registry_version,
+                    "trace_digest": self.trace_digest,
+                }
+            )
+        return payload
 
 
 def explain_policy_evaluation(
@@ -103,8 +123,13 @@ def explain_policy_evaluation(
     matched_rule = _matched_rule(verdict, policy_pack, matched_rules)
     evaluation_path = _evaluation_path(verdict, invariant, matched_rule)
     unsupported = _unsupported_controls(verdict)
-    return PolicyEvaluationExplanation(
-        schema_version=POLICY_EXPLANATION_SCHEMA_VERSION,
+    schema_version = (
+        POLICY_EXPLANATION_V1_SCHEMA_VERSION
+        if policy_pack.schema_version == "v1"
+        else POLICY_EXPLANATION_SCHEMA_VERSION
+    )
+    explanation = PolicyEvaluationExplanation(
+        schema_version=schema_version,
         status="blocked" if plan.blockers else "explained",
         request_id=checked_request.request_id,
         subject_ref=checked_request.subject_ref,
@@ -134,7 +159,31 @@ def explain_policy_evaluation(
             "Does not verify SCLite artifacts or host enforcement.",
             "Does not expose raw request payload values.",
         ),
+        policy_pack_digest=(
+            policy_pack_digest(policy_pack)
+            if schema_version == POLICY_EXPLANATION_V1_SCHEMA_VERSION
+            else ""
+        ),
+        policy_issuer_ref=policy_pack.issuer_ref,
+        policy_epoch=policy_pack.policy_epoch,
+        reason_registry_version=(
+            POLICY_REASON_CODE_REGISTRY_SCHEMA_VERSION
+            if schema_version == POLICY_EXPLANATION_V1_SCHEMA_VERSION
+            else ""
+        ),
     )
+    if schema_version == POLICY_EXPLANATION_V1_SCHEMA_VERSION:
+        body = explanation.as_dict()
+        body.pop("trace_digest")
+        explanation = replace(
+            explanation,
+            trace_digest=govengine_record_digest(
+                body,
+                record_type="govengine.policy.PolicyEvaluationExplanation",
+                schema_version=POLICY_EXPLANATION_V1_SCHEMA_VERSION,
+            ),
+        )
+    return explanation
 
 
 def _rule_evaluation(

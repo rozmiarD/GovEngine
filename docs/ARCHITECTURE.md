@@ -86,6 +86,15 @@ introduced. The built-in governed-runtime baseline merges compatible controls
 for an identical read predicate before compilation so no constraint is
 silently shadowed.
 
+G4-D versions the redacted policy explanation trace for typed packs. Its
+digest binds the policy pack, issuer, epoch, stable kernel reason registry and
+deterministic rule evaluations; v0.1 consumers keep their existing shape.
+Policy-authored reason codes use a bounded identifier grammar but remain owned
+by the signed pack. The module-scoped migration helper converts equality maps
+to typed `eq` conditions only when the caller supplies issuer, epoch and
+validity; it does not activate, sign or store policy and is not added to the
+40-symbol v1 facade.
+
 ## Public surface map
 
 The tested public surface registry in `govengine.surfaces` currently exposes

@@ -16,6 +16,8 @@ evidence store, scheduler, or execution authority.
 | `govengine.policy.compiler` | `PolicyCompiler`, `CompiledPolicyPack`, `CompileResult`, `PolicyRule`, module-scoped typed `PolicyCondition` |
 | `govengine.policy.runtime` | `PolicyEngine`, `evaluate_policy()` |
 | `govengine.policy.explain` | `PolicyEvaluationExplanation`, `explain_policy_evaluation()` redacted decision reasoning |
+| `govengine.policy.reasons` | versioned kernel reason registry and authored-code grammar |
+| `govengine.policy.migration` | module-scoped v0.1 equality-map to typed-v1 normalization scaffold |
 | `govengine.policy.enforcement` | Policy pack/verdict digest binding, `PolicyEnforcementPlan`, existing admission binding, neutral control projection |
 | `govengine.policy.baselines` | deterministic baseline policy pack generator |
 | `govengine.policy.schema` | JSON Schema documents for authoring and host validation |
@@ -83,6 +85,7 @@ Compiler rejects:
 - more than 256 rules, 32 conditions per rule, 4096 total conditions or 64
   controls per rule
 - invalid or unbounded priorities
+- invalid reason-code identifiers, risk classes or non-bounded risk scores
 
 Compiled rules are sorted by `priority` (lower first).
 The compiler performs exact deterministic analysis only; it does not attempt
@@ -138,6 +141,21 @@ or dot-delimited child matching only and is not a regex facility.
 Legacy packs without `schema_version`, or with `v0.1`, remain equality-map
 inputs. The compiler normalizes them internally to typed `eq` conditions while
 `CompiledPolicyPack.as_dict()` preserves the v0.1 wire representation.
+
+`govengine.policy.migration.migrate_policy_pack_v0_1_to_v1()` provides a
+normalizing compatibility scaffold. It requires caller-supplied `issuer_ref`,
+`policy_epoch`, `not_before` and `expires_at`; it does not infer trust, activate
+the pack, sign it or store it. The helper is module-scoped compatibility API
+and is intentionally absent from the capped `govengine.v1` facade.
+
+### Reason codes
+
+`govengine.policy.reasons.policy_reason_code_registry()` publishes the fixed
+kernel codes used for compile results, invariant outcomes and evaluator
+errors. Rule-authored outcome codes are not centrally assigned by GovEngine:
+they remain part of the signed policy pack, but must match the bounded
+`^[a-z][a-z0-9_]{0,127}$` grammar. Dynamic values belong in bounded error
+context, never in the identifier.
 
 ### Active policy binding
 
@@ -256,7 +274,8 @@ decision = policy_verdict_to_gov_policy_decision(verdict)
 ## Explanation output
 
 `explain_policy_evaluation(request, pack)` evaluates through the same
-`PolicyEngine` path and returns `PolicyEvaluationExplanation` schema `v0.1`.
+`PolicyEngine` path and returns `PolicyEvaluationExplanation`. Legacy packs
+retain schema `v0.1`; typed policy packs emit schema `v1`.
 The explanation is intended for host/runtime UX such as RExecOp review screens,
 without requiring the host runtime to reimplement GovEngine policy reasoning.
 
@@ -270,6 +289,11 @@ It includes:
 - obligations and constraints with support status;
 - unsupported controls that make enforcement fail closed;
 - projected neutral runtime controls and enforcement-plan status/blockers.
+
+For typed packs the v1 trace also binds `policy_pack_digest`, issuer, epoch and
+reason-registry version. `trace_digest` is recomputed over the complete
+redacted explanation body. A golden test runs on every supported Python
+version, so verdict, reason, rule order and both digests cannot drift silently.
 
 It does not expose raw request payload values, execute work, approve operators,
 verify SCLite artifacts, or prove that a host enforced projected controls.

@@ -2,13 +2,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import timezone
+import math
 import re
 from typing import Any, Mapping
 
 from govengine._json_boundary import bounded_json_copy
 from govengine._governance_validation import parse_aware_timestamp
 from govengine.api import GovApiError, require_mapping
-from govengine.policy.model import PolicyConstraint, PolicyObligation
+from govengine.policy.model import POLICY_RISK_CLASSES, PolicyConstraint, PolicyObligation
+from govengine.policy.reasons import validate_policy_reason_code
 from govengine.signing import govengine_record_digest
 
 
@@ -120,14 +122,32 @@ class PolicyRule:
         constraints = _constraints(raw.get('constraints') or ())
         if len(obligations) + len(constraints) > MAX_POLICY_CONTROLS_PER_RULE:
             raise GovApiError('policy_rule_control_limit_exceeded')
+        raw_reason_code = raw.get('reason_code')
+        reason_code = (
+            effect
+            if raw_reason_code is None or raw_reason_code == ''
+            else validate_policy_reason_code(raw_reason_code)
+        )
+        raw_risk_class = raw.get('risk_class', 'low')
+        if not isinstance(raw_risk_class, str) or raw_risk_class not in POLICY_RISK_CLASSES:
+            raise GovApiError('invalid_policy_risk_class')
+        raw_risk_score = raw.get('risk_score', 0.0)
+        if (
+            isinstance(raw_risk_score, bool)
+            or not isinstance(raw_risk_score, (int, float))
+            or not math.isfinite(raw_risk_score)
+            or raw_risk_score < 0
+            or raw_risk_score > 1
+        ):
+            raise GovApiError('invalid_policy_risk_score')
         return cls(
             rule_id=rule_id,
             effect=effect,
             conditions=conditions,
             priority=raw_priority,
-            reason_code=str(raw.get('reason_code') or effect).strip() or effect,
-            risk_class=str(raw.get('risk_class') or 'low').strip(),
-            risk_score=float(raw.get('risk_score') or 0.0),
+            reason_code=reason_code,
+            risk_class=raw_risk_class,
+            risk_score=float(raw_risk_score),
             obligations=obligations,
             constraints=constraints,
         )

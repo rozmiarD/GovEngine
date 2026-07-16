@@ -11,6 +11,12 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds a digest-bound `PolicyEvaluationExplanation v1` for typed policy packs,
+  a machine-readable policy kernel reason-code registry, strict authored
+  reason/risk validation and a module-scoped `v0.1` equality-map to typed-v1
+  migration scaffold. Legacy v0.1 explanation output remains wire-compatible;
+  migration requires caller-supplied issuer, epoch and validity and does not
+  activate or sign policy.
 - Adds bounded policy compilation and exact static rule analysis: duplicate
   rule ids, identical predicates with conflicting/redundant effects, conflicting
   control ids, oversized rule/condition/control sets and invalid priorities now
