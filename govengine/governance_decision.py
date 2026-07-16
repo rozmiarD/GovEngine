@@ -46,6 +46,10 @@ from govengine.policy import (
     validate_policy_request,
     validate_policy_verdict,
 )
+from govengine.policy.activation import (
+    PolicyActivationBinding,
+    validate_policy_activation_binding,
+)
 from govengine.scope_policy import evaluate_scope_policy, scope_decision_digest
 from govengine.signing import govengine_record_digest
 
@@ -104,9 +108,9 @@ GOVERNANCE_DECISION_FIELDS = frozenset(
 
 
 class PolicyActivationPort(Protocol):
-    """Host-owned atomic view of the currently active policy epoch."""
+    """Host-owned authenticated view of the current policy binding."""
 
-    def current_epoch(self, policy_id: str) -> int:
+    def current_binding(self, policy_id: str) -> PolicyActivationBinding:
         ...
 
 
@@ -517,7 +521,11 @@ def evaluate_governance(
 
     checked = validate_governance_request(request)
     evaluation_time = _aware_utc(evaluated_at, 'governance_evaluation_time_timezone_required')
-    _validate_policy_activation(checked, policy_activation_port)
+    _validate_policy_activation(
+        checked,
+        policy_activation_port,
+        evaluated_at=evaluation_time,
+    )
     policy_request = _policy_request_from_execution_facts(checked)
     initial_verdict = evaluate_policy(policy_request, checked.policy_pack)
 
@@ -696,12 +704,62 @@ def _policy_request_from_execution_facts(request: GovernanceRequest) -> PolicyRe
 def _validate_policy_activation(
     request: GovernanceRequest,
     port: PolicyActivationPort,
+    *,
+    evaluated_at: datetime,
 ) -> None:
-    current = port.current_epoch(request.policy_pack.policy_id)
-    if isinstance(current, bool) or not isinstance(current, int) or current < 0:
-        raise GovApiError('invalid_current_policy_epoch')
-    if current != request.policy_epoch:
+    current = validate_policy_activation_binding(
+        port.current_binding(request.policy_pack.policy_id)
+    )
+    if current.policy_id != request.policy_pack.policy_id:
+        raise GovApiError('policy_activation_id_mismatch')
+    if current.policy_version != request.policy_pack.version:
+        raise GovApiError('policy_activation_version_mismatch')
+    if not compare_digest(current.policy_pack_digest, request.policy_pack_digest):
+        raise GovApiError('policy_activation_digest_mismatch')
+    if current.policy_epoch != request.policy_epoch:
         raise GovApiError('policy_epoch_drift')
+    if request.policy_pack.schema_version == 'v1':
+        if current.issuer_ref != request.policy_pack.issuer_ref:
+            raise GovApiError('policy_activation_issuer_mismatch')
+        declared_not_before = parse_aware_timestamp(
+            request.policy_pack.not_before,
+            'invalid_policy_not_before',
+        )
+        declared_expires_at = parse_aware_timestamp(
+            request.policy_pack.expires_at,
+            'invalid_policy_expires_at',
+        )
+        active_not_before = parse_aware_timestamp(
+            current.not_before,
+            'invalid_policy_activation_not_before',
+        )
+        active_expires_at = parse_aware_timestamp(
+            current.expires_at,
+            'invalid_policy_activation_expires_at',
+        )
+        if active_not_before < declared_not_before:
+            raise GovApiError('policy_activation_not_before_mismatch')
+        if active_expires_at > declared_expires_at:
+            raise GovApiError('policy_activation_expires_at_mismatch')
+    if current.status != 'active':
+        reason_codes = {
+            'superseded': 'policy_superseded',
+            'revoked': 'policy_revoked',
+            'expired': 'policy_expired',
+        }
+        raise GovApiError(reason_codes[current.status])
+    not_before = parse_aware_timestamp(
+        current.not_before,
+        'invalid_policy_activation_not_before',
+    )
+    expires_at = parse_aware_timestamp(
+        current.expires_at,
+        'invalid_policy_activation_expires_at',
+    )
+    if evaluated_at < not_before:
+        raise GovApiError('policy_not_yet_valid')
+    if evaluated_at >= expires_at:
+        raise GovApiError('policy_expired')
 
 
 def _validated_approval(

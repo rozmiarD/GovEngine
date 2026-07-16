@@ -89,6 +89,12 @@ AST:
 policy_id: policy-pack-typed
 version: "1.0.0"
 schema_version: v1
+issuer_ref: organization:example
+policy_epoch: 7
+validity:
+  not_before: "2026-07-16T00:00:00Z"
+  expires_at: "2026-08-16T00:00:00Z"
+supersedes: []
 rules:
   - rule_id: allow-bounded-read
     effect: allow
@@ -124,6 +130,21 @@ or dot-delimited child matching only and is not a regex facility.
 Legacy packs without `schema_version`, or with `v0.1`, remain equality-map
 inputs. The compiler normalizes them internally to typed `eq` conditions while
 `CompiledPolicyPack.as_dict()` preserves the v0.1 wire representation.
+
+### Active policy binding
+
+V1 packs declare `issuer_ref`, `policy_epoch`, a UTC validity window and
+optional `supersedes` references. Declaration alone is not activation.
+`PolicyActivationPort.current_binding()` supplies a host-authenticated,
+module-scoped `PolicyActivationBinding` containing the current policy
+id/version/digest/epoch/issuer, trust reference, activation window and status.
+
+Canonical governance accepts only `active`. It rejects `superseded`, `revoked`
+and `expired`, plus future or elapsed activation windows and drift in the
+policy identity, digest, epoch or issuer. A host activation may narrow the
+pack's declared validity window but cannot extend it. GovEngine defines the
+contract and deterministic checks; host adapters retain repository, trust,
+storage and activation mutation ownership.
 
 ## Authoring CLI
 

@@ -402,6 +402,11 @@ def validate_governance_request(
         item.policy_pack_digest,
         'policy_pack_digest_mismatch',
     )
+    if (
+        item.policy_pack.schema_version == 'v1'
+        and item.policy_pack.policy_epoch != item.policy_epoch
+    ):
+        raise GovApiError('policy_pack_epoch_mismatch')
     _require_equal_digest(
         execution_facts_digest(item.execution_facts),
         item.execution_facts_digest,

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import timezone
 import re
 from typing import Any, Mapping
 
 from govengine._json_boundary import bounded_json_copy
+from govengine._governance_validation import parse_aware_timestamp
 from govengine.api import GovApiError, require_mapping
 from govengine.policy.model import PolicyConstraint, PolicyObligation
 from govengine.signing import govengine_record_digest
@@ -139,9 +141,14 @@ class CompiledPolicyPack:
     schema_version: str = POLICY_PACK_SCHEMA_VERSION
     rules: tuple[PolicyRule, ...] = field(default_factory=tuple)
     metadata: Mapping[str, Any] = field(default_factory=dict)
+    issuer_ref: str = ''
+    policy_epoch: int = 0
+    not_before: str = ''
+    expires_at: str = ''
+    supersedes: tuple[str, ...] = field(default_factory=tuple)
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             'policy_id': self.policy_id,
             'version': self.version,
             'schema_version': self.schema_version,
@@ -151,6 +158,19 @@ class CompiledPolicyPack:
             ],
             'metadata': dict(self.metadata),
         }
+        if self.schema_version == 'v1':
+            payload.update(
+                {
+                    'issuer_ref': self.issuer_ref,
+                    'policy_epoch': self.policy_epoch,
+                    'validity': {
+                        'not_before': self.not_before,
+                        'expires_at': self.expires_at,
+                    },
+                    'supersedes': list(self.supersedes),
+                }
+            )
+        return payload
 
 
 @dataclass(frozen=True)
@@ -198,6 +218,39 @@ class PolicyCompiler:
         schema_version = str(raw.get('schema_version') or POLICY_PACK_SCHEMA_VERSION).strip()
         if schema_version not in POLICY_PACK_SCHEMA_VERSIONS:
             raise GovApiError(f'unknown_policy_pack_schema_version:{schema_version or "missing"}')
+        issuer_ref = ''
+        policy_epoch = 0
+        not_before = ''
+        expires_at = ''
+        supersedes: tuple[str, ...] = ()
+        if schema_version == 'v1':
+            issuer_ref = str(raw.get('issuer_ref') or '').strip()
+            if not issuer_ref:
+                raise GovApiError('missing_policy_issuer_ref')
+            raw_epoch = raw.get('policy_epoch')
+            if isinstance(raw_epoch, bool) or not isinstance(raw_epoch, int) or raw_epoch < 0:
+                raise GovApiError('invalid_policy_epoch')
+            policy_epoch = raw_epoch
+            validity = require_mapping(
+                raw.get('validity'),
+                reason_code='invalid_policy_validity',
+            )
+            not_before = _policy_timestamp(
+                validity.get('not_before'),
+                'invalid_policy_not_before',
+            )
+            expires_at = _policy_timestamp(
+                validity.get('expires_at'),
+                'invalid_policy_expires_at',
+            )
+            if parse_aware_timestamp(expires_at, 'invalid_policy_expires_at') <= (
+                parse_aware_timestamp(not_before, 'invalid_policy_not_before')
+            ):
+                raise GovApiError('invalid_policy_validity_window')
+            supersedes = _text_tuple(
+                raw.get('supersedes') or (),
+                reason_code='invalid_policy_supersedes',
+            )
         raw_rules = raw.get('rules')
         if not isinstance(raw_rules, (list, tuple)) or not raw_rules:
             raise GovApiError('policy_pack_without_rules')
@@ -217,6 +270,11 @@ class PolicyCompiler:
             schema_version=schema_version,
             rules=rules,
             metadata=_safe_mapping(raw.get('metadata'), reason_code='invalid_policy_pack_metadata'),
+            issuer_ref=issuer_ref,
+            policy_epoch=policy_epoch,
+            not_before=not_before,
+            expires_at=expires_at,
+            supersedes=supersedes,
         )
 
 
@@ -336,3 +394,21 @@ def _validate_condition(item: PolicyCondition) -> None:
 def _valid_namespace(value: str) -> bool:
     parts = value.split('.')
     return bool(parts) and all(_PATH_SEGMENT.fullmatch(part) for part in parts)
+
+
+def _policy_timestamp(value: Any, reason_code: str) -> str:
+    parsed = parse_aware_timestamp(value, reason_code)
+    return parsed.astimezone(timezone.utc).isoformat().replace('+00:00', 'Z')
+
+
+def _text_tuple(value: Any, *, reason_code: str) -> tuple[str, ...]:
+    if isinstance(value, (str, bytes)) or not isinstance(value, (list, tuple)):
+        raise GovApiError(reason_code)
+    result: list[str] = []
+    for item in value:
+        if not isinstance(item, str) or not item.strip():
+            raise GovApiError(reason_code)
+        result.append(item.strip())
+    if len(result) != len(set(result)):
+        raise GovApiError(reason_code)
+    return tuple(result)

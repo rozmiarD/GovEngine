@@ -11,6 +11,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds v1 policy issuer, epoch, validity and supersedes declarations plus a
+  module-scoped host-owned `PolicyActivationBinding`. Canonical governance now
+  verifies the current id/version/digest/epoch/issuer and bounded activation
+  window before rule evaluation, rejecting superseded, revoked, expired and
+  not-yet-valid policies without adding a policy repository or storage layer.
 - Adds typed policy-condition AST support for `schema_version: v1` with the
   closed operator set `eq`, `neq`, `in`, `not_in`, `contains`, `exists`, `lt`,
   `lte`, `gt`, `gte`, `subset_of` and `matches_namespace`. Known policy

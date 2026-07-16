@@ -8,12 +8,25 @@ from govengine.policy.compiler import PolicyCondition
 from govengine.policy.schema import policy_json_schema
 
 
+def _v1_fields() -> dict[str, object]:
+    return {
+        "schema_version": "v1",
+        "issuer_ref": "organization:example",
+        "policy_epoch": 7,
+        "validity": {
+            "not_before": "2026-07-16T00:00:00Z",
+            "expires_at": "2026-08-16T00:00:00Z",
+        },
+        "supersedes": [],
+    }
+
+
 def _compile(*conditions: dict[str, object]):
     result = PolicyCompiler().compile(
         {
+            **_v1_fields(),
             "policy_id": "typed-policy",
             "version": "1.0.0",
-            "schema_version": "v1",
             "rules": [
                 {
                     "rule_id": "typed-allow",
@@ -179,9 +192,9 @@ def test_typed_condition_compilation_fails_closed(
 ) -> None:
     result = PolicyCompiler().compile(
         {
+            **_v1_fields(),
             "policy_id": "invalid-typed-policy",
             "version": "1",
-            "schema_version": "v1",
             "rules": [
                 {
                     "rule_id": "invalid",
@@ -241,9 +254,9 @@ def test_equality_does_not_coerce_bool_to_integer() -> None:
 def test_exact_conflict_uses_canonical_condition_ast() -> None:
     result = PolicyCompiler().compile(
         {
+            **_v1_fields(),
             "policy_id": "conflict",
             "version": "1",
-            "schema_version": "v1",
             "rules": [
                 {
                     "rule_id": "allow",

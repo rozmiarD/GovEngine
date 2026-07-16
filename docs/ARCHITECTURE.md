@@ -73,6 +73,12 @@ coercion, treats missing paths fail-closed, emits stable operand-type failures
 and does not add regex, callbacks or a solver. Legacy v0.1 equality maps are
 normalized to typed `eq` conditions without changing their serialized form.
 
+G4-B adds v1 policy issuer, epoch and validity declarations together with a
+host-authenticated `PolicyActivationBinding`. `evaluate_governance()` checks
+the current binding before policy evaluation and fails closed on identity,
+digest, epoch, issuer, status or time drift. GovEngine does not implement a
+policy repository, activation database, signer or authoring workflow.
+
 ## Public surface map
 
 The tested public surface registry in `govengine.surfaces` currently exposes

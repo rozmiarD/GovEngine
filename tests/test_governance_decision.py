@@ -38,6 +38,7 @@ from govengine.governance_decision_signing import (
     sign_governance_decision,
 )
 from govengine.policy import PolicyCompiler, policy_pack_digest
+from govengine.policy.activation import PolicyActivationBinding
 from govengine.scope_policy import ScopePolicyBinding, scope_policy_binding_digest
 from govengine.signing import (
     DemoDigestSigner,
@@ -51,12 +52,46 @@ NOW = datetime(2026, 7, 15, 12, 5, tzinfo=timezone.utc)
 
 
 class _PolicyActivation(PolicyActivationPort):
-    def __init__(self, epoch: int = 42) -> None:
-        self.epoch = epoch
+    def __init__(
+        self,
+        request: dict[str, Any],
+        *,
+        epoch: int | None = None,
+        status: str = 'active',
+        not_before: str = '2026-07-15T12:00:00Z',
+        expires_at: str = '2026-07-15T13:00:00Z',
+    ) -> None:
+        self.request = request
+        self.epoch = request['policy_epoch'] if epoch is None else epoch
+        self.status = status
+        self.not_before = not_before
+        self.expires_at = expires_at
 
-    def current_epoch(self, policy_id: str) -> int:
+    def current_binding(self, policy_id: str) -> PolicyActivationBinding:
         assert policy_id == 'production-mutation'
-        return self.epoch
+        compiled = PolicyCompiler().compile(self.request['policy_pack'])
+        assert compiled.policy_pack is not None
+        pack = compiled.policy_pack
+        issuer_ref = (
+            pack.issuer_ref
+            if pack.schema_version == 'v1'
+            else 'issuer:legacy-policy'
+        )
+        return PolicyActivationBinding.from_mapping(
+            {
+                'schema_version': 'v1',
+                'binding_id': 'policy-activation:production-mutation',
+                'policy_id': policy_id,
+                'policy_version': pack.version,
+                'policy_pack_digest': self.request['policy_pack_digest'],
+                'policy_epoch': self.epoch,
+                'issuer_ref': issuer_ref,
+                'trust_ref': 'policy-trust:production',
+                'status': self.status,
+                'not_before': self.not_before,
+                'expires_at': self.expires_at,
+            }
+        )
 
 
 class _Revocations(ApprovalRevocationPort):
@@ -123,11 +158,25 @@ def _compiled_policy(*, effect: str = 'approval_required'):
         {
             'policy_id': 'production-mutation',
             'version': '1',
+            'schema_version': 'v1',
+            'issuer_ref': 'organization:example',
+            'policy_epoch': 42,
+            'validity': {
+                'not_before': '2026-07-15T12:00:00Z',
+                'expires_at': '2026-07-15T13:00:00Z',
+            },
+            'supersedes': [],
             'rules': [
                 {
                     'rule_id': 'govern-mutation',
                     'effect': effect,
-                    'conditions': {'action.mode': 'mutation'},
+                    'conditions': [
+                        {
+                            'path': 'action.mode',
+                            'operator': 'eq',
+                            'value': 'mutation',
+                        }
+                    ],
                     'reason_code': (
                         'mutation_requires_approval'
                         if effect == 'approval_required'
@@ -299,7 +348,7 @@ def _request_mapping(
 
 def _evaluate(request: dict[str, Any], **overrides: Any) -> GovernanceDecision:
     arguments: dict[str, Any] = {
-        'policy_activation_port': _PolicyActivation(),
+        'policy_activation_port': _PolicyActivation(request),
         'evaluated_at': NOW,
         'approval_trust_policy': _trust_policy(),
         'approval_revocation_port': _Revocations(),
@@ -417,10 +466,51 @@ def test_denied_gate_never_produces_authorization(
 
 
 def test_policy_epoch_drift_fails_closed() -> None:
+    request = _request_mapping(with_approval=True)
     with pytest.raises(GovApiError, match='policy_epoch_drift'):
         _evaluate(
-            _request_mapping(with_approval=True),
-            policy_activation_port=_PolicyActivation(epoch=43),
+            request,
+            policy_activation_port=_PolicyActivation(request, epoch=43),
+        )
+
+
+@pytest.mark.parametrize(
+    ('status', 'reason_code'),
+    [
+        ('superseded', 'policy_superseded'),
+        ('revoked', 'policy_revoked'),
+        ('expired', 'policy_expired'),
+    ],
+)
+def test_inactive_policy_binding_fails_closed(
+    status: str,
+    reason_code: str,
+) -> None:
+    request = _request_mapping(with_approval=True)
+    with pytest.raises(GovApiError, match=reason_code):
+        _evaluate(
+            request,
+            policy_activation_port=_PolicyActivation(request, status=status),
+        )
+
+
+def test_policy_binding_validity_window_fails_closed() -> None:
+    request = _request_mapping(with_approval=True)
+    with pytest.raises(GovApiError, match='policy_not_yet_valid'):
+        _evaluate(
+            request,
+            policy_activation_port=_PolicyActivation(
+                request,
+                not_before='2026-07-15T12:06:00Z',
+            ),
+        )
+    with pytest.raises(GovApiError, match='policy_expired'):
+        _evaluate(
+            request,
+            policy_activation_port=_PolicyActivation(
+                request,
+                expires_at='2026-07-15T12:05:00Z',
+            ),
         )
 
 
