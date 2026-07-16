@@ -1,0 +1,14 @@
+{
+  "schema_version": "govengine.rc_window.v1",
+  "status": "active",
+  "version": "1.0.0rc1",
+  "started_at": "2026-07-16T13:35:00Z",
+  "baseline_commit": "0b5d483f1259aef681521a185e0cdfb19a538314",
+  "v1_manifest_sha256": "663be1ef13d162d09a98a2cdf6448076394d0d5f02fab3acff10a59b01fb5882",
+  "conformance_manifest_sha256": "30c29603b2b48b82d2384d467168a3d7da9a11318cac91451f833ea5d1ba5d9d",
+  "reason_registry_source_sha256": "1b59bc57d483604fc0febd289783ac3a4cc492ce03656bc3febffe50c86316d7",
+  "facade_exports": 40,
+  "v1_records": 15,
+  "rule": "schema_facade_corpus_or_reason_registry_change_requires_new_rc",
+  "notes": "Documentation, tests and blocker fixes may land only when these frozen contract inputs remain unchanged. Contract drift requires a new release-candidate version and record."
+}

@@ -28,6 +28,7 @@ python scripts/validate_release_readiness.py
 python scripts/validate_digest_ownership.py
 python scripts/validate_api_stability.py
 python scripts/validate_v1_freeze.py
+python scripts/validate_rc_window.py
 python scripts/generate_conformance_corpus.py --check
 python scripts/validate_workflow_security.py
 python scripts/validate_v1_security_review.py
@@ -108,6 +109,10 @@ PyPI workflow invariants.
 record structurally in normal CI. Release/publish mode adds
 `--require-independent`, which fails until an external reviewer records an
 immutable reviewed commit and zero open P0/P1 findings.
+
+`scripts/validate_rc_window.py` binds `1.0.0rc1` to the frozen v1 manifest,
+conformance manifest and policy reason-code registry source. Drift requires a
+new RC version and record; the gate cannot be refreshed silently under rc1.
 
 ## Read-only operator verifier gates
 

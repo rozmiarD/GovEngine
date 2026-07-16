@@ -20,6 +20,7 @@ pass. Upload/tag creation also requires explicit operator approval.
 - [ ] `python scripts/validate_public_truth.py` passes.
 - [ ] `python scripts/validate_api_stability.py` passes; run it with the RExecOp consumer root for coordinated releases.
 - [ ] `python scripts/validate_v1_freeze.py`,
+  `python scripts/validate_rc_window.py`,
   `python scripts/generate_conformance_corpus.py --check`, and
   `python scripts/validate_workflow_security.py` pass.
 - [ ] `python scripts/validate_release_readiness.py` passes.

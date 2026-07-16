@@ -21,6 +21,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 - Marks the wheel-shipped v1 compatibility manifest `frozen_for_1.0` and adds
   the concrete `0.16.11` to v1 migration/rollback guide, including exact
   RExecOp/SCLite ownership and candidate pins.
+- Starts a machine-checked `1.0.0rc1` window bound to the frozen facade/schema
+  manifest, conformance manifest and reason-code registry source. Drift in
+  those inputs requires a new RC rather than a silent rc1 refresh.
 - Adds a versioned independent v1 contract-review record and release-only gate.
   Normal CI validates the record structure; the publish workflow fails closed
   until an external reviewer identifies an immutable commit and closes every
