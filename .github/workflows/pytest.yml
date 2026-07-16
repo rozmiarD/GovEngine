@@ -33,12 +33,20 @@ jobs:
         run: python scripts/validate_public_truth.py
       - name: Validate API stability inventory
         run: python scripts/validate_api_stability.py
+      - name: Validate v1 API and schema freeze
+        run: python scripts/validate_v1_freeze.py
       - name: Validate alpha readiness
         run: python scripts/validate_alpha_readiness.py
       - name: Ruff
         run: python -m ruff check .
       - name: Mypy
         run: python -m mypy govengine
+      - name: Mypy stable facade strict
+        run: >-
+          python -m mypy --strict --disable-error-code=import-untyped
+          govengine/v1.py govengine/api.py govengine/approvals.py
+          govengine/governance.py govengine/governance_decision.py
+          govengine/governance_trace.py govengine/policy
       - name: Test
         run: python -m pytest -q
 
@@ -82,3 +90,4 @@ jobs:
           /tmp/govengine-wheel-smoke/bin/python -m pip install dist/*.whl
           /tmp/govengine-wheel-smoke/bin/python -m pip check
           /tmp/govengine-wheel-smoke/bin/python -c "import importlib.metadata as md, govengine; assert md.version('govengine') == govengine.__version__"
+          /tmp/govengine-wheel-smoke/bin/python -c "import importlib.resources as ir, json; data=json.loads(ir.files('govengine').joinpath('v1_compatibility_manifest.json').read_text()); assert len(data['facade_exports']) == 40"

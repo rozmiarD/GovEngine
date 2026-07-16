@@ -78,7 +78,7 @@ packages = [
 ]
 
 [tool.setuptools.package-data]
-govengine = ["py.typed"]
+govengine = ["py.typed", "v1_compatibility_manifest.json"]
 
 [tool.pytest.ini_options]
 addopts = "-q"

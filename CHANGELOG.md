@@ -11,6 +11,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Freezes the candidate `govengine.v1` facade and GovEngine-owned v1 schema
+  inventory in a wheel-shipped compatibility manifest. CI now rejects facade
+  or schema drift and runs strict mypy over the complete stable-facade path;
+  the compatibility policy documents legacy migration and 1.x deprecation.
 - Adds a digest-bound `PolicyEvaluationExplanation v1` for typed policy packs,
   a machine-readable policy kernel reason-code registry, strict authored
   reason/risk validation and a module-scoped `v0.1` equality-map to typed-v1

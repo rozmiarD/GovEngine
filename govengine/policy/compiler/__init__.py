@@ -15,7 +15,8 @@ from govengine.signing import govengine_record_digest
 
 
 POLICY_PACK_SCHEMA_VERSION = 'v0.1'
-POLICY_PACK_SCHEMA_VERSIONS = ('v0.1', 'v1')
+POLICY_PACK_V1_SCHEMA_VERSION = 'v1'
+POLICY_PACK_SCHEMA_VERSIONS = (POLICY_PACK_SCHEMA_VERSION, POLICY_PACK_V1_SCHEMA_VERSION)
 POLICY_RULE_EFFECTS = ('allow', 'allow_with_obligations', 'approval_required', 'deny')
 POLICY_CONDITION_OPERATORS = (
     'eq',

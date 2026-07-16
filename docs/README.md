@@ -11,6 +11,7 @@ Start here when navigating `docs/`. Package-level status lives in
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Layers, public surfaces, dependency direction |
 | [API_BOUNDARY.md](API_BOUNDARY.md) | Module/surface ownership (machine-checked vs registry) |
 | [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md) | Export stability classification |
+| [API_COMPATIBILITY.md](API_COMPATIBILITY.md) | 1.x facade/schema freeze, migration and deprecation policy |
 | [DOWNSTREAM_IMPORT_MAP.md](DOWNSTREAM_IMPORT_MAP.md) | RExecOp/Tecrax import inventory and migration posture |
 | [GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md) | Canonical G2-A request and approval binding |
 | [SCOPE_CAPABILITY_BINDINGS.md](SCOPE_CAPABILITY_BINDINGS.md) | Independent scope and capability inputs/decisions |

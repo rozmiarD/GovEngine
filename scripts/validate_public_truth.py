@@ -591,11 +591,15 @@ def main() -> int:
     _assert_contains('.github/workflows/pytest.yml', workflow, "python-version: ['3.11', '3.12', '3.13']")
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_public_truth.py')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_api_stability.py')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_v1_freeze.py')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_alpha_readiness.py')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'Mypy stable facade strict')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'python -m mypy --strict')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'package-dry-run:')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'rm -rf dist build *.egg-info')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python -m twine check dist/*')
     _assert_contains('.github/workflows/pytest.yml', workflow, '/tmp/govengine-wheel-smoke/bin/python -m pip check')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'v1_compatibility_manifest.json')
 
     documented = _documented_surface_names(api_boundary)
     if documented != surface_names:

@@ -1,0 +1,188 @@
+{
+  "manifest_version": "v1",
+  "release_line": "1.x-candidate",
+  "facade_module": "govengine.v1",
+  "facade_exports": [
+    "ApprovalAttestation",
+    "ApprovalRevocationPort",
+    "ApprovalTrustPolicy",
+    "CompileResult",
+    "CompiledPolicyPack",
+    "GOVERNANCE_TRACE_SCHEMA_VERSION",
+    "GovApiError",
+    "GovApiResult",
+    "GovernanceDecision",
+    "GovernanceTrace",
+    "GovernanceRequest",
+    "PolicyCompiler",
+    "PolicyConstraint",
+    "PolicyEnforcementPlan",
+    "PolicyEngine",
+    "PolicyEvaluationExplanation",
+    "PolicyObligation",
+    "PolicyRequest",
+    "PolicyRule",
+    "PolicyVerdict",
+    "RuntimeControlProjection",
+    "admit_policy_execution",
+    "compile_policy_pack",
+    "evaluate_policy",
+    "evaluate_governance",
+    "explain_policy_evaluation",
+    "policy_enforcement_admission",
+    "policy_enforcement_admission_digest",
+    "policy_enforcement_plan_digest",
+    "policy_pack_digest",
+    "policy_request_digest",
+    "policy_verdict_digest",
+    "project_governance_trace",
+    "project_runtime_controls",
+    "validate_policy_enforcement_admission",
+    "validate_policy_enforcement_plan",
+    "validate_policy_request",
+    "validate_policy_verdict",
+    "validate_approval_attestation",
+    "validate_governance_request"
+  ],
+  "v1_records": [
+    {
+      "record_type": "govengine.approvals.ApprovalAttestation",
+      "schema_constant": "govengine.approvals.APPROVAL_ATTESTATION_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "facade"
+    },
+    {
+      "record_type": "govengine.capabilities.CapabilityCompatibilityDecision",
+      "schema_constant": "govengine.capabilities.CAPABILITY_COMPATIBILITY_DECISION_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "module-scoped"
+    },
+    {
+      "record_type": "govengine.capabilities.CapabilityInventoryBinding",
+      "schema_constant": "govengine.capabilities.CAPABILITY_INVENTORY_BINDING_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "module-scoped"
+    },
+    {
+      "record_type": "govengine.capabilities.OperationCapabilityRequirements",
+      "schema_constant": "govengine.capabilities.OPERATION_CAPABILITY_REQUIREMENTS_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "module-scoped"
+    },
+    {
+      "record_type": "govengine.governance.GovernanceRequest",
+      "schema_constant": "govengine.governance.GOVERNANCE_REQUEST_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "facade"
+    },
+    {
+      "record_type": "govengine.governance_decision.GovernanceAuthorization",
+      "schema_constant": "govengine.governance_decision.GOVERNANCE_AUTHORIZATION_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "module-scoped"
+    },
+    {
+      "record_type": "govengine.governance_decision.GovernanceDecision",
+      "schema_constant": "govengine.governance_decision.GOVERNANCE_DECISION_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "facade"
+    },
+    {
+      "record_type": "govengine.policy.CompiledPolicyPack",
+      "schema_constant": "govengine.policy.compiler.POLICY_PACK_V1_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "facade"
+    },
+    {
+      "record_type": "govengine.policy.PolicyActivationBinding",
+      "schema_constant": "govengine.policy.activation.POLICY_ACTIVATION_BINDING_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "module-scoped"
+    },
+    {
+      "record_type": "govengine.policy.PolicyEvaluationExplanation",
+      "schema_constant": "govengine.policy.explain.POLICY_EXPLANATION_V1_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "facade"
+    },
+    {
+      "record_type": "govengine.policy.PolicyReasonCodeRegistry",
+      "schema_constant": "govengine.policy.reasons.POLICY_REASON_CODE_REGISTRY_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "module-scoped"
+    },
+    {
+      "record_type": "govengine.receipt_conformance.ReceiptConformanceResult",
+      "schema_constant": "govengine.receipt_conformance.RECEIPT_CONFORMANCE_RESULT_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "module-scoped"
+    },
+    {
+      "record_type": "govengine.receipt_conformance.RuntimeReceiptBinding",
+      "schema_constant": "govengine.receipt_conformance.RUNTIME_RECEIPT_BINDING_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "module-scoped"
+    },
+    {
+      "record_type": "govengine.scope_policy.ScopeDecision",
+      "schema_constant": "govengine.scope_policy.SCOPE_DECISION_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "module-scoped"
+    },
+    {
+      "record_type": "govengine.scope_policy.ScopePolicyBinding",
+      "schema_constant": "govengine.scope_policy.SCOPE_POLICY_BINDING_SCHEMA_VERSION",
+      "schema_version": "v1",
+      "owner": "govengine",
+      "surface": "module-scoped"
+    }
+  ],
+  "legacy_facade_records": [
+    {
+      "record_type": "govengine.governance_trace.GovernanceTrace",
+      "schema_constant": "govengine.governance_trace.GOVERNANCE_TRACE_SCHEMA_VERSION",
+      "schema_version": "v0.1"
+    },
+    {
+      "record_type": "govengine.policy.PolicyEnforcementPlan",
+      "schema_constant": "govengine.policy.enforcement.POLICY_ENFORCEMENT_PLAN_SCHEMA_VERSION",
+      "schema_version": "v0.1"
+    },
+    {
+      "record_type": "govengine.policy.PolicyEvaluationExplanation",
+      "schema_constant": "govengine.policy.explain.POLICY_EXPLANATION_SCHEMA_VERSION",
+      "schema_version": "v0.1"
+    },
+    {
+      "record_type": "govengine.policy.PolicyRequest",
+      "schema_constant": "govengine.policy.model.POLICY_REQUEST_SCHEMA_VERSION",
+      "schema_version": "v0.1"
+    },
+    {
+      "record_type": "govengine.policy.PolicyVerdict",
+      "schema_constant": "govengine.policy.model.POLICY_VERDICT_SCHEMA_VERSION",
+      "schema_version": "v0.1"
+    }
+  ],
+  "compatibility_policy": {
+    "v1_field_or_semantic_break": "new_schema_version_and_major_release",
+    "optional_addition": "requires_manifest_update_conformance_case_and_migration_note",
+    "unknown_fields": "follow_record_validator_and_fail_closed_where_declared",
+    "legacy_v0_1": "compatibility_only_no_new_features",
+    "experimental_modules": "no_stability_guarantee"
+  }
+}
