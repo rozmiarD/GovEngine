@@ -5,6 +5,9 @@ semantic review of the GovEngine v1 governance contracts. Automated tests,
 CodeQL and dependency audit are required evidence, but they do not replace
 this review.
 
+The immutable baseline, reproduction commands and required scope are collected
+in [v1-review-package.md](v1-review-package.md).
+
 The reviewer should inspect at least:
 
 - `GovernanceRequest`, approval, scope and capability binding completeness;

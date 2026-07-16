@@ -5,7 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from scripts.validate_v1_security_review import validate_v1_security_review
+from scripts.validate_v1_security_review import (
+    REVIEW_BASELINE_COMMIT,
+    validate_v1_security_review,
+)
 
 
 def test_v1_security_review_record_is_structurally_valid_and_pending() -> None:
@@ -37,7 +40,7 @@ def test_completed_independent_review_passes_release_gate(tmp_path: Path) -> Non
             'organization_or_reference': 'external-review-2026-07',
             'independent_of_implementation': True,
         },
-        'reviewed_commit': 'a' * 40,
+        'reviewed_commit': REVIEW_BASELINE_COMMIT,
         'completed_at': '2026-07-16T12:00:00Z',
         'scope': [f'scope-{index}' for index in range(9)],
         'findings': [

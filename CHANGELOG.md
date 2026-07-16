@@ -24,6 +24,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 - Starts a machine-checked `1.0.0rc1` window bound to the frozen facade/schema
   manifest, conformance manifest and reason-code registry source. Drift in
   those inputs requires a new RC rather than a silent rc1 refresh.
+- Adds an independent-review package naming the immutable GovEngine/RExecOp/
+  SCLite/Tecrax source baselines, required semantic scope and exact reproduction
+  commands without marking the still-pending review as complete.
 - Adds a versioned independent v1 contract-review record and release-only gate.
   Normal CI validates the record structure; the publish workflow fails closed
   until an external reviewer identifies an immutable commit and closes every

@@ -10,6 +10,8 @@ from typing import Any, Mapping
 
 ROOT = Path(__file__).resolve().parents[1]
 REVIEW_PATH = ROOT / 'docs' / 'security-review' / 'v1-contract-review.json'
+REVIEW_PACKAGE_PATH = ROOT / 'docs' / 'security-review' / 'v1-review-package.md'
+REVIEW_BASELINE_COMMIT = 'bd7ac496006bd8447f6722fb346e0033815aac64'
 FULL_SHA = re.compile(r'^[0-9a-f]{40}$')
 STATUSES = {'pending_independent_review', 'independent_reviewed'}
 SEVERITIES = {'p0', 'p1', 'p2', 'p3', 'informational'}
@@ -36,6 +38,17 @@ def validate_v1_security_review(
     *,
     require_independent: bool = False,
 ) -> dict[str, Any]:
+    review_package = REVIEW_PACKAGE_PATH.read_text(encoding='utf-8')
+    for marker in (
+        REVIEW_BASELINE_COMMIT,
+        '78676f0d6ecd46011553ce2106dbf4fae5594885',
+        '2470373c6384c284ab48df7ce763f0938797d155',
+        '0c737c821451489af17e5e1d5a0db0fdd51ee01f',
+        'scripts/validate_g6_release_candidate_gate.py',
+        'SCLite ownership/freeze and absence of new SCLite contracts',
+    ):
+        if marker not in review_package:
+            raise AssertionError(f'security_review_package_missing:{marker}')
     record = json.loads(
         path.read_text(encoding='utf-8'),
         object_pairs_hook=_strict_object,
@@ -121,6 +134,7 @@ def validate_v1_security_review(
         and bool(str(reviewer.get('organization_or_reference')).strip())
         and isinstance(checked['reviewed_commit'], str)
         and bool(FULL_SHA.fullmatch(checked['reviewed_commit']))
+        and checked['reviewed_commit'] == REVIEW_BASELINE_COMMIT
         and _aware_timestamp(checked['completed_at'])
         and open_p0 == 0
         and open_p1 == 0
