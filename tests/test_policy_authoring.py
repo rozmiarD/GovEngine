@@ -48,6 +48,19 @@ def test_policy_baseline_generator_produces_compilable_governed_runtime_pack() -
         result.policy_pack,
     )
     assert verdict.decision == 'allow_with_obligations'
+    read_rule = next(
+        rule
+        for rule in result.policy_pack.rules
+        if rule.conditions[0].path == 'action.mode'
+        and rule.conditions[0].value == 'read'
+    )
+    assert {item.constraint_id for item in read_rule.constraints} == {
+        'bounded-output',
+        'digest-output',
+        'network-egress',
+        'no-shell',
+        'read-only',
+    }
 
 
 def test_policy_authoring_schema_is_public_and_boundary_explicit() -> None:

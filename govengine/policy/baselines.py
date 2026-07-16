@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
 from typing import Any
 
 from govengine.api import GovApiError
@@ -177,12 +178,25 @@ def baseline_policy_pack(
 def _governed_runtime_baseline() -> dict[str, Any]:
     rules: list[dict[str, Any]] = []
     seen: set[str] = set()
+    predicates: dict[str, dict[str, Any]] = {}
     for name in ('destructive-deny', 'readonly', 'bounded-output', 'mutating-approval'):
         for rule in _BASELINES[name]['rules']:
             rule_id = str(rule['rule_id'])
             if rule_id in seen:
                 continue
-            rules.append(deepcopy(rule))
+            copied = deepcopy(rule)
+            predicate = json.dumps(
+                copied.get('conditions') or {},
+                sort_keys=True,
+                separators=(',', ':'),
+            )
+            existing = predicates.get(predicate)
+            if existing is not None and existing.get('effect') == copied.get('effect'):
+                _merge_rule_controls(existing, copied)
+                seen.add(rule_id)
+                continue
+            rules.append(copied)
+            predicates[predicate] = copied
             seen.add(rule_id)
     return {
         'policy_id': 'govengine-governed-runtime-baseline',
@@ -195,3 +209,22 @@ def _governed_runtime_baseline() -> dict[str, Any]:
             'execution_layer': 'RExecOp_or_host_runtime',
         },
     }
+
+
+def _merge_rule_controls(target: dict[str, Any], source: dict[str, Any]) -> None:
+    for field_name, id_key in (
+        ('obligations', 'obligation_id'),
+        ('constraints', 'constraint_id'),
+    ):
+        target_items = list(target.get(field_name) or [])
+        by_id = {str(item[id_key]): item for item in target_items}
+        for item in source.get(field_name) or []:
+            item_id = str(item[id_key])
+            previous = by_id.get(item_id)
+            if previous is not None and previous != item:
+                raise GovApiError('conflicting_policy_controls')
+            if previous is None:
+                copied = deepcopy(item)
+                target_items.append(copied)
+                by_id[item_id] = copied
+        target[field_name] = target_items

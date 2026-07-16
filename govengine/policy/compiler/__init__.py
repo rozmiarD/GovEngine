@@ -39,6 +39,10 @@ POLICY_CONDITION_NAMESPACES = (
 _PATH_SEGMENT = re.compile(r'^[A-Za-z_][A-Za-z0-9_-]*$')
 _NUMERIC_OPERATORS = frozenset({'lt', 'lte', 'gt', 'gte'})
 _LIST_OPERATORS = frozenset({'in', 'not_in', 'subset_of'})
+MAX_POLICY_RULES = 256
+MAX_POLICY_CONDITIONS_PER_RULE = 32
+MAX_POLICY_TOTAL_CONDITIONS = 4096
+MAX_POLICY_CONTROLS_PER_RULE = 64
 
 
 @dataclass(frozen=True)
@@ -104,16 +108,28 @@ class PolicyRule:
         if effect not in POLICY_RULE_EFFECTS:
             raise GovApiError(f'unknown_policy_rule_effect:{effect or "missing"}')
         conditions = _conditions(raw.get('conditions'), schema_version=schema_version)
+        raw_priority = raw.get('priority', 100)
+        if (
+            isinstance(raw_priority, bool)
+            or not isinstance(raw_priority, int)
+            or raw_priority < 0
+            or raw_priority > 1_000_000
+        ):
+            raise GovApiError('invalid_policy_rule_priority')
+        obligations = _obligations(raw.get('obligations') or ())
+        constraints = _constraints(raw.get('constraints') or ())
+        if len(obligations) + len(constraints) > MAX_POLICY_CONTROLS_PER_RULE:
+            raise GovApiError('policy_rule_control_limit_exceeded')
         return cls(
             rule_id=rule_id,
             effect=effect,
             conditions=conditions,
-            priority=int(raw.get('priority') or 100),
+            priority=raw_priority,
             reason_code=str(raw.get('reason_code') or effect).strip() or effect,
             risk_class=str(raw.get('risk_class') or 'low').strip(),
             risk_score=float(raw.get('risk_score') or 0.0),
-            obligations=_obligations(raw.get('obligations') or ()),
-            constraints=_constraints(raw.get('constraints') or ()),
+            obligations=obligations,
+            constraints=constraints,
         )
 
     def as_dict(self, *, schema_version: str = POLICY_PACK_SCHEMA_VERSION) -> dict[str, Any]:
@@ -254,6 +270,8 @@ class PolicyCompiler:
         raw_rules = raw.get('rules')
         if not isinstance(raw_rules, (list, tuple)) or not raw_rules:
             raise GovApiError('policy_pack_without_rules')
+        if len(raw_rules) > MAX_POLICY_RULES:
+            raise GovApiError('policy_rule_limit_exceeded')
         rules = tuple(
             sorted(
                 (
@@ -263,7 +281,10 @@ class PolicyCompiler:
                 key=lambda item: (item.priority, item.rule_id),
             )
         )
+        if sum(len(rule.conditions) for rule in rules) > MAX_POLICY_TOTAL_CONDITIONS:
+            raise GovApiError('policy_condition_limit_exceeded')
         _reject_conflicts(rules)
+        _reject_control_conflicts(rules)
         return CompiledPolicyPack(
             policy_id=policy_id,
             version=version,
@@ -283,8 +304,12 @@ def compile_policy_pack(policy_pack: Mapping[str, Any]) -> CompileResult:
 
 
 def _reject_conflicts(rules: tuple[PolicyRule, ...]) -> None:
+    rule_ids: set[str] = set()
     seen: dict[str, str] = {}
     for rule in rules:
+        if rule.rule_id in rule_ids:
+            raise GovApiError('duplicate_policy_rule_id')
+        rule_ids.add(rule.rule_id)
         fingerprint = govengine_record_digest(
             [condition.as_dict() for condition in rule.conditions],
             record_type='govengine.policy.PolicyConditionSet',
@@ -292,7 +317,32 @@ def _reject_conflicts(rules: tuple[PolicyRule, ...]) -> None:
         previous = seen.get(fingerprint)
         if previous and previous != rule.effect:
             raise GovApiError('conflicting_policy_rules')
+        if previous == rule.effect:
+            raise GovApiError('redundant_policy_rules')
         seen[fingerprint] = rule.effect
+
+
+def _reject_control_conflicts(rules: tuple[PolicyRule, ...]) -> None:
+    seen: dict[tuple[str, str], str] = {}
+    for rule in rules:
+        controls = (
+            ('obligation', item.obligation_id, item.as_dict())
+            for item in rule.obligations
+        )
+        constraints = (
+            ('constraint', item.constraint_id, item.as_dict())
+            for item in rule.constraints
+        )
+        for control_type, control_id, payload in (*controls, *constraints):
+            key = (control_type, control_id)
+            fingerprint = govengine_record_digest(
+                payload,
+                record_type=f'govengine.policy.{control_type}',
+            )
+            previous = seen.get(key)
+            if previous is not None and previous != fingerprint:
+                raise GovApiError('conflicting_policy_controls')
+            seen[key] = fingerprint
 
 
 def _obligations(values: Any) -> tuple[PolicyObligation, ...]:
@@ -320,6 +370,8 @@ def _conditions(value: Any, *, schema_version: str) -> tuple[PolicyCondition, ..
         raw = _safe_mapping(value, reason_code='invalid_policy_rule_conditions')
         if not raw:
             raise GovApiError('policy_rule_without_conditions')
+        if len(raw) > MAX_POLICY_CONDITIONS_PER_RULE:
+            raise GovApiError('policy_rule_condition_limit_exceeded')
         conditions = tuple(
             PolicyCondition(path=path, operator='eq', value=expected)
             for path, expected in raw.items()
@@ -329,6 +381,8 @@ def _conditions(value: Any, *, schema_version: str) -> tuple[PolicyCondition, ..
             raise GovApiError('invalid_policy_rule_conditions')
         if not value:
             raise GovApiError('policy_rule_without_conditions')
+        if len(value) > MAX_POLICY_CONDITIONS_PER_RULE:
+            raise GovApiError('policy_rule_condition_limit_exceeded')
         conditions = tuple(
             item if isinstance(item, PolicyCondition) else PolicyCondition.from_mapping(item)
             for item in value

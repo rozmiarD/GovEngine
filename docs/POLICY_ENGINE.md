@@ -76,9 +76,17 @@ Compiler rejects:
 
 - packs without `policy_id`, `version`, or rules
 - rules without `rule_id`, `effect`, or non-empty `conditions`
+- duplicate rule ids
 - **conflicting rules** that share identical conditions but differ in `effect`
+- redundant rules that repeat the exact predicate and effect
+- conflicting obligation/constraint ids with different definitions
+- more than 256 rules, 32 conditions per rule, 4096 total conditions or 64
+  controls per rule
+- invalid or unbounded priorities
 
 Compiled rules are sorted by `priority` (lower first).
+The compiler performs exact deterministic analysis only; it does not attempt
+partial-overlap reasoning, subsumption or SAT solving.
 
 ### Typed conditions (`schema_version: v1`)
 

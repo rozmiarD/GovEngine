@@ -79,6 +79,13 @@ the current binding before policy evaluation and fails closed on identity,
 digest, epoch, issuer, status or time drift. GovEngine does not implement a
 policy repository, activation database, signer or authoring workflow.
 
+G4-C bounds compilation and performs only exact static analysis: duplicate
+ids, identical conflicting/redundant predicates, conflicting control ids and
+oversized rule/condition/control sets fail closed. No partial-overlap solver is
+introduced. The built-in governed-runtime baseline merges compatible controls
+for an identical read predicate before compilation so no constraint is
+silently shadowed.
+
 ## Public surface map
 
 The tested public surface registry in `govengine.surfaces` currently exposes

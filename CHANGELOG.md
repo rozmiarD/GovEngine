@@ -11,6 +11,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds bounded policy compilation and exact static rule analysis: duplicate
+  rule ids, identical predicates with conflicting/redundant effects, conflicting
+  control ids, oversized rule/condition/control sets and invalid priorities now
+  fail closed. The built-in governed-runtime baseline now explicitly merges
+  compatible controls for its shared read predicate instead of shadowing them.
 - Adds v1 policy issuer, epoch, validity and supersedes declarations plus a
   module-scoped host-owned `PolicyActivationBinding`. Canonical governance now
   verifies the current id/version/digest/epoch/issuer and bounded activation

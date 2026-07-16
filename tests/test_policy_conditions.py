@@ -288,3 +288,142 @@ def test_typed_policy_json_schema_is_available() -> None:
     assert schema["properties"]["schema_version"] == {"const": "v1"}
     condition = schema["properties"]["rules"]["items"]["properties"]["conditions"]
     assert condition["type"] == "array"
+
+
+@pytest.mark.parametrize(
+    ("rules", "reason_code"),
+    [
+        (
+            [
+                {
+                    "rule_id": "same-id",
+                    "effect": "allow",
+                    "conditions": [{"path": "action.mode", "operator": "eq", "value": "read"}],
+                },
+                {
+                    "rule_id": "same-id",
+                    "effect": "deny",
+                    "conditions": [{"path": "action.mode", "operator": "eq", "value": "write"}],
+                },
+            ],
+            "duplicate_policy_rule_id",
+        ),
+        (
+            [
+                {
+                    "rule_id": "first",
+                    "effect": "allow",
+                    "conditions": [{"path": "action.mode", "operator": "eq", "value": "read"}],
+                },
+                {
+                    "rule_id": "second",
+                    "effect": "allow",
+                    "conditions": [{"path": "action.mode", "operator": "eq", "value": "read"}],
+                },
+            ],
+            "redundant_policy_rules",
+        ),
+    ],
+)
+def test_policy_rule_identity_analysis_fails_closed(
+    rules: list[dict[str, object]],
+    reason_code: str,
+) -> None:
+    result = PolicyCompiler().compile(
+        {**_v1_fields(), "policy_id": "analysis", "version": "1", "rules": rules}
+    )
+
+    assert result.reason_code == reason_code
+
+
+def test_conflicting_control_id_fails_closed() -> None:
+    result = PolicyCompiler().compile(
+        {
+            **_v1_fields(),
+            "policy_id": "controls",
+            "version": "1",
+            "rules": [
+                {
+                    "rule_id": "read",
+                    "effect": "allow",
+                    "conditions": [{"path": "action.mode", "operator": "eq", "value": "read"}],
+                    "constraints": [
+                        {"constraint_id": "output", "kind": "output_limit", "value": 4096}
+                    ],
+                },
+                {
+                    "rule_id": "observe",
+                    "effect": "allow",
+                    "conditions": [{"path": "action.mode", "operator": "eq", "value": "observe"}],
+                    "constraints": [
+                        {"constraint_id": "output", "kind": "output_limit", "value": 8192}
+                    ],
+                },
+            ],
+        }
+    )
+
+    assert result.reason_code == "conflicting_policy_controls"
+
+
+def test_policy_compiler_enforces_rule_condition_and_control_limits() -> None:
+    too_many_rules = PolicyCompiler().compile(
+        {
+            **_v1_fields(),
+            "policy_id": "too-many-rules",
+            "version": "1",
+            "rules": [
+                {
+                    "rule_id": f"rule-{index}",
+                    "effect": "allow",
+                    "conditions": [
+                        {"path": "action.index", "operator": "eq", "value": index}
+                    ],
+                }
+                for index in range(257)
+            ],
+        }
+    )
+    too_many_conditions = PolicyCompiler().compile(
+        {
+            **_v1_fields(),
+            "policy_id": "too-many-conditions",
+            "version": "1",
+            "rules": [
+                {
+                    "rule_id": "wide",
+                    "effect": "allow",
+                    "conditions": [
+                        {"path": f"action.field_{index}", "operator": "eq", "value": index}
+                        for index in range(33)
+                    ],
+                }
+            ],
+        }
+    )
+    too_many_controls = PolicyCompiler().compile(
+        {
+            **_v1_fields(),
+            "policy_id": "too-many-controls",
+            "version": "1",
+            "rules": [
+                {
+                    "rule_id": "controlled",
+                    "effect": "allow",
+                    "conditions": [{"path": "action.mode", "operator": "eq", "value": "read"}],
+                    "constraints": [
+                        {
+                            "constraint_id": f"limit-{index}",
+                            "kind": "output_limit",
+                            "value": index + 1,
+                        }
+                        for index in range(65)
+                    ],
+                }
+            ],
+        }
+    )
+
+    assert too_many_rules.reason_code == "policy_rule_limit_exceeded"
+    assert too_many_conditions.reason_code == "policy_rule_condition_limit_exceeded"
+    assert too_many_controls.reason_code == "policy_rule_control_limit_exceeded"
