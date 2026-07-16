@@ -113,6 +113,10 @@ immutable reviewed commit and zero open P0/P1 findings.
 `scripts/validate_rc_window.py` binds `1.0.0rc1` to the frozen v1 manifest,
 conformance manifest and policy reason-code registry source. Drift requires a
 new RC version and record; the gate cannot be refreshed silently under rc1.
+The checked-in record is `prepared`, not an active public observation window.
+After publication, `--require-published` requires public evidence and an
+observation end exactly seven days after publication. Stable promotion uses
+`--require-completed`, which rejects completion before that timestamp.
 
 ## Read-only operator verifier gates
 

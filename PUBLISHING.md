@@ -109,6 +109,88 @@ through the official PyPI action. It carries no long-lived PyPI token and does
 not use `skip-existing`. Environment approval and the explicit release
 instruction remain mandatory.
 
+### One-time external setup
+
+Before the first v1 upload, the release operator must verify both external
+trust anchors:
+
+1. GitHub repository environment `pypi` exists and requires approval under the
+   repository release policy. Creating an unprotected name alone is not release
+   approval.
+2. PyPI has a Trusted Publisher for owner `rozmiarD`, repository `GovEngine`,
+   workflow `publish.yml`, environment `pypi`, and package `govengine`.
+
+Do not add a `PYPI_API_TOKEN` secret. The expected path is the short-lived OIDC
+identity requested by `.github/workflows/publish.yml`.
+
+### Release-candidate execution
+
+The implementing agent cannot substitute for the independent reviewer. Before
+tagging, the committed review record must pass:
+
+```bash
+python scripts/validate_v1_security_review.py --require-independent
+python scripts/validate_rc_window.py
+```
+
+The RC-window status must still be `prepared`; preparation time is not public
+observation time. With explicit operator approval, create and push the immutable
+version tag, then dispatch the workflow on that tag:
+
+```bash
+git tag -a v1.0.0rc1 -m "GovEngine 1.0.0rc1"
+git push origin v1.0.0rc1
+gh workflow run publish.yml \
+  --ref v1.0.0rc1 \
+  -f confirm_release=publish-v1.0.0rc1
+gh run watch --exit-status
+```
+
+After PyPI serves the uploaded artifact, update the RC-window record to
+`active`: set `published_at` from the public release, set
+`observation_ends_at` to exactly seven days later, and record a non-empty
+public evidence reference. The following gate must then pass:
+
+```bash
+python scripts/validate_rc_window.py --require-published
+```
+
+### Public-index evidence and stable promotion
+
+Reproduce the public dependency chain without local GovEngine wheels or Git
+URLs:
+
+```bash
+python -m venv /tmp/govengine-public-rc
+/tmp/govengine-public-rc/bin/python -m pip install --upgrade pip
+/tmp/govengine-public-rc/bin/python -m pip install \
+  --index-url https://pypi.org/simple \
+  --no-cache-dir \
+  "sclite-core==2.0.0" \
+  "govengine==1.0.0rc1"
+/tmp/govengine-public-rc/bin/python -m pip check
+/tmp/govengine-public-rc/bin/python -c \
+  "import govengine, sclite; print(govengine.__version__, sclite.__version__)"
+```
+
+Install the exact RExecOp consumer candidate from its immutable source archive
+in a second clean environment while resolving its exact GovEngine and SCLite
+dependencies from the public index. Run the RExecOp G6 gate and record commit,
+artifact hashes, public package URLs and CI run URLs in the release evidence.
+
+The stable release must not be prepared until at least seven complete days
+have elapsed from `published_at`, the frozen inputs still match, public-index
+evidence remains reproducible, and no independent-review P0/P1 is open. Mark
+the window `completed`, set an aware `completed_at`, and require:
+
+```bash
+python scripts/validate_rc_window.py --require-completed
+```
+
+Only then may the same tag-confirmed workflow be used for `v1.0.0`, after the
+source version, public truth and immutable release evidence are updated in a
+separate reviewed commit.
+
 ## Downstream compatibility smoke gates
 
 GovEngine release checks may validate downstream compatibility, but production

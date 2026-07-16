@@ -45,6 +45,8 @@ def validate_workflow_security() -> dict[str, int]:
         'actions/attest-build-provenance@',
         'pypa/gh-action-pypi-publish@',
         'python scripts/validate_rc_window.py',
+        'if [[ "$PACKAGE_VERSION" == *rc* ]]',
+        'python scripts/validate_rc_window.py --require-completed',
         'python scripts/validate_release_readiness.py',
         'python scripts/validate_v1_security_review.py --require-independent',
         'test "$GITHUB_REF_TYPE" = "tag"',

@@ -104,6 +104,14 @@ def main() -> int:
         )
     )
     _assert(EXPECTED_RELEASE_LABEL in public_text, 'missing_release_candidate_label')
+    for marker in (
+        'RC-window status must still be `prepared`',
+        'python scripts/validate_rc_window.py --require-published',
+        'python scripts/validate_rc_window.py --require-completed',
+        'at least seven complete days',
+        'Do not add a `PYPI_API_TOKEN` secret.',
+    ):
+        _assert(marker in public_text, f'missing_release_process_marker:{marker}')
     for term in FORBIDDEN_PUBLIC_TERMS:
         _assert(term not in public_text, f'forbidden_public_term:{term}')
     _assert('production-readiness claims' in public_text or 'production readiness' in public_text, 'missing_production_non_claim')

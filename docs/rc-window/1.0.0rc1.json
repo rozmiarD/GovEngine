@@ -1,8 +1,13 @@
 {
   "schema_version": "govengine.rc_window.v1",
-  "status": "active",
+  "status": "prepared",
   "version": "1.0.0rc1",
-  "started_at": "2026-07-16T13:35:00Z",
+  "prepared_at": "2026-07-16T13:35:00Z",
+  "published_at": null,
+  "observation_ends_at": null,
+  "completed_at": null,
+  "minimum_observation_days": 7,
+  "public_evidence_ref": "",
   "baseline_commit": "0b5d483f1259aef681521a185e0cdfb19a538314",
   "v1_manifest_sha256": "663be1ef13d162d09a98a2cdf6448076394d0d5f02fab3acff10a59b01fb5882",
   "conformance_manifest_sha256": "30c29603b2b48b82d2384d467168a3d7da9a11318cac91451f833ea5d1ba5d9d",
@@ -10,5 +15,5 @@
   "facade_exports": 40,
   "v1_records": 15,
   "rule": "schema_facade_corpus_or_reason_registry_change_requires_new_rc",
-  "notes": "Documentation, tests and blocker fixes may land only when these frozen contract inputs remain unchanged. Contract drift requires a new release-candidate version and record."
+  "notes": "Prepared is not an active RC window. Publication starts the minimum seven-day observation period. Documentation, tests and blocker fixes may land only when these frozen contract inputs remain unchanged. Contract drift requires a new release-candidate version and record."
 }

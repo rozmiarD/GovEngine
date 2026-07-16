@@ -24,6 +24,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 - Starts a machine-checked `1.0.0rc1` window bound to the frozen facade/schema
   manifest, conformance manifest and reason-code registry source. Drift in
   those inputs requires a new RC rather than a silent rc1 refresh.
+- Corrects the unpublished RC record from the misleading `active` state to
+  `prepared`. Public observation now starts only after PyPI publication,
+  requires public evidence, lasts at least seven complete days, and has
+  separate fail-closed published/completed validation modes.
 - Adds an independent-review package naming the immutable GovEngine/RExecOp/
   SCLite/Tecrax source baselines, required semantic scope and exact reproduction
   commands without marking the still-pending review as complete.

@@ -14,6 +14,7 @@ Start here when navigating `docs/`. Package-level status lives in
 | [API_COMPATIBILITY.md](API_COMPATIBILITY.md) | 1.x facade/schema freeze, migration and deprecation policy |
 | [MIGRATING_TO_1.md](MIGRATING_TO_1.md) | Concrete 0.16.11 to 1.0 migration and rollback guide |
 | [CONFORMANCE.md](CONFORMANCE.md) | Language-neutral v1 corpus and GovEngine/RExecOp runner ownership |
+| [../PUBLISHING.md](../PUBLISHING.md) | Fail-closed review, Trusted Publisher, tag, public smoke and RC-window procedure |
 | [THREAT_MODEL.md](THREAT_MODEL.md) | TCB, attacker model, trust boundaries and residual risks |
 | [SECURITY_GUARANTEES.md](SECURITY_GUARANTEES.md) | Tested guarantees, binding table and explicit non-claims |
 | [DOWNSTREAM_IMPORT_MAP.md](DOWNSTREAM_IMPORT_MAP.md) | RExecOp/Tecrax import inventory and migration posture |

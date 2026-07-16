@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 from pathlib import Path
@@ -52,7 +52,20 @@ def _aware_timestamp(value: Any) -> bool:
     return parsed.tzinfo is not None and parsed.utcoffset() is not None
 
 
-def validate_rc_window(path: Path = RECORD_PATH) -> Mapping[str, Any]:
+def _timestamp(value: Any, reason: str) -> datetime:
+    if not _aware_timestamp(value):
+        raise AssertionError(reason)
+    parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+    return parsed.astimezone(timezone.utc)
+
+
+def validate_rc_window(
+    path: Path = RECORD_PATH,
+    *,
+    require_published: bool = False,
+    require_completed: bool = False,
+    now: datetime | None = None,
+) -> Mapping[str, Any]:
     record = json.loads(
         path.read_text(encoding='utf-8'),
         object_pairs_hook=_strict_object,
@@ -66,7 +79,12 @@ def validate_rc_window(path: Path = RECORD_PATH) -> Mapping[str, Any]:
         'schema_version',
         'status',
         'version',
-        'started_at',
+        'prepared_at',
+        'published_at',
+        'observation_ends_at',
+        'completed_at',
+        'minimum_observation_days',
+        'public_evidence_ref',
         'baseline_commit',
         *HASHED_FILES,
         'facade_exports',
@@ -78,10 +96,77 @@ def validate_rc_window(path: Path = RECORD_PATH) -> Mapping[str, Any]:
         raise AssertionError('rc_window_fields_drift')
     if record['schema_version'] != 'govengine.rc_window.v1':
         raise AssertionError('rc_window_schema_mismatch')
-    if record['status'] != 'active' or record['version'] != '1.0.0rc1':
-        raise AssertionError('rc_window_not_active_candidate')
-    if not _aware_timestamp(record['started_at']):
-        raise AssertionError('rc_window_started_at_invalid')
+    status = record['status']
+    if status not in {'prepared', 'active', 'completed'}:
+        raise AssertionError('rc_window_status_invalid')
+    if record['version'] != '1.0.0rc1':
+        raise AssertionError('rc_window_version_mismatch')
+    prepared_at = _timestamp(
+        record['prepared_at'],
+        'rc_window_prepared_at_invalid',
+    )
+    minimum_days = record['minimum_observation_days']
+    if (
+        isinstance(minimum_days, bool)
+        or not isinstance(minimum_days, int)
+        or minimum_days != 7
+    ):
+        raise AssertionError('rc_window_minimum_observation_days_invalid')
+    published_at_raw = record['published_at']
+    observation_ends_at_raw = record['observation_ends_at']
+    completed_at_raw = record['completed_at']
+    evidence_ref = record['public_evidence_ref']
+    checked_now = now or datetime.now(timezone.utc)
+    if checked_now.tzinfo is None or checked_now.utcoffset() is None:
+        raise AssertionError('rc_window_now_not_aware')
+    checked_now = checked_now.astimezone(timezone.utc)
+    if status == 'prepared':
+        if any(
+            value is not None
+            for value in (
+                published_at_raw,
+                observation_ends_at_raw,
+                completed_at_raw,
+            )
+        ):
+            raise AssertionError('rc_window_prepared_has_public_timestamps')
+        if evidence_ref != '':
+            raise AssertionError('rc_window_prepared_has_public_evidence')
+    else:
+        published_at = _timestamp(
+            published_at_raw,
+            'rc_window_published_at_invalid',
+        )
+        observation_ends_at = _timestamp(
+            observation_ends_at_raw,
+            'rc_window_observation_ends_at_invalid',
+        )
+        if published_at < prepared_at:
+            raise AssertionError('rc_window_published_before_prepared')
+        if published_at > checked_now:
+            raise AssertionError('rc_window_published_in_future')
+        if observation_ends_at != published_at + timedelta(days=minimum_days):
+            raise AssertionError('rc_window_observation_period_invalid')
+        if not isinstance(evidence_ref, str) or not evidence_ref.strip():
+            raise AssertionError('rc_window_public_evidence_missing')
+        if status == 'active':
+            if completed_at_raw is not None:
+                raise AssertionError('rc_window_active_has_completed_at')
+        else:
+            completed_at = _timestamp(
+                completed_at_raw,
+                'rc_window_completed_at_invalid',
+            )
+            if completed_at < observation_ends_at:
+                raise AssertionError('rc_window_completed_too_early')
+            if checked_now < observation_ends_at:
+                raise AssertionError('rc_window_observation_period_not_elapsed')
+            if completed_at > checked_now:
+                raise AssertionError('rc_window_completed_in_future')
+    if require_published and status == 'prepared':
+        raise AssertionError('published_rc_evidence_required')
+    if require_completed and status != 'completed':
+        raise AssertionError('completed_rc_window_required')
     if not isinstance(record['baseline_commit'], str) or not FULL_SHA.fullmatch(
         record['baseline_commit']
     ):
@@ -111,8 +196,14 @@ def validate_rc_window(path: Path = RECORD_PATH) -> Mapping[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--record', type=Path, default=RECORD_PATH)
+    parser.add_argument('--require-published', action='store_true')
+    parser.add_argument('--require-completed', action='store_true')
     args = parser.parse_args(argv)
-    record = validate_rc_window(args.record)
+    record = validate_rc_window(
+        args.record,
+        require_published=args.require_published or args.require_completed,
+        require_completed=args.require_completed,
+    )
     print(
         'rc_window_ok:'
         f"version={record['version']}:status={record['status']}:"
