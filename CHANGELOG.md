@@ -18,6 +18,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   surfaces keep their compatibility/alpha classifications. Publication remains
   blocked on independent review, immutable release evidence and explicit
   operator approval.
+- Marks the wheel-shipped v1 compatibility manifest `frozen_for_1.0` and adds
+  the concrete `0.16.11` to v1 migration/rollback guide, including exact
+  RExecOp/SCLite ownership and candidate pins.
 - Adds a versioned independent v1 contract-review record and release-only gate.
   Normal CI validates the record structure; the publish workflow fails closed
   until an external reviewer identifies an immutable commit and closes every

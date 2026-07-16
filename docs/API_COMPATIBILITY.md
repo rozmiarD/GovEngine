@@ -6,6 +6,9 @@ and every GovEngine-owned v1 schema constant are recorded in the wheel-shipped
 `scripts/validate_v1_freeze.py`; an unrecorded export, v1 record, schema change
 or manifest drift fails closed.
 
+The manifest is marked `frozen_for_1.0`. The concrete consumer transition and
+rollback procedure is [MIGRATING_TO_1.md](MIGRATING_TO_1.md).
+
 ## Compatibility rules
 
 - Changing a required field, field type, validation meaning, digest input or

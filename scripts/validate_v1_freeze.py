@@ -17,6 +17,7 @@ import govengine.v1 as facade  # noqa: E402
 
 
 MANIFEST_PATH = ROOT / 'govengine' / 'v1_compatibility_manifest.json'
+MIGRATION_PATH = ROOT / 'docs' / 'MIGRATING_TO_1.md'
 V1_SCHEMA_MODULES = (
     'govengine.approvals',
     'govengine.capabilities',
@@ -86,6 +87,10 @@ def validate_v1_freeze(path: Path = MANIFEST_PATH) -> dict[str, int]:
     manifest = load_v1_manifest(path)
     if manifest.get('manifest_version') != 'v1':
         raise AssertionError('v1_manifest_version_mismatch')
+    if manifest.get('release_line') != '1.x-candidate':
+        raise AssertionError('v1_manifest_release_line_mismatch')
+    if manifest.get('freeze_status') != 'frozen_for_1.0':
+        raise AssertionError('v1_manifest_not_frozen_for_1_0')
     exports = manifest.get('facade_exports')
     if not isinstance(exports, list) or any(not isinstance(item, str) for item in exports):
         raise AssertionError('v1_manifest_invalid_facade_exports')
@@ -151,6 +156,19 @@ def validate_v1_freeze(path: Path = MANIFEST_PATH) -> dict[str, int]:
     }
     if not isinstance(compatibility, Mapping) or set(compatibility) != required_policy:
         raise AssertionError('v1_manifest_compatibility_policy_drift')
+    migration = MIGRATION_PATH.read_text(encoding='utf-8')
+    for marker in (
+        'govengine==0.16.11',
+        'govengine==1.0.0rc1',
+        'rexecop==0.3.0rc3',
+        'sclite-core==2.0.0',
+        'Admission is not approval.',
+        'GovEngine does not issue RExecOp runtime permits',
+        'SCLite remains the final lifecycle, evidence and review-bundle authority',
+        'Rollback means returning to a separate environment',
+    ):
+        if marker not in migration:
+            raise AssertionError(f'v1_migration_guide_missing:{marker}')
     return {
         'facade_exports': len(exports),
         'v1_records': len(records),

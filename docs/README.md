@@ -12,6 +12,7 @@ Start here when navigating `docs/`. Package-level status lives in
 | [API_BOUNDARY.md](API_BOUNDARY.md) | Module/surface ownership (machine-checked vs registry) |
 | [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md) | Export stability classification |
 | [API_COMPATIBILITY.md](API_COMPATIBILITY.md) | 1.x facade/schema freeze, migration and deprecation policy |
+| [MIGRATING_TO_1.md](MIGRATING_TO_1.md) | Concrete 0.16.11 to 1.0 migration and rollback guide |
 | [CONFORMANCE.md](CONFORMANCE.md) | Language-neutral v1 corpus and GovEngine/RExecOp runner ownership |
 | [THREAT_MODEL.md](THREAT_MODEL.md) | TCB, attacker model, trust boundaries and residual risks |
 | [SECURITY_GUARANTEES.md](SECURITY_GUARANTEES.md) | Tested guarantees, binding table and explicit non-claims |
@@ -20,7 +21,7 @@ Start here when navigating `docs/`. Package-level status lives in
 | [SCOPE_CAPABILITY_BINDINGS.md](SCOPE_CAPABILITY_BINDINGS.md) | Independent scope and capability inputs/decisions |
 | [GOVERNANCE_DECISION.md](GOVERNANCE_DECISION.md) | Canonical G2-C evaluator and attempt-bound authorization |
 | [GOVENGINE_KERNEL_BOUNDARY.md](GOVENGINE_KERNEL_BOUNDARY.md) | Kernel vs profile vs runtime vs SCLite |
-| [ROADMAP.md](ROADMAP.md) | Current alpha line and near-term direction |
+| [ROADMAP.md](ROADMAP.md) | Current 1.0 release-candidate line and near-term direction |
 | [VALIDATION.md](VALIDATION.md) | **Active** release and operator validation gate |
 
 ## Tier 2 — governed-runtime MVP (operators)

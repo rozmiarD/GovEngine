@@ -1,6 +1,7 @@
 {
   "manifest_version": "v1",
   "release_line": "1.x-candidate",
+  "freeze_status": "frozen_for_1.0",
   "facade_module": "govengine.v1",
   "facade_exports": [
     "ApprovalAttestation",
