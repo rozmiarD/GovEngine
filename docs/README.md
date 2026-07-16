@@ -13,6 +13,8 @@ Start here when navigating `docs/`. Package-level status lives in
 | [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md) | Export stability classification |
 | [API_COMPATIBILITY.md](API_COMPATIBILITY.md) | 1.x facade/schema freeze, migration and deprecation policy |
 | [CONFORMANCE.md](CONFORMANCE.md) | Language-neutral v1 corpus and GovEngine/RExecOp runner ownership |
+| [THREAT_MODEL.md](THREAT_MODEL.md) | TCB, attacker model, trust boundaries and residual risks |
+| [SECURITY_GUARANTEES.md](SECURITY_GUARANTEES.md) | Tested guarantees, binding table and explicit non-claims |
 | [DOWNSTREAM_IMPORT_MAP.md](DOWNSTREAM_IMPORT_MAP.md) | RExecOp/Tecrax import inventory and migration posture |
 | [GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md) | Canonical G2-A request and approval binding |
 | [SCOPE_CAPABILITY_BINDINGS.md](SCOPE_CAPABILITY_BINDINGS.md) | Independent scope and capability inputs/decisions |

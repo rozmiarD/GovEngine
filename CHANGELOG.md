@@ -11,6 +11,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds a single v1 threat model and a single security guarantees/non-claims
+  document with an explicit cryptographic binding table. Existing security
+  integration, runtime-admission and receipt-binding docs now distinguish the
+  canonical decision/claim/receipt flow from legacy compatibility adapters and
+  explicitly deny malicious in-process host resistance.
 - Adds bounded Hypothesis coverage for recursive JSON, typed numeric policy
   operators, execution-facts digests, approval and decision bindings, receipt
   limits, nested forbidden keys and invalid digest shapes. Strategies are

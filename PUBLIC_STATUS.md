@@ -42,6 +42,15 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
   runtime permit, attempt/lease/fencing/inventory bindings and output
   postconditions. It neither emits nor replaces SCLite receipts and does not
   prove that a compromised runtime reported honest facts.
+- Candidate v1 freeze: the wheel-shipped compatibility manifest fixes the
+  40-symbol `govengine.v1` facade, 15 GovEngine-owned v1 records and five
+  legacy facade schemas; CI also runs strict mypy over the full facade path.
+- Shared conformance: the wheel ships 33 language-neutral cases. GovEngine
+  executes its policy/approval/scope/capability/decision/receipt cases and
+  RExecOp executes the six runtime-owned signed-decision claim cases.
+- Security model: `docs/THREAT_MODEL.md` and
+  `docs/SECURITY_GUARANTEES.md` define the in-process TCB, digest bindings,
+  tested guarantees and the explicit lack of malicious-host resistance.
 - Independent scope/capability inputs: `govengine.scope_policy` compares only
   requested target/network facts with an independent policy binding;
   `govengine.capabilities` compares explicit operation requirements with an
@@ -75,12 +84,13 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Artifact lifecycle controller: initial transition policy/gate/controller for ordered lifecycle transitions and blocker/next-action reporting.
 - Signing/trust bridge: initial signature envelope, policy, trust result, signer/verifier port, transition-decision helpers, and published deterministic demo signer/verifier fixture ports without PKI/key ownership.
 - Controlled execution gate: initial dry-run-only execution gate and default `DryRunRunner`; live requests are blocked by default.
-- Runtime admission chain: initial public `RuntimeAdmissionResult` record,
+- Legacy runtime admission chain: public `RuntimeAdmissionResult` record,
   validator, `compose_runtime_admission_result()`, and
   `normalize_admission_artifact_refs()` helpers exist as the bounded admission
-  decision surface. The helpers compose separate policy, ticket, trust,
+  compatibility/review surface. The helpers compose separate policy, ticket, trust,
   guarded-replay, runner, receipt-obligation, and bounded reference summaries
-  before any live backend work.
+  before any live backend work; they do not replace the canonical
+  `GovernanceRequest -> GovernanceDecision -> RExecOp claim` path.
 - Receipt and evidence binding: `validate_runner_receipt_binding()` and
   `validate_evidence_review_chain()` validate bounded admission/ticket/request/
   receipt and receipt/evidence/review reference chains without storing raw

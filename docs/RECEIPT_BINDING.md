@@ -1,10 +1,20 @@
-# Receipt Binding Design
+# Legacy runner receipt binding and canonical receipt conformance
+
+The canonical v1 attempt path uses `RuntimeReceiptBinding` and
+`evaluate_receipt_conformance()` as documented in
+[RECEIPT_CONFORMANCE.md](RECEIPT_CONFORMANCE.md). It binds the exact
+`GovernanceDecision`, RExecOp runtime permit, attempt/runtime/lease/fencing,
+scope/inventory/policy facts and output postconditions.
 
 GovEngine runner receipts must be bindable to the runtime admission decision and
 the execution ticket they claim to satisfy. `GovRunnerReceiptBinding` and
 `validate_runner_receipt_binding()` implement the neutral binding shape. This
 surface does not add live execution authority and does not grant execution
 permission by itself.
+
+`GovRunnerReceiptBinding` below remains a compatibility/review contract for the
+older `RuntimeAdmissionResult` and runner-request flow. It is not a substitute
+for canonical v1 receipt conformance.
 
 ```text
 Intent is not execution authority.

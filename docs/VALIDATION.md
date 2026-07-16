@@ -5,9 +5,10 @@ GovEngine validation is local and public-safe. It does not run live targets.
 ## CI vs local gates
 
 GitHub Actions (`.github/workflows/pytest.yml`) runs public-truth validation,
-alpha readiness, full pytest across supported Python versions, package dry-run
-build, `twine check`, wheel install, and isolated `pip check`. Treat branch or
-PR CI as required merge evidence.
+v1 facade/schema freeze, generated corpus drift validation, alpha readiness,
+strict facade typing, full pytest across supported Python versions, package
+dry-run build, `twine check`, wheel install, and isolated `pip check`. Treat
+branch or PR CI as required merge evidence.
 
 Local-only gates that CI does not fully replace:
 
@@ -26,6 +27,12 @@ python scripts/validate_public_truth.py
 python scripts/validate_alpha_readiness.py
 python scripts/validate_digest_ownership.py
 python scripts/validate_api_stability.py
+python scripts/validate_v1_freeze.py
+python scripts/generate_conformance_corpus.py --check
+python -m mypy --strict --disable-error-code=import-untyped \
+  govengine/v1.py govengine/api.py govengine/approvals.py \
+  govengine/governance.py govengine/governance_decision.py \
+  govengine/governance_trace.py govengine/policy
 ```
 
 GitHub Actions source validation may install the current SCLite source line before the editable GovEngine test dependency set. The active supported stack line is exact-pinned for package consumers, and clean wheel/PyPI install gates validate that published dependency chain.
@@ -77,6 +84,19 @@ also requires the 40-symbol `govengine.v1` facade to match the `v1-candidate`
 set and remain at the 40-symbol ceiling. Consumer scanning ignores virtual
 environments and build/cache directories. The reviewed downstream snapshot is
 documented in [`DOWNSTREAM_IMPORT_MAP.md`](DOWNSTREAM_IMPORT_MAP.md).
+
+## V1 freeze and conformance gates
+
+`scripts/validate_v1_freeze.py` compares the wheel-shipped compatibility
+manifest with the exact facade exports and every locally declared v1 schema
+constant. `scripts/generate_conformance_corpus.py --check` verifies all 33
+checked-in JSON cases are reproducible. `tests/test_conformance_corpus.py`
+executes GovEngine-owned cases; RExecOp's
+`scripts/validate_governance_conformance.py` consumes the same installed
+corpus and executes runtime-owned atomic claim cases.
+
+`tests/test_security_properties.py` adds bounded property coverage. It is not
+unbounded fuzzing or an availability benchmark.
 
 ## Read-only operator verifier gates
 
@@ -135,6 +155,8 @@ It must pass before any tag or package upload is considered:
 env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_public_truth.py
 env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_alpha_readiness.py
 env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_digest_ownership.py
+env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_v1_freeze.py
+env PYTHONDONTWRITEBYTECODE=1 python3 scripts/generate_conformance_corpus.py --check
 env PYTHONDONTWRITEBYTECODE=1 python3 -m mypy govengine
 env PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -q -p no:cacheprovider
 ruff check .

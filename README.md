@@ -231,6 +231,8 @@ Navigation hub: [`docs/README.md`](docs/README.md).
 - [`docs/GOVENGINE_KERNEL_BOUNDARY.md`](docs/GOVENGINE_KERNEL_BOUNDARY.md) defines kernel/profile/runtime/SCLite ownership.
 - [`docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`](docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md) is the operator runbook for the governed-runtime MVP chain.
 - [`docs/SECURITY_INTEGRATION.md`](docs/SECURITY_INTEGRATION.md) records the required security integration order and non-claims.
+- [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md) defines the in-process TCB, attackers and residual risks.
+- [`docs/SECURITY_GUARANTEES.md`](docs/SECURITY_GUARANTEES.md) maps guarantees and digest bindings to executable evidence.
 - [`docs/SCLITE_INTEGRATION.md`](docs/SCLITE_INTEGRATION.md) explains how GovEngine consumes SCLite.
 - [`docs/RUNTIME_ADMISSION.md`](docs/RUNTIME_ADMISSION.md) describes the canonical runtime admission envelope.
 - [`docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md`](docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md) documents read-only admission inspection.

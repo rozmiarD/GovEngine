@@ -21,6 +21,15 @@ GovEngine must not:
 - claim authorization to test a target;
 - claim live vulnerability evidence from dry-run artifacts.
 
+The detailed trusted computing base, attacker model and residual risks are in
+[`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md). Tested guarantees, digest
+bindings and explicit non-claims are in
+[`docs/SECURITY_GUARANTEES.md`](docs/SECURITY_GUARANTEES.md).
+
+GovEngine runs in the host process. It does not claim resistance to a malicious
+or fully compromised in-process host that skips the library or ignores its
+decision.
+
 ## Expected safe behavior
 
 New safety-sensitive code should be deterministic by default, testable without live targets, and explicit about:

@@ -1,13 +1,15 @@
 # Runtime Admission Contract
 
-GovEngine's governed-runtime MVP needs one canonical admission decision before
-any live runner work expands. The initial public record is
-`RuntimeAdmissionResult`. `GovernedExecutionAdmission` remains an equivalent
-concept name for hosts and roadmap discussion, not a second implementation
-surface.
+`RuntimeAdmissionResult` is the legacy governed-runtime composition adapter.
+It remains useful for inspect/review and existing ticket/guard workflows, but
+it is not the canonical v1 authorization path. Controlled connector attempts
+use `GovernanceRequest -> GovernanceDecision`, followed by RExecOp's signed
+decision verification, atomic claim and runtime permit.
 
-This contract is a design boundary. It does not add execution authority by
-itself.
+`GovernedExecutionAdmission` remains the legacy concept name used by existing
+host documentation; it is not a second record or v1 authorization type.
+
+This compatibility contract does not add execution authority by itself.
 
 ```text
 Intent is not execution authority.

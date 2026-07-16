@@ -85,3 +85,9 @@ schemas and canonical verification remain unchanged.
 
 The deterministic `DemoDigestSigner`/`DemoDigestVerifier` used by tests remain
 fixtures and are not production identity proof.
+
+GovEngine is loaded in the host process. A compromised host can skip
+evaluation, ignore the decision or fabricate inputs/receipts; malicious-host
+resistance is explicitly outside the guarantee. See
+[THREAT_MODEL.md](THREAT_MODEL.md) and
+[SECURITY_GUARANTEES.md](SECURITY_GUARANTEES.md).

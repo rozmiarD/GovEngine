@@ -67,3 +67,20 @@ def test_docs_classify_contract_proofs_as_conformance_artifacts_not_authority() 
     assert 'conformance artifacts' in boundary or 'proof fixtures' in boundary
     assert 'fixture' in matrix
     assert 'not production authority' in matrix or 'not production authority' in boundary or 'Non-claims' in boundary
+
+
+def test_security_docs_pin_canonical_flow_and_malicious_host_non_claim() -> None:
+    threat_model = _read('docs/THREAT_MODEL.md')
+    guarantees = _read('docs/SECURITY_GUARANTEES.md')
+    integration = _read('docs/SECURITY_INTEGRATION.md')
+    runtime_admission = _read('docs/RUNTIME_ADMISSION.md')
+    receipt_binding = _read('docs/RECEIPT_BINDING.md')
+
+    assert 'malicious or fully compromised in-process host' in threat_model
+    assert 'Trusted computing base' in threat_model
+    assert 'Cryptographic and digest binding table' in guarantees
+    assert 'Explicit non-claims' in guarantees
+    assert 'GovernanceRequest v1' in integration
+    assert 'atomically claims decision digest and nonce' in integration
+    assert 'legacy governed-runtime composition adapter' in runtime_admission
+    assert 'canonical v1 attempt path' in receipt_binding

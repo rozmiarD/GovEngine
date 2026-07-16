@@ -499,6 +499,8 @@ def main() -> int:
     api_boundary = _read('docs/API_BOUNDARY.md')
     sclite_integration = _read('docs/SCLITE_INTEGRATION.md')
     domain_profile = _read('docs/DOMAIN_PROFILE_CONTRACT.md')
+    threat_model = _read('docs/THREAT_MODEL.md')
+    security_guarantees = _read('docs/SECURITY_GUARANTEES.md')
     workflow = _read('.github/workflows/pytest.yml')
     clean_install_script = _read('scripts/validate_clean_package_install.py')
 
@@ -578,6 +580,21 @@ def main() -> int:
     _assert_contains('docs/API_BOUNDARY.md', api_boundary, 'Host-owned lifecycle projection is outside GovEngine')
     _assert_contains('docs/SCLITE_INTEGRATION.md', sclite_integration, 'Host-owned artifact projection is outside GovEngine')
     _assert_contains('docs/DOMAIN_PROFILE_CONTRACT.md', domain_profile, 'synthetic Tecrax conformance fixture')
+    _assert_contains(
+        'docs/THREAT_MODEL.md',
+        threat_model,
+        'malicious or fully compromised in-process host',
+    )
+    _assert_contains(
+        'docs/SECURITY_GUARANTEES.md',
+        security_guarantees,
+        'Cryptographic and digest binding table',
+    )
+    _assert_contains(
+        'docs/SECURITY_GUARANTEES.md',
+        security_guarantees,
+        'Explicit non-claims',
+    )
     if 'unreleased deterministic demo signer/verifier ports' in public_status:
         raise AssertionError('PUBLIC_STATUS.md:published_demo_ports_marked_unreleased')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'sclite-core==2.0.0')
