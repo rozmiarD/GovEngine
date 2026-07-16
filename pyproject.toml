@@ -36,6 +36,7 @@ Documentation = "https://github.com/rozmiarD/GovEngine#readme"
 
 [project.optional-dependencies]
 dev = [
+  "hypothesis>=6,<7",
   "mypy>=1.18,<2",
   "pytest>=8,<9",
   "ruff>=0.14,<1",

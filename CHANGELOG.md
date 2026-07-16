@@ -11,6 +11,12 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds bounded Hypothesis coverage for recursive JSON, typed numeric policy
+  operators, execution-facts digests, approval and decision bindings, receipt
+  limits, nested forbidden keys and invalid digest shapes. Strategies are
+  deliberately size-limited and reuse the checked-in conformance inputs. The
+  property corpus exposed and closed missing recursive bans for raw
+  output/target and stdout/stderr governance input keys.
 - Adds a wheel-shipped, language-neutral v1 conformance corpus with 33
   generated valid/invalid cases and a deterministic GovEngine runner. The
   corpus covers JSON fail-closed behavior, policy/approval/scope/capability

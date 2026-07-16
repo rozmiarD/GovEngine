@@ -16,7 +16,12 @@ FORBIDDEN_GOVERNANCE_INPUT_KEYS = frozenset(
         'credential',
         'password',
         'private_key',
+        'raw_output',
+        'raw_target',
         'secret',
+        'stderr',
+        'stdout',
+        'target_url',
         'token',
     }
 )
