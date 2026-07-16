@@ -11,6 +11,10 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds a versioned independent v1 contract-review record and release-only gate.
+  Normal CI validates the record structure; the publish workflow fails closed
+  until an external reviewer identifies an immutable commit and closes every
+  P0/P1 finding. The current record is intentionally pending.
 - Pins every GitHub Action to a full commit SHA, adds scheduled/PR dependency
   audit and CodeQL workflows, and adds a manual tag-confirmed PyPI Trusted
   Publishing workflow with OIDC, protected environment, official publisher

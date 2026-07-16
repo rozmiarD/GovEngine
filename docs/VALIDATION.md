@@ -30,6 +30,7 @@ python scripts/validate_api_stability.py
 python scripts/validate_v1_freeze.py
 python scripts/generate_conformance_corpus.py --check
 python scripts/validate_workflow_security.py
+python scripts/validate_v1_security_review.py
 python -m mypy --strict --disable-error-code=import-untyped \
   govengine/v1.py govengine/api.py govengine/approvals.py \
   govengine/governance.py govengine/governance_decision.py \
@@ -102,6 +103,11 @@ unbounded fuzzing or an availability benchmark.
 `scripts/validate_workflow_security.py` rejects any action not pinned to a full
 commit SHA and verifies the dependency-audit, CodeQL and manual OIDC/attested
 PyPI workflow invariants.
+
+`scripts/validate_v1_security_review.py` validates the independent review
+record structurally in normal CI. Release/publish mode adds
+`--require-independent`, which fails until an external reviewer records an
+immutable reviewed commit and zero open P0/P1 findings.
 
 ## Read-only operator verifier gates
 

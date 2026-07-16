@@ -44,6 +44,7 @@ def validate_workflow_security() -> dict[str, int]:
         'attestations: write',
         'actions/attest-build-provenance@',
         'pypa/gh-action-pypi-publish@',
+        'python scripts/validate_v1_security_review.py --require-independent',
         'test "$GITHUB_REF_TYPE" = "tag"',
         'tag_version_mismatch',
     ):

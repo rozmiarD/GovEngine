@@ -25,6 +25,9 @@ gates pass.
 - [ ] `python scripts/validate_clean_package_install.py --venv /tmp/govengine-clean-release --dev --sclite-source /path/to/SCLite --no-editable` passes from a new virtual environment path, including its isolated installed-package retirement smoke.
 - [ ] `scripts/verify_runner_receipt_binding.py` and `scripts/verify_audit_ledger.py` are treated as read-only verifier smoke helpers if their records are used as release evidence; they must not generate runner requests, append ledger records, or expose raw payloads.
 - [ ] Maintainer/security review confirms there are no open P0/P1 security findings. Passing tests alone is not release approval when a P0/P1 finding is open.
+- [ ] An independent reviewer completes
+  `docs/security-review/v1-contract-review.json`; release mode
+  `python scripts/validate_v1_security_review.py --require-independent` passes.
 - [ ] Downstream smoke evidence is classified before release: SCLite released-line is required, SCLite edge is pinned to a full commit SHA, and Ravenclaw/Tecrax host contract smokes remain external host-owned checks.
 - [ ] Build artifacts are generated from a clean tree.
 - [ ] No generated `build/`, `dist/`, `*.egg-info`, caches, private state, or Ravenclaw workspace files are committed unless intentionally package metadata.

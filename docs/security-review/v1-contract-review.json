@@ -1,0 +1,26 @@
+{
+  "schema_version": "govengine.v1_contract_security_review.v1",
+  "status": "pending_independent_review",
+  "reviewer": {
+    "identity": "",
+    "organization_or_reference": "",
+    "independent_of_implementation": false
+  },
+  "reviewed_commit": "",
+  "completed_at": "",
+  "scope": [
+    "approval_and_governance_request_bindings",
+    "policy_activation_and_typed_evaluation",
+    "scope_and_capability_independence",
+    "signed_decision_and_consume_once_handoff",
+    "receipt_conformance_and_postconditions",
+    "bounded_json_reason_codes_and_explanations",
+    "rexecop_pre_io_enforcement",
+    "sclite_ownership_and_freeze",
+    "threat_model_and_security_non_claims"
+  ],
+  "findings": [],
+  "open_p0": 0,
+  "open_p1": 0,
+  "notes": "Release blocked until an independent reviewer completes this record."
+}
