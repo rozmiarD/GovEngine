@@ -11,6 +11,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Pins every GitHub Action to a full commit SHA, adds scheduled/PR dependency
+  audit and CodeQL workflows, and adds a manual tag-confirmed PyPI Trusted
+  Publishing workflow with OIDC, protected environment, official publisher
+  action and standard build-provenance attestation. A local validator blocks
+  moving action refs or long-lived upload-token settings.
 - Adds a single v1 threat model and a single security guarantees/non-claims
   document with an explicit cryptographic binding table. Existing security
   integration, runtime-admission and receipt-binding docs now distinguish the

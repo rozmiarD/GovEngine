@@ -17,6 +17,9 @@ gates pass.
 - [ ] `CHANGELOG.md`, `PUBLIC_STATUS.md`, `README.md`, `docs/VALIDATION.md`, `docs/ROADMAP.md`, `docs/API_BOUNDARY.md`, `govengine/surfaces.py`, and `pyproject.toml` agree on version/status and claim only tested behavior.
 - [ ] `python scripts/validate_public_truth.py` passes.
 - [ ] `python scripts/validate_api_stability.py` passes; run it with the RExecOp consumer root for coordinated releases.
+- [ ] `python scripts/validate_v1_freeze.py`,
+  `python scripts/generate_conformance_corpus.py --check`, and
+  `python scripts/validate_workflow_security.py` pass.
 - [ ] `python scripts/validate_alpha_readiness.py` passes for alpha release lines.
 - [ ] `python -m pytest -q` passes.
 - [ ] `python scripts/validate_clean_package_install.py --venv /tmp/govengine-clean-release --dev --sclite-source /path/to/SCLite --no-editable` passes from a new virtual environment path, including its isolated installed-package retirement smoke.
@@ -83,6 +86,20 @@ python -m venv /tmp/govengine-wheel-smoke
 ```
 
 Do not upload to PyPI or create public tags until the operator explicitly approves the release action.
+
+## Trusted Publishing
+
+`.github/workflows/publish.yml` is the only repository workflow allowed to
+upload GovEngine. It is manual, requires a version tag plus matching
+`publish-<tag>` confirmation, uses the protected `pypi` environment and requests
+short-lived OIDC (`id-token: write`). Configure that exact owner/repository/
+workflow/environment tuple as a PyPI Trusted Publisher before use.
+
+The workflow builds once, runs contract gates, uploads the distributions as an
+Actions artifact, creates GitHub build-provenance attestations and publishes
+through the official PyPI action. It carries no long-lived PyPI token and does
+not use `skip-existing`. Environment approval and the explicit release
+instruction remain mandatory.
 
 ## Downstream compatibility smoke gates
 

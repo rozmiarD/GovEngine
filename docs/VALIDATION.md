@@ -29,6 +29,7 @@ python scripts/validate_digest_ownership.py
 python scripts/validate_api_stability.py
 python scripts/validate_v1_freeze.py
 python scripts/generate_conformance_corpus.py --check
+python scripts/validate_workflow_security.py
 python -m mypy --strict --disable-error-code=import-untyped \
   govengine/v1.py govengine/api.py govengine/approvals.py \
   govengine/governance.py govengine/governance_decision.py \
@@ -97,6 +98,10 @@ corpus and executes runtime-owned atomic claim cases.
 
 `tests/test_security_properties.py` adds bounded property coverage. It is not
 unbounded fuzzing or an availability benchmark.
+
+`scripts/validate_workflow_security.py` rejects any action not pinned to a full
+commit SHA and verifies the dependency-audit, CodeQL and manual OIDC/attested
+PyPI workflow invariants.
 
 ## Read-only operator verifier gates
 
