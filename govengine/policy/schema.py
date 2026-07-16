@@ -4,7 +4,12 @@ from copy import deepcopy
 from typing import Any
 
 
-POLICY_SCHEMA_KINDS = ('policy-pack', 'policy-request', 'policy-verdict')
+POLICY_SCHEMA_KINDS = (
+    'policy-pack',
+    'policy-pack-v1',
+    'policy-request',
+    'policy-verdict',
+)
 
 
 _POLICY_RULE_SCHEMA: dict[str, Any] = {
@@ -54,6 +59,46 @@ _POLICY_RULE_SCHEMA: dict[str, Any] = {
     },
 }
 
+_POLICY_CONDITION_V1_SCHEMA: dict[str, Any] = {
+    'type': 'object',
+    'required': ['path', 'operator', 'value'],
+    'additionalProperties': False,
+    'properties': {
+        'path': {
+            'type': 'string',
+            'pattern': (
+                '^(principal|action|resource|request_context|context)'
+                '\\.[A-Za-z_][A-Za-z0-9_-]*'
+                '(\\.[A-Za-z_][A-Za-z0-9_-]*)*$'
+            ),
+        },
+        'operator': {
+            'enum': [
+                'eq',
+                'neq',
+                'in',
+                'not_in',
+                'contains',
+                'exists',
+                'lt',
+                'lte',
+                'gt',
+                'gte',
+                'subset_of',
+                'matches_namespace',
+            ],
+        },
+        'value': {},
+    },
+}
+
+_POLICY_RULE_V1_SCHEMA = deepcopy(_POLICY_RULE_SCHEMA)
+_POLICY_RULE_V1_SCHEMA['properties']['conditions'] = {
+    'type': 'array',
+    'minItems': 1,
+    'items': _POLICY_CONDITION_V1_SCHEMA,
+}
+
 
 _SCHEMAS: dict[str, dict[str, Any]] = {
     'policy-pack': {
@@ -69,6 +114,22 @@ _SCHEMAS: dict[str, dict[str, Any]] = {
             'version': {'type': 'string', 'minLength': 1},
             'schema_version': {'const': 'v0.1'},
             'rules': {'type': 'array', 'minItems': 1, 'items': _POLICY_RULE_SCHEMA},
+            'metadata': {'type': 'object'},
+        },
+    },
+    'policy-pack-v1': {
+        '$schema': 'https://json-schema.org/draft/2020-12/schema',
+        '$id': 'https://govengine.local/schemas/policy-pack.v1.schema.json',
+        'title': 'GovEngine typed policy pack v1',
+        'description': 'Typed deterministic governance policy input compiled by GovEngine; not SCLite truth and not execution authority.',
+        'type': 'object',
+        'required': ['policy_id', 'version', 'schema_version', 'rules'],
+        'additionalProperties': False,
+        'properties': {
+            'policy_id': {'type': 'string', 'minLength': 1},
+            'version': {'type': 'string', 'minLength': 1},
+            'schema_version': {'const': 'v1'},
+            'rules': {'type': 'array', 'minItems': 1, 'items': _POLICY_RULE_V1_SCHEMA},
             'metadata': {'type': 'object'},
         },
     },

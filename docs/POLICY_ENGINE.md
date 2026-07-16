@@ -13,7 +13,7 @@ evidence store, scheduler, or execution authority.
 | Module | Role |
 | --- | --- |
 | `govengine.policy.model` | `PolicyRequest`, `PolicyVerdict`, `PolicyObligation`, `PolicyConstraint`; validators |
-| `govengine.policy.compiler` | `PolicyCompiler`, `CompiledPolicyPack`, `CompileResult`, `PolicyRule` |
+| `govengine.policy.compiler` | `PolicyCompiler`, `CompiledPolicyPack`, `CompileResult`, `PolicyRule`, module-scoped typed `PolicyCondition` |
 | `govengine.policy.runtime` | `PolicyEngine`, `evaluate_policy()` |
 | `govengine.policy.explain` | `PolicyEvaluationExplanation`, `explain_policy_evaluation()` redacted decision reasoning |
 | `govengine.policy.enforcement` | Policy pack/verdict digest binding, `PolicyEnforcementPlan`, existing admission binding, neutral control projection |
@@ -80,6 +80,51 @@ Compiler rejects:
 
 Compiled rules are sorted by `priority` (lower first).
 
+### Typed conditions (`schema_version: v1`)
+
+Policy pack v1 replaces the implicit equality map with an explicit condition
+AST:
+
+```yaml
+policy_id: policy-pack-typed
+version: "1.0.0"
+schema_version: v1
+rules:
+  - rule_id: allow-bounded-read
+    effect: allow
+    conditions:
+      - path: action.mode
+        operator: eq
+        value: read
+      - path: resource.risk_score
+        operator: lte
+        value: 0.5
+      - path: principal.roles
+        operator: contains
+        value: operator
+```
+
+The closed operator set is:
+
+`eq`, `neq`, `in`, `not_in`, `contains`, `exists`, `lt`, `lte`, `gt`,
+`gte`, `subset_of`, `matches_namespace`.
+
+Condition paths must use one of the neutral namespaces `principal`, `action`,
+`resource`, `request_context` or host-supplied evaluator `context`. GovEngine
+validates the namespace and path syntax; profiles retain ownership of leaf
+vocabulary and domain meaning.
+
+Missing paths do not satisfy predicates except an explicit `exists: false`.
+Comparison does not coerce booleans, integers, floats or strings. Invalid
+compile-time operands are rejected with `invalid_policy_condition_operand`;
+wrong runtime operand types fail with
+`policy_condition_operand_type_mismatch`. `matches_namespace` performs exact
+or dot-delimited child matching only and is not a regex facility.
+
+Legacy packs without `schema_version`, or with `v0.1`, remain equality-map
+inputs. The compiler normalizes them internally to typed `eq` conditions while
+`CompiledPolicyPack.as_dict()` preserves the v0.1 wire representation.
+
 ## Authoring CLI
 
 The package ships an authoring CLI. It is deliberately **JSON-first**: JSON is
@@ -112,6 +157,7 @@ Emit the JSON Schema used for authoring tools:
 
 ```bash
 govengine-policy schema policy-pack
+govengine-policy schema policy-pack-v1
 govengine-policy schema policy-request
 govengine-policy schema policy-verdict
 ```
@@ -190,7 +236,7 @@ It includes:
 - decision, reason code, risk class and risk score;
 - `evaluation_path`: `invariant`, `matched_rule`, `no_match` or `verdict`;
 - the selected matched rule, when a rule produced the verdict;
-- redacted rule evaluation metadata showing condition keys and match status,
+- redacted rule evaluation metadata showing condition paths, operators and match status,
   without actual request values;
 - obligations and constraints with support status;
 - unsupported controls that make enforcement fail closed;

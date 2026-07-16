@@ -18,7 +18,7 @@ POLICY_SCRIPT = ROOT / 'scripts' / 'govengine_policy.py'
 EXPECTED_COMMAND_SCHEMAS = {
     'govengine-policy automation-transition': 'govengine.automation_transition_explanation.v0.1',
     'govengine-policy compatibility': 'govengine.contract_compatibility_report.v0.1',
-    'govengine-policy compile': 'govengine.policy_pack.v0.1',
+    'govengine-policy compile': 'govengine.policy_pack.v0.1_or_v1',
     'govengine-policy explain': 'govengine.policy_evaluation_explanation.v0.1',
     'govengine-policy profile-governance': 'govengine.profile_governance_bundle.v0.1',
     'govengine-policy scaffold': 'govengine.policy_pack.v0.1',

@@ -66,6 +66,13 @@ must not invent those runtime bindings or mint authorization. If a planning
 decision creates executable work, RExecOp still submits that operation to the
 canonical evaluator before connector I/O.
 
+G4-A adds a typed internal policy-condition AST and accepts typed policy packs
+with `schema_version: v1`. The language is deliberately closed to twelve
+operators and five neutral request namespaces. It performs no implicit scalar
+coercion, treats missing paths fail-closed, emits stable operand-type failures
+and does not add regex, callbacks or a solver. Legacy v0.1 equality maps are
+normalized to typed `eq` conditions without changing their serialized form.
+
 ## Public surface map
 
 The tested public surface registry in `govengine.surfaces` currently exposes

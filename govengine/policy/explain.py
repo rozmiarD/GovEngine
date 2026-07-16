@@ -11,7 +11,7 @@ from govengine.policy.enforcement import (
     admit_policy_execution,
 )
 from govengine.policy.model import PolicyRequest, PolicyVerdict, validate_policy_request
-from govengine.policy.runtime import PolicyEngine, _lookup_condition, _matches
+from govengine.policy.runtime import PolicyEngine, _condition_matches, _matches
 
 POLICY_EXPLANATION_SCHEMA_VERSION = "v0.1"
 INVARIANT_REASONS = frozenset(
@@ -90,7 +90,12 @@ def explain_policy_evaluation(
     )
     plan = admit_policy_execution(policy_pack, verdict)
     rule_evaluations = tuple(
-        _rule_evaluation(rule, checked_request, runtime_context)
+        _rule_evaluation(
+            rule,
+            checked_request,
+            runtime_context,
+            schema_version=policy_pack.schema_version,
+        )
         for rule in policy_pack.rules
     )
     matched_rules = tuple(item for item in rule_evaluations if item["matched"])
@@ -136,21 +141,28 @@ def _rule_evaluation(
     rule: PolicyRule,
     request: PolicyRequest,
     context: Mapping[str, Any],
+    *,
+    schema_version: str,
 ) -> dict[str, Any]:
+    conditions = []
+    for condition in rule.conditions:
+        item = {
+            "matched": _condition_matches(condition, request, context),
+            "redacted": True,
+        }
+        if schema_version == "v0.1":
+            item["key"] = condition.path
+        else:
+            item["path"] = condition.path
+            item["operator"] = condition.operator
+        conditions.append(item)
     return {
         "rule_id": rule.rule_id,
         "effect": rule.effect,
         "priority": rule.priority,
         "reason_code": rule.reason_code,
         "matched": _matches(rule, request, context),
-        "conditions": [
-            {
-                "key": str(key),
-                "matched": _lookup_condition(str(key), request, context) == expected,
-                "redacted": True,
-            }
-            for key, expected in sorted(rule.conditions.items())
-        ],
+        "conditions": conditions,
     }
 
 

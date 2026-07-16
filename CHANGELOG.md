@@ -11,6 +11,12 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Adds typed policy-condition AST support for `schema_version: v1` with the
+  closed operator set `eq`, `neq`, `in`, `not_in`, `contains`, `exists`, `lt`,
+  `lte`, `gt`, `gte`, `subset_of` and `matches_namespace`. Known policy
+  namespaces, operand types, missing paths and runtime type mismatches are
+  fail-closed. Legacy `v0.1` equality maps compile to internal `eq` conditions
+  and preserve their existing wire representation.
 - Routes trigger-planning, supervisor-action and automation-transition gates
   through one internal planning-admission projection. Their records now carry
   `governance_flow=planning_admission_adapter.v1` and

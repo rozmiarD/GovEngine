@@ -92,13 +92,14 @@ CLI_CONTRACTS: tuple[CliContract, ...] = (
     CliContract(
         command=('govengine-policy', 'compile'),
         entrypoint='govengine-policy',
-        schema='govengine.policy_pack.v0.1',
+        schema='govengine.policy_pack.v0.1_or_v1',
         stability='alpha_contract',
         group='policy_authoring',
         exit_codes=(
             CliExitCode(_SUCCESS, 'compiled'),
             CliExitCode(_FAILURE, 'compile_failed_or_input_error'),
         ),
+        notes=('Preserves legacy v0.1 equality maps or typed v1 condition AST.',),
     ),
     CliContract(
         command=('govengine-policy', 'explain'),
