@@ -130,7 +130,7 @@ For docs/operator changes, run:
 
 ```bash
 python scripts/validate_public_truth.py
-python scripts/validate_alpha_readiness.py
+python scripts/validate_release_readiness.py
 python -m pytest tests/ -q
 ruff check .
 git diff --check

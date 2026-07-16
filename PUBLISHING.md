@@ -1,13 +1,15 @@
 # GovEngine Publishing Checklist
 
-GovEngine is published to PyPI as a pre-1.0 package. Use this checklist for future releases without overstating maturity.
+GovEngine is preparing its first stable v1 contract line. Use this checklist
+for release candidates and stable releases without overstating whole-stack
+maturity.
 
-Current candidate line: `govengine==0.17.0rc2` with final `sclite-core==2.0.0`.
+Current candidate line: `govengine==1.0.0rc1` with final `sclite-core==2.0.0`.
 Current published PyPI line: `govengine==0.16.11`. Older alpha releases are archived only.
 
-`0.17.0rc2` is on release hold and must not be uploaded. Resume publication
-only with a new candidate after the fail-closed boundary suite and all release
-gates pass.
+`1.0.0rc1` is a source candidate and must not be uploaded until the independent
+v1 security review, immutable release evidence and all remaining release gates
+pass. Upload/tag creation also requires explicit operator approval.
 
 ## Preflight
 
@@ -20,7 +22,7 @@ gates pass.
 - [ ] `python scripts/validate_v1_freeze.py`,
   `python scripts/generate_conformance_corpus.py --check`, and
   `python scripts/validate_workflow_security.py` pass.
-- [ ] `python scripts/validate_alpha_readiness.py` passes for alpha release lines.
+- [ ] `python scripts/validate_release_readiness.py` passes.
 - [ ] `python -m pytest -q` passes.
 - [ ] `python scripts/validate_clean_package_install.py --venv /tmp/govengine-clean-release --dev --sclite-source /path/to/SCLite --no-editable` passes from a new virtual environment path, including its isolated installed-package retirement smoke.
 - [ ] `scripts/verify_runner_receipt_binding.py` and `scripts/verify_audit_ledger.py` are treated as read-only verifier smoke helpers if their records are used as release evidence; they must not generate runner requests, append ledger records, or expose raw payloads.
@@ -34,7 +36,9 @@ gates pass.
 
 ## PyPI release notes
 
-- SCLite is published as the PyPI distribution `sclite-core`; the current local GovEngine candidate depends on final `sclite-core==2.0.0`, while published `0.16.11` remains on `sclite-core==1.0.9`.
+- SCLite is published as the PyPI distribution `sclite-core`; the current
+  `1.0.0rc1` source candidate depends on final `sclite-core==2.0.0`, while
+  published `0.16.11` remains on `sclite-core==1.0.9`.
 - Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
 - `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
 - `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.

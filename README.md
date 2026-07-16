@@ -10,7 +10,9 @@ The 0.17 candidate consumes SCLite 2.0's neutral lifecycle verifier. Reaction,
 trigger, watchdog and automation contracts remain RExecOp-owned; GovEngine owns
 their admission decisions and does not import their removed SCLite modules.
 
-GovEngine is an alpha package 0.17.0rc2 source candidate for deterministic governance-kernel contracts.
+GovEngine is a release-candidate package 1.0.0rc1 for the deterministic
+governance-kernel v1 contract. The broader legacy top-level surface remains
+compatibility-only or alpha as classified by the API stability matrix.
 
 It consumes **SCLite** as the lower truth layer and exposes reusable Python records, validators, and composition helpers for admission decisions, lifecycle gates, policy/trust summaries, receipt binding, evidence review, replay freshness, and profile conformance. It does not run jobs. It does not own host runtime behavior. Carrier adapters, concrete schedulers, credentials, domain semantics, and live execution remain outside the kernel.
 
@@ -86,9 +88,11 @@ The published `0.16.0` line adds:
 
 ## Current Status
 
-Current source candidate: `0.17.0rc2`.
-Current source candidate pin: `govengine==0.17.0rc2` with final `sclite-core==2.0.0`.
-Release posture: `0.17.0rc2` is on hold; fail-closed boundary fixes require a new candidate and complete release evidence.
+Current source candidate: `1.0.0rc1`.
+Current source candidate pin: `govengine==1.0.0rc1` with final `sclite-core==2.0.0`.
+Release posture: source candidate only. Publication remains blocked until the
+independent v1 security review and immutable release evidence gates pass and
+the operator explicitly approves the release action.
 Latest published stack line: `govengine==0.16.11` with `sclite-core==1.0.9`.
 Older GovEngine distributions remain available on PyPI as archived alpha history,
 but they are not an active compatibility line. The published wheel contains the
@@ -156,7 +160,7 @@ python -m pip install govengine==0.16.11
 That installs the single supported alpha stack line, including the PolicyEngine MVP,
 B2 enforcement-plan contracts, policy explain/simulate, and supervisor explain.
 When PyPI lags source, coordinated stack work may use `pip install -e` from the
-GovEngine repository at `0.17.0rc2`.
+GovEngine repository at `1.0.0rc1`.
 
 For local development:
 
@@ -168,7 +172,7 @@ python -m pytest -q
 python -m mypy govengine
 python -m ruff check .
 python scripts/validate_public_truth.py
-python scripts/validate_alpha_readiness.py
+python scripts/validate_release_readiness.py
 ```
 
 ## Minimal Smoke Example
@@ -208,11 +212,17 @@ python -m pytest -q
 python -m mypy govengine
 python -m ruff check .
 python scripts/validate_public_truth.py
-python scripts/validate_alpha_readiness.py
+python scripts/validate_release_readiness.py
 python scripts/validate_clean_package_install.py --no-editable
 ```
 
-`scripts/validate_public_truth.py` keeps package metadata, public docs, dependency truth, public surface names, and release labels aligned. `scripts/validate_alpha_readiness.py` checks the alpha package posture before publication. `scripts/validate_clean_package_install.py --no-editable` validates an installed wheel in isolation and uses scoped `pip check` instead of a broad system interpreter.
+`scripts/validate_public_truth.py` keeps package metadata, public docs,
+dependency truth, public surface names, and release labels aligned.
+`scripts/validate_release_readiness.py` checks the 1.0 release-candidate
+posture while retaining honest alpha labels for legacy non-v1 surfaces.
+`scripts/validate_clean_package_install.py --no-editable` validates an
+installed wheel in isolation and uses scoped `pip check` instead of a broad
+system interpreter.
 
 ## Documentation
 

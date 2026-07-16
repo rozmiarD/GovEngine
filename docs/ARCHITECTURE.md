@@ -1,6 +1,8 @@
 # GovEngine Architecture
 
-GovEngine is a deterministic governed-runtime kernel in alpha form. It is designed to sit between a host/domain runtime and the SCLite contract lifecycle.
+GovEngine is a deterministic governance kernel in release-candidate form. It
+sits between a host/domain runtime and the SCLite contract lifecycle without
+owning runtime execution.
 
 ```text
 host runtime -> GovEngine -> SCLite
@@ -270,11 +272,11 @@ forbidden: GovEngine -> Logdash/OpenClaw/MCP/A2A adapters
 
 ## Current maturity
 
-The package currently covers dry-run-safe helpers and neutral contract gates as
-a kernel in alpha form. The published `govengine==0.16.0` line
-includes the PolicyEngine MVP, the governed-runtime MVP from `0.14.0`, and
-roadmap-hardening surfaces described above. Newer work should return to
-`Unreleased` until the next alpha release.
+The package now presents a frozen v1 governance facade in release-candidate
+form. The wider legacy top-level surface retains explicit alpha, adapter,
+experimental and fixture classifications rather than inheriting the v1
+stability promise. The published `govengine==0.16.0` line includes the earlier
+PolicyEngine and governed-runtime MVP baselines.
 
 Those alpha surfaces — canonical runtime admission, host-provided trust ports,
 receipt/evidence binding, audit/replay ports, inspect-only admission review,

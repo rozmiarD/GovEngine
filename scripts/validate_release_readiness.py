@@ -21,8 +21,8 @@ from govengine.surfaces import public_surface_index  # noqa: E402
 from govengine._digest_ownership import validate_digest_ownership_inventory  # noqa: E402
 
 
-EXPECTED_VERSION = '0.17.0rc2'
-EXPECTED_RELEASE_LABEL = '0.17.0rc2'
+EXPECTED_VERSION = '1.0.0rc1'
+EXPECTED_RELEASE_LABEL = '1.0.0rc1'
 EXPECTED_SURFACES = [
     'artifact_governance_core',
     'planning_contracts_core',
@@ -66,13 +66,17 @@ def main() -> int:
     digest_inventory = validate_digest_ownership_inventory()
     surface_names = [surface.name for surface in surfaces]
 
-    _assert(version == EXPECTED_VERSION, f'alpha_version_mismatch:{version}')
+    _assert(version == EXPECTED_VERSION, f'release_version_mismatch:{version}')
     _assert(package_version == EXPECTED_VERSION, f'package_version_mismatch:{package_version}')
-    _assert('Development Status :: 3 - Alpha' in classifiers, 'missing_alpha_classifier')
+    _assert('Development Status :: 4 - Beta' in classifiers, 'missing_release_candidate_classifier')
+    _assert('Development Status :: 3 - Alpha' not in classifiers, 'alpha_classifier_still_present')
     _assert('Development Status :: 2 - Pre-Alpha' not in classifiers, 'pre_alpha_classifier_still_present')
     _assert(surface_names == EXPECTED_SURFACES, f'surface_mismatch:{surface_names}')
     _assert(not any(surface.optional_profile for surface in surfaces), 'optional_surface_retained')
-    _assert(all(surface.status.startswith('alpha_') for surface in surfaces), 'surface_status_retains_pre_alpha_label')
+    _assert(
+        all(surface.status.startswith('alpha_') for surface in surfaces),
+        'legacy_surface_status_drift',
+    )
     _assert(any(item.binding_id == 'runner.execution_ticket' and item.mode == 'delegated' for item in digest_inventory), 'missing_delegated_ticket_digest_ownership')
 
     vocabulary = validate_governance_contract_vocabulary()
@@ -99,12 +103,15 @@ def main() -> int:
             'docs/VALIDATION.md',
         )
     )
-    _assert(EXPECTED_RELEASE_LABEL in public_text, 'missing_alpha_release_label')
+    _assert(EXPECTED_RELEASE_LABEL in public_text, 'missing_release_candidate_label')
     for term in FORBIDDEN_PUBLIC_TERMS:
         _assert(term not in public_text, f'forbidden_public_term:{term}')
     _assert('production-readiness claims' in public_text or 'production readiness' in public_text, 'missing_production_non_claim')
 
-    print(f'alpha_readiness_ok:govengine=={EXPECTED_VERSION}:{EXPECTED_RELEASE_LABEL}:surfaces={len(surface_names)}')
+    print(
+        f'release_readiness_ok:govengine=={EXPECTED_VERSION}:'
+        f'{EXPECTED_RELEASE_LABEL}:surfaces={len(surface_names)}'
+    )
     return 0
 
 

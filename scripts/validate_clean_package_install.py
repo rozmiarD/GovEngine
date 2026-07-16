@@ -59,7 +59,7 @@ def absent(module):
     except ModuleNotFoundError:
         return True
 
-assert govengine.__version__ == '0.17.0rc2'
+assert govengine.__version__ == '1.0.0rc1'
 assert len(govengine_v1.__all__) == 40
 assert govengine_v1.GovernanceRequest is govengine.GovernanceRequest
 assert govengine_v1.GovernanceDecision is govengine.GovernanceDecision
@@ -76,7 +76,7 @@ assert all(absent(module) for module in retired)
 assert validate_policy_pack(baseline_policy_pack('governed-runtime')).ok
 assert not files('govengine').joinpath('capability_recipes.yaml').is_file()
 assert not files('govengine').joinpath('tool_registry.yaml').is_file()
-print('installed_surface_smoke_ok:govengine==0.17.0rc2:surfaces=7:policy_authoring=ok')
+print('installed_surface_smoke_ok:govengine==1.0.0rc1:surfaces=7:policy_authoring=ok')
 """
 
 
@@ -129,7 +129,7 @@ def build_plan(
         [
             [venv_python, '-I', '-c', INSTALLED_SURFACE_SMOKE],
             [venv_python, 'scripts/validate_public_truth.py'],
-            [venv_python, 'scripts/validate_alpha_readiness.py'],
+            [venv_python, 'scripts/validate_release_readiness.py'],
         ]
     )
     if dev:

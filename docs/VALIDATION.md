@@ -5,7 +5,7 @@ GovEngine validation is local and public-safe. It does not run live targets.
 ## CI vs local gates
 
 GitHub Actions (`.github/workflows/pytest.yml`) runs public-truth validation,
-v1 facade/schema freeze, generated corpus drift validation, alpha readiness,
+v1 facade/schema freeze, generated corpus drift validation, release readiness,
 strict facade typing, full pytest across supported Python versions, package
 dry-run build, `twine check`, wheel install, and isolated `pip check`. Treat
 branch or PR CI as required merge evidence.
@@ -24,7 +24,7 @@ python -m pip install -e '.[dev]'
 python -m pytest -q
 python -m mypy govengine
 python scripts/validate_public_truth.py
-python scripts/validate_alpha_readiness.py
+python scripts/validate_release_readiness.py
 python scripts/validate_digest_ownership.py
 python scripts/validate_api_stability.py
 python scripts/validate_v1_freeze.py
@@ -68,7 +68,7 @@ The gate validates the reviewed digest-boundary inventory in
 [`DIGEST_OWNERSHIP.md`](DIGEST_OWNERSHIP.md). It distinguishes full
 GovEngine-owned payloads that must be recomputed from SCLite/host-owned
 delegated digests, reference-only bindings, and digests produced by GovEngine.
-It runs as part of alpha readiness and fails if an entry has an invalid mode,
+It runs as part of release readiness and fails if an entry has an invalid mode,
 duplicate binding id, or claims GovEngine recomputation of a SCLite-owned
 payload.
 
@@ -157,14 +157,14 @@ Stable exit codes for both helpers:
 - `1`: verification failed or failed closed on invalid/tampered input.
 - `2`: CLI/input handling error such as unreadable JSON or invalid read limit.
 
-## Next alpha release readiness gate
+## 1.0 release-candidate readiness gate
 
-The next alpha release gate is a decision checklist, not a publication action.
+The release-candidate gate is a decision checklist, not a publication action.
 It must pass before any tag or package upload is considered:
 
 ```bash
 env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_public_truth.py
-env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_alpha_readiness.py
+env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_release_readiness.py
 env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_digest_ownership.py
 env PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_v1_freeze.py
 env PYTHONDONTWRITEBYTECODE=1 python3 scripts/generate_conformance_corpus.py --check
@@ -204,7 +204,7 @@ path. GovEngine production code must not import Ravenclaw, Tecrax, or other
 host runtimes.
 
 - SCLite released-line smoke: local or CI gate. Install the currently supported
-  `sclite-core` package range and run public truth, alpha readiness, full
+  `sclite-core` package range and run public truth, release readiness, full
   pytest, clean install, and package smoke. This is required for release
   approval.
 - SCLite edge smoke: optional CI or manual pre-release gate during coordinated
@@ -222,20 +222,21 @@ Only this section states current validation expectations. The versioned
 sections under **Historical validation records** are retained release evidence,
 not the active gate.
 
-Expected result for the current `0.17.0rc2` package line (`0.17.0rc2`):
+Expected result for the current `1.0.0rc1` package line (`1.0.0rc1`):
 
 - full pytest passes in the source tree;
 - `python -m mypy govengine` passes for the package surface;
 - `scripts/validate_clean_package_install.py` passes, rejects retired module paths from the installed artifact, and runs `pip check` inside its newly created virtual environment;
 - `python scripts/validate_public_truth.py` passes;
 - `python scripts/validate_api_stability.py` passes; consumer-aware review may add `--consumer-root /path/to/rexecop`;
-- `python scripts/validate_alpha_readiness.py` passes;
+- `python scripts/validate_release_readiness.py` passes;
 - import smoke checks include `govengine.contract_proofs`, `govengine.profiles`, `govengine.review`, `govengine.replay`, `govengine.execution.supervision`, `govengine.admission`, `govengine.planning`, `govengine.runtime_shell`, and `govengine.scope_ports`;
 - the public surface registry and `docs/API_BOUNDARY.md` agree on the exact public surfaces;
 - profile SDK fixture conformance passes for Ravenclaw and Tecrax without adapter, credential, product UX, or live-execution claims;
 - runtime contract proof fixtures pass for Ravenclaw and Tecrax without adapter, credential, scheduler, storage, live-execution, or new OODA claims;
 - package build and clean wheel-install smoke checks pass before any tag or upload;
-- Ravenclaw public downstream validation passes against the local alpha package line, using explicit runtime paths such as `RAVENCLAW_REPORTS_DIR`, `RAVENCLAW_TMP_DIR`, `RAVENCLAW_LOGDASH_DB`, and `RAVENCLAW_PIPELINE_CONFIG` when the checkout should remain clean/read-only;
+- downstream host validation, when used, passes against the local candidate
+  without moving host semantics into GovEngine;
 - retired security facade/module paths are absent and cannot re-enter the neutral public surface index;
 - public surface status markers are alpha-labelled and
   `govengine.sclite_adapter` is absent because host runtimes own projection
@@ -289,7 +290,7 @@ Use these checks for operator/runbook-only updates:
 
 ```bash
 python scripts/validate_public_truth.py
-python scripts/validate_alpha_readiness.py
+python scripts/validate_release_readiness.py
 python -m mypy govengine
 python -m pytest tests/ -q
 ruff check .

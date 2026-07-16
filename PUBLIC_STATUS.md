@@ -1,17 +1,22 @@
 # GovEngine Public Status
 
-GovEngine is an **alpha governed-runtime kernel package** extracted from Ravenclaw in contract-first stages.
+GovEngine is a **1.0 release-candidate governance-kernel package** extracted
+from Ravenclaw in contract-first stages. The stable promise is limited to the
+documented `govengine.v1` facade; legacy top-level surfaces retain their
+classified compatibility/alpha posture.
 
 ## Current maturity
 
 - Package import: working.
 - Standalone tests: present.
 - GitHub Actions: pytest on supported Python versions.
-- Source/package version: `0.17.0rc2`.
-- Source distribution target: `govengine==0.17.0rc2`.
+- Source/package version: `1.0.0rc1`.
+- Source distribution target: `govengine==1.0.0rc1`.
 - Published distribution: `govengine==0.16.11`.
-- Release label: `0.17.0rc2`.
-- Release status: **release hold**. The unpublished `0.17.0rc2` candidate must not be published; fail-closed boundary fixes require a new candidate and full release evidence. The latest published stack line remains supported.
+- Release label: `1.0.0rc1`.
+- Release status: **source candidate / publication blocked**. Independent v1
+  security review, immutable release evidence and explicit operator approval
+  are still required. The latest published stack line remains supported.
 - Latest published PyPI package: `govengine==0.16.11`.
 - Source/PyPI gap: open for the local candidate; published PyPI releases remain the public compatibility matrix until release approval.
 - SCLite integration: present through helper seams via final frozen dependency `sclite-core==2.0.0`.
@@ -69,7 +74,10 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Profile governance projection (G3): `govengine.profile_governance` provides `ProfileGovernanceProjection`, `ProfileConnectorCompatibilityReport`, `explain_profile_governance()` and `govengine-policy profile-governance --json` for policy hooks, evidence expectations, runner posture, supported tracks and profile/connector capability compatibility without backend IO or domain semantics interpretation.
 - Runtime contract proofs: `govengine.contract_proofs` defines public-safe Ravenclaw/Tecrax proof fixtures and neutral governance vocabulary over existing GovEngine contracts without adapters, credentials, live execution, schedulers, storage, or new OODA surface.
 - Public truth gate: `scripts/validate_public_truth.py` checks version/dependency/status/surface consistency across package metadata and public docs. `scripts/validate_api_stability.py` derives export counts from the matrix rows, detects module-owned top-level callables outside `__all__`, and can scan downstream `from govengine import ...` use.
-- Alpha readiness gate: `scripts/validate_alpha_readiness.py` checks package metadata, alpha classifier, runtime proof fixtures, neutral vocabulary, and public-surface non-claims before alpha releases.
+- Release readiness gate: `scripts/validate_release_readiness.py` checks
+  package metadata, release-candidate classifier, runtime proof fixtures,
+  neutral vocabulary and public-surface non-claims. Legacy non-v1 surface
+  status remains explicitly alpha rather than being silently stabilized.
 - Runner protocol: dry-run/control-plane shape only.
 - OODA safety loop: deterministic between-step decision contract.
 - Core artifact governance boundaries: initial portable dataclasses for artifact descriptors/envelopes/state, governance context, transition decisions, and execution prerequisites.
@@ -106,7 +114,8 @@ GovEngine is an **alpha governed-runtime kernel package** extracted from Ravencl
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `govengine==0.16.11`; `0.17.0rc2` is not published.
+- PyPI publication: completed through `govengine==0.16.11`; `1.0.0rc1` is a
+  source candidate and is not published.
 
 ## What is public-safe today
 

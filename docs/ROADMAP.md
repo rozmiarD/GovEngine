@@ -2,7 +2,8 @@
 
 GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
 
-Current package baseline: `govengine==0.17.0rc2` (`0.17.0rc2`), depending on final `sclite-core==2.0.0`.
+Current package baseline: `govengine==1.0.0rc1` (`1.0.0rc1`), depending on
+final frozen `sclite-core==2.0.0`.
 Published PyPI baseline is `govengine==0.16.11`. Older alpha packages are archived only.
 
 ## Architecture thesis
@@ -26,22 +27,28 @@ intent
   -> review bundle
 ```
 
-SCLite owns the contract/proof/review artifact layer. GovEngine owns the runtime mechanics that consume those artifacts. Domain runtimes such as Ravenclaw and Tecrax own domain semantics, UX, tools, and operator workflows.
+SCLite owns the contract/proof/review artifact layer. GovEngine owns
+deterministic policy, governance, admission and receipt-conformance decisions.
+RExecOp owns runtime lifecycle, scheduling, retries, connector dispatch and
+I/O. Domain profiles such as Tecrax own semantics, UX, tools and operator
+workflows.
 
 ## Responsibility boundary
 
-GovEngine owns reusable mechanics:
+The stable GovEngine v1 facade owns:
 
-- event/state/control envelopes;
-- reason-code and transition-decision registries;
-- task and planning contracts;
-- audit, policy, admission, approval, and ticket-control boundaries;
-- trust/signer/verifier ports without PKI or key-store ownership;
-- runner request/receipt/gate/supervisor contracts;
-- OODA-style pause/abort/cooldown/replan decisions;
-- deconfliction and common operational picture summaries;
-- evidence qualification and review-controller contracts;
-- domain-profile SDK and conformance tests.
+- typed policy compilation and deterministic evaluation;
+- canonical governance requests and decisions;
+- approval, target-scope and capability compatibility validation;
+- short-lived attempt-bound authorization contracts;
+- obligations, stable reason codes and redacted explanations;
+- runtime receipt conformance against the decision;
+- structural host ports for trust, revocation, activation and claim-once
+  semantics without implementing their storage.
+
+Legacy planning, runtime-shell, lifecycle, OODA and supervision records remain
+classified compatibility/experimental surfaces. Their presence does not make
+GovEngine the owner of those runtime mechanisms.
 
 GovEngine does **not** own:
 
@@ -49,6 +56,8 @@ GovEngine does **not** own:
 - Ravenclaw campaign semantics, finding taxonomy, Logdash, or security toolchains;
 - Tecrax infrastructure UX, service inventories, change-management policy, or host credentials;
 - OpenClaw/MCP/A2A carrier adapters as core;
+- operation lifecycle, queues, scheduler integration, retries or rollback;
+- leases, fencing, runtime permit production or connector dispatch;
 - live subprocess execution by default;
 - PKI, CA, KMS, trust-store, or key storage;
 - legal authorization, organizational approval, or operator accountability.
@@ -62,50 +71,28 @@ Runtimes own lifecycle, execution and integration mechanics.
 SCLite owns proof/review artifacts.
 ```
 
-## Current 0.16.x candidate line
+## Current 1.0 release-candidate line
 
-The unpublished `0.17.0rc2` candidate keeps the current published `0.16.x`
-single supported line intact while correcting SCLite strict-lifecycle admission
-and verified-handoff consumption. It does not add governance authority,
-execution, storage, or profile semantics. The published line adds digest-bound
-policy enforcement plans on
-top of the PolicyEngine MVP published in `0.15.0`:
+The `1.0.0rc1` source candidate freezes the small `govengine.v1` facade and its
+GovEngine-owned v1 schema inventory. It provides one canonical
+`GovernanceRequest -> GovernanceDecision -> runtime claim -> receipt
+conformance` flow with typed policy evaluation, independently bound approval,
+scope and capability facts, short-lived attempt-bound authorization, stable
+reason codes and a shared language-neutral corpus.
 
-- deterministic pack, verdict, plan and admission digests;
-- `PolicyEnforcementPlan` bound to the existing `GovAdmissionDecision`;
-- neutral projections for receipt, output digest, output limit, timeout and
-  maximum-step controls;
-- fail-closed malformed or unsupported controls;
-- docs in `docs/POLICY_ENGINE.md` and tests in `tests/test_policy_enforcement.py`.
+The stable promise is deliberately narrower than the package root:
 
-Status: candidate implementation and tests are complete locally for `0.17.0rc2`; PyPI publication remains complete only for `0.16.11`.
+- exactly the manifest-listed `govengine.v1` facade and v1 records are
+  stable-candidate contracts;
+- legacy root modules remain compatibility adapters, experimental surfaces or
+  fixtures according to the generated stability matrix;
+- GovEngine does not own runtime I/O, queueing, lifecycle or storage;
+- SCLite 2.0 remains frozen and unchanged;
+- publication is blocked until independent review, cross-stack immutable
+  release evidence and explicit operator approval pass.
 
-The current published `0.16.x` single supported line is the single supported GovEngine stack line until this candidate is released.
-
-The line retains the neutral kernel shape from `0.14.x`, keeps
-Ravenclaw-derived runtime behavior host-owned, and keeps the former optional
-security facade retired:
-
-- artifact-governance and SCLite lifecycle/review bridge helpers;
-- kernel/profile/runtime/SCLite boundary reports and conformance checks;
-- neutral runtime-shell, planning, admission/policy, controlled-execution, runner-supervision, and evidence-review contracts;
-- contract-only domain profile SDK declarations and Ravenclaw/Tecrax conformance fixtures;
-- runtime contract proof fixtures showing Ravenclaw and Tecrax over the same neutral GovEngine/SCLite contract flow;
-- dry-run/default-deny execution posture with no default live subprocess backend;
-- public surface registry limited to neutral core, contract-only domain profile SDK, and proof surfaces;
-- public truth validation for version/dependency/status/API-boundary drift.
-- package-build, clean wheel-install, and Ravenclaw public downstream compatibility checks for the alpha release line.
-- explicit host ownership of Ravenclaw lifecycle projection after removal of
-  `govengine.sclite_adapter` from the neutral package surface.
-
-This is alpha, not stable. The next roadmap should not be a file move from Ravenclaw into GovEngine. It should remain contract-first extraction: define neutral contracts, add GovEngine tests, add host compatibility wrappers, then thin host code only after behavior is preserved.
-
-The active alpha hygiene gate requires neutral public surfaces to stay free of
-Ravenclaw host context and domain security helper imports. The former
-`security_profile_helpers` compatibility surface is removed in this line;
-profile-owned tool, policy, and UX semantics remain in Ravenclaw. New neutral
-extraction should land in typed core/profile surfaces only when the code and a
-second host prove it there.
+The current published `0.16.x` line remains the supported public package line
+until `1.0.0rc1` is actually published.
 
 ## Post-0.12.3 governed-runtime MVP
 

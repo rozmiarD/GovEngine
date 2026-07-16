@@ -1,6 +1,8 @@
 # Contributing to GovEngine
 
-GovEngine is an alpha package (`0.17.0rc2`) governed-runtime kernel candidate. Contributions should preserve the package boundary:
+GovEngine is a release-candidate package (`1.0.0rc1`) for the stable v1
+governance facade. Legacy top-level surfaces retain their documented
+compatibility/alpha posture. Contributions should preserve the package boundary:
 
 ```text
 domain profile -> host runtime -> GovEngine -> SCLite

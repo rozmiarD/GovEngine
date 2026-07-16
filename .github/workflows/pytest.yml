@@ -41,8 +41,8 @@ jobs:
         run: python scripts/validate_workflow_security.py
       - name: Validate v1 security review record
         run: python scripts/validate_v1_security_review.py
-      - name: Validate alpha readiness
-        run: python scripts/validate_alpha_readiness.py
+      - name: Validate release-candidate readiness
+        run: python scripts/validate_release_readiness.py
       - name: Ruff
         run: python -m ruff check .
       - name: Mypy

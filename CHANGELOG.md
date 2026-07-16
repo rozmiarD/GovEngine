@@ -11,6 +11,13 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Promotes repository truth to the `1.0.0rc1` source candidate, changes package
+  maturity metadata from alpha to beta/release-candidate, and replaces the
+  alpha-readiness gate with a release-readiness gate. The stable promise is
+  explicitly limited to the frozen `govengine.v1` facade; legacy top-level
+  surfaces keep their compatibility/alpha classifications. Publication remains
+  blocked on independent review, immutable release evidence and explicit
+  operator approval.
 - Adds a versioned independent v1 contract-review record and release-only gate.
   Normal CI validates the record structure; the publish workflow fails closed
   until an external reviewer identifies an immutable commit and closes every

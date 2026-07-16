@@ -46,6 +46,7 @@ jobs:
           python scripts/validate_api_stability.py
           python scripts/validate_v1_freeze.py
           python scripts/generate_conformance_corpus.py --check
+          python scripts/validate_release_readiness.py
           python scripts/validate_workflow_security.py
           python scripts/validate_v1_security_review.py --require-independent
           python -m pytest -q

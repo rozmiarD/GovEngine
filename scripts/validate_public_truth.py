@@ -15,7 +15,7 @@ from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_
 from govengine.surfaces import public_surface_index  # noqa: E402
 from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '0.17.0rc2'
+EXPECTED_RELEASE_LABEL = '1.0.0rc1'
 PUBLISHED_VERSION = '0.16.11'
 
 SURFACE_HEADINGS = {
@@ -115,11 +115,11 @@ GOVERNED_RUNTIME_RELEASE_MARKERS = (
 
 SOURCE_PYPI_GAP_DOC_MARKERS = {
     'README.md': (
-        'Current source candidate: `0.17.0rc2`',
+        'Current source candidate: `1.0.0rc1`',
         'Latest published stack line: `govengine==0.16.11` with `sclite-core==1.0.9`',
     ),
     'docs/ROADMAP.md': (
-        '## Current 0.16.x candidate line',
+        '## Current 1.0 release-candidate line',
         'Published PyPI baseline is `govengine==0.16.11`',
     ),
 }
@@ -395,16 +395,33 @@ def _assert_readme_package_truth(readme: str, version: str) -> None:
         raise AssertionError('README.md:missing_unpinned_install_command')
 
 
-def _assert_alpha_maturity_truth(paths: Iterable[str]) -> None:
-    forbidden = re.compile(r'\bcurrent\s+pre-alpha\b|\bcurrently\s+pre-alpha\b|\bin\s+pre-alpha\s+form\b', re.IGNORECASE)
+def _assert_candidate_maturity_truth(paths: Iterable[str]) -> None:
+    forbidden = re.compile(
+        r'\bcurrent\s+pre-alpha\b|\bcurrently\s+pre-alpha\b|'
+        r'\bin\s+pre-alpha\s+form\b|\bGovEngine is an alpha package\b|'
+        r'\bGovEngine is currently alpha\b',
+        re.IGNORECASE,
+    )
     for path in paths:
         text = _read(path)
         match = forbidden.search(text)
         if match:
             raise AssertionError(f'{path}:stale_maturity_claim:{match.group(0)}')
-    _assert_contains('SECURITY.md', _read('SECURITY.md'), 'currently alpha and still pre-1.0')
-    _assert_contains('docs/ARCHITECTURE.md', _read('docs/ARCHITECTURE.md'), 'kernel in alpha form')
-    _assert_contains('docs/API_BOUNDARY.md', _read('docs/API_BOUNDARY.md'), 'current alpha public surface set')
+    _assert_contains(
+        'SECURITY.md',
+        _read('SECURITY.md'),
+        'currently a 1.0 release candidate',
+    )
+    _assert_contains(
+        'docs/ARCHITECTURE.md',
+        _read('docs/ARCHITECTURE.md'),
+        'kernel in release-candidate form',
+    )
+    _assert_contains(
+        'docs/API_BOUNDARY.md',
+        _read('docs/API_BOUNDARY.md'),
+        'current release-candidate package surface set',
+    )
 
 
 def _assert_roadmap_current_release_truth(roadmap: str) -> None:
@@ -419,8 +436,12 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
     for marker in stale_markers:
         if marker in roadmap:
             raise AssertionError(f'docs/ROADMAP.md:stale_current_roadmap_claim:{marker}')
-    _assert_contains('docs/ROADMAP.md', roadmap, '## Current 0.16.x candidate line')
-    _assert_contains('docs/ROADMAP.md', roadmap, 'The current published `0.16.x` single supported line is the single supported GovEngine stack line')
+    _assert_contains('docs/ROADMAP.md', roadmap, '## Current 1.0 release-candidate line')
+    _assert_contains(
+        'docs/ROADMAP.md',
+        roadmap,
+        'The current published `0.16.x` line remains the supported public package line',
+    )
     _assert_contains('docs/ROADMAP.md', roadmap, f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`')
 
 
@@ -504,14 +525,18 @@ def main() -> int:
     workflow = _read('.github/workflows/pytest.yml')
     clean_install_script = _read('scripts/validate_clean_package_install.py')
 
-    _assert_contains('README.md', readme, f'alpha package {version}')
+    _assert_contains('README.md', readme, f'release-candidate package {version}')
     _assert_contains('README.md', readme, release_label)
     _assert_contains('README.md', readme, dependency)
     _assert_readme_package_truth(readme, version)
     _assert_contains('README.md', readme, '## License and provenance')
     _assert_contains('README.md', readme, 'originating Ravenclaw contribution lineage')
     _assert_contains('README.md', readme, 'package maintainer')
-    _assert_contains('CONTRIBUTING.md', contributing, f'alpha package (`{release_label}`)')
+    _assert_contains(
+        'CONTRIBUTING.md',
+        contributing,
+        f'release-candidate package (`{release_label}`)',
+    )
     _assert_contains('CONTRIBUTING.md', contributing, 'scripts/validate_clean_package_install.py')
     _assert_contains('docs/ROADMAP.md', roadmap, f'Current package baseline: `govengine=={version}`')
     _assert_contains('docs/ROADMAP.md', roadmap, dependency)
@@ -619,7 +644,11 @@ def main() -> int:
         workflow,
         'python scripts/validate_workflow_security.py',
     )
-    _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_alpha_readiness.py')
+    _assert_contains(
+        '.github/workflows/pytest.yml',
+        workflow,
+        'python scripts/validate_release_readiness.py',
+    )
     _assert_contains('.github/workflows/pytest.yml', workflow, 'Mypy stable facade strict')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python -m mypy --strict')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'package-dry-run:')
@@ -656,7 +685,7 @@ def main() -> int:
         ),
         version,
     )
-    _assert_alpha_maturity_truth(CURRENT_ALPHA_DOCS)
+    _assert_candidate_maturity_truth(CURRENT_ALPHA_DOCS)
 
     print(f'public_truth_ok:govengine=={version}:{dependency}:surfaces={len(surface_names)}')
     return 0

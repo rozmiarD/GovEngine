@@ -30,19 +30,21 @@ def test_public_truth_validator_passes() -> None:
         check=True,
     )
 
-    assert result.stdout.strip().startswith('public_truth_ok:govengine==0.17.0rc2:')
+    assert result.stdout.strip().startswith('public_truth_ok:govengine==1.0.0rc1:')
 
 
-def test_alpha_readiness_validator_passes() -> None:
+def test_release_readiness_validator_passes() -> None:
     result = subprocess.run(
-        [sys.executable, 'scripts/validate_alpha_readiness.py'],
+        [sys.executable, 'scripts/validate_release_readiness.py'],
         cwd=ROOT,
         text=True,
         capture_output=True,
         check=True,
     )
 
-    assert result.stdout.strip().startswith('alpha_readiness_ok:govengine==0.17.0rc2:')
+    assert result.stdout.strip().startswith(
+        'release_readiness_ok:govengine==1.0.0rc1:'
+    )
 
 
 def test_current_public_docs_do_not_reintroduce_pre_alpha_maturity_claims() -> None:
