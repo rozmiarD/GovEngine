@@ -11,24 +11,49 @@ from scripts.validate_v1_security_review import (
 )
 
 
-def test_v1_security_review_record_is_structurally_valid_and_pending() -> None:
+def test_v1_security_review_record_is_independently_reviewed() -> None:
     report = validate_v1_security_review()
 
     assert report == {
-        'status': 'pending_independent_review',
-        'independent': False,
+        'status': 'independent_reviewed',
+        'independent': True,
         'findings': 0,
         'open_p0': 0,
         'open_p1': 0,
     }
 
 
-def test_release_gate_requires_real_independent_review() -> None:
+def test_release_gate_accepts_real_independent_review() -> None:
+    report = validate_v1_security_review(require_independent=True)
+
+    assert report['independent'] is True
+
+
+def test_release_gate_rejects_pending_review(tmp_path: Path) -> None:
+    review = json.loads(
+        Path('docs/security-review/v1-contract-review.json').read_text(encoding='utf-8')
+    )
+    review.update(
+        {
+            'status': 'pending_independent_review',
+            'reviewer': {
+                'identity': '',
+                'organization_or_reference': '',
+                'independent_of_implementation': False,
+            },
+            'reviewed_commit': '',
+            'completed_at': '',
+            'notes': 'Release blocked pending independent review.',
+        }
+    )
+    path = tmp_path / 'pending-review.json'
+    path.write_text(json.dumps(review), encoding='utf-8')
+
     with pytest.raises(
         AssertionError,
         match='independent_v1_security_review_required',
     ):
-        validate_v1_security_review(require_independent=True)
+        validate_v1_security_review(path, require_independent=True)
 
 
 def test_completed_independent_review_passes_release_gate(tmp_path: Path) -> None:
