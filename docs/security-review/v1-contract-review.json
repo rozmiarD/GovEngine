@@ -1,13 +1,13 @@
 {
   "schema_version": "govengine.v1_contract_security_review.v1",
-  "status": "pending_independent_review",
+  "status": "reviewd",
   "reviewer": {
-    "identity": "",
-    "organization_or_reference": "",
-    "independent_of_implementation": false
+    "identity": "ExatronOmega",
+    "organization_or_reference": "https://github.com/ExatronOmega",
+    "independent_of_implementation": true
   },
-  "reviewed_commit": "",
-  "completed_at": "",
+  "reviewed_commit": "bd7ac496006bd8447f6722fb346e0033815aac64",
+  "completed_at": "2026-07-20T17:19:32Z",
   "scope": [
     "approval_and_governance_request_bindings",
     "policy_activation_and_typed_evaluation",
