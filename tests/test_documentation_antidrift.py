@@ -35,6 +35,38 @@ def test_current_public_docs_track_package_version() -> None:
     assert 'published `0.12` alpha line' not in docs['README.md']
 
 
+def test_readme_is_human_facing_and_describes_the_unnamed_component_set() -> None:
+    readme = _read('README.md')
+
+    for marker in (
+        'It is an embeddable library that answers one narrow question',
+        'This\nset has no formal product name.',
+        'Together they separate domain meaning,\ngovernance, execution and proof',
+        '```plantuml',
+        'component "Domain profile\\n(e.g. Tecrax)" as Profile',
+        'component "RExecOp\\nruntime and execution" as Runtime',
+        'component "GovEngine\\ngovernance decision" as Governance',
+        'component "SCLite\\ntruth and verification" as Truth',
+        '## Canonical governance flow',
+        '## What GovEngine provides',
+        '## What GovEngine does not do',
+        '## Quick start: evaluate a typed policy',
+    ):
+        assert marker in readme
+
+    for stale in (
+        'govstack',
+        'The published `0.15.0` line added',
+        'The `0.16.x` source line also adds',
+        'The published `0.16.0` line adds',
+        'public_surface_index()',
+        'approved_spec_dry_run_result',
+        '## Safety Boundary',
+        '## Explicit Non-Claims',
+    ):
+        assert stale not in readme
+
+
 def test_superseded_mvp_docs_are_archived_not_active() -> None:
     readme = _read('README.md')
     docs_index = _read('docs/README.md')

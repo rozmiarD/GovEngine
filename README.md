@@ -7,173 +7,269 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
 GovEngine is a Python governance kernel for systems that execute operations.
-Given a bounded description of one concrete execution attempt and independently
-sourced policy, approval, scope, and runtime-capability facts, it
-deterministically returns an allowed, approval-required, or denied decision.
-Only an allowed decision can carry a short-lived authorization bound to the
-exact attempt, lease, fencing token, policy, scope, and runtime inventory.
+It is an embeddable library that answers one narrow question: may this exact
+operation attempt proceed under the supplied policy, approval, scope and
+runtime capabilities?
 
-GovEngine makes the governance decision; it does not perform the operation.
-RExecOp verifies and atomically claims the decision, owns the runtime permit,
-and executes I/O. SCLite remains the truth and proof layer. GovEngine therefore
-does not own jobs, queues, schedulers, credentials, domain semantics, artifact
-truth, or live backends.
+GovEngine validates the bindings, evaluates policy and returns a deterministic
+`allowed`, `approval_required` or `denied` decision. GovEngine makes the
+governance decision; it does not perform the operation. It does not schedule
+jobs, manage credentials, contact targets or store evidence.
 
-GovEngine is a release-candidate package 1.0.0rc1 for the deterministic
-governance-kernel v1 contract. It consumes SCLite 2.0's neutral lifecycle
-verifier. Reaction, trigger, watchdog, and automation mechanics remain
-RExecOp-owned; GovEngine owns only their governance/admission decisions. The
-broader legacy top-level surface remains compatibility-only or alpha as
-classified by the API stability matrix.
+The current release-candidate package `1.0.0rc1` exposes a frozen candidate
+contract through `govengine.v1`. The wider package still contains explicitly
+classified compatibility, experimental and fixture surfaces.
 
-## Dependency Direction
+## Why GovEngine exists
 
-```text
-Tecrax profile -> RExecOp runtime -> GovEngine governance -> SCLite truth
-Other host runtimes ----------------> GovEngine governance -> SCLite truth
+Intent is not execution authority. A request from an operator, UI, agent or
+LLM does not by itself prove that:
+
+- the active policy allows the operation;
+- approval covers this exact attempt, target and side-effect class;
+- the requested destination is independently authorized;
+- the selected runtime has the required capabilities;
+- the decision is still current for the active lease and fencing token;
+- a result belongs to the decision and runtime permit that preceded I/O.
+
+GovEngine turns those independently supplied facts into one bounded,
+reviewable and fail-closed governance decision. The host runtime must still
+authenticate, atomically claim and enforce that decision.
+
+## How the components work together
+
+GovEngine is one component in a cooperating set of independent projects. This
+set has no formal product name. Together they separate domain meaning,
+governance, execution and proof:
+
+- **A domain profile**, such as Tecrax, owns intent vocabulary, workflows,
+  connector semantics, findings and domain validation.
+- **RExecOp** owns domain-neutral workflow interpretation, operation lifecycle,
+  queues, leases, fencing, retries, connector dispatch and I/O.
+- **GovEngine** owns deterministic policy evaluation, approval requirements,
+  scope and capability decisions, governance authorization and receipt
+  conformance.
+- **SCLite** owns canonical lifecycle and evidence contracts, integrity,
+  receipts, review bundles and verification truth.
+
+Used together, a profile describes what an operation means, RExecOp prepares
+and executes it, GovEngine decides whether the exact attempt may proceed, and
+SCLite makes the resulting lifecycle and evidence independently verifiable.
+
+```plantuml
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+component "Domain profile\n(e.g. Tecrax)" as Profile
+component "RExecOp\nruntime and execution" as Runtime
+component "GovEngine\ngovernance decision" as Governance
+component "SCLite\ntruth and verification" as Truth
+
+Profile --> Runtime : intents, workflows,\nconnector contracts
+Runtime --> Governance : bounded GovernanceRequest\nattempt + lease + fencing + inventory
+Governance --> Runtime : GovernanceDecision\nallowed / approval_required / denied
+Runtime --> Runtime : verify signature,\nclaim once, issue permit, execute I/O
+Runtime --> Governance : terminal RuntimeReceiptBinding
+Governance --> Runtime : ReceiptConformanceResult
+Runtime --> Truth : lifecycle, receipt and\nevidence artifacts
+Truth --> Runtime : verification result
+
+note bottom of Governance
+  No queue, scheduler, credentials,
+  connector I/O or evidence storage
+end note
+@enduml
 ```
 
-- **SCLite** owns artifact lifecycle schemas, canonical descriptors, ordered hash-chain verification, guarded verification, tickets, receipts, and evidence truth records.
-- **GovEngine** owns deterministic governance contracts over those truth records: admission envelopes, policy/trust/replay decisions, lifecycle state mapping, receipt/evidence binding, review qualification, profile conformance, and public-safe contract fixtures.
-- **RExecOp** owns domain-neutral workflow interpretation, lifecycle, connector dispatch, execution mechanics, deterministic reaction mechanics, and runtime receipts.
-- **Tecrax** owns infrastructure intent, connector semantics, observations, findings, normalization, validation, and runbooks. GovEngine retains a synthetic Tecrax conformance fixture; the operational profile itself lives in Tecrax.
-- **Ravenclaw** is a legacy consumer outside the current RExecOp/Tecrax roadmap.
+The canonical integration order is documented in
+[`docs/SECURITY_INTEGRATION.md`](docs/SECURITY_INTEGRATION.md).
 
-GovEngine is not SCLite, Ravenclaw, Tecrax, Logdash, an LLM loop, a scanner, a scheduler, a credential manager, a replay database, a PKI/KMS layer, or a subprocess runner.
+## Canonical governance flow
 
-## What GovEngine Includes Now
+1. RExecOp constructs a digest-bound `GovernanceRequest` for one operation,
+   step and attempt.
+2. GovEngine verifies complete GovEngine-owned bindings and evaluates the
+   active typed policy.
+3. GovEngine validates independently supplied approval, target scope and
+   capability inventory facts.
+4. `evaluate_governance()` returns a `GovernanceDecision`. Only `allowed`
+   carries a short-lived authorization bound to the exact attempt, runtime,
+   lease, fencing token, policy, scope and inventory.
+5. RExecOp verifies the signed decision, atomically claims its digest and
+   nonce, issues its own runtime permit and performs the final pre-I/O checks.
+6. After I/O, GovEngine checks the bounded terminal receipt against the exact
+   decision, runtime permit and output postconditions.
+7. RExecOp projects final lifecycle and evidence artifacts for SCLite
+   verification.
 
-The public surface registry is `govengine.surfaces.public_surface_index()`. It currently reports seven alpha surfaces:
+GovEngine runs inside the host process. A compromised host can bypass the
+library or fabricate inputs, so malicious-host resistance is not claimed.
 
-- `artifact_governance_core` for artifact descriptors, lifecycle state mapping, transition decisions, signing/trust records, guarded-root replay decisions, state-index helpers, deconfliction, and the SCLite bridge.
-- `planning_contracts_core` for neutral task, plan-intent, and planner-port handoff records. These are handoff contracts, not a planner.
-- `admission_policy_core` for canonical `GovernanceRequest`,
-  `ApprovalAttestation` and `GovernanceDecision` contracts, legacy
-  `RuntimeAdmissionResult`,
-  policy/admission/approval/audit records, **PolicyEngine MVP**
-  (`govengine.policy`), proof-input validation, public summaries, bounded
-  artifact references, and the development-only JSONL audit-ledger adapter.
-- `evidence_review_core` for receipt-bounded evidence requirements, claims, qualifications, review results, and evidence-review-chain validation.
-- `domain_profile_sdk` for contract-only domain profile declarations and conformance reports, including Ravenclaw and Tecrax fixture profiles.
-- `runtime_contract_proofs` for public-safe conformance artifacts over Ravenclaw and Tecrax contract shapes. They are fixtures, not runtime authorization.
-- `controlled_execution_core` for approved-spec checks, execution-ticket gates, command-shape normalization, runner request/receipt boundaries, supervision records, dry-run helpers, runtime-shell projections, event/control records, OODA records, and orchestration handoff records.
+## What GovEngine provides
 
-The published `0.15.0` line added:
+The frozen `govengine.v1` facade provides:
 
-- **PolicyEngine MVP** (`govengine.policy`): declarative policy packs, fail-closed
-  `PolicyEngine.evaluate()`, verdict projection via `policy_verdict_to_gov_policy_decision()`,
-  JSON Schema authoring helpers, baseline policy scaffolds, and the `govengine-policy`
-  validation/scaffold CLI.
+- a deterministic, typed and fail-closed PolicyEngine;
+- policy obligations, constraints, enforcement plans and redacted
+  explanations;
+- independently bound `ApprovalAttestation` validation;
+- digest-bound `GovernanceRequest` validation;
+- canonical `GovernanceDecision` evaluation;
+- short-lived attempt-bound authorization contracts;
+- governance traces, record digests and stable reason codes.
 
-The `0.16.x` source line also adds:
+Supporting module-scoped contracts provide:
 
-- **PolicyExplain (G1)**: `PolicyEvaluationExplanation`, `explain_policy_evaluation()`,
-  and `govengine-policy explain|simulate --json` for redacted policy reasoning
-  without execution authority;
-- **Supervisor action explanations (G2)**: `SupervisorActionExplanation`,
-  `explain_supervisor_action()`, and `govengine-supervisor explain --json` for
-  recovery/triage reason codes over bounded `SupervisorActionRequest` payloads
-  without executing recovery or mutating runtime state.
-- **Automation transition admission**: `AutomationTransitionRequest`,
-  `admit_automation_transition()`, `AutomationTransitionExplanation`,
-  `explain_automation_transition()`, and
-  `govengine-policy automation-transition --json` for child-operation planning
-  admission over bounded SCLite `automation_chain.v0.1` refs, depth/child
-  budgets, allowed child intent classes, approval refs, and LLM proposal-only
-  constraints without creating or executing child operations.
-- **Profile governance projection (G3)**: `ProfileGovernanceProjection`,
-  `ProfileConnectorCompatibilityReport`, `explain_profile_governance()`, and
-  `govengine-policy profile-governance --json` for policy-hook/evidence/runner
-  posture validation and profile/connector capability compatibility without
-  domain semantics or backend IO.
+- independent scope-policy and capability-inventory comparison;
+- signed-decision verification through host-provided trust ports;
+- receipt conformance against a decision and opaque RExecOp runtime permit;
+- a language-neutral conformance corpus shared with runtime consumers.
 
-The published `0.16.0` line adds:
+Legacy admission, runner, planning, orchestration, state-machine and
+runtime-shell APIs remain available only as classified compatibility or
+experimental surfaces. They are not a second authorization protocol and are
+outside the `govengine.v1` compatibility promise.
 
-- **policy enforcement plan**: deterministic pack/verdict/plan digest binding,
-  an existing `GovAdmissionDecision` reference, and fail-closed projection of a
-  small neutral control set for host runners; GovEngine does not execute or claim
-  host enforcement;
-- retains the `0.14.0` governed-runtime MVP (`RuntimeAdmissionResult`, receipt/evidence
-  binding, audit ledger port, inspect-only workflow) without changing its contract shape.
-
-## Current Status
-
-Current source/package version: `1.0.0rc1`.
-Current package pin: `govengine==1.0.0rc1` with final `sclite-core==2.0.0`.
-Release posture: public release candidate. Independent review, tag-bound OIDC
-publication, provenance, and public clean-install evidence passed. Final
-`1.0.0` promotion remains controlled by the machine-checked observation window
-recorded in [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md).
-Published release-candidate stack line: `govengine==1.0.0rc1` with
-`sclite-core==2.0.0`.
-Older GovEngine distributions remain available on PyPI as archived alpha history,
-but they are not the active release-candidate compatibility line.
-
-The current kernel is useful for deterministic review of prepared governance
-records. It is not production runtime readiness and it is not an execution
-authority. `GovernanceRequest v1` is the canonical input for the
-decision flow and `ApprovalAttestation v1` is its independently bound approval
-record. Independent `ScopePolicyBinding`, operation capability requirements and
-runtime inventory bindings prevent request-derived allowlists/capabilities.
-`evaluate_governance()` now composes those gates into `GovernanceDecision v1`;
-only an allowed result carries a short-lived attempt/lease/fencing-bound
-consume-once authorization contract. Module-scoped signed-decision helpers
-reuse the existing host signer/verifier boundary; an unsigned digest is not
-issuer identity. After I/O, `govengine.receipt_conformance` can recompute a
-bounded RExecOp receipt binding and check it against the exact decision,
-runtime permit and output postconditions. This is a deterministic conformance
-result, not a SCLite receipt or proof of host honesty. `RuntimeAdmissionResult`
-remains the legacy admission envelope: `compose_runtime_admission_result()`
-composes host-supplied gate summaries and
-`validate_runtime_admission_result()` checks its shape. None of these helpers
-verify SCLite artifacts, persist replay claims, execute commands or turn an
-opaque approval claim into operator approval.
-
-When hosts need a runtime-consumable path, the intended chain is:
-
-1. SCLite verifies the artifact lifecycle and guarded truth records.
-2. GovEngine maps the lifecycle status and validates proof-input summaries.
-3. New integrations construct a digest-bound `GovernanceRequest` and evaluate
-   it through host-provided activation, revocation and signature-verification
-   ports; legacy integrations may still compose `RuntimeAdmissionResult`.
-4. RExecOp atomically claims an allowed decision and owns the runtime permit,
-   final pre-I/O checks and execution. It then presents the terminal runtime
-   receipt for GovEngine postcondition conformance before projecting digest-only
-   bindings into SCLite. GovEngine does not execute I/O.
-
-Dry-run remains the default local execution posture. Any live backend belongs outside this package until a separate host/runtime boundary explicitly owns and tests it.
-
-## Explicit Non-Claims
+## What GovEngine does not do
 
 GovEngine does not provide:
 
-- live subprocess execution;
-- raw-intent execution;
-- scanner, exploit, campaign, or target authorization;
-- scheduler, queue persistence, long-running worker, or LLM agent loop;
-- credential handling, private key storage, CA, PKI, KMS, HSM, trust-anchor management, rotation, or revocation;
-- production replay database or production audit database;
-- raw artifact store or raw evidence store;
-- SCLite schema authority, SCLite canonicalization, SCLite hash-chain verification, or SCLite Kernel Guard HMAC verification;
-- Ravenclaw security taxonomy, target semantics, campaign UX, public proof projection, or runtime adapters;
-- Tecrax infrastructure semantics, infrastructure credentials, or runtime adapters;
-- carrier adapters such as OpenClaw, MCP, A2A, HTTP APIs, or UI routes;
-- stable 1.0 API guarantees.
+- operation lifecycle, queues, scheduling, retries, rollback or connector I/O;
+- raw-intent, subprocess, scanner or exploit execution;
+- domain intent, target, finding or connector semantics;
+- credential, secret, PKI, CA, KMS, HSM or trust-anchor management;
+- production policy, approval, replay, nonce, audit or receipt storage;
+- raw artifact or evidence storage;
+- SCLite schemas, canonicalization, lifecycle truth or proof verification;
+- legal authorization or resistance to a host that ignores its decision.
+
+RExecOp and other host runtimes own enforcement. Profiles own domain meaning.
+SCLite owns truth and proof.
 
 ## Installation
 
-Install the latest published package from PyPI:
+Install the published release candidate:
 
 ```bash
 python -m pip install govengine==1.0.0rc1
 ```
 
-That installs the public release candidate and its exact
-`sclite-core==2.0.0` dependency. Only the manifest-listed `govengine.v1`
-facade carries the candidate 1.x compatibility promise; legacy root surfaces
-retain their documented compatibility/alpha classification.
+Requirements:
 
-For local development:
+- Python 3.11 or newer;
+- exact dependency `sclite-core==2.0.0`;
+- imports intended for 1.x compatibility should come from `govengine.v1`.
+
+## Quick start: evaluate a typed policy
+
+This small example uses only the frozen candidate facade:
+
+```python
+from govengine.v1 import PolicyCompiler, PolicyEngine
+
+compiled = PolicyCompiler().compile(
+    {
+        "schema_version": "v1",
+        "policy_id": "example-read-policy",
+        "version": "1.0.0",
+        "issuer_ref": "organization:example",
+        "policy_epoch": 1,
+        "validity": {
+            "not_before": "2026-01-01T00:00:00Z",
+            "expires_at": "2099-01-01T00:00:00Z",
+        },
+        "supersedes": [],
+        "rules": [
+            {
+                "rule_id": "allow-bounded-read",
+                "effect": "allow",
+                "conditions": [
+                    {
+                        "path": "action.mode",
+                        "operator": "eq",
+                        "value": "read",
+                    }
+                ],
+                "reason_code": "bounded_read_allowed",
+            }
+        ],
+    }
+)
+
+assert compiled.ok and compiled.policy_pack is not None
+
+verdict = PolicyEngine().evaluate(
+    {
+        "request_id": "request-1",
+        "subject_ref": "operation://example/1",
+        "action": {"mode": "read"},
+        "resource": {"criticality": "low"},
+    },
+    compiled.policy_pack,
+)
+
+assert verdict.decision == "allow"
+assert verdict.reason_code == "bounded_read_allowed"
+```
+
+Policy evaluation alone is not execution permission. Runtime integrations
+continue with the bound request and decision contracts described in
+[`docs/GOVERNANCE_REQUEST.md`](docs/GOVERNANCE_REQUEST.md) and
+[`docs/GOVERNANCE_DECISION.md`](docs/GOVERNANCE_DECISION.md).
+
+## API stability and release status
+
+| Item | Current status |
+| --- | --- |
+| Source/package version | `1.0.0rc1` |
+| Package maturity | Public release candidate |
+| Candidate 1.x facade | `govengine.v1`, exactly 40 exports |
+| GovEngine-owned v1 records | 15 frozen records |
+| SCLite dependency | `sclite-core==2.0.0` |
+| Legacy root modules | Compatibility, experimental or fixture classifications |
+
+Current source/package version: `1.0.0rc1`.
+Current package pin: `govengine==1.0.0rc1`.
+
+The final `1.0.0` promotion state is maintained in
+[`PUBLIC_STATUS.md`](PUBLIC_STATUS.md). Exact facade and schema compatibility
+rules are documented in
+[`docs/API_COMPATIBILITY.md`](docs/API_COMPATIBILITY.md).
+
+## Security model
+
+GovEngine is deterministic and fail-closed at its documented boundaries:
+
+- complete GovEngine-owned records have their digests recomputed;
+- approval is separate from admission and binds the exact operation subject;
+- scope policy and operation requirements are independent of requested scope
+  and runtime inventory;
+- decision digests provide integrity, not signer identity;
+- the runtime must verify a trusted signed decision before atomic claim;
+- output obligations are checked after I/O through receipt conformance.
+
+See the [threat model](docs/THREAT_MODEL.md), tested
+[security guarantees](docs/SECURITY_GUARANTEES.md) and canonical
+[security integration order](docs/SECURITY_INTEGRATION.md).
+
+## Documentation
+
+Start with the [documentation map](docs/README.md). The main references are:
+
+- [Architecture and ownership](docs/ARCHITECTURE.md)
+- [Governance request](docs/GOVERNANCE_REQUEST.md)
+- [Governance decision](docs/GOVERNANCE_DECISION.md)
+- [API stability matrix](docs/API_STABILITY_MATRIX.md)
+- [API compatibility and migration](docs/API_COMPATIBILITY.md)
+- [Conformance corpus](docs/CONFORMANCE.md)
+- [Validation gates](docs/VALIDATION.md)
+
+Release changes are in [`CHANGELOG.md`](CHANGELOG.md). Contribution rules are
+in [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+## Development
 
 ```bash
 python -m venv .venv
@@ -186,96 +282,14 @@ python scripts/validate_public_truth.py
 python scripts/validate_release_readiness.py
 ```
 
-## Minimal Smoke Example
-
-```python
-from govengine import public_surface_index
-from govengine.execution.runner import approved_spec_dry_run_result
-
-assert [surface.name for surface in public_surface_index()] == [
-    "artifact_governance_core",
-    "planning_contracts_core",
-    "admission_policy_core",
-    "evidence_review_core",
-    "domain_profile_sdk",
-    "runtime_contract_proofs",
-    "controlled_execution_core",
-]
-
-receipt = approved_spec_dry_run_result(
-    approved_execution_spec={
-        "action_type": "bounded_request",
-        "capability": "fixture_review",
-        "resolved_tool": "fixture",
-        "execution_mode": "dry_run",
-    },
-    planned_commands=[["fixture", "review"]],
-)
-assert receipt["status"] == "dry-run"
-```
-
-## Validation
-
-The current package-line gate is intentionally local and deterministic:
-
-```bash
-python -m pytest -q
-python -m mypy govengine
-python -m ruff check .
-python scripts/validate_public_truth.py
-python scripts/validate_release_readiness.py
-python scripts/validate_clean_package_install.py --no-editable
-```
-
-`scripts/validate_public_truth.py` keeps package metadata, public docs,
-dependency truth, public surface names, and release labels aligned.
-`scripts/validate_release_readiness.py` checks the 1.0 release-candidate
-posture while retaining honest alpha labels for legacy non-v1 surfaces.
-`scripts/validate_clean_package_install.py --no-editable` validates an
-installed wheel in isolation and uses scoped `pip check` instead of a broad
-system interpreter.
-
-## Documentation
-
-Navigation hub: [`docs/README.md`](docs/README.md).
-
-- [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md) records the active package status and non-claims.
-- [`CHANGELOG.md`](CHANGELOG.md) records release changes.
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) records contribution and boundary rules.
-- [`SECURITY.md`](SECURITY.md) records security reporting and package safety boundaries.
-- [`PUBLISHING.md`](PUBLISHING.md) records PyPI release checks.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) explains package shape and dependency boundaries.
-- [`docs/API_BOUNDARY.md`](docs/API_BOUNDARY.md) maps owned and excluded surfaces.
-- [`docs/API_STABILITY_MATRIX.md`](docs/API_STABILITY_MATRIX.md) classifies public exports.
-- [`docs/API_COMPATIBILITY.md`](docs/API_COMPATIBILITY.md) defines the 1.x facade/schema freeze, migration and deprecation policy.
-- [`docs/MIGRATING_TO_1.md`](docs/MIGRATING_TO_1.md) gives the exact
-  `0.16.11` to v1 consumer migration and rollback path.
-- [`docs/CONFORMANCE.md`](docs/CONFORMANCE.md) documents the shared language-neutral v1 corpus and runner ownership.
-- [`docs/GOVENGINE_KERNEL_BOUNDARY.md`](docs/GOVENGINE_KERNEL_BOUNDARY.md) defines kernel/profile/runtime/SCLite ownership.
-- [`docs/SECURITY_INTEGRATION.md`](docs/SECURITY_INTEGRATION.md) records the required security integration order and non-claims.
-- [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md) defines the in-process TCB, attackers and residual risks.
-- [`docs/SECURITY_GUARANTEES.md`](docs/SECURITY_GUARANTEES.md) maps guarantees and digest bindings to executable evidence.
-- [`docs/SCLITE_INTEGRATION.md`](docs/SCLITE_INTEGRATION.md) explains how GovEngine consumes SCLite.
-- [`docs/RUNTIME_ADMISSION.md`](docs/RUNTIME_ADMISSION.md) describes the legacy runtime-admission compatibility envelope.
-- [`docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md`](docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md) documents read-only admission inspection.
-- [`docs/RECEIPT_BINDING.md`](docs/RECEIPT_BINDING.md) documents admission/ticket/request/receipt binding.
-- [`docs/EVIDENCE_REVIEW.md`](docs/EVIDENCE_REVIEW.md) documents receipt-bounded evidence review and OODA receipt bounds.
-- [`docs/ADMISSION_POLICY.md`](docs/ADMISSION_POLICY.md) documents admission, policy, approval, audit, and audit-ledger contracts.
-- [`docs/POLICY_ENGINE.md`](docs/POLICY_ENGINE.md) documents the PolicyEngine MVP (request/verdict, compiler, runtime, admission projection).
-- [`docs/GOVERNANCE_DECISION.md`](docs/GOVERNANCE_DECISION.md) documents the canonical decision evaluator and attempt-bound authorization contract.
-- [`docs/RUNNER_SUPERVISION.md`](docs/RUNNER_SUPERVISION.md) documents runner request, receipt, supervision, and live-runner safety boundaries.
-- [`docs/DOMAIN_PROFILE_CONTRACT.md`](docs/DOMAIN_PROFILE_CONTRACT.md) documents profile contracts and conformance.
-- [`docs/ORCHESTRATOR_MODEL.md`](docs/ORCHESTRATOR_MODEL.md), [`docs/EVENT_MODEL.md`](docs/EVENT_MODEL.md), [`docs/STATE_MACHINE.md`](docs/STATE_MACHINE.md), [`docs/CONTROL_MODEL.md`](docs/CONTROL_MODEL.md), and [`docs/RUNTIME_SHELL.md`](docs/RUNTIME_SHELL.md) separate deterministic handoff/projection records from host runtime execution.
-- [`docs/VALIDATION.md`](docs/VALIDATION.md) records the **current** validation gate; historical release evidence is in [`docs/archive/VALIDATION_HISTORY.md`](docs/archive/VALIDATION_HISTORY.md).
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) records the current roadmap; delivered version milestones are in [`docs/archive/ROADMAP_VERSION_HISTORY.md`](docs/archive/ROADMAP_VERSION_HISTORY.md).
+Use `scripts/validate_clean_package_install.py --no-editable --venv <path>` for
+an isolated package-install smoke test. See
+[`docs/VALIDATION.md`](docs/VALIDATION.md) for the complete gate.
 
 ## License and provenance
 
-GovEngine is MIT-licensed. It was extracted from Ravenclaw in contract-first stages, so [`LICENSE`](LICENSE) preserves the copyright notice for the originating Ravenclaw contribution lineage. The author metadata in `pyproject.toml` identifies the GovEngine package maintainer; it does not replace or reassign the originating copyright notice.
-
-## Safety Boundary
-
-GovEngine should preserve deterministic governance over prompt-only behavior. It must not execute directly from raw intent. Execution by a host runtime requires a prepared execution contract, valid policy decision, approved execution ticket, valid signature/trust decision, allowed runner profile, receipt obligation, and, for runtime-consumable SCLite bundles, guarded-strict verification plus replay-fresh status.
-
-The public `1.0.0rc1` release candidate provides records and validators for
-that boundary. It does not provide the runtime that acts on them.
+GovEngine is MIT-licensed. It was extracted from Ravenclaw in contract-first
+stages, so [`LICENSE`](LICENSE) preserves the copyright notice for the
+originating Ravenclaw contribution lineage. The author metadata in
+`pyproject.toml` identifies the GovEngine package maintainer; it does not
+replace or reassign the originating copyright notice.

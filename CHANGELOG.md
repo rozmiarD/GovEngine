@@ -6,10 +6,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
-- Clarifies the public package purpose and synchronizes active documentation
-  with the independently reviewed `1.0.0rc1` contract, current
-  GovEngine/RExecOp/SCLite ownership, frozen `govengine.v1` facade and live
-  downstream import map.
+- Rebuilds the README around GovEngine's actual role as an embeddable
+  deterministic governance library, adds a PlantUML view of the cooperating
+  profile/RExecOp/GovEngine/SCLite components without inventing a product name,
+  and replaces release-history/API-inventory narration with a test-backed v1
+  quick start, canonical flow, ownership and security boundaries.
 - Archives the superseded 0.14 governed-runtime MVP runbook, guarded/replay
   example and GE-032 local-runner decision evidence. Active compatibility
   references remain documented, while the canonical operator path now points

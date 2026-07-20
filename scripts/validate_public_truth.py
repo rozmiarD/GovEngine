@@ -140,10 +140,13 @@ FORBIDDEN_CURRENT_DOC_CLAIMS = (
 )
 
 README_MVP_DOC_LINK_MARKERS = (
+    'docs/README.md',
+    'docs/ARCHITECTURE.md',
     'docs/API_STABILITY_MATRIX.md',
+    'docs/API_COMPATIBILITY.md',
+    'docs/GOVERNANCE_REQUEST.md',
+    'docs/GOVERNANCE_DECISION.md',
     'docs/SECURITY_INTEGRATION.md',
-    'docs/RUNTIME_ADMISSION.md',
-    'docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md',
 )
 
 ARCHIVED_DOC_PATHS = (
@@ -165,11 +168,6 @@ MVP_DELIVERY_DOC_MARKERS = {
 }
 
 G3_PROFILE_GOVERNANCE_DOC_MARKERS = {
-    'README.md': (
-        'govengine-policy profile-governance',
-        'explain_profile_governance()',
-        'ProfileConnectorCompatibilityReport',
-    ),
     'PUBLIC_STATUS.md': (
         'Profile governance projection (G3)',
         'ProfileConnectorCompatibilityReport',
@@ -187,11 +185,6 @@ G3_PROFILE_GOVERNANCE_DOC_MARKERS = {
 }
 
 G1_G2_EXPLAIN_DOC_MARKERS = {
-    'README.md': (
-        'govengine-policy explain|simulate --json',
-        'explain_supervisor_action()',
-        'govengine-supervisor explain --json',
-    ),
     'PUBLIC_STATUS.md': (
         'govengine-policy explain|simulate --json',
         'explain_supervisor_action()',
@@ -415,14 +408,40 @@ def _assert_readme_package_truth(readme: str, version: str) -> None:
 def _assert_readme_release_truth(readme: str, version: str) -> None:
     for marker in (
         'GovEngine is a Python governance kernel for systems that execute operations.',
-        'GovEngine makes the governance decision; it does not perform the operation.',
+        'It is an embeddable library that answers one narrow question',
+        'GovEngine makes the\ngovernance decision; it does not perform the operation.',
         f'Current source/package version: `{version}`.',
-        f'Current package pin: `govengine=={version}`',
+        f'Current package pin: `govengine=={version}`.',
     ):
         _assert_contains('README.md', readme, marker)
     for claim in README_STALE_RELEASE_CLAIMS:
         if claim in readme:
             raise AssertionError(f'README.md:stale_release_claim:{claim}')
+
+
+def _assert_readme_architecture_truth(readme: str) -> None:
+    for marker in (
+        'This\nset has no formal product name.',
+        '```plantuml',
+        'component "Domain profile\\n(e.g. Tecrax)" as Profile',
+        'component "RExecOp\\nruntime and execution" as Runtime',
+        'component "GovEngine\\ngovernance decision" as Governance',
+        'component "SCLite\\ntruth and verification" as Truth',
+        'Together they separate domain meaning,\ngovernance, execution and proof',
+        'RExecOp and other host runtimes own enforcement. Profiles own domain meaning.',
+        'SCLite owns truth and proof.',
+    ):
+        _assert_contains('README.md', readme, marker)
+    for forbidden in (
+        'govstack',
+        'The published `0.15.0` line added',
+        'The `0.16.x` source line also adds',
+        'The published `0.16.0` line adds',
+        'public_surface_index()',
+        'approved_spec_dry_run_result',
+    ):
+        if forbidden in readme:
+            raise AssertionError(f'README.md:stale_or_invented_overview:{forbidden}')
 
 
 def _assert_candidate_maturity_truth(paths: Iterable[str]) -> None:
@@ -556,11 +575,12 @@ def main() -> int:
     workflow = _read('.github/workflows/pytest.yml')
     clean_install_script = _read('scripts/validate_clean_package_install.py')
 
-    _assert_contains('README.md', readme, f'release-candidate package {version}')
+    _assert_contains('README.md', readme, f'release-candidate package `{version}`')
     _assert_contains('README.md', readme, release_label)
     _assert_contains('README.md', readme, dependency)
     _assert_readme_package_truth(readme, version)
     _assert_readme_release_truth(readme, version)
+    _assert_readme_architecture_truth(readme)
     _assert_contains('README.md', readme, '## License and provenance')
     _assert_contains('README.md', readme, 'originating Ravenclaw contribution lineage')
     _assert_contains('README.md', readme, 'package maintainer')

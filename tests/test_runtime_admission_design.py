@@ -6,7 +6,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_ADMISSION = ROOT / 'docs' / 'RUNTIME_ADMISSION.md'
 INSPECT_ONLY_ADMISSION_WORKFLOW = ROOT / 'docs' / 'INSPECT_ONLY_ADMISSION_WORKFLOW.md'
-README = ROOT / 'README.md'
 API_BOUNDARY = ROOT / 'docs' / 'API_BOUNDARY.md'
 ADMISSION_POLICY = ROOT / 'docs' / 'ADMISSION_POLICY.md'
 VALIDATION = ROOT / 'docs' / 'VALIDATION.md'
@@ -55,7 +54,7 @@ def test_runtime_admission_design_preserves_host_and_sclite_boundaries() -> None
 
 
 def test_runtime_admission_design_is_linked_from_public_docs() -> None:
-    for path in (README, API_BOUNDARY, ADMISSION_POLICY):
+    for path in (API_BOUNDARY, ADMISSION_POLICY):
         text = path.read_text(encoding='utf-8')
         assert 'RUNTIME_ADMISSION.md' in text
 
