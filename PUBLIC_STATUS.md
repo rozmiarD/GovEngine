@@ -12,13 +12,14 @@ classified compatibility/alpha posture.
 - GitHub Actions: pytest on supported Python versions.
 - Source/package version: `1.0.0rc1`.
 - Source distribution target: `govengine==1.0.0rc1`.
-- Published distribution: `govengine==0.16.11`.
+- Published distribution: `govengine==1.0.0rc1`.
 - Release label: `1.0.0rc1`.
-- Release status: **source candidate / publication blocked**. Independent v1
-  security review, immutable release evidence and explicit operator approval
-  are still required. The latest published stack line remains supported.
-- Latest published PyPI package: `govengine==0.16.11`.
-- Source/PyPI gap: open for the local candidate; published PyPI releases remain the public compatibility matrix until release approval.
+- Release status: **public release candidate / observation active**. Independent
+  review, tag-bound OIDC publication and public clean-install evidence passed.
+  Final `1.0.0` remains blocked until 2026-07-27T17:39:58.058090Z and requires
+  no frozen-contract drift or open P0/P1 findings.
+- Latest published PyPI package: `govengine==1.0.0rc1`.
+- Source/PyPI gap: closed for the release candidate.
 - SCLite integration: present through helper seams via final frozen dependency `sclite-core==2.0.0`.
 - Kernel/profile boundary: initial serializable `govengine.boundary` contracts, machine-readable boundary report, domain-profile conformance checks, and public boundary docs for kernel, profile, runtime, and SCLite ownership separation.
 - Orchestrator model: initial `govengine.orchestration` handoff contracts define deterministic control metadata without scheduler, UI, adapter, credential, or live-execution authority.
@@ -114,8 +115,9 @@ classified compatibility/alpha posture.
 - Deconfliction/state index: initial conflict/change-order helpers and lightweight artifact state summaries.
 - Live subprocess execution: not owned by GovEngine and disabled by default for future live backends.
 - Carrier adapters: deferred.
-- PyPI publication: completed through `govengine==0.16.11`; `1.0.0rc1` is a
-  source candidate and is not published.
+- PyPI publication: `govengine==1.0.0rc1` was published through the
+  tag-confirmed OIDC workflow with build provenance. The public RC observation
+  window is active.
 
 ## What is public-safe today
 
@@ -155,7 +157,7 @@ GovEngine does not currently claim:
 - bug-bounty campaign orchestration ownership;
 - protocol adapter correctness;
 - complete API stability;
-- production/stable PyPI API readiness;
+- production readiness or final `1.0.0` promotion;
 - PKI, CA, KMS, trust-store, or key-management ownership;
 - a full replacement for Ravenclaw Runtime;
 - Tecrax infrastructure-domain semantics, credentials, or product UX.

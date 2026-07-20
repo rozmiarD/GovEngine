@@ -13,8 +13,9 @@ def test_rc_window_matches_frozen_contract_inputs() -> None:
     record = validate_rc_window()
 
     assert record['version'] == '1.0.0rc1'
-    assert record['status'] == 'prepared'
-    assert record['published_at'] is None
+    assert record['status'] == 'active'
+    assert record['published_at'] == '2026-07-20T17:39:58.058090Z'
+    assert record['observation_ends_at'] == '2026-07-27T17:39:58.058090Z'
     assert record['minimum_observation_days'] == 7
     assert record['facade_exports'] == 40
     assert record['v1_records'] == 15
@@ -33,12 +34,30 @@ def test_rc_window_rejects_contract_digest_drift(tmp_path: Path) -> None:
         validate_rc_window(path)
 
 
-def test_prepared_window_is_not_publication_evidence() -> None:
+def test_active_window_is_publication_evidence() -> None:
+    checked = validate_rc_window(require_published=True)
+
+    assert checked['status'] == 'active'
+
+
+def test_prepared_window_is_not_publication_evidence(tmp_path: Path) -> None:
+    record = json.loads(RECORD_PATH.read_text(encoding='utf-8'))
+    record.update(
+        {
+            'status': 'prepared',
+            'published_at': None,
+            'observation_ends_at': None,
+            'public_evidence_ref': '',
+        }
+    )
+    path = tmp_path / 'rc-window.json'
+    path.write_text(json.dumps(record), encoding='utf-8')
+
     with pytest.raises(
         AssertionError,
         match='published_rc_evidence_required',
     ):
-        validate_rc_window(require_published=True)
+        validate_rc_window(path, require_published=True)
 
 
 def test_active_window_starts_at_publication(tmp_path: Path) -> None:

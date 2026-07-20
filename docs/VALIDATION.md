@@ -113,10 +113,12 @@ immutable reviewed commit and zero open P0/P1 findings.
 `scripts/validate_rc_window.py` binds `1.0.0rc1` to the frozen v1 manifest,
 conformance manifest and policy reason-code registry source. Drift requires a
 new RC version and record; the gate cannot be refreshed silently under rc1.
-The checked-in record is `prepared`, not an active public observation window.
-After publication, `--require-published` requires public evidence and an
-observation end exactly seven days after publication. Stable promotion uses
-`--require-completed`, which rejects completion before that timestamp.
+The checked-in record is `active` with public PyPI evidence. Its first artifact
+timestamp is `2026-07-20T17:39:58.058090Z` and its observation end is exactly
+seven days later at `2026-07-27T17:39:58.058090Z`.
+`--require-published` requires that evidence and exact interval. Stable
+promotion uses `--require-completed`, which rejects completion before the end
+timestamp.
 
 ## Read-only operator verifier gates
 
@@ -233,6 +235,23 @@ not the active gate.
 
 Expected result for the current `1.0.0rc1` package line (`1.0.0rc1`):
 
+- PyPI serves `govengine==1.0.0rc1` with exact
+  `sclite-core==2.0.0`; public-index clean install and scoped `pip check` pass;
+- publish workflow
+  [`29764475143`](https://github.com/rozmiarD/GovEngine/actions/runs/29764475143)
+  binds tag `v1.0.0rc1` and commit
+  `33aefcd386351be622794e10cf5c43c8e812d6bc`;
+- public artifact SHA-256 values are
+  `3a6575b4a430cc5b98cfe042cf86fb01371ca73a36cf3f7d00349ce7a700052f`
+  for the wheel and
+  `10d08555497f15efcaa988510fdb88729331fa2e14f00144825e0e8124c3ed72`
+  for the sdist; the GitHub SLSA provenance statement binds both;
+- a clean environment built RExecOp `0.3.0rc3` from immutable source commit
+  `5e2e757183fcc0b56d36bdbc8f790a33d4af7202` while resolving public
+  `govengine==1.0.0rc1` and `sclite-core==2.0.0`; `pip check` and all ten G6
+  cross-stack behavior cases passed;
+- the independent review gate reports
+  `independent=true`, `open_p0=0`, and `open_p1=0`;
 - full pytest passes in the source tree;
 - `python -m mypy govengine` passes for the package surface;
 - `scripts/validate_clean_package_install.py` passes, rejects retired module paths from the installed artifact, and runs `pip check` inside its newly created virtual environment;

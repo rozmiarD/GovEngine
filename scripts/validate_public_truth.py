@@ -16,7 +16,7 @@ from govengine.surfaces import public_surface_index  # noqa: E402
 from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 
 EXPECTED_RELEASE_LABEL = '1.0.0rc1'
-PUBLISHED_VERSION = '0.16.11'
+PUBLISHED_VERSION = '1.0.0rc1'
 
 SURFACE_HEADINGS = {
     'Artifact-governance core': 'artifact_governance_core',
@@ -116,11 +116,11 @@ GOVERNED_RUNTIME_RELEASE_MARKERS = (
 SOURCE_PYPI_GAP_DOC_MARKERS = {
     'README.md': (
         'Current source candidate: `1.0.0rc1`',
-        'Latest published stack line: `govengine==0.16.11` with `sclite-core==1.0.9`',
+        f'Latest published stack line: `govengine=={PUBLISHED_VERSION}` with `sclite-core==2.0.0`',
     ),
     'docs/ROADMAP.md': (
         '## Current 1.0 release-candidate line',
-        'Published PyPI baseline is `govengine==0.16.11`',
+        f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`',
     ),
 }
 
@@ -440,7 +440,7 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
     _assert_contains(
         'docs/ROADMAP.md',
         roadmap,
-        'The current published `0.16.x` line remains the supported public package line',
+        'The current public package line is `govengine==1.0.0rc1`',
     )
     _assert_contains('docs/ROADMAP.md', roadmap, f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`')
 

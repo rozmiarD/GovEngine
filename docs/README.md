@@ -12,7 +12,7 @@ Start here when navigating `docs/`. Package-level status lives in
 | [API_BOUNDARY.md](API_BOUNDARY.md) | Module/surface ownership (machine-checked vs registry) |
 | [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md) | Export stability classification |
 | [API_COMPATIBILITY.md](API_COMPATIBILITY.md) | 1.x facade/schema freeze, migration and deprecation policy |
-| [MIGRATING_TO_1.md](MIGRATING_TO_1.md) | Concrete 0.16.11 to 1.0 migration and rollback guide |
+| [MIGRATING_TO_1.md](MIGRATING_TO_1.md) | Concrete archived 0.16.11 to public 1.0 RC migration and rollback guide |
 | [CONFORMANCE.md](CONFORMANCE.md) | Language-neutral v1 corpus and GovEngine/RExecOp runner ownership |
 | [../PUBLISHING.md](../PUBLISHING.md) | Fail-closed review, Trusted Publisher, tag, public smoke and RC-window procedure |
 | [THREAT_MODEL.md](THREAT_MODEL.md) | TCB, attacker model, trust boundaries and residual risks |

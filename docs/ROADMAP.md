@@ -4,7 +4,7 @@ GovEngine is evolving from a Ravenclaw-extracted helper package into a determini
 
 Current package baseline: `govengine==1.0.0rc1` (`1.0.0rc1`), depending on
 final frozen `sclite-core==2.0.0`.
-Published PyPI baseline is `govengine==0.16.11`. Older alpha packages are archived only.
+Published PyPI baseline is `govengine==1.0.0rc1`. Older alpha packages are archived only.
 
 ## Architecture thesis
 
@@ -73,7 +73,7 @@ SCLite owns proof/review artifacts.
 
 ## Current 1.0 release-candidate line
 
-The `1.0.0rc1` source candidate freezes the small `govengine.v1` facade and its
+The public `1.0.0rc1` release candidate freezes the small `govengine.v1` facade and its
 GovEngine-owned v1 schema inventory. It provides one canonical
 `GovernanceRequest -> GovernanceDecision -> runtime claim -> receipt
 conformance` flow with typed policy evaluation, independently bound approval,
@@ -88,11 +88,13 @@ The stable promise is deliberately narrower than the package root:
   fixtures according to the generated stability matrix;
 - GovEngine does not own runtime I/O, queueing, lifecycle or storage;
 - SCLite 2.0 remains frozen and unchanged;
-- publication is blocked until independent review, cross-stack immutable
-  release evidence and explicit operator approval pass.
+- independent review, cross-stack immutable release evidence and public
+  installation passed before publication;
+- final `1.0.0` promotion is blocked until the active observation window ends
+  at `2026-07-27T17:39:58.058090Z` with no contract drift or open P0/P1.
 
-The current published `0.16.x` line remains the supported public package line
-until `1.0.0rc1` is actually published.
+The current public package line is `govengine==1.0.0rc1`; archived `0.16.x`
+remains available only as the rollback line for legacy consumers.
 
 ## Post-0.12.3 governed-runtime MVP
 
@@ -147,8 +149,8 @@ requirements and negative tests for any optional live backend.
 
 Remaining follow-up for the next release line:
 
-- keep released consumer dependency pins aligned with the published `0.16.11`
-  enforcement-plan API;
+- keep released consumer dependency pins aligned with the published
+  `1.0.0rc1` governance API;
 - keep production replay, audit, and evidence persistence host-owned;
 - keep optional `LocalSubprocessRunner` out of the kernel while readiness stays
   `not_applicable`.

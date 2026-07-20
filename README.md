@@ -1,12 +1,12 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 0.16.11](https://img.shields.io/badge/package-govengine%200.16.11-blueviolet.svg)](https://pypi.org/project/govengine/0.16.11/)
+[![Package: govengine 1.0.0rc1](https://img.shields.io/badge/package-govengine%201.0.0rc1-blueviolet.svg)](https://pypi.org/project/govengine/1.0.0rc1/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Dependency: SCLite ==1.0.9](https://img.shields.io/badge/dependency-SCLite%20%3D%3D1.0.9-informational.svg)](https://github.com/rozmiarD/SCLite)
+[![Dependency: SCLite ==2.0.0](https://img.shields.io/badge/dependency-SCLite%20%3D%3D2.0.0-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-The 0.17 candidate consumes SCLite 2.0's neutral lifecycle verifier. Reaction,
+The 1.0 release candidate consumes SCLite 2.0's neutral lifecycle verifier. Reaction,
 trigger, watchdog and automation contracts remain RExecOp-owned; GovEngine owns
 their admission decisions and does not import their removed SCLite modules.
 
@@ -90,13 +90,13 @@ The published `0.16.0` line adds:
 
 Current source candidate: `1.0.0rc1`.
 Current source candidate pin: `govengine==1.0.0rc1` with final `sclite-core==2.0.0`.
-Release posture: source candidate only. Publication remains blocked until the
-independent v1 security review and immutable release evidence gates pass and
-the operator explicitly approves the release action.
-Latest published stack line: `govengine==0.16.11` with `sclite-core==1.0.9`.
+Release posture: public release candidate. The independently reviewed RC was
+published on 2026-07-20; its minimum seven-day observation window ends at
+2026-07-27T17:39:58.058090Z. Final `1.0.0` promotion remains blocked until the
+window completes without contract drift or open P0/P1 findings.
+Latest published stack line: `govengine==1.0.0rc1` with `sclite-core==2.0.0`.
 Older GovEngine distributions remain available on PyPI as archived alpha history,
-but they are not an active compatibility line. The published wheel contains the
-digest-bound enforcement-plan API used by coordinated B2 consumers.
+but they are not the active release-candidate compatibility line.
 
 The current kernel is useful for deterministic review of prepared governance
 records. It is not production runtime readiness and it is not an execution
@@ -154,13 +154,13 @@ GovEngine does not provide:
 Install the latest published package from PyPI:
 
 ```bash
-python -m pip install govengine==0.16.11
+python -m pip install govengine==1.0.0rc1
 ```
 
-That installs the single supported alpha stack line, including the PolicyEngine MVP,
-B2 enforcement-plan contracts, policy explain/simulate, and supervisor explain.
-When PyPI lags source, coordinated stack work may use `pip install -e` from the
-GovEngine repository at `1.0.0rc1`.
+That installs the public release candidate and its exact
+`sclite-core==2.0.0` dependency. Only the manifest-listed `govengine.v1`
+facade carries the candidate 1.x compatibility promise; legacy root surfaces
+retain their documented compatibility/alpha classification.
 
 For local development:
 

@@ -5,11 +5,12 @@ for release candidates and stable releases without overstating whole-stack
 maturity.
 
 Current candidate line: `govengine==1.0.0rc1` with final `sclite-core==2.0.0`.
-Current published PyPI line: `govengine==0.16.11`. Older alpha releases are archived only.
+Current published PyPI line: `govengine==1.0.0rc1`. Older alpha releases are archived only.
 
-`1.0.0rc1` is a source candidate and must not be uploaded until the independent
-v1 security review, immutable release evidence and all remaining release gates
-pass. Upload/tag creation also requires explicit operator approval.
+`1.0.0rc1` was independently reviewed and published on 2026-07-20 through the
+tag-confirmed OIDC workflow. Its public observation window is active until
+2026-07-27T17:39:58.058090Z. Final `1.0.0` promotion remains fail-closed until
+that window is completed.
 
 ## Preflight
 
@@ -27,8 +28,8 @@ pass. Upload/tag creation also requires explicit operator approval.
 - [ ] `python -m pytest -q` passes.
 - [ ] `python scripts/validate_clean_package_install.py --venv /tmp/govengine-clean-release --dev --sclite-source /path/to/SCLite --no-editable` passes from a new virtual environment path, including its isolated installed-package retirement smoke.
 - [ ] `scripts/verify_runner_receipt_binding.py` and `scripts/verify_audit_ledger.py` are treated as read-only verifier smoke helpers if their records are used as release evidence; they must not generate runner requests, append ledger records, or expose raw payloads.
-- [ ] Maintainer/security review confirms there are no open P0/P1 security findings. Passing tests alone is not release approval when a P0/P1 finding is open.
-- [ ] An independent reviewer completes
+- [x] Maintainer/security review confirms there are no open P0/P1 security findings. Passing tests alone is not release approval when a P0/P1 finding is open.
+- [x] An independent reviewer completes
   `docs/security-review/v1-contract-review.json`; release mode
   `python scripts/validate_v1_security_review.py --require-independent` passes.
 - [ ] Downstream smoke evidence is classified before release: SCLite released-line is required, SCLite edge is pinned to a full commit SHA, and Ravenclaw/Tecrax host contract smokes remain external host-owned checks.
@@ -37,9 +38,10 @@ pass. Upload/tag creation also requires explicit operator approval.
 
 ## PyPI release notes
 
-- SCLite is published as the PyPI distribution `sclite-core`; the current
-  `1.0.0rc1` source candidate depends on final `sclite-core==2.0.0`, while
-  published `0.16.11` remains on `sclite-core==1.0.9`.
+- SCLite is published as the PyPI distribution `sclite-core`; the public
+  `1.0.0rc1` release candidate depends on final `sclite-core==2.0.0`.
+  Archived `0.16.11` remains available with its historical
+  `sclite-core==1.0.9` dependency.
 - Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
 - `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
 - `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.
@@ -134,9 +136,9 @@ python scripts/validate_v1_security_review.py --require-independent
 python scripts/validate_rc_window.py
 ```
 
-The RC-window status must still be `prepared`; preparation time is not public
-observation time. With explicit operator approval, create and push the immutable
-version tag, then dispatch the workflow on that tag:
+The RC-window status must be `prepared` before first publication; preparation
+time is not public observation time. With explicit operator approval, create
+and push the immutable version tag, then dispatch the workflow on that tag:
 
 ```bash
 git tag -a v1.0.0rc1 -m "GovEngine 1.0.0rc1"
@@ -155,6 +157,15 @@ public evidence reference. The following gate must then pass:
 ```bash
 python scripts/validate_rc_window.py --require-published
 ```
+
+For `1.0.0rc1`, publication workflow
+[`29764475143`](https://github.com/rozmiarD/GovEngine/actions/runs/29764475143)
+completed successfully. PyPI recorded the first artifact at
+`2026-07-20T17:39:58.058090Z`; the active window therefore ends exactly seven
+days later at `2026-07-27T17:39:58.058090Z`. A clean downstream environment
+built RExecOp `0.3.0rc3` from commit
+`5e2e757183fcc0b56d36bdbc8f790a33d4af7202`, resolved GovEngine and SCLite
+from PyPI, passed `pip check`, and passed all ten G6 behavior cases.
 
 ### Public-index evidence and stable promotion
 

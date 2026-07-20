@@ -105,7 +105,7 @@ def main() -> int:
     )
     _assert(EXPECTED_RELEASE_LABEL in public_text, 'missing_release_candidate_label')
     for marker in (
-        'RC-window status must still be `prepared`',
+        'RC-window status must be `prepared` before first publication',
         'python scripts/validate_rc_window.py --require-published',
         'python scripts/validate_rc_window.py --require-completed',
         'at least seven complete days',

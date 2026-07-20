@@ -1,23 +1,26 @@
 # Changelog
 
-## Unreleased — SCLite 2.0 candidate
-
-- Pins the SCLite 2.0 candidate after removal of stack-specific owner modules;
-  GovEngine continues to consume only neutral lifecycle verification surfaces.
-
 All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
-## Unreleased
+## 1.0.0rc1 - 2026-07-20 - independently reviewed public release candidate
+
+- Published `govengine==1.0.0rc1` on PyPI with exact
+  `sclite-core==2.0.0`, tag-bound GitHub OIDC Trusted Publishing and SLSA
+  build provenance. Public clean installation and `pip check` passed; the
+  seven-day RC observation window is active through
+  `2026-07-27T17:39:58.058090Z`.
+- Pins the SCLite 2.0 candidate after removal of stack-specific owner modules;
+  GovEngine continues to consume only neutral lifecycle verification surfaces.
 
 - Promotes repository truth to the `1.0.0rc1` source candidate, changes package
   maturity metadata from alpha to beta/release-candidate, and replaces the
   alpha-readiness gate with a release-readiness gate. The stable promise is
   explicitly limited to the frozen `govengine.v1` facade; legacy top-level
-  surfaces keep their compatibility/alpha classifications. Publication remains
-  blocked on independent review, immutable release evidence and explicit
-  operator approval.
+  surfaces keep their compatibility/alpha classifications. Final `1.0.0`
+  promotion remains blocked on the completed RC observation window and no
+  frozen-contract drift or open P0/P1 findings.
 - Marks the wheel-shipped v1 compatibility manifest `frozen_for_1.0` and adds
   the concrete `0.16.11` to v1 migration/rollback guide, including exact
   RExecOp/SCLite ownership and candidate pins.
@@ -30,11 +33,13 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
   separate fail-closed published/completed validation modes.
 - Adds an independent-review package naming the immutable GovEngine/RExecOp/
   SCLite/Tecrax source baselines, required semantic scope and exact reproduction
-  commands without marking the still-pending review as complete.
+  commands. ExatronOmega completed the independent review with zero open P0/P1
+  findings before publication.
 - Adds a versioned independent v1 contract-review record and release-only gate.
   Normal CI validates the record structure; the publish workflow fails closed
   until an external reviewer identifies an immutable commit and closes every
-  P0/P1 finding. The current record is intentionally pending.
+  P0/P1 finding. The release record now carries the completed independent
+  review.
 - Pins every GitHub Action to a full commit SHA, adds scheduled/PR dependency
   audit and CodeQL workflows, and adds a manual tag-confirmed PyPI Trusted
   Publishing workflow with environment-bound OIDC, official publisher action
