@@ -1,6 +1,6 @@
 # GovEngine 1.x API and schema compatibility
 
-The candidate stable import boundary is `govengine.v1`. Its exact 40 exports
+The frozen release-candidate compatibility boundary is `govengine.v1`. Its exact 40 exports
 and every GovEngine-owned v1 schema constant are recorded in the wheel-shipped
 `govengine/v1_compatibility_manifest.json`. The release gate runs
 `scripts/validate_v1_freeze.py`; an unrecorded export, v1 record, schema change

@@ -1,5 +1,11 @@
 # Governed-Runtime MVP Operator Runbook
 
+> Archived historical runbook for the `RuntimeAdmissionResult` flow delivered
+> in the 0.14 line. It is not the current v1 authorization procedure. See
+> [`../SECURITY_INTEGRATION.md`](../SECURITY_INTEGRATION.md) for the canonical
+> `GovernanceRequest -> GovernanceDecision -> RExecOp claim ->
+> RuntimeReceiptBinding` order.
+
 GovEngine's governed-runtime MVP is a small, host-neutral admission and
 verification chain. It helps a host runtime decide whether a prepared request is
 eligible for a dry-run or controlled runner request. It is not a platform,
@@ -80,8 +86,8 @@ record. The workflow validates and summarizes `RuntimeAdmissionResult` records
 without creating runner requests, receipts, replay claims, audit entries,
 target contact, subprocesses, or live execution authority.
 
-The contract is documented in
-[INSPECT_ONLY_ADMISSION_WORKFLOW.md](INSPECT_ONLY_ADMISSION_WORKFLOW.md).
+The compatibility tool is documented in
+[`../INSPECT_ONLY_ADMISSION_WORKFLOW.md`](../INSPECT_ONLY_ADMISSION_WORKFLOW.md).
 
 Operator verifiers:
 
@@ -104,7 +110,7 @@ GovEngine exposes neutral audit/replay ports:
 
 GovEngine-owned runner behavior remains dry-run/default-safe. Before any future
 live local runner can exist, the host adapter must satisfy the checklist in
-[RUNNER_SUPERVISION.md](RUNNER_SUPERVISION.md): argv-only command shape, no
+[`../RUNNER_SUPERVISION.md`](../RUNNER_SUPERVISION.md): argv-only command shape, no
 shell by default, cwd and env allowlists, required timeout, bounded output,
 output digests, redaction policy, explicit live enablement, and receipt for
 every attempted step.
@@ -137,5 +143,5 @@ git diff --check
 ```
 
 For package-readiness evidence, use the clean-install validator documented in
-[VALIDATION.md](VALIDATION.md). Do not publish packages, create tags, or claim
+[`../VALIDATION.md`](../VALIDATION.md). Do not publish packages, create tags, or claim
 production readiness from local validation alone.

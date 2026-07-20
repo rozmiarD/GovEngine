@@ -1,6 +1,12 @@
 # GovEngine Roadmap
 
-GovEngine is evolving from a Ravenclaw-extracted helper package into a deterministic governed-runtime kernel. It consumes SCLite for lifecycle/proof artifacts and exposes host/profile-facing mechanisms for planning, admission, audit, approval, runner gating, supervision, and evidence review.
+GovEngine is now a deterministic governance kernel in public release-candidate
+form, extracted from an earlier Ravenclaw helper package. It consumes SCLite
+for lifecycle/proof artifacts and exposes a narrow stable-candidate facade for
+policy, approval and governance decisions. Receipt conformance is part of the
+canonical package protocol but remains module-scoped outside that facade;
+broader legacy planning, admission, audit and supervision helpers also remain
+outside it.
 
 Current package baseline: `govengine==1.0.0rc1` (`1.0.0rc1`), depending on
 final frozen `sclite-core==2.0.0`.
@@ -35,16 +41,20 @@ workflows.
 
 ## Responsibility boundary
 
-The stable GovEngine v1 facade owns:
+The GovEngine 1.0 release-candidate contract owns:
 
 - typed policy compilation and deterministic evaluation;
 - canonical governance requests and decisions;
 - approval, target-scope and capability compatibility validation;
 - short-lived attempt-bound authorization contracts;
 - obligations, stable reason codes and redacted explanations;
-- runtime receipt conformance against the decision;
+- module-scoped runtime receipt conformance against the decision;
 - structural host ports for trust, revocation, activation and claim-once
   semantics without implementing their storage.
+
+Only the manifest-listed policy, approval, governance-decision and trace
+symbols are exported through `govengine.v1`; supporting ports and receipt
+conformance remain module-scoped in the RC.
 
 Legacy planning, runtime-shell, lifecycle, OODA and supervision records remain
 classified compatibility/experimental surfaces. Their presence does not make
@@ -96,66 +106,8 @@ The stable promise is deliberately narrower than the package root:
 The current public package line is `govengine==1.0.0rc1`; archived `0.16.x`
 remains available only as the rollback line for legacy consumers.
 
-## Post-0.12.3 governed-runtime MVP
-
-Status: published in `0.14.0` and retained as the current governed-runtime MVP baseline.
-
-GovEngine already had useful pieces across policy, execution tickets, signing/trust,
-guarded SCLite replay, runner requests/receipts, and dry-run gates. The public
-kernel now exposes one bounded machine-readable decision that composes those
-pieces without turning intent into execution authority.
-
-Delivered MVP surface:
-
-- `RuntimeAdmissionResult`, `compose_runtime_admission_result()`,
-  `validate_runtime_admission_result()`, and `normalize_admission_artifact_refs()`;
-- `ReplayClaimStore`, `InMemoryReplayClaimStore`, and
-  `verify_guard_and_record_replay()`;
-- `validate_runner_receipt_binding()` and `validate_evidence_review_chain()`;
-- GovEngine-owned record digests and signed-record helpers;
-- `AuditLedgerPort` and development-only `JsonlAuditLedgerAdapter`;
-- `LocalSubprocessRunnerReadiness` with `not_applicable` as the current local
-  runner posture;
-- `scripts/inspect_runtime_admission.py` and operator docs under
-  `docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`,
-  `docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md`, and
-  `docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md`;
-- focused negative tests for admission composition, replay claim-once behavior,
-  receipt/evidence binding, audit tamper cases, inspect-only workflow, and
-  governed-runtime smoke coverage.
-
-The MVP contract is named `RuntimeAdmissionResult`; `GovernedExecutionAdmission`
-remains an equivalent concept name for hosts and roadmap discussion. It reports:
-
-- status and `allowed`;
-- deterministic reason code;
-- blockers and required next actions;
-- prepared execution contract status;
-- policy decision status;
-- execution ticket status and reference or digest;
-- trust decision status;
-- guarded-strict SCLite verification status when the artifact is
-  runtime-consumable;
-- GovEngine replay freshness;
-- runner profile;
-- receipt obligation;
-- bounded artifact references or digests.
-
-This admission result is not a live execution backend. It is the reviewable
-decision surface that trust, receipt, ledger, replay-store, inspect-only, and
-optional runner work must use. Live subprocess execution remains disabled by
-default and out of scope until a future host adapter satisfies the runner safety
-requirements and negative tests for any optional live backend.
-
-Remaining follow-up for the next release line:
-
-- keep released consumer dependency pins aligned with the published
-  `1.0.0rc1` governance API;
-- keep production replay, audit, and evidence persistence host-owned;
-- keep optional `LocalSubprocessRunner` out of the kernel while readiness stays
-  `not_applicable`.
-
-Delivered version milestones (`0.2.x` through `0.11.x`) are archived in
+Delivered version milestones and the historical 0.14 governed-runtime MVP are
+archived in
 [archive/ROADMAP_VERSION_HISTORY.md](archive/ROADMAP_VERSION_HISTORY.md).
 Release facts belong in [CHANGELOG.md](../CHANGELOG.md).
 
@@ -170,15 +122,17 @@ Ravenclaw supplies security meaning:
 - planning stages: `discovery`, `validation`, `control_boundary_confirmation`, `state_transition_confirmation`, `bounded_exploit_proof`, `report_artifact_capture`;
 - security-specific audit checklists, policy rules, tools, and evidence rules.
 
-In GovEngine 0.8 this profile is represented as a conformance fixture
+Since GovEngine 0.8 this profile has been represented as a conformance fixture
 and declaration shape only. Ravenclaw remains the authority for security finding
 taxonomy, tool semantics, disclosure workflow, and Logdash/campaign UX.
 
 ### Tecrax Infrastructure Operations Profile
 
-Tecrax is the reserved name for the future governed infrastructure-operations runtime/profile. Avoid inherited working-name/product framing until public language is deliberately chosen.
+Tecrax is the governed infrastructure-operations profile for RExecOp. GovEngine
+contains only a synthetic Tecrax conformance fixture; operational profile
+semantics, intents, workflows and connector declarations live in Tecrax.
 
-Tecrax should supply infrastructure meaning:
+Tecrax supplies infrastructure meaning:
 
 - resource types: `server`, `service`, `container`, `firewall`, `switch`, `vm`, `backup_job`;
 - task families: `inspect`, `diagnose`, `propose_change`, `dry_run_change`, `verify_fixture`, `rollback_plan`;

@@ -5,8 +5,9 @@ GovEngine is a governance and contract-helper package. It is not a scanner, expl
 ## Supported versions
 
 GovEngine is currently a 1.0 release candidate. Security fixes should target
-`main` until the stable release line exists; publication remains blocked by
-the independent contract-review gate.
+`main` until the stable release line exists. The public `1.0.0rc1` package has
+passed independent contract review; final `1.0.0` promotion still requires the
+active observation window to close without contract drift or an open P0/P1.
 
 ## Reporting issues
 

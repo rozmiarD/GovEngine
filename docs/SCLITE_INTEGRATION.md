@@ -122,11 +122,9 @@ GovEngine exposes two replay models:
 These are complementary: SCLite verifies guarded bundles; GovEngine records
 whether a guarded root or payload has already been consumed for runtime work.
 
-A deterministic dry-run example for this path is documented in
-[GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md](GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md).
-The operator sequence that combines those checks with trust ports, runner
-profile selection, receipt obligation, and evidence/review binding is
-documented in [GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md).
+The legacy guarded/replay compatibility path is documented in
+[RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). The current v1 security order is
+documented in [SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md).
 
 GovEngine then keeps the runtime-consumption evidence chain bounded:
 
@@ -164,6 +162,9 @@ The split keeps responsibilities reviewable:
 
 - SCLite is the small auditable contract and integrity layer.
 - GovEngine is the reusable governance service layer that consumes those contracts.
-- Ravenclaw is the full reference runtime/control plane that wires the pieces into an operator workflow.
+- RExecOp is the current domain-neutral runtime that wires governance decisions
+  into claim-once permits and bounded execution.
+- Tecrax is the current infrastructure-operations profile; Ravenclaw remains a
+  legacy consumer with its own domain runtime.
 
 This avoids turning one repository into a mixed contract/runtime/UI/protocol bundle and makes each layer easier to validate independently.

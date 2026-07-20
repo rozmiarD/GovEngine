@@ -6,7 +6,8 @@ The top-level export classification lives in [API_STABILITY_MATRIX.md](API_STABI
 
 `govengine.v1` is the small frozen 1.0 release-candidate facade. It exports only
 the structured API envelope, deterministic PolicyEngine compilation,
-evaluation and enforcement contracts, and governance trace projection. It is
+evaluation and enforcement contracts, approval attestation, the canonical
+governance request and decision/evaluator, and governance trace projection. It is
 the only surface receiving the 1.x compatibility promise and intentionally
 excludes runtime mechanics, SCLite bridges, typed-execution compatibility
 records, profile fixtures and demo signing helpers.
@@ -14,7 +15,7 @@ records, profile fixtures and demo signing helpers.
 `govengine.surfaces.public_surface_index()` is the tested machine-readable map
 of the current release-candidate package surface set. Its legacy surface
 entries remain alpha-labelled and outside the v1 stability promise. The
-published `0.16.0` line retains the prior removal of the Ravenclaw-derived
+current release-candidate line retains the prior removal of the Ravenclaw-derived
 optional security facade; domain behavior belongs in profiles and execution
 belongs in host runtimes.
 `govengine.boundary.kernel_boundary_report()` is the tested machine-readable boundary report (schema `v0.1`). It combines the kernel/profile/runtime/SCLite ownership contract, known domain-profile contracts such as Ravenclaw, and the current public surface index.
@@ -44,8 +45,9 @@ reason-code identifier. Digest handling follows
 recomputed, while SCLite/host-owned payloads remain delegated or
 reference-only.
 
-Host-owned lifecycle projection is outside GovEngine. Ravenclaw maps its
-runtime payloads into SCLite artifacts and owns its public proof projection;
+Host-owned lifecycle projection is outside GovEngine. RExecOp maps current
+runtime payloads into SCLite artifacts and owns its proof projection; legacy
+Ravenclaw consumers retain their own projection;
 GovEngine retains only neutral SCLite descriptor/state/transition and
 review-bundle verdict mapping while SCLite owns lifecycle/review verification.
 
@@ -188,8 +190,9 @@ GovEngine must not own Ravenclaw-specific runtime/application concerns:
 
 `DemoDigestSigner`, `DemoDigestVerifier`, and `demo_sign_and_verify` are test/reviewer helpers. They create deterministic digest-bound demo signatures so hosts can exercise the `SignerPort`/`VerifierPort` contract and inspect trust decisions without bringing real keys into GovEngine. They are not cryptographic identity proof, not a CA/KMS/key-store, and not a replacement for a host-owned production verifier. Hosts that need real signatures must provide their own signer/verifier ports and trust policy.
 
-`canonical_govengine_record()` and `govengine_record_digest()` are alpha helpers
-for GovEngine-owned records such as admission and future receipt envelopes.
+`canonical_govengine_record()` and `govengine_record_digest()` are
+compatibility helpers for GovEngine-owned records such as admission,
+governance-decision and receipt-conformance records.
 They require a `govengine.*` record type for mappings, auto-scope GovEngine
 dataclasses, and return deterministic JSON or `sha256:` digests. They do not
 canonicalize SCLite records, verify SCLite artifact chains, store raw evidence,
@@ -233,7 +236,7 @@ itself. After an allowed admission is composed, hosts may call
 summaries are present. That helper does not verify SCLite artifacts or replay
 persistence.
 
-The replacement G2 flow starts with the bounded `GovernanceRequest v1` and
+The canonical v1 flow starts with the bounded `GovernanceRequest v1` and
 `ApprovalAttestation v1` inputs described in
 [GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md). They recompute GovEngine-owned
 bindings and reject approval drift/trust/time/revocation failures.
@@ -252,8 +255,8 @@ After runtime I/O, module-scoped `govengine.receipt_conformance` accepts a
 bounded `RuntimeReceiptBinding v1` and returns `ReceiptConformanceResult v1`.
 It recomputes the receipt digest, binds decision/runtime permit/attempt/lease/
 fencing/inventory/policy facts and checks output postconditions from the
-decision. The module remains outside the capped facade until the boundary
-freeze; it does not create a runtime permit, persist receipts, or replace
+decision. The module intentionally remains outside the capped RC facade; it
+does not create a runtime permit, persist receipts, or replace
 SCLite truth verification.
 
 The request also carries independent G2-B scope policy, operation capability
@@ -261,18 +264,17 @@ requirements and runtime inventory records. GovEngine recomputes their digests
 and evaluates bounded compatibility. RExecOp remains responsible for inventory
 collection, plugin loading, DNS/redirect/origin enforcement and actual I/O.
 
-The operator-facing path that ties admission, trust ports, guarded SCLite
-verification, replay freshness, runner profile, receipt obligation, and
-evidence/review binding together is documented in
-[GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md). That
-runbook is descriptive; it does not add a new public API surface or execution
-backend.
+The canonical operator security order is documented in
+[SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md). Legacy admission and runner
+binding remain compatibility/review surfaces; they do not add execution
+authority or a second authorization protocol.
 
 Before any execution backend moves into GovEngine:
 
 1. lifecycle gates and signing/trust gates must be explicit;
 2. keep dry-run behavior as the default runner path;
-3. keep Ravenclaw's subprocess runner as the first concrete host adapter;
+3. keep concrete execution adapters in the host runtime; RExecOp owns the
+   current connector and subprocess execution boundary;
 4. validate dry-run and scope enforcement parity;
 5. add negative tests for malformed ticket, stale signature/trust, profile mismatch, live-backend-disabled, failure/redaction/artifact handling;
 6. require operator review before making GovEngine own live execution mechanics.
@@ -289,8 +291,10 @@ Forbidden dependencies:
 
 ```text
 GovEngine -> Ravenclaw engine/*
+GovEngine -> RExecOp runtime internals
 GovEngine -> Logdash
 GovEngine -> OpenClaw/MCP/A2A adapters
 ```
 
-Ravenclaw may import GovEngine. GovEngine must remain independently importable without Ravenclaw's `engine/` path.
+RExecOp and legacy Ravenclaw consumers may import GovEngine. GovEngine must
+remain independently importable without either runtime's internal modules.

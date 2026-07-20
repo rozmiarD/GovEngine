@@ -480,28 +480,6 @@ def test_runner_supervision_docs_record_local_runner_readiness_decision() -> Non
         assert marker in section
 
 
-def test_local_subprocess_runner_decision_artifact_records_not_applicable_scope() -> None:
-    text = Path('docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md').read_text(encoding='utf-8')
-    compact = ' '.join(text.split())
-
-    required_markers = (
-        'Decision: `not_applicable`',
-        'Reason code: `local_subprocess_runner_prerequisites_incomplete`',
-        'GE-032 does not implement `LocalSubprocessRunner`',
-        'host-owned live runner profile authorization policy',
-        'enforced cwd allowlist semantics',
-        'enforced environment allowlist semantics',
-        'maximum output enforcement',
-        'output digest contract',
-        'redaction policy or hook',
-        'no subprocess backend',
-        'no SCLite canonicalization',
-    )
-
-    for marker in required_markers:
-        assert marker in compact
-
-
 def test_unsafe_local_runner_negative_cases_are_not_applicable_without_runner() -> None:
     import govengine
 

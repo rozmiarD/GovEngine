@@ -79,7 +79,7 @@ MVP_SURFACE_DOC_MARKERS = {
     'docs/SCLITE_INTEGRATION.md': (
         'ReplayClaimStore',
         'claim-once adapter',
-        'GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md',
+        'SECURITY_INTEGRATION.md',
         'validate_runner_receipt_binding()',
         'validate_evidence_review_chain()',
     ),
@@ -114,15 +114,19 @@ GOVERNED_RUNTIME_RELEASE_MARKERS = (
 )
 
 SOURCE_PYPI_GAP_DOC_MARKERS = {
-    'README.md': (
-        'Current source candidate: `1.0.0rc1`',
-        f'Latest published stack line: `govengine=={PUBLISHED_VERSION}` with `sclite-core==2.0.0`',
-    ),
     'docs/ROADMAP.md': (
         '## Current 1.0 release-candidate line',
         f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`',
     ),
 }
+
+README_STALE_RELEASE_CLAIMS = (
+    'Release posture: source candidate only.',
+    'Publication remains blocked until the independent v1 security review',
+    'Latest published stack line: `govengine==0.16.11`',
+    'python -m pip install govengine==0.16.11',
+    'The published `0.16.0` line provides records and validators for that boundary.',
+)
 
 FORBIDDEN_CURRENT_DOC_CLAIMS = (
     ('CHANGELOG.md', 'unreleased_api_name', 'verify_evidence_review_chain()'),
@@ -137,9 +141,15 @@ FORBIDDEN_CURRENT_DOC_CLAIMS = (
 
 README_MVP_DOC_LINK_MARKERS = (
     'docs/API_STABILITY_MATRIX.md',
+    'docs/SECURITY_INTEGRATION.md',
+    'docs/RUNTIME_ADMISSION.md',
     'docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md',
-    'docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md',
-    'docs/LOCAL_SUBPROCESS_RUNNER_DECISION.md',
+)
+
+ARCHIVED_DOC_PATHS = (
+    'docs/archive/GOVERNED_RUNTIME_MVP_RUNBOOK.md',
+    'docs/archive/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md',
+    'docs/archive/LOCAL_SUBPROCESS_RUNNER_DECISION.md',
 )
 
 MVP_DELIVERY_DOC_MARKERS = {
@@ -260,13 +270,6 @@ def _assert_source_pypi_gap_docs(
         public_status,
         f'Latest published PyPI package: `govengine=={PUBLISHED_VERSION}`.',
     )
-    install_pin = re.compile(
-        rf'python -m pip install govengine=={re.escape(PUBLISHED_VERSION)}'
-    )
-    if not install_pin.search(readme):
-        raise AssertionError('README.md:missing_exact_install_command')
-
-
 def _assert_changelog_unreleased_api_names(changelog: str) -> None:
     section = _changelog_unreleased_section(changelog)
     if not section:
@@ -295,6 +298,20 @@ def _assert_sclite_integration_current_dependency_truth(
 def _assert_readme_mvp_doc_links(readme: str) -> None:
     for marker in README_MVP_DOC_LINK_MARKERS:
         _assert_contains('README.md', readme, marker)
+
+
+def _assert_archived_doc_truth(readme: str, docs_index: str) -> None:
+    for archived_path in ARCHIVED_DOC_PATHS:
+        if not (ROOT / archived_path).is_file():
+            raise AssertionError(f'{archived_path}:missing_archived_doc')
+        basename = Path(archived_path).name
+        active_path = ROOT / 'docs' / basename
+        if active_path.exists():
+            raise AssertionError(f'docs/{basename}:legacy_doc_still_active')
+        if f'archive/{basename}' not in docs_index:
+            raise AssertionError(f'docs/README.md:missing_archive_link:{basename}')
+        if f'docs/{basename}' in readme:
+            raise AssertionError(f'README.md:archived_doc_still_active:{basename}')
 
 
 def _assert_mvp_delivery_doc_truth(markers: Mapping[str, Iterable[str]] = MVP_DELIVERY_DOC_MARKERS) -> None:
@@ -376,8 +393,8 @@ def _assert_no_current_stale_status(paths: Iterable[str], version: str) -> None:
 
 
 def _assert_readme_package_truth(readme: str, version: str) -> None:
-    release_url = f'https://pypi.org/project/govengine/{PUBLISHED_VERSION}/'
-    badge = f'package-govengine%20{PUBLISHED_VERSION}-blueviolet.svg'
+    release_url = f'https://pypi.org/project/govengine/{version}/'
+    badge = f'package-govengine%20{version}-blueviolet.svg'
     forbidden_dynamic_badges = (
         'img.shields.io/pypi/v/govengine',
         'label=package%3A%20govengine',
@@ -388,11 +405,24 @@ def _assert_readme_package_truth(readme: str, version: str) -> None:
     _assert_contains('README.md', readme, badge)
     _assert_contains('README.md', readme, release_url)
     install_pin = re.compile(
-        rf'python -m pip install govengine=={re.escape(PUBLISHED_VERSION)}'
+        rf'python -m pip install govengine=={re.escape(version)}'
     )
     match = install_pin.search(readme)
     if not match:
-        raise AssertionError('README.md:missing_unpinned_install_command')
+        raise AssertionError('README.md:missing_source_version_install_command')
+
+
+def _assert_readme_release_truth(readme: str, version: str) -> None:
+    for marker in (
+        'GovEngine is a Python governance kernel for systems that execute operations.',
+        'GovEngine makes the governance decision; it does not perform the operation.',
+        f'Current source/package version: `{version}`.',
+        f'Current package pin: `govengine=={version}`',
+    ):
+        _assert_contains('README.md', readme, marker)
+    for claim in README_STALE_RELEASE_CLAIMS:
+        if claim in readme:
+            raise AssertionError(f'README.md:stale_release_claim:{claim}')
 
 
 def _assert_candidate_maturity_truth(paths: Iterable[str]) -> None:
@@ -512,6 +542,7 @@ def main() -> int:
         raise AssertionError(f'package_version_mismatch:{package_version}!={version}')
 
     readme = _read('README.md')
+    docs_index = _read('docs/README.md')
     roadmap = _read('docs/ROADMAP.md')
     public_status = _read('PUBLIC_STATUS.md')
     contributing = _read('CONTRIBUTING.md')
@@ -529,6 +560,7 @@ def main() -> int:
     _assert_contains('README.md', readme, release_label)
     _assert_contains('README.md', readme, dependency)
     _assert_readme_package_truth(readme, version)
+    _assert_readme_release_truth(readme, version)
     _assert_contains('README.md', readme, '## License and provenance')
     _assert_contains('README.md', readme, 'originating Ravenclaw contribution lineage')
     _assert_contains('README.md', readme, 'package maintainer')
@@ -567,6 +599,7 @@ def main() -> int:
     })
     _assert_sclite_integration_current_dependency_truth(sclite_integration, dependency)
     _assert_readme_mvp_doc_links(readme)
+    _assert_archived_doc_truth(readme, docs_index)
     _assert_mvp_delivery_doc_truth()
     _assert_g1_g2_explain_doc_truth()
     _assert_g3_profile_governance_doc_truth()

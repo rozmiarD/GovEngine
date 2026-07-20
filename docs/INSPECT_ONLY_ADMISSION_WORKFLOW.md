@@ -4,8 +4,9 @@ This document defines the operator-facing inspect workflow for
 `RuntimeAdmissionResult` records. The workflow is read-only: it validates and
 summarizes an admission record without executing work.
 
-The workflow exists so an operator or host runtime can inspect a canonical
-runtime-admission record before any runner request is considered.
+The workflow exists so an operator or host runtime can inspect a legacy
+runtime-admission compatibility record. Its `allowed` value is not the
+canonical v1 authorization path and cannot authorize a runner request.
 
 ```text
 Intent is not execution authority.

@@ -1,5 +1,9 @@
 # Local Subprocess Runner Decision
 
+> Archived GE-032 decision evidence. The active boundary and current
+> `not_applicable` readiness result are maintained in
+> [`../RUNNER_SUPERVISION.md`](../RUNNER_SUPERVISION.md).
+
 This is the GE-032 not-applicable evidence artifact for the optional
 `LocalSubprocessRunner` roadmap task.
 

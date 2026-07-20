@@ -1,5 +1,9 @@
 # Guarded-Fresh Runtime Admission Example
 
+> Archived compatibility example for the pre-v1 `RuntimeAdmissionResult`
+> admission/replay path. It is retained as historical evidence, not as the
+> current connector-authorization procedure.
+
 This example documents the deterministic governed-runtime path for a
 runtime-consumable SCLite artifact.
 
@@ -63,4 +67,3 @@ This example is intentionally dry-run/default-safe:
 - no PKI/KMS/key-store ownership;
 - no SCLite schema or canonicalization ownership;
 - no Ravenclaw/OpenClaw/MCP/A2A dependency.
-

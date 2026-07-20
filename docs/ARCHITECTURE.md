@@ -5,14 +5,15 @@ sits between a host/domain runtime and the SCLite contract lifecycle without
 owning runtime execution.
 
 ```text
-host runtime -> GovEngine -> SCLite
+RExecOp bounded facts -> GovEngine decision
+  -> RExecOp atomic claim / runtime permit / I/O
+  -> GovEngine receipt conformance -> SCLite proof and lifecycle truth
 ```
 
 RExecOp is the current domain-neutral host runtime and Tecrax is its infrastructure-operations profile. Ravenclaw is a legacy consumer outside the current RExecOp/Tecrax roadmap. Other host runtimes may consume the same contracts, but GovEngine must not become a carrier-specific adapter or a domain product shell.
 
-## Governed-runtime MVP chain
+## Legacy governed-runtime MVP chain
 
-Operator steps: [GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md).
 Integration order and non-claims: [SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md).
 Contract reference: [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md),
 [GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md),
@@ -30,8 +31,8 @@ intent -> policy/admission -> SCLite ticket/guard -> trust -> replay freshness
 does not verify SCLite artifacts, record replay state, or execute work. See the
 linked docs for field-level contracts and operator procedures.
 
-G2-A adds `GovernanceRequest v1` and `ApprovalAttestation v1` as the canonical
-input candidates for the replacement flow. They bind one runtime-owned attempt
+G2-A introduced `GovernanceRequest v1` and `ApprovalAttestation v1` as the
+canonical inputs for the current flow. They bind one runtime-owned attempt
 to GovEngine policy/scope/approval inputs. `RuntimeAdmissionResult` remains a
 legacy adapter instead of being expanded into the new protocol.
 
@@ -152,7 +153,8 @@ Purpose:
 - map SCLite lifecycle/review results into neutral GovEngine state and transition decisions.
 
 Lifecycle artifact projection from a host runtime payload is host-owned;
-Ravenclaw implements its projection outside this kernel.
+RExecOp implements the current projection outside this kernel. Ravenclaw
+retains its own projection as a legacy consumer.
 
 See [SCLITE_INTEGRATION.md](SCLITE_INTEGRATION.md).
 
@@ -209,8 +211,7 @@ Purpose:
 backend. Important: live subprocess execution is not owned by GovEngine. The
 runner protocol prepares and records bounded execution shape; host adapters
 still own concrete IO/subprocess behavior. See
-[RUNNER_SUPERVISION.md](RUNNER_SUPERVISION.md) and
-[LOCAL_SUBPROCESS_RUNNER_DECISION.md](LOCAL_SUBPROCESS_RUNNER_DECISION.md).
+[RUNNER_SUPERVISION.md](RUNNER_SUPERVISION.md).
 
 ### 5. Host context and scope-port layer
 
@@ -262,10 +263,14 @@ These scripts are inspection and verification tools, not execution backends.
 
 ## Boundary rule
 
-GovEngine can consume SCLite and host-supplied context. It should not import Ravenclaw `engine/*`, Logdash, OpenClaw session wiring, or protocol adapters.
+GovEngine can consume SCLite and host-supplied context. It must not import
+RExecOp runtime internals, profile internals, Ravenclaw `engine/*`, Logdash,
+OpenClaw session wiring, or protocol adapters.
 
 ```text
-allowed:   Ravenclaw -> GovEngine -> SCLite
+allowed:   RExecOp -> GovEngine -> SCLite
+allowed:   legacy Ravenclaw consumer -> GovEngine -> SCLite
+forbidden: GovEngine -> RExecOp runtime internals
 forbidden: GovEngine -> Ravenclaw engine/*
 forbidden: GovEngine -> Logdash/OpenClaw/MCP/A2A adapters
 ```
@@ -275,10 +280,10 @@ forbidden: GovEngine -> Logdash/OpenClaw/MCP/A2A adapters
 The package now presents a frozen v1 governance facade in release-candidate
 form. The wider legacy top-level surface retains explicit alpha, adapter,
 experimental and fixture classifications rather than inheriting the v1
-stability promise. The published `govengine==0.16.0` line includes the earlier
-PolicyEngine and governed-runtime MVP baselines.
+stability promise. The public `govengine==1.0.0rc1` package retains the earlier
+PolicyEngine and governed-runtime MVP compatibility baselines.
 
-Those alpha surfaces — canonical runtime admission, host-provided trust ports,
+Those legacy surfaces — runtime admission compatibility, host-provided trust ports,
 receipt/evidence binding, audit/replay ports, inspect-only admission review,
 read-only operator verifiers, and runner safety documentation — are not
 production execution claims. GovEngine is not a complete orchestrator,

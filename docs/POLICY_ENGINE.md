@@ -372,4 +372,4 @@ implemented.
 
 - [ADMISSION_POLICY.md](ADMISSION_POLICY.md) — admission envelopes and audit ledger
 - [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md) — `RuntimeAdmissionResult` composition
-- [GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md) — operator chain
+- [SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md) — canonical v1 security order

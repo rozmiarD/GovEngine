@@ -50,15 +50,20 @@ the host still owns security meaning, target selection, budget logic, cooldown
 logic, operator approval, queue mutation, process control, audit persistence,
 and concrete execution.
 
-The canonical runtime admission contract lives in
-[RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). The initial
-`RuntimeAdmissionResult` record is the bounded admission decision surface. The
+The legacy runtime-admission compatibility contract lives in
+[RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). Its
+`RuntimeAdmissionResult` record is a bounded admission decision surface. The
 `compose_runtime_admission_result()` helper populates it from host-supplied
 policy, ticket, trust, SCLite guarded verification, replay freshness,
 runner-profile, and receipt-obligation summaries without making intent an
 execution authority. The helper composes summaries only; it does not verify
 SCLite tickets or record replay state. Guarded/replay blockers apply when the
 host sets `runtime_consumable=True`.
+
+New execution paths use the canonical `GovernanceRequest ->
+GovernanceDecision` flow documented in
+[GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md) and
+[GOVERNANCE_DECISION.md](GOVERNANCE_DECISION.md).
 
 ## Audit ledger port
 

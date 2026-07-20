@@ -138,13 +138,14 @@ Historical planned work items:
 - `DryRunRunner` as default;
 - optional `LocalSubprocessRunner`, disabled by default and policy-enabled only.
 
-Current readiness: `evaluate_local_subprocess_runner_readiness()` returns
+The historical readiness decision recorded that
+`evaluate_local_subprocess_runner_readiness()` returns
 `not_applicable` for the optional `LocalSubprocessRunner` until host-owned live
 profile authorization, cwd/env allowlist enforcement, output limit/digest
 handling, and redaction policy are implemented and tested. GovEngine must keep
 `DryRunRunner` as the only owned runner behavior while that gate is not ready.
-The current not-applicable decision is recorded in
-[LOCAL_SUBPROCESS_RUNNER_DECISION.md](../LOCAL_SUBPROCESS_RUNNER_DECISION.md).
+The decision evidence is archived in
+[LOCAL_SUBPROCESS_RUNNER_DECISION.md](LOCAL_SUBPROCESS_RUNNER_DECISION.md).
 
 Required guardrails:
 
@@ -372,3 +373,36 @@ Success criteria:
   alpha stabilization line instead of inventing a feature wave;
 - GovEngine remains a deterministic governed-runtime kernel while SCLite owns
   proof/review artifacts and Ravenclaw owns security runtime meaning.
+
+### Post-0.12.3 governed-runtime MVP
+
+Status: delivered in `0.14.0`; superseded as the canonical authorization path
+by the v1 `GovernanceRequest -> GovernanceDecision -> RExecOp claim ->
+RuntimeReceiptBinding` flow.
+
+The delivered compatibility surface included:
+
+- `RuntimeAdmissionResult`, `compose_runtime_admission_result()`,
+  `validate_runtime_admission_result()`, and
+  `normalize_admission_artifact_refs()`;
+- `ReplayClaimStore`, `InMemoryReplayClaimStore`, and
+  `verify_guard_and_record_replay()`;
+- `validate_runner_receipt_binding()` and
+  `validate_evidence_review_chain()`;
+- GovEngine-owned record digests and signed-record helpers;
+- `AuditLedgerPort` and the development-only `JsonlAuditLedgerAdapter`;
+- `LocalSubprocessRunnerReadiness` with a `not_applicable` local-runner
+  posture;
+- `scripts/inspect_runtime_admission.py` and the archived operator documents
+  `GOVERNED_RUNTIME_MVP_RUNBOOK.md`,
+  `GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md`, and
+  `LOCAL_SUBPROCESS_RUNNER_DECISION.md`;
+- focused negative tests for admission composition, replay claim-once
+  behavior, receipt/evidence binding, audit tamper cases, inspect-only
+  workflow, and governed-runtime smoke coverage.
+
+`RuntimeAdmissionResult` remains a compatibility/review record. It reports
+bounded gate summaries, blockers, next actions, runner posture, receipt
+obligation, and artifact references; it is not proof, a runtime permit, or
+execution authority. Production replay, audit, evidence persistence and live
+execution remained host-owned.

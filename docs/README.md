@@ -25,21 +25,18 @@ Start here when navigating `docs/`. Package-level status lives in
 | [ROADMAP.md](ROADMAP.md) | Current 1.0 release-candidate line and near-term direction |
 | [VALIDATION.md](VALIDATION.md) | **Active** release and operator validation gate |
 
-## Tier 2 — governed-runtime MVP (operators)
+## Tier 2 — active and compatibility operator references
 
 | Doc | Purpose |
 | --- | --- |
-| [GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md) | Operator chain and procedures |
 | [SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md) | Required security evaluation order |
-| [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md) | `RuntimeAdmissionResult`, supervisor admission and **supervisor explain (G2)** |
+| [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md) | Legacy `RuntimeAdmissionResult` compatibility plus supervisor admission/explain |
 | [POLICY_ENGINE.md](POLICY_ENGINE.md) | `govengine.policy` MVP and **policy explain/simulate (G1)** |
 | [ADMISSION_POLICY.md](ADMISSION_POLICY.md) | Admission/audit record validators |
 | [RECEIPT_BINDING.md](RECEIPT_BINDING.md) | Runner receipt binding |
 | [EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md) | Evidence/review chain + OODA receipt bounds |
 | [INSPECT_ONLY_ADMISSION_WORKFLOW.md](INSPECT_ONLY_ADMISSION_WORKFLOW.md) | Read-only admission CLI |
-| [GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md](GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md) | Guarded-strict + replay-fresh example |
 | [RUNNER_SUPERVISION.md](RUNNER_SUPERVISION.md) | Runner supervision + live-runner safety |
-| [LOCAL_SUBPROCESS_RUNNER_DECISION.md](LOCAL_SUBPROCESS_RUNNER_DECISION.md) | Why no live subprocess runner ships |
 | [SCLITE_INTEGRATION.md](SCLITE_INTEGRATION.md) | How GovEngine consumes SCLite |
 
 ## Tier 3 — neutral contract models
@@ -64,6 +61,9 @@ Historical material kept for audit evidence, not as the active gate:
 | --- | --- |
 | [archive/VALIDATION_HISTORY.md](archive/VALIDATION_HISTORY.md) | Per-release validation records |
 | [archive/ROADMAP_VERSION_HISTORY.md](archive/ROADMAP_VERSION_HISTORY.md) | Delivered `0.2.x`–`0.11.x` milestones |
+| [archive/GOVERNED_RUNTIME_MVP_RUNBOOK.md](archive/GOVERNED_RUNTIME_MVP_RUNBOOK.md) | Superseded 0.14 `RuntimeAdmissionResult` operator chain |
+| [archive/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md](archive/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md) | Legacy guarded/replay admission example |
+| [archive/LOCAL_SUBPROCESS_RUNNER_DECISION.md](archive/LOCAL_SUBPROCESS_RUNNER_DECISION.md) | Historical GE-032 no-runner decision evidence |
 
 When docs disagree, trust `scripts/validate_public_truth.py` and the current
 sections of [VALIDATION.md](VALIDATION.md) over archived records.

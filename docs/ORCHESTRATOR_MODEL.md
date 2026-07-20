@@ -1,10 +1,13 @@
 # Orchestrator Model
 
-GovEngine may provide deterministic orchestration contracts. It must not become an agent loop, workflow scheduler, operator UI, carrier adapter, credential store, or live executor.
+`govengine.orchestration` is a legacy experimental compatibility surface for
+deterministic handoff records. RExecOp owns current orchestration mechanics.
+GovEngine must not become an agent loop, workflow scheduler, operator UI,
+carrier adapter, credential store, or live executor.
 
-## What The Kernel Owns
+## What The Compatibility Contract Describes
 
-The orchestration kernel owns reusable control-flow boundaries:
+The compatibility contract describes reusable control-flow boundaries:
 
 - state-transition routing;
 - between-step control decisions;
@@ -43,7 +46,7 @@ A step is not a prompt, raw intent, scheduled job, subprocess command, UI action
 
 ## Allowed Stages
 
-Current 0.2 boundary work allows these stages:
+The legacy `v0.1` contract retained from the 0.2 line allows these stages:
 
 - `admission`;
 - `policy_check`;

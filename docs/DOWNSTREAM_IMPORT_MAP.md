@@ -4,11 +4,11 @@ This snapshot records the live GovEngine imports used by the current RExecOp
 and Tecrax source trees. It is migration evidence, not a promise that every
 legacy import will enter the stable facade.
 
-Baseline checked on 2026-07-15:
+Baseline checked on 2026-07-20:
 
-- GovEngine `6397c70`;
-- RExecOp `abce051`;
-- Tecrax `a9f72b1`.
+- GovEngine `7a0a53d` plus the documentation corrections in this working tree;
+- RExecOp `a3e6404`;
+- Tecrax `a870658`.
 
 The map is produced by `consumer_import_map()` in
 `scripts/validate_api_stability.py`. The scanner covers Python files while
@@ -16,29 +16,25 @@ excluding virtual environments, build output, caches, and Git metadata.
 
 ## RExecOp
 
-RExecOp has 44 unique `from govengine import ...` symbols and 55 unique import
-paths across root and module imports:
+RExecOp has 44 unique `from govengine import ...` symbols, 35 unique deep
+module imports and one package import, for 80 unique import paths:
 
-- 15 `v1-candidate` imports: `GovApiError`, `PolicyCompiler`,
-  `PolicyEnforcementPlan`, `PolicyEngine`, `CompiledPolicyPack`,
-  `PolicyVerdict`, `admit_policy_execution`, `explain_policy_evaluation`,
-  `policy_pack_digest`, `policy_enforcement_admission`,
-  `policy_enforcement_admission_digest`, `policy_enforcement_plan_digest`,
-  `project_governance_trace`, `validate_policy_enforcement_admission`, and
-  `validate_policy_enforcement_plan`;
-- 32 adapter imports covering legacy admission, trigger/supervisor/automation,
+- 12 root `v1-candidate` imports covering the API envelope, PolicyEngine and
+  governance trace;
+- 30 root adapter imports covering legacy admission, trigger/supervisor/automation,
   typed-execution, compatibility, profile explanation, and evidence review;
-- 2 `internal-exposed` imports: `build_scope_assertion` and
+- 2 root `internal-exposed` imports: `build_scope_assertion` and
   `build_scope_decision`;
-- 5 deep-only imports: `normalize_argv`, `GovRunnerRequest`, `GovRunnerStep`,
-  `network_policy_binding_digest`, and
-  `runtime_capability_descriptor_digest`;
+- 35 deep module imports: 22 `deep-only`, 6 `v1-candidate`, 5 adapters and
+  2 signing fixtures. These include the canonical decision/signing/receipt
+  conformance integration used by the runtime;
 - one package import used for version/surface inspection.
 
-The 15 candidate imports may migrate to `govengine.v1`. Adapter imports stay on
-their existing alpha paths until G2/G3 provides canonical decision and receipt
-contracts. Internal-exposed and deep-only imports must not be promoted merely
-because RExecOp currently consumes them.
+Supported candidate imports should migrate to `govengine.v1` where the facade
+exports the required symbol. Adapter and deep-only imports stay on their
+existing module paths; the canonical G2/G3 contracts exist, but their
+runtime-integration helpers are intentionally module-scoped. Internal-exposed
+and deep-only imports must not be promoted merely because RExecOp consumes them.
 
 ## Tecrax fixture
 

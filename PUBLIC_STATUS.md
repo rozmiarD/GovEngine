@@ -173,9 +173,11 @@ is an admission decision surface, not a live execution authority.
 
 ## Release posture
 
-Keep GovEngine in `0.y.z` until:
+Final `1.0.0` promotion remains blocked until:
 
-1. GovEngine's public API boundary remains documented and tested enough for external users;
-2. changelog, security, contribution, validation, and publishing docs stay complete;
-3. release artifacts can be built and checked reproducibly;
-4. Ravenclaw consumes the released package without Git URL pin drift.
+1. the public RC observation window completes after at least seven full days;
+2. the frozen v1 facade, schemas, conformance corpus, and reason registry show
+   no unaccounted drift;
+3. no P0/P1 finding remains open;
+4. immutable release evidence, provenance, public-index installation, and
+   downstream compatibility gates pass for the final promotion.

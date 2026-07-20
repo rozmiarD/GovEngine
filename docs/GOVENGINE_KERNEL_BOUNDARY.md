@@ -1,6 +1,9 @@
 # GovEngine Kernel Boundary
 
-GovEngine is the reusable governed-runtime kernel. Domain runtimes such as Ravenclaw supply profile meaning, operator workflow language, UI, storage, and live execution adapters.
+GovEngine is the reusable governance kernel. RExecOp is the current
+domain-neutral runtime; profiles such as Tecrax supply domain meaning and
+operator workflow language. Host runtimes own UI, storage and live execution
+adapters. Ravenclaw remains a legacy consumer of the boundary.
 
 ## Owned By GovEngine
 
@@ -49,4 +52,6 @@ The kernel boundary deliberately excludes:
 
 ## Release Use
 
-Before a 0.2 release, the boundary report and public docs must agree: `KernelBoundary`, known domain profiles, conformance checks, public surface metadata, and non-claims should tell the same story.
+For every release, the boundary report and public docs must agree:
+`KernelBoundary`, known domain profiles, conformance checks, public surface
+metadata, and non-claims must tell the same story.

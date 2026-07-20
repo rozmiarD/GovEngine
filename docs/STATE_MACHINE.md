@@ -1,6 +1,9 @@
 # State Machine
 
-GovEngine state-machine contracts define neutral run-state metadata and allowed transitions. They do not persist state, schedule work, own queues, hold credentials, or execute live commands.
+The legacy experimental GovEngine state-machine contracts define neutral
+run-state metadata and allowed transitions. RExecOp owns the current operation
+lifecycle. These compatibility records do not persist state, schedule work,
+own queues, hold credentials, or execute live commands.
 
 ## Run State
 
@@ -18,7 +21,7 @@ The object is a boundary summary, not a storage record. Hosts choose where and h
 
 ## Allowed States
 
-Current 0.2 boundary work recognizes:
+The legacy `v0.1` contract retained from the 0.2 line recognizes:
 
 - `new`;
 - `admitted`;

@@ -307,12 +307,10 @@ Expected result for the current `1.0.0rc1` package line (`1.0.0rc1`):
 
 ## Operator/runbook docs gate
 
-Docs that change the governed-runtime MVP operator path should preserve the
-truth in [GOVERNED_RUNTIME_MVP_RUNBOOK.md](GOVERNED_RUNTIME_MVP_RUNBOOK.md):
-admission is a decision record, SCLite owns proof/review authority, trust and
-keys are host-owned ports, replay/audit persistence is host-owned beyond local
-adapters, dry-run remains the default runner path, and live execution remains
-disabled unless a future host adapter satisfies the runner safety spec.
+Docs that change the operator path must preserve the canonical order and
+non-claims in [SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md): GovEngine
+decides, RExecOp claims and executes, SCLite owns proof/review authority, and
+trust, keys, runtime storage and live I/O remain outside GovEngine.
 
 Use these checks for operator/runbook-only updates:
 
@@ -361,7 +359,7 @@ Current tests cover:
 - JSONL hash-chain development audit adapter without production storage,
   locking, retention, concurrency, raw evidence, or live execution authority.
 
-## Ravenclaw consumption gate
+## Legacy Ravenclaw consumption gate
 
 Ravenclaw should validate that it can consume GovEngine as the external PyPI package `govengine` instead of using an in-tree `govengine/` copy or a Git URL pin.
 
@@ -407,7 +405,8 @@ These checks do not prove:
 - that compact OODA receipt summaries are a substitute for raw forensic logs;
 - that demo digest signatures are production signatures, identity proof, or PKI validation.
 
-GovEngine is currently a reusable governed-execution helper layer, not a full autonomous runtime.
+GovEngine is currently a release-candidate governance kernel, not a full
+autonomous runtime.
 The kernel ships **no live subprocess backend** by default; optional live backends remain
 host-owned and policy-gated.
 

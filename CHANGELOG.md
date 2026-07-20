@@ -4,6 +4,17 @@ All notable public GovEngine changes should be documented here.
 
 GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
 
+## Unreleased
+
+- Clarifies the public package purpose and synchronizes active documentation
+  with the independently reviewed `1.0.0rc1` contract, current
+  GovEngine/RExecOp/SCLite ownership, frozen `govengine.v1` facade and live
+  downstream import map.
+- Archives the superseded 0.14 governed-runtime MVP runbook, guarded/replay
+  example and GE-032 local-runner decision evidence. Active compatibility
+  references remain documented, while the canonical operator path now points
+  to the v1 security integration order.
+
 ## 1.0.0rc1 - 2026-07-20 - independently reviewed public release candidate
 
 - Published `govengine==1.0.0rc1` on PyPI with exact
@@ -423,9 +434,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 ### Documentation, validation, and repository hygiene
 
 - Added governed-runtime operator documentation:
-  `docs/GOVERNED_RUNTIME_MVP_RUNBOOK.md`, `docs/RUNTIME_ADMISSION.md`,
+  `docs/archive/GOVERNED_RUNTIME_MVP_RUNBOOK.md`, `docs/RUNTIME_ADMISSION.md`,
   `docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md`,
-  `docs/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md`, and related updates to
+  `docs/archive/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md`, and related updates to
   `docs/API_STABILITY_MATRIX.md`, `docs/API_BOUNDARY.md`, `PUBLIC_STATUS.md`,
   and `README.md`.
 - Recorded final roadmap audits, package-validation smoke, and Signposter

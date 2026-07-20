@@ -1,7 +1,8 @@
 # Runtime Shell
 
-`govengine.runtime_shell` defines neutral runtime/control projection contracts for
-host runtimes.
+`govengine.runtime_shell` is a legacy experimental surface defining neutral
+runtime/control projection records for compatibility consumers. RExecOp owns
+the current queue, scheduler and operation-lifecycle mechanics.
 
 It is a shape and validation layer only. It does not persist state, own queues,
 run a scheduler, deliver carrier messages, hold credentials, or execute tools.
@@ -24,12 +25,12 @@ Runtime-shell metadata must not contain raw prompts, credentials, commands,
 subprocesses, shell payloads, live-backend claims, runtime storage paths, carrier
 payloads, or schedules.
 
-Hosts such as Ravenclaw may map their own runtime state and Logdash/operator
-actions into these objects. GovEngine validates the neutral representation; the
-host still owns UI behavior, persistence, queue mutation, process control,
-operator approval, and concrete execution.
+Host runtimes may map their own state and operator actions into these objects.
+GovEngine validates the neutral representation; the host still owns UI
+behavior, persistence, queue mutation, process control, operator approval and
+concrete execution. Ravenclaw remains a legacy compatibility consumer.
 
-## Ravenclaw 0.11 / GovEngine 0.3 Fit
+## Historical Ravenclaw 0.11 / GovEngine 0.3 fit
 
 This surface exists because Ravenclaw's state/control projection showed that the
 0.2 `GovRunState` and `ControlDecision` objects could represent some governance

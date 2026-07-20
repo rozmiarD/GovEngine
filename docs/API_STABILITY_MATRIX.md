@@ -1,28 +1,35 @@
 # GovEngine API Stability Matrix
 
-This matrix classifies the current `govengine.__all__` top-level export surface for the alpha governed-runtime kernel.
+This matrix classifies the current `govengine.__all__` top-level export surface
+for the release-candidate governance kernel. The wider root surface preserves
+legacy alpha classifications outside the frozen `govengine.v1` facade.
 
 Classification meanings:
 
-- v1-candidate: real deterministic kernel symbol exported by `govengine.v1`; still alpha until the API freeze.
+- v1-candidate: real deterministic kernel symbol exported by the frozen `govengine.v1` release-candidate facade.
 - adapter: compatibility or host/SCLite boundary retained for migration, but not part of the v1 kernel facade.
 - experimental: runtime-shaped or broad alpha surface that must not enter the stable facade without a new ownership review.
 - fixture: development, demo, or profile fixture; never production authority.
 - remove: symbol selected for removal after consumer migration. The current inventory has no immediate removals.
 - internal-exposed: compatibility callable visible at package root outside `__all__`; migrate its consumers before removal or reclassification.
 
-GovEngine is still alpha. This matrix is not a production readiness claim, and it does not grant live execution, PKI/KMS, credential, raw evidence storage, scheduler, carrier, Ravenclaw, OpenClaw, MCP, or A2A ownership.
+GovEngine is a public 1.0 release candidate. This matrix is not a production
+readiness claim, and it does not grant live execution, PKI/KMS, credential,
+raw evidence storage, scheduler, carrier, Ravenclaw, OpenClaw, MCP, or A2A
+ownership.
 
 ## v1 Candidate Kernel Contract Subset
 
-The v1 candidate subset is a compatibility target inside the alpha surface,
-not a stable API declaration yet. It contains only the deterministic API
+The v1 candidate subset is the frozen 1.0 release-candidate compatibility
+facade and the only surface intended to receive the 1.x compatibility promise.
+It contains only the deterministic API
 error/result envelope, PolicyEngine compilation/evaluation/enforcement
 contracts, the digest-bound `GovernanceRequest`/`ApprovalAttestation` inputs,
 the canonical `GovernanceDecision` evaluator, and the current governance trace
 projection. Legacy runtime
 admission, SCLite bridges, receipt helpers, typed-execution projections and
-profile bindings remain adapters until the canonical G2/G3 contracts exist.
+profile bindings remain adapters or module-scoped compatibility surfaces by
+design; the canonical G2/G3 contracts already exist.
 
 The facade must not introduce a second runtime admission record, live executor,
 scheduler, planner, PKI/KMS/key manager, replay database, raw evidence store,

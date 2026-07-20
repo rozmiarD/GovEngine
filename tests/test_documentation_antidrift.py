@@ -28,10 +28,85 @@ def test_current_public_docs_track_package_version() -> None:
     assert f'govengine=={version}' in docs['docs/ROADMAP.md']
     assert f'govengine=={version}' in docs['PUBLIC_STATUS.md']
     assert f'Expected result for the current `{version}` package line' in docs['docs/VALIDATION.md']
-    assert f'Current source candidate pin: `govengine=={version}`' in docs['README.md']
+    assert f'Current source/package version: `{version}`' in docs['README.md']
+    assert f'Current package pin: `govengine=={version}`' in docs['README.md']
     assert f'python -m pip install govengine=={PUBLISHED_VERSION}' in docs['README.md']
     assert 'Current 0.12.x alpha line' not in docs['docs/ROADMAP.md']
     assert 'published `0.12` alpha line' not in docs['README.md']
+
+
+def test_superseded_mvp_docs_are_archived_not_active() -> None:
+    readme = _read('README.md')
+    docs_index = _read('docs/README.md')
+
+    for basename in (
+        'GOVERNED_RUNTIME_MVP_RUNBOOK.md',
+        'GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md',
+        'LOCAL_SUBPROCESS_RUNNER_DECISION.md',
+    ):
+        assert not (ROOT / 'docs' / basename).exists()
+        archived = ROOT / 'docs' / 'archive' / basename
+        assert archived.is_file()
+        assert f'archive/{basename}' in docs_index
+        assert f'docs/{basename}' not in readme
+
+    assert 'not the current v1 authorization procedure' in _read(
+        'docs/archive/GOVERNED_RUNTIME_MVP_RUNBOOK.md'
+    )
+    assert 'superseded as the canonical authorization path' in _read(
+        'docs/archive/ROADMAP_VERSION_HISTORY.md'
+    )
+
+
+def test_active_docs_track_release_candidate_and_current_stack_ownership() -> None:
+    docs = {
+        relative: _read(relative)
+        for relative in (
+            'README.md',
+            'SECURITY.md',
+            'docs/ADMISSION_POLICY.md',
+            'docs/API_BOUNDARY.md',
+            'docs/API_COMPATIBILITY.md',
+            'docs/API_STABILITY_MATRIX.md',
+            'docs/ARCHITECTURE.md',
+            'docs/CONTROL_MODEL.md',
+            'docs/DOWNSTREAM_IMPORT_MAP.md',
+            'docs/GOVENGINE_KERNEL_BOUNDARY.md',
+            'docs/ORCHESTRATOR_MODEL.md',
+            'docs/ROADMAP.md',
+            'docs/RUNTIME_SHELL.md',
+            'docs/SCLITE_INTEGRATION.md',
+            'docs/STATE_MACHINE.md',
+            'docs/VALIDATION.md',
+        )
+    }
+    joined = '\n'.join(docs.values())
+
+    for stale in (
+        'GovEngine is still alpha',
+        'publication remains blocked by',
+        'Before a 0.2 release',
+        'reserved name for the future governed infrastructure-operations',
+        'input candidates for the replacement flow',
+        'until the canonical G2/G3 contracts exist',
+        'candidate stable import boundary',
+        'Ravenclaw is the full reference runtime/control plane',
+        'describes the canonical runtime admission envelope',
+        'The replacement G2 flow starts',
+        'until the boundary freeze',
+        'Current 0.2 boundary work',
+        '`govengine.runtime_shell` is the 0.3',
+    ):
+        assert stale not in joined
+
+    assert 'public `1.0.0rc1` package has\npassed independent contract review' in docs['SECURITY.md']
+    assert 'exact 40 exports' in docs['docs/API_COMPATIBILITY.md']
+    assert 'RExecOp is the current\ndomain-neutral runtime' in docs['docs/GOVENGINE_KERNEL_BOUNDARY.md']
+    assert 'Tecrax is the governed infrastructure-operations profile for RExecOp' in docs['docs/ROADMAP.md']
+    assert 'Receipt conformance is part of the\ncanonical package protocol but remains module-scoped' in docs['docs/ROADMAP.md']
+    assert 'for 80 unique import paths' in docs['docs/DOWNSTREAM_IMPORT_MAP.md']
+    assert 'RExecOp owns current orchestration mechanics' in docs['docs/ORCHESTRATOR_MODEL.md']
+    assert 'RExecOp owns the current operation\nlifecycle' in docs['docs/STATE_MACHINE.md']
 
 
 def test_docs_pin_canonical_lifecycle_vocabulary_and_legacy_alias_status() -> None:

@@ -117,6 +117,20 @@ def test_public_truth_validator_rejects_published_line_candidate_drift(monkeypat
         validator._assert_no_published_line_candidate_drift(('README.md',))
 
 
+def test_public_truth_validator_rejects_stale_readme_release_claim() -> None:
+    validator = _load_validator()
+    stale = (
+        'GovEngine is a Python governance kernel for systems that execute operations.\n'
+        'GovEngine makes the governance decision; it does not perform the operation.\n'
+        'Current source/package version: `1.0.0rc1`.\n'
+        'Current package pin: `govengine==1.0.0rc1`.\n'
+        'Release posture: source candidate only.\n'
+    )
+
+    with pytest.raises(AssertionError, match='README.md:stale_release_claim'):
+        validator._assert_readme_release_truth(stale, '1.0.0rc1')
+
+
 def test_public_truth_validator_rejects_stale_publishing_dependency_line(monkeypatch: pytest.MonkeyPatch) -> None:
     validator = _load_validator()
 
