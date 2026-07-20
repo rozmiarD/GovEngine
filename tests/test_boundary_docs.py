@@ -13,7 +13,7 @@ def test_kernel_boundary_doc_tracks_machine_readable_contract() -> None:
     assert 'Owned By Runtimes' in text
     assert 'Owned By SCLite' in text
     assert 'live target authorization' in text
-    assert 'carrier adapter ownership' in text
+    assert 'carrier adapter ownership' in ' '.join(text.split())
 
 
 def test_domain_profile_contract_doc_tracks_conformance_contract() -> None:
@@ -74,18 +74,16 @@ def test_control_model_doc_tracks_between_step_boundaries() -> None:
     assert 'does not write to disk' in text
 
 
-def test_validation_doc_tracks_0_2_boundary_line() -> None:
+def test_validation_doc_tracks_current_v1_boundary() -> None:
     text = (ROOT / 'docs' / 'VALIDATION.md').read_text(encoding='utf-8')
 
-    assert '0.2 kernel-boundary line' in text
-    assert '0.2.0' in text
-    assert 'govengine.boundary' in text
-    assert 'govengine.orchestration' in text
-    assert 'govengine.events' in text
-    assert 'govengine.state_machine' in text
-    assert 'govengine.control' in text
-    assert 'no queue, scheduler, carrier adapter, credential store' in text
-    assert 'live execution authority is introduced' in text
+    assert 'current `1.0.0rc1` package line' in text
+    assert '40 facade exports' in text
+    assert '15 v1 records' in text
+    assert '33 reproducible cases' in text
+    assert 'validate_v1_freeze.py' in text
+    assert 'validate_digest_ownership.py' in text
+    assert 'RExecOp separately executes the\nshared corpus' in text
 
 
 def test_receipt_evidence_docs_track_verification_chain() -> None:
@@ -96,18 +94,19 @@ def test_receipt_evidence_docs_track_verification_chain() -> None:
         'validation': (ROOT / 'docs' / 'VALIDATION.md').read_text(encoding='utf-8'),
     }
     normalized_evidence = ' '.join(docs['evidence'].split())
+    normalized_validation = ' '.join(docs['validation'].split())
 
-    for key in ('evidence', 'sclite'):
-        assert 'RuntimeAdmissionResult' in docs[key]
-        assert 'GovRunnerRequest' in docs[key]
-        assert 'GovRunnerReceipt' in docs[key]
-        assert 'GovEvidenceClaim' in docs[key]
+    assert 'Compatibility reference' in docs['evidence']
+    assert 'outside' in normalized_evidence and '`govengine.v1`' in normalized_evidence
+    for marker in ('RuntimeAdmissionResult', 'GovRunnerRequest', 'GovRunnerReceipt', 'GovEvidenceClaim'):
+        assert marker in docs['evidence']
     assert 'GovReviewResult' in docs['evidence']
     assert 'validate_runner_receipt_binding()' in docs['evidence']
     assert 'validate_evidence_review_chain()' in docs['evidence']
     assert 'OODA decisions in receipts and evidence' in docs['evidence']
-    assert 'validate_evidence_review_chain()' in docs['sclite']
-    assert 'evidence-review-chain validators' in docs['api']
-    assert 'receipt/evidence chain validators' in docs['validation']
+    assert 'SCLite 2.0 is frozen.' in docs['sclite']
+    assert 'RExecOp then projects the final' in docs['sclite']
+    assert 'Legacy admission, audit,\nreview' in docs['api']
+    assert 'Compatibility tests cover `RuntimeAdmissionResult`' in normalized_validation
     assert 'does not store raw evidence' in docs['evidence']
     assert 'does not evaluate SCLite review-bundle verdicts' in normalized_evidence

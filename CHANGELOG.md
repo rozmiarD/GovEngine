@@ -6,6 +6,19 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+### Documentation truth and navigation
+
+- Reframed GovEngine consistently as an in-process governance kernel and
+  separated GovEngine-owned bindings from SCLite lifecycle/evidence truth.
+- Replaced the README renderer-dependent diagram with a compact ASCII ownership
+  flow.
+- Rebuilt architecture, API boundary, validation, publishing, roadmap and
+  status documentation around the frozen v1 candidate and current
+  SCLite/GovEngine/RExecOp/Tecrax release train.
+- Marked pre-v1 runtime-shaped pages as compatibility references and removed
+  obsolete runnable MVP/archive instructions duplicated by Git history and this
+  changelog.
+
 - Rebuilds the README around GovEngine's actual role as an embeddable
   deterministic governance library, adds a PlantUML view of the cooperating
   profile/RExecOp/GovEngine/SCLite components without inventing a product name,

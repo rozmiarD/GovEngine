@@ -1,57 +1,45 @@
-# GovEngine Kernel Boundary
+# GovEngine kernel boundary
 
-GovEngine is the reusable governance kernel. RExecOp is the current
-domain-neutral runtime; profiles such as Tecrax supply domain meaning and
-operator workflow language. Host runtimes own UI, storage and live execution
-adapters. Ravenclaw remains a legacy consumer of the boundary.
+This page is the short ownership checklist. The complete design is in
+[ARCHITECTURE.md](ARCHITECTURE.md); the machine-readable compatibility report is
+`govengine.boundary.kernel_boundary_report()`.
 
 ## Owned By GovEngine
 
-GovEngine owns portable mechanics that can be reused across profiles:
-
-- artifact-governance boundary objects and transition decisions;
-- controlled-execution gates and runner request/receipt envelopes;
-- policy, trust, OODA, and SCLite lifecycle bridge decisions;
-- replay decisions for already-verified guarded SCLite roots;
-- public surface metadata for boundary review;
-- kernel/profile/runtime/SCLite ownership reports.
-
-The machine-readable entrypoint is `govengine.boundary.kernel_boundary_report()`.
+- deterministic PolicyEngine compilation and evaluation;
+- approval requirements and attestation validation;
+- scope and capability compatibility decisions;
+- bounded governance request, decision, obligations and explanations;
+- GovEngine-owned record digests and reason codes;
+- checks that terminal runtime facts satisfy decision obligations.
 
 ## Owned By Profiles
 
-Profiles own domain semantics. A profile may define taxonomy, policy meaning, tool semantics, evidence expectations, and operator workflow language. It may consume GovEngine and SCLite surfaces through a declared `DomainProfileContract`, but it must not claim kernel or runtime authority.
+Profiles such as Tecrax own domain vocabulary, intents, workflows, taxonomy,
+thresholds and connector semantics. GovEngine may validate a compatibility
+projection but does not interpret or own that meaning.
 
 ## Owned By Runtimes
 
-Runtimes own concrete operation:
-
-- operator UI;
-- concrete tool or subprocess execution;
-- local state storage;
-- credential handling;
-- OpenClaw, MCP, A2A, or other carrier adapters.
-
-GovEngine must not become a hidden runtime by accepting raw intent or directly executing live work.
+RExecOp is the current domain-neutral runtime. It owns operation lifecycle,
+queues, leases, fencing, retries, rollback coordination, runtime permits,
+connectors, secrets and live I/O. Other hosts own the equivalent integration
+mechanics when they embed GovEngine.
 
 ## Owned By SCLite
 
-SCLite owns schema lifecycle, canonicalization, artifact-chain verification, and review-bundle verdicts. GovEngine consumes SCLite artifacts and verdicts; it does not redefine their authority.
+SCLite owns lifecycle/evidence schemas, canonicalization, artifact digests,
+receipts, evidence contracts, review bundles and verification truth. GovEngine
+may consume a SCLite result or opaque digest but does not reproduce its
+authority.
 
 ## Non-Claims
 
-The kernel boundary deliberately excludes:
+GovEngine does not provide live target authorization, carrier adapter
+ownership, runtime scheduling/execution, raw evidence storage, production
+identity/key custody, SCLite verification, or resistance to a compromised host
+that bypasses the kernel.
 
-- live target authorization;
-- scanner or exploit execution;
-- credential or key-store ownership;
-- SCLite Kernel Guard HMAC verification;
-- carrier adapter ownership;
-- Ravenclaw, Tecrax, or other product UX ownership;
-- SCLite schema or canonicalization authority.
-
-## Release Use
-
-For every release, the boundary report and public docs must agree:
-`KernelBoundary`, known domain profiles, conformance checks, public surface
-metadata, and non-claims must tell the same story.
+The broad package root also contains pre-v1 compatibility records. Their
+presence does not change this ownership boundary and does not make them part of
+`govengine.v1`.

@@ -69,7 +69,7 @@ Hosts own domain policy, operator approval, production storage, live runner
 adapters, network access, secrets, release authorization, public evidence
 publication, and incident response.
 
-Because GovEngine is an in-process library, a compromised host can bypass these
+Because GovEngine is an in-process kernel, a compromised host can bypass these
 steps or fabricate bounded facts. No malicious-host resistance is claimed.
 
 ## Development Helpers

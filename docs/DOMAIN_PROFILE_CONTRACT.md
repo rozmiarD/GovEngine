@@ -1,5 +1,8 @@
 # Domain Profile Contract
 
+> Compatibility/fixture reference outside `govengine.v1`. Real profile meaning
+> belongs to Tecrax or another profile repository, not to GovEngine.
+
 A domain profile contract is the host-facing declaration that lets a runtime consume GovEngine without moving domain semantics into the kernel.
 
 GovEngine also exposes `govengine.profiles`, a minimal contract-only SDK around

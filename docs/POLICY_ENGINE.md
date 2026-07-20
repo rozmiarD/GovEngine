@@ -1,4 +1,4 @@
-# Policy engine MVP
+# Policy engine
 
 `govengine.policy` provides a **deterministic, fail-closed policy runtime** for
 hosts that already use GovEngine admission contracts. It evaluates bounded
@@ -23,7 +23,9 @@ evidence store, scheduler, or execution authority.
 | `govengine.policy.schema` | JSON Schema documents for authoring and host validation |
 | `govengine.policy.cli` | `govengine-policy` authoring CLI |
 
-Top-level imports are re-exported from `govengine` and listed in
+Only the symbols listed in `govengine.v1` receive the 1.x compatibility
+promise. Other policy helpers are module-scoped or classified legacy exports;
+the exact classification is in
 [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md).
 
 ## Request and verdict (schema `v0.1`)
@@ -303,8 +305,8 @@ verify SCLite artifacts, or prove that a host enforced projected controls.
 | Condition | Verdict |
 | --- | --- |
 | `action.unsafe_execution_shape` or `context.execution.unsafe_execution_shape` | `deny` / `unsafe_execution_shape` |
-| `action.destructive` without a bound approval attestation | `deny` / `destructive_action_without_approval_evidence` |
-| mutating action on `resource.criticality: critical` without a bound approval attestation | `approval_required` / `critical_mutating_action_requires_approval` |
+| `action.destructive` | `deny` / `destructive_action_without_approval_evidence`; this PolicyEngine invariant does not consume or accept approval evidence |
+| mutating action on `resource.criticality: critical` | `approval_required` / `critical_mutating_action_requires_approval`; the canonical governance evaluator may satisfy it with a validated `ApprovalAttestation` |
 | no matching rule | `deny` / `no_matching_policy_rule` |
 
 When multiple rules match, evaluation order is: **deny** → **approval_required** → **allow_with_obligations** → first **allow**.
@@ -353,7 +355,7 @@ canonical evidence and review artifacts.
 
 ## Boundary (non-claims)
 
-GovEngine policy MVP does **not**:
+GovEngine PolicyEngine does **not**:
 
 - own Tecrax/Ravenclaw domain semantics or profile YAML meaning
 - run operator approval workflows or persist audit ledgers (see `govengine.admission` ports)
@@ -361,12 +363,11 @@ GovEngine policy MVP does **not**:
 - authorize live subprocess/SSH/API execution by itself
 - claim that a projected control was enforced by a host runner
 
-Hosts remain responsible for mapping runtime events into `PolicyRequest` and
-acting on verdicts under their own operator and storage controls. Legacy
-strings in `evidence_refs`, admission digests, and context booleans do not prove
-approval and do not release a critical mutation; the compatibility path remains
-`approval_required` until the versioned bound approval-attestation contract is
-implemented.
+Hosts remain responsible for mapping runtime facts into `PolicyRequest` and
+acting on verdicts under their own operator and storage controls. PolicyEngine
+does not interpret strings, admission digests, or context booleans as approval.
+The canonical governance evaluator validates the implemented, independently
+bound `ApprovalAttestation` contract when an operation requires approval.
 
 ## Related
 

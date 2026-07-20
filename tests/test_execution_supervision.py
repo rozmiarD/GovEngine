@@ -472,7 +472,7 @@ def test_runner_supervision_docs_record_local_runner_readiness_decision() -> Non
         'enforced environment allowlist semantics',
         'maximum-output enforcement',
         'redaction policy/hook',
-        'GE-032 must not add a live subprocess backend',
+        'must not be interpreted as permission to add a live subprocess backend',
         'DryRunRunner',
     )
 

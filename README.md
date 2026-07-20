@@ -57,22 +57,18 @@ Used together, a profile describes what an operation means, RExecOp prepares
 and executes it, GovEngine decides whether the exact attempt may proceed, and
 SCLite makes the resulting lifecycle and evidence independently verifiable.
 
-```mermaid
-flowchart LR
-    Profile["Domain profile<br/>(for example Tecrax)"]
-    Runtime["RExecOp<br/>runtime and execution"]
-    Governance["GovEngine<br/>governance decision"]
-    Truth["SCLite<br/>truth and verification"]
-
-    Profile -->|"intents, workflows,<br/>connector contracts"| Runtime
-    Runtime -->|"bounded GovernanceRequest<br/>attempt + lease + fencing + inventory"| Governance
-    Governance -->|"GovernanceDecision<br/>allowed / approval_required / denied"| Runtime
-    Runtime -->|"terminal RuntimeReceiptBinding"| Governance
-    Governance -->|"obligation conformance result"| Runtime
-    Runtime -->|"lifecycle, receipt and<br/>evidence artifacts"| Truth
-    Truth -->|"verification result"| Runtime
-
-    Runtime -.->|"verify signature, claim once,<br/>issue permit, execute I/O"| Runtime
+```text
+Domain profile                 meaning, workflows, connector contracts
+      |
+      v
+RExecOp                        lifecycle, lease/fencing, permit, I/O
+      |  +---- request / terminal facts -----> GovEngine
+      |  <---- decision / conformance result -+  policy, approval, scope,
+      |                                           capabilities
+      |
+      +---- final lifecycle/evidence --------> SCLite
+                                                  lifecycle/evidence truth
+                                                  and verification
 ```
 
 The canonical integration order is documented in
@@ -97,7 +93,7 @@ The canonical integration order is documented in
    verification.
 
 GovEngine runs inside the host process. A compromised host can bypass the
-library or fabricate inputs, so malicious-host resistance is not claimed.
+kernel or fabricate inputs, so malicious-host resistance is not claimed.
 
 ## What GovEngine provides
 

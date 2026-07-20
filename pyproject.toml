@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "govengine"
 version = "1.0.0rc1"
-description = "Carrier-agnostic artifact governance and controlled-execution services that consume SCLite contract lifecycle artifacts."
+description = "In-process Python governance kernel for deterministic policy, approval, scope, and capability decisions."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

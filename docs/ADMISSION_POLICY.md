@@ -1,9 +1,13 @@
 # Admission Policy Contracts
 
+> Compatibility reference. These pre-v1 admission and audit records still
+> ship outside `govengine.v1`; they are not the canonical v1 authorization
+> protocol.
+
 `govengine.admission` defines neutral admission, policy, approval, and audit
 record contracts for host runtimes.
 
-`govengine.policy` adds a deterministic **PolicyEngine MVP** (request/verdict
+`govengine.policy` provides the deterministic typed PolicyEngine (request/verdict
 contracts, declarative pack compiler, fail-closed runtime). See
 [POLICY_ENGINE.md](POLICY_ENGINE.md). Admission record validators remain
 separate from domain policy meaning: hosts map verdicts into `GovPolicyDecision`

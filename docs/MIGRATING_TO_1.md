@@ -17,7 +17,7 @@ python -m pip install \
 RExecOp `0.3.0rc3` remains an exact-pinned source candidate and is not promoted
 to a public or 1.0 line by the GovEngine publication.
 
-## Stable import boundary
+## Candidate 1.x import boundary
 
 Only the 40 exports listed in the wheel-shipped
 `govengine/v1_compatibility_manifest.json` receive the 1.x compatibility
@@ -35,7 +35,7 @@ from govengine.v1 import (
 
 Do not infer stability from a symbol being available at the package root.
 Legacy root imports, experimental modules, fixtures, runtime-shell, lifecycle,
-OODA and supervision records remain outside the stable v1 facade.
+OODA and supervision records remain outside the frozen candidate v1 facade.
 
 ## Governance flow
 

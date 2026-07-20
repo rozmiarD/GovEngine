@@ -1,39 +1,32 @@
-# Independent v1 contract security review
+# GovEngine v1 independent review
 
-`v1-contract-review.json` is the release-gating record for an independent
-semantic review of the GovEngine v1 governance contracts. Automated tests,
-CodeQL and dependency audit are required evidence, but they do not replace
-this review.
+The v1 contract review is complete. The machine-readable record is
+`v1-contract-review.json` and reports:
 
-The immutable baseline, reproduction commands and required scope are collected
-in [v1-review-package.md](v1-review-package.md).
+- reviewer: `ExatronOmega`;
+- status: `independent_reviewed`;
+- reviewed contract baseline:
+  `bd7ac496006bd8447f6722fb346e0033815aac64`;
+- open P0 findings: `0`;
+- open P1 findings: `0`.
 
-The reviewer should inspect at least:
+The review covers governance request/approval bindings, policy activation,
+scope/capability independence, signed-decision handoff, RExecOp pre-I/O claim,
+terminal-runtime-fact conformance, bounded JSON/reason codes, SCLite ownership
+and the malicious-host non-claim.
 
-- `GovernanceRequest`, approval, scope and capability binding completeness;
-- policy activation, validity and epoch drift;
-- decision authorization lifetime and attempt/runtime/lease/fencing/inventory
-  bindings;
-- signature/trust and consume-once ownership;
-- receipt-to-decision/runtime-permit binding and postconditions;
-- bounded JSON, reason-code and explanation leakage behavior;
-- TCB and malicious-host non-claims;
-- RExecOp shared conformance and pre-I/O claim enforcement;
-- SCLite freeze/ownership boundaries.
-
-To close the gate, set:
-
-- `status` to `independent_reviewed`;
-- a reviewer identity and organization/reference;
-- `reviewed_commit` to the full immutable GovEngine commit;
-- `completed_at` to an aware UTC timestamp;
-- every finding with severity and disposition;
-- `open_p0` and `open_p1` to zero.
-
-Then run:
+Validate the committed record with:
 
 ```bash
+python scripts/validate_v1_security_review.py
 python scripts/validate_v1_security_review.py --require-independent
 ```
 
-Self-review by the implementing agent does not satisfy this record.
+The first command is the normal structural CI gate. The second is the release
+gate and currently passes. Neither command substitutes for reviewing later
+contract changes. The reviewed baseline, RC-window baseline, release-tag commit
+and later documentation commits have distinct roles; tags and signed review
+records must not be rewritten to make them identical.
+
+See [v1-review-package.md](v1-review-package.md) for immutable review inputs and
+[../../PUBLISHING.md](../../PUBLISHING.md) for the release procedure.

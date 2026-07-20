@@ -1,5 +1,9 @@
 # Inspect-Only Admission Workflow
 
+> Compatibility operator reference for `RuntimeAdmissionResult`. This read-only
+> path remains outside `govengine.v1`, is not the canonical v1 governance flow
+> and cannot authorize execution.
+
 This document defines the operator-facing inspect workflow for
 `RuntimeAdmissionResult` records. The workflow is read-only: it validates and
 summarizes an admission record without executing work.

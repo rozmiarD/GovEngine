@@ -1,5 +1,9 @@
 # Event Model
 
+> Legacy experimental compatibility surface. RExecOp owns current runtime event
+> ingestion, lifecycle and scheduling mechanics. These records remain outside
+> `govengine.v1` and the canonical v1 authorization path.
+
 GovEngine event contracts are neutral metadata for orchestration and review. They are not a scheduler, queue, carrier payload, credential container, subprocess request, or live execution instruction.
 
 ## What Events Are

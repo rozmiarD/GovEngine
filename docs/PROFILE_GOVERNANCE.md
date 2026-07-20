@@ -1,5 +1,8 @@
 # Profile governance projection (G3)
 
+> Compatibility integration reference outside `govengine.v1`; it does not
+> transfer profile semantics or runtime connector ownership to GovEngine.
+
 GovEngine G3 adds a side-effect-free profile governance projection and a
 profile/connector compatibility report for M4 developer-surface work.
 

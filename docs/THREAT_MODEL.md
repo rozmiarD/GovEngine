@@ -2,10 +2,10 @@
 
 ## Scope and security objective
 
-GovEngine is an in-process deterministic governance library. Its security
+GovEngine is an in-process deterministic governance kernel. Its security
 objective is to make one policy/approval/scope/capability decision
 machine-checkable and digest-bound so a cooperating runtime can enforce it
-immediately before I/O and validate the resulting receipt.
+immediately before I/O and check terminal runtime facts against the decision.
 
 GovEngine is not a sandbox, remote authorization service, identity provider,
 secret store, network proxy or execution runtime.
@@ -25,7 +25,7 @@ The effective trusted computing base (TCB) includes:
 - SCLite for final artifact canonicalization, lifecycle and proof verification.
 
 A malicious or fully compromised in-process host can skip GovEngine, replace
-its inputs, ignore its decision or fabricate a receipt. The library does not
+its inputs, ignore its decision or fabricate a receipt. The kernel does not
 claim resistance to that attacker. Isolation against a malicious host requires
 a separately protected service/process, independent identity and enforcement
 boundary, which are outside 1.0.

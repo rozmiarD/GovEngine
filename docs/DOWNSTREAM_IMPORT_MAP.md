@@ -4,9 +4,10 @@ This snapshot records the live GovEngine imports used by the current RExecOp
 and Tecrax source trees. It is migration evidence, not a promise that every
 legacy import will enter the stable facade.
 
-Baseline checked on 2026-07-20:
+Baseline checked on 2026-07-20. Documentation-only GovEngine commits after the
+API scan do not change this inventory:
 
-- GovEngine `7a0a53d` plus the documentation corrections in this working tree;
+- GovEngine v1/API inventory from the `1.0.0rc1` source line;
 - RExecOp `a3e6404`;
 - Tecrax `a870658`.
 

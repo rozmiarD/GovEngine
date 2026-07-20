@@ -1,221 +1,220 @@
-# GovEngine Publishing Checklist
+# GovEngine publishing
 
-GovEngine is preparing its first stable v1 contract line. Use this checklist
-for release candidates and stable releases without overstating whole-stack
-maturity.
+This is the operator procedure for release candidates and stable GovEngine
+releases. It describes the repository as it exists; release history belongs in
+[CHANGELOG.md](CHANGELOG.md).
 
-Current candidate line: `govengine==1.0.0rc1` with final `sclite-core==2.0.0`.
-Current published PyPI line: `govengine==1.0.0rc1`. Older alpha releases are archived only.
+## Current state
 
-`1.0.0rc1` was independently reviewed and published on 2026-07-20 through the
-tag-confirmed OIDC workflow. Its public observation window is active until
-2026-07-27T17:39:58.058090Z. Final `1.0.0` promotion remains fail-closed until
-that window is completed.
+- Source and published candidate: `govengine==1.0.0rc1`.
+- Exact dependency: `sclite-core==2.0.0`.
+- Review status: independently reviewed, with no open P0/P1 findings.
+- Publication: tag-bound GitHub OIDC workflow, run
+  [29764475143](https://github.com/rozmiarD/GovEngine/actions/runs/29764475143).
+- RC observation window: active until `2026-07-27T17:39:58.058090Z`.
 
-## Preflight
+The relevant commits have different roles and must not be conflated:
 
-- [ ] For maintainer releases from the operator-controlled publish tree, effective git identity is `Krzysztof Probola <32790662+rozmiarD@users.noreply.github.com>`; external contributors use their own GitHub-associated identity.
-- [ ] Published Git history is preserved after the one-time 2026-06-09 authorship normalization on `rozmiarD/GovEngine`: no further force-push, history rewrite, date rewrite, or tag rewrite to fix authorship/contribution graphs. Use corrective commits instead.
-- [ ] Published Git history is preserved: no force-push, history rewrite, date rewrite, or tag rewrite to fix authorship/contribution graphs. Use corrective commits instead.
-- [ ] `CHANGELOG.md`, `PUBLIC_STATUS.md`, `README.md`, `docs/VALIDATION.md`, `docs/ROADMAP.md`, `docs/API_BOUNDARY.md`, `govengine/surfaces.py`, and `pyproject.toml` agree on version/status and claim only tested behavior.
-- [ ] `python scripts/validate_public_truth.py` passes.
-- [ ] `python scripts/validate_api_stability.py` passes; run it with the RExecOp consumer root for coordinated releases.
-- [ ] `python scripts/validate_v1_freeze.py`,
-  `python scripts/validate_rc_window.py`,
-  `python scripts/generate_conformance_corpus.py --check`, and
-  `python scripts/validate_workflow_security.py` pass.
-- [ ] `python scripts/validate_release_readiness.py` passes.
-- [ ] `python -m pytest -q` passes.
-- [ ] `python scripts/validate_clean_package_install.py --venv /tmp/govengine-clean-release --dev --sclite-source /path/to/SCLite --no-editable` passes from a new virtual environment path, including its isolated installed-package retirement smoke.
-- [ ] `scripts/verify_runner_receipt_binding.py` and `scripts/verify_audit_ledger.py` are treated as read-only verifier smoke helpers if their records are used as release evidence; they must not generate runner requests, append ledger records, or expose raw payloads.
-- [x] Maintainer/security review confirms there are no open P0/P1 security findings. Passing tests alone is not release approval when a P0/P1 finding is open.
-- [x] An independent reviewer completes
-  `docs/security-review/v1-contract-review.json`; release mode
-  `python scripts/validate_v1_security_review.py --require-independent` passes.
-- [ ] Downstream smoke evidence is classified before release: SCLite released-line is required, SCLite edge is pinned to a full commit SHA, and Ravenclaw/Tecrax host contract smokes remain external host-owned checks.
-- [ ] Build artifacts are generated from a clean tree.
-- [ ] No generated `build/`, `dist/`, `*.egg-info`, caches, private state, or Ravenclaw workspace files are committed unless intentionally package metadata.
+- `bd7ac496006bd8447f6722fb346e0033815aac64` is the independently reviewed
+  contract baseline;
+- `0b5d483f1259aef681521a185e0cdfb19a538314` is the frozen RC-window baseline;
+- `33aefcd386351be622794e10cf5c43c8e812d6bc` is the immutable `v1.0.0rc1`
+  release-tag commit;
+- later `main` commits may change documentation or non-frozen fixes, but may not
+  silently change the frozen facade, schemas, corpus, or reason registry.
 
-## PyPI release notes
+## Release train
 
-- SCLite is published as the PyPI distribution `sclite-core`; the public
-  `1.0.0rc1` release candidate depends on final `sclite-core==2.0.0`.
-  Archived `0.16.11` remains available with its historical
-  `sclite-core==1.0.9` dependency.
-- Initial public GovEngine version was `0.1.0` because the API/runner/OODA surface was documented but still pre-alpha.
-- `0.1.3` is the artifact-governance control-gate line: core artifact state/transition objects, lifecycle status bridge, signing/trust bridge, dry-run execution gate, deconfliction, and state index. It still does not claim live execution backend ownership.
-- `0.1.4` is the API surface registry/security-profile separation line: it names neutral core surfaces separately from optional Ravenclaw-style security helpers and still does not claim adapter or live execution ownership.
-- `0.1.6` consumes `sclite-core>=0.3.5,<0.4`, keeps the security-profile facade boundary, and adds thin SCLite v0.3 scoped-ticket / receipt-bounded-evidence gate delegation while keeping adapters/live execution out of scope.
-- `0.1.7` consumes `sclite-core>=0.5.1,<0.6` and adds thin SCLite review-bundle delegation for GovEngine integration fixtures while keeping adapters/live execution out of scope.
-- `0.2.0` is the kernel-boundary freeze line: boundary reports, domain-profile conformance, orchestration handoffs, governance events, run-state transitions, and between-step control decisions. It does not add live execution, queue/scheduler ownership, carrier adapters, runtime persistence, or credential handling.
-- `0.3.0` is the runtime-shell line: neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata. It does not add queue persistence, scheduler ownership, Logdash/UI ownership, carrier adapters, credentials, live commands, or live execution.
-- `0.4.0` is the planning-contracts line: neutral task-contract, plan-intent, and planner-port validators. It does not add planner implementation ownership, Ravenclaw security planning semantics, raw target/prompt ownership, queues, schedulers, storage, adapters, credentials, commands, or live execution.
-- `0.5.0` is the admission-policy line: neutral admission decisions, policy decisions, approval requests, and audit records. It does not add profile policy meaning, approval workflow, audit storage, adapters, credentials, commands, or live execution.
-- `0.6.0` is the runner-supervision line: neutral runner leases, supervision plans, supervision decisions, and approved-spec request/receipt validation. It does not add concrete runner behavior, scheduler ownership, carrier adapters, credentials, storage, or live execution.
-- `0.7.0` is the evidence-review line: neutral evidence requirements, claims, qualifications, and review results. It does not add SCLite verdict ownership, Ravenclaw finding taxonomy, raw evidence storage, adapters, credentials, commands, or live execution.
-- `0.7.1` is the public-truth and boundary-hardening stabilization line. It should not add broad new runtime features.
-- `0.8.0` is the minimal Domain Profile SDK line: contract-only profile declarations and Ravenclaw/Tecrax fixture profiles. It does not add domain taxonomy ownership, carrier adapters, credentials, product UX, or live execution.
-- `0.9.0` is the runtime contract proof line: public-safe Ravenclaw/Tecrax proof fixtures and neutral governance vocabulary over existing contracts. It does not add carrier adapters, credentials, schedulers, storage, live execution, or new OODA surfaces.
-- `0.10.0-alpha` is the alpha-readiness line: package metadata, build/install validation, public truth, runtime proof fixtures, and Ravenclaw downstream compatibility checks are aligned. It does not add carrier adapters, credentials, schedulers, storage, live execution, production readiness, public tags, or PyPI upload without operator approval.
-- `0.10.1-alpha` is the SCLite 0.6 alpha sync line: dependency truth, public status, validators, and downstream compatibility checks move to `sclite-core>=0.6.0a0,<0.7` without expanding GovEngine's runtime ownership.
-- `0.10.2-alpha` is the SCLite 0.7 surface-collapse sync line: it adds a scoped-ticket lifecycle projection for active review-bundle consumers while SCLite retains artifact/review verdict ownership.
-- `0.11.0-alpha` consumes the SCLite 0.8 retired-legacy surface and removes the Ravenclaw-shaped lifecycle projection from GovEngine after Ravenclaw takes ownership of that mapping.
-- `0.12.0-alpha` is the published API-narrowing line that removes the Ravenclaw-derived optional security facade and helper modules while preserving the neutral kernel surfaces.
-- `0.12.1-alpha.1` is the guarded-bundle runtime gate line: it consumes SCLite `0.8.0-beta`, composes guarded-strict verification with replay freshness, and requires guarded+fresh status for runtime-consumable execution gates.
-- API stability and non-claims should remain explicit because this is pre-1.0.
+Publish in dependency order:
 
-## Release order
-
-1. SCLite: published as `sclite-core`.
-2. GovEngine: published as `govengine` after SCLite became installable as a package dependency.
-3. Ravenclaw: publishes narrow `ravenclaw-security` helper/profile package lines while the full runtime remains source/reference-owned.
-
-## Validation before a tag
-
-```bash
-python scripts/validate_clean_package_install.py \
-  --venv /tmp/govengine-clean-release \
-  --dev \
-  --sclite-source /path/to/SCLite \
-  --no-editable
+```text
+sclite-core 2.0.0     truth/contracts; published and frozen
+        |
+        v
+govengine 1.0.0rc1    governance; published RC
+        |
+        v
+rexecop 0.3.0rc3      reference runtime; source candidate
+        |
+        v
+tecrax 0.4.0rc3       profile; source candidate
 ```
 
-This clean-install script is the local dependency-consistency gate. Do not use
-`pip check` from a broad system interpreter as release evidence.
+Ravenclaw is a legacy/external consumer, not the next package in the current
+release train. A downstream release must consume the exact already-published
+upstream versions; it does not authorize changing upstream ownership.
 
-Optional wheel build/install check in another new virtual environment:
-
-```bash
-python -m venv /tmp/govengine-wheel-smoke
-/tmp/govengine-wheel-smoke/bin/python -m pip install --upgrade pip build twine
-/tmp/govengine-wheel-smoke/bin/python -m pip install /path/to/SCLite
-/tmp/govengine-wheel-smoke/bin/python -m build
-/tmp/govengine-wheel-smoke/bin/python -m twine check dist/*
-/tmp/govengine-wheel-smoke/bin/python -m pip install dist/*.whl
-/tmp/govengine-wheel-smoke/bin/python -m pip check
-```
-
-Do not upload to PyPI or create public tags until the operator explicitly approves the release action.
-
-## Trusted Publishing
+## External configuration
 
 `.github/workflows/publish.yml` is the only repository workflow allowed to
-upload GovEngine. It is manual, requires a version tag plus matching
-`publish-<tag>` confirmation, binds OIDC to the named `pypi` environment and
-requests a short-lived token (`id-token: write`). Configure that exact
-owner/repository/workflow/environment tuple as a PyPI Trusted Publisher before
-use.
+upload GovEngine. PyPI Trusted Publishing must bind:
 
-The workflow builds once, runs contract gates, uploads the distributions as an
-Actions artifact, creates GitHub build-provenance attestations and publishes
-through the official PyPI action. It carries no long-lived PyPI token and does
-not use `skip-existing`. The explicit release instruction remains mandatory;
-GitHub environment protection rules are an optional repository policy.
+- owner `rozmiarD`;
+- repository `GovEngine`;
+- workflow `publish.yml`;
+- environment `pypi`;
+- project `govengine`.
 
-### One-time external setup
+The GitHub `pypi` environment must exist. Repository reviewers or branch rules
+are optional policy, not an OIDC protocol requirement. Do not add a `PYPI_API_TOKEN` secret. The workflow requests a short-lived token with
+`id-token: write`, builds once, attests those distributions, and publishes the
+same artifacts without `skip-existing`.
 
-Before the first v1 upload, the release operator must verify both external
-trust anchors:
+## Prepare the release commit
 
-1. GitHub repository environment `pypi` exists so its name is included in the
-   OIDC identity. Required reviewers or branch restrictions are optional
-   repository policy and are not a PyPI protocol requirement.
-2. PyPI has a Trusted Publisher for owner `rozmiarD`, repository `GovEngine`,
-   workflow `publish.yml`, environment `pypi`, and package `govengine`.
+1. Work on the intended `main` commit with a clean tree and synchronized
+   `origin/main`.
+2. Use the maintainer identity
+   `Krzysztof Probola <32790662+rozmiarD@users.noreply.github.com>` for
+   maintainer releases. External contributors keep their own GitHub identity.
+3. Never force-push, rewrite published history, rewrite dates, or move an
+   existing release tag. Use a corrective commit and a new version.
+4. Align version and status in `pyproject.toml`, `govengine/__init__.py`,
+   `CHANGELOG.md`, `README.md`, `PUBLIC_STATUS.md`, this file,
+   `docs/ROADMAP.md`, `docs/VALIDATION.md`, validators, tests, and the RC-window
+   record when applicable.
+5. Keep dependency pins exact. A coordinated dependency change must update and
+   validate SCLite, GovEngine, RExecOp, and Tecrax in dependency order.
+6. Confirm the independent review record and zero open P0/P1 findings. Tests do
+   not replace release approval.
 
-Do not add a `PYPI_API_TOKEN` secret. The expected path is the short-lived OIDC
-identity requested by `.github/workflows/publish.yml`.
+Build artifacts must come from a clean release commit. Generated `build/`,
+`dist/`, `*.egg-info`, caches, private state, and external workspaces are not
+release source.
 
-### Release-candidate execution
+## Required gates
 
-The implementing agent cannot substitute for the independent reviewer. Before
-tagging, the committed review record must pass:
+Run the source parity gate:
 
 ```bash
-python scripts/validate_v1_security_review.py --require-independent
-python scripts/validate_rc_window.py
+bash scripts/run_ci_parity_checks.sh
 ```
 
-The RC-window status must be `prepared` before first publication; preparation
-time is not public observation time. With explicit operator approval, create
-and push the immutable version tag, then dispatch the workflow on that tag:
+Then run the release-only gates:
 
 ```bash
-git tag -a v1.0.0rc1 -m "GovEngine 1.0.0rc1"
-git push origin v1.0.0rc1
+.venv/bin/python scripts/validate_v1_freeze.py
+.venv/bin/python scripts/generate_conformance_corpus.py --check
+.venv/bin/python scripts/validate_workflow_security.py
+.venv/bin/python scripts/validate_v1_security_review.py --require-independent
+.venv/bin/python scripts/validate_api_stability.py \
+  --consumer-root /path/to/rexecop \
+  --consumer-root /path/to/tecrax
+.venv/bin/python scripts/validate_clean_package_install.py \
+  --venv /tmp/govengine-clean-release \
+  --dev \
+  --sclite-source /path/to/sclite \
+  --no-editable
+git diff --check
+```
+
+For an RC, `python scripts/validate_rc_window.py` must pass. RC-window status must be `prepared` before first publication. For stable promotion,
+`python scripts/validate_rc_window.py --require-completed` must pass.
+
+The clean-install script is the dependency-consistency gate. Do not use
+`pip check` from a broad system interpreter as release evidence.
+Passing these gates does not create whole-stack production-readiness claims.
+
+## Build and inspect distributions
+
+```bash
+rm -rf dist build *.egg-info
+.venv/bin/python -m build
+.venv/bin/python -m twine check dist/*
+python -m venv /tmp/govengine-wheel-smoke
+/tmp/govengine-wheel-smoke/bin/python -m pip install --upgrade pip
+/tmp/govengine-wheel-smoke/bin/python -m pip install dist/*.whl
+/tmp/govengine-wheel-smoke/bin/python -m pip check
+/tmp/govengine-wheel-smoke/bin/python -c \
+  "import importlib.metadata as m, govengine; print(m.version('govengine'), govengine.__version__)"
+sha256sum dist/*
+```
+
+Confirm that wheel and sdist contain the compatibility manifest and conformance
+corpus and contain no repository-only, private, cached, or secret material.
+
+## Tag and publish
+
+Tagging and publication require explicit operator approval. Set the intended
+version and verify that it matches `pyproject.toml`:
+
+```bash
+VERSION=1.0.0rc1
+TAG="v${VERSION}"
+test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+test -z "$(git status --porcelain)"
+git tag -a "$TAG" -m "GovEngine ${VERSION}"
+git push origin "$TAG"
 gh workflow run publish.yml \
-  --ref v1.0.0rc1 \
-  -f confirm_release=publish-v1.0.0rc1
+  --ref "$TAG" \
+  -f confirm_release="publish-${TAG}"
 gh run watch --exit-status
 ```
 
-After PyPI serves the uploaded artifact, update the RC-window record to
-`active`: set `published_at` from the public release, set
-`observation_ends_at` to exactly seven days later, and record a non-empty
-public evidence reference. The following gate must then pass:
+Never recreate `v1.0.0rc1`; the commands above show the completed RC procedure.
+A later release uses its own new version and immutable tag.
+
+## Post-publish verification
+
+The current GovEngine workflow publishes and attests but does not run an
+automatic public-index install job. Until that workflow gains a post-publish
+gate, the following verification is mandatory and manual:
+
+```bash
+VERSION=1.0.0rc1
+python -m venv /tmp/govengine-public-release
+/tmp/govengine-public-release/bin/python -m pip install --upgrade pip
+/tmp/govengine-public-release/bin/python -m pip install \
+  --index-url https://pypi.org/simple \
+  --no-cache-dir \
+  "sclite-core==2.0.0" \
+  "govengine==${VERSION}"
+/tmp/govengine-public-release/bin/python -m pip check
+/tmp/govengine-public-release/bin/python -c \
+  "import importlib.metadata as m, govengine, sclite; print(m.version('govengine'), govengine.__version__, sclite.__version__)"
+```
+
+Record the tag, commit, workflow run, PyPI URL, wheel/sdist SHA-256 values,
+provenance reference, clean-install result, and exact downstream RExecOp commit.
+RExecOp must resolve GovEngine and SCLite from the public index and pass the
+shared governance conformance/G6 gate. Tecrax evidence is required only when
+the coordinated profile release is in scope.
+
+For an RC, set the checked-in RC record to `active` using PyPI's first artifact
+timestamp, an observation end exactly seven days later, and a public evidence
+reference. Then require:
 
 ```bash
 python scripts/validate_rc_window.py --require-published
 ```
 
-For `1.0.0rc1`, publication workflow
-[`29764475143`](https://github.com/rozmiarD/GovEngine/actions/runs/29764475143)
-completed successfully. PyPI recorded the first artifact at
-`2026-07-20T17:39:58.058090Z`; the active window therefore ends exactly seven
-days later at `2026-07-27T17:39:58.058090Z`. A clean downstream environment
-built RExecOp `0.3.0rc3` from commit
-`5e2e757183fcc0b56d36bdbc8f790a33d4af7202`, resolved GovEngine and SCLite
-from PyPI, passed `pip check`, and passed all ten G6 behavior cases.
+Evidence discovered after tagging belongs in a normal follow-up commit; never
+move the release tag to include it.
 
-### Public-index evidence and stable promotion
+## Stable promotion
 
-Reproduce the public dependency chain without local GovEngine wheels or Git
-URLs:
+Stable `1.0.0` remains blocked until at least seven complete days have elapsed
+from the RC `published_at` time and all of the following remain true:
 
-```bash
-python -m venv /tmp/govengine-public-rc
-/tmp/govengine-public-rc/bin/python -m pip install --upgrade pip
-/tmp/govengine-public-rc/bin/python -m pip install \
-  --index-url https://pypi.org/simple \
-  --no-cache-dir \
-  "sclite-core==2.0.0" \
-  "govengine==1.0.0rc1"
-/tmp/govengine-public-rc/bin/python -m pip check
-/tmp/govengine-public-rc/bin/python -c \
-  "import govengine, sclite; print(govengine.__version__, sclite.__version__)"
-```
+- the RC record is `completed` with an aware `completed_at`;
+- frozen facade/schema/corpus/reason inputs have not drifted;
+- the independent review still reports zero open P0/P1 findings;
+- public-index installation and RExecOp consumption remain reproducible;
+- source truth, changelog, version metadata, and release evidence are aligned.
 
-Install the exact RExecOp consumer candidate from its immutable source archive
-in a second clean environment while resolving its exact GovEngine and SCLite
-dependencies from the public index. Run the RExecOp G6 gate and record commit,
-artifact hashes, public package URLs and CI run URLs in the release evidence.
+After `python scripts/validate_rc_window.py --require-completed` passes, prepare
+and review a separate `1.0.0` release commit, rerun every gate, and use the same
+tag-confirmed OIDC workflow with `v1.0.0`.
 
-The stable release must not be prepared until at least seven complete days
-have elapsed from `published_at`, the frozen inputs still match, public-index
-evidence remains reproducible, and no independent-review P0/P1 is open. Mark
-the window `completed`, set an aware `completed_at`, and require:
+## Failure handling
 
-```bash
-python scripts/validate_rc_window.py --require-completed
-```
+- Before upload: fix forward, rerun gates, and create the tag only after the
+  release commit is final.
+- After tag but before upload: do not move the tag; use a new version/tag.
+- After upload: PyPI artifacts are immutable. Document the issue, yank only
+  when justified, fix forward, and publish a new version.
+- A contract, schema, corpus, or reason-registry change during an RC window
+  requires a new RC and a new observation record.
 
-Only then may the same tag-confirmed workflow be used for `v1.0.0`, after the
-source version, public truth and immutable release evidence are updated in a
-separate reviewed commit.
-
-## Downstream compatibility smoke gates
-
-GovEngine release checks may validate downstream compatibility, but production
-code must stay host-neutral:
-
-- Required: SCLite released-line smoke in a clean environment using the
-  supported `sclite-core` package range.
-- Optional/coordinated: SCLite main smoke during dependency waves. Treat it as
-  an early warning unless the release target explicitly updates the supported
-  dependency line.
-- External/manual: Ravenclaw, Tecrax, or other host contract smokes. Those
-  checks prove package consumption and host adapter compatibility without
-  adding host imports to GovEngine.
-
-These smokes support a release decision. They do not publish, tag, upload,
-enable live execution, or make production-readiness claims.
+Publishing does not certify production safety of the whole stack and does not
+grant legal or operational authorization.

@@ -1,5 +1,10 @@
 # Runtime Admission Contract
 
+> Legacy governed-runtime composition adapter outside `govengine.v1`. The
+> canonical attempt path is `GovernanceRequest -> GovernanceDecision -> RExecOp
+> claim/permit -> terminal runtime facts`. This document exists for consumers
+> that still read `RuntimeAdmissionResult`.
+
 `RuntimeAdmissionResult` is the legacy governed-runtime composition adapter.
 It remains useful for inspect/review and existing ticket/guard workflows, but
 it is not the canonical v1 authorization path. Controlled connector attempts
@@ -217,8 +222,9 @@ envelope:
   unsafe metadata, missing affected references, limit violations or drift
   between request and admission.
 
-RExecOp remains responsible for watchdog mechanics and worker/inbox/queue
-state. SCLite remains responsible for watchdog decision truth artifacts.
+RExecOp remains responsible for watchdog mechanics, watchdog decision records,
+and worker/inbox/queue state. SCLite 2.0 does not define watchdog contracts; it
+remains responsible for the final lifecycle and evidence truth artifacts.
 
 ### Supervisor Action Explanation
 

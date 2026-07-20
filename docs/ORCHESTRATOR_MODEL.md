@@ -27,7 +27,10 @@ The host runtime owns concrete operation:
 - carrier delivery;
 - concrete execution.
 
-GovEngine can say which decision or receipt should come next. The runtime decides when and where work is scheduled, how operators see it, which carrier transports it, and whether credentials or live execution are available.
+The compatibility record can declare required decisions and expected boundary
+outputs. RExecOp owns traversal and decides which runtime step comes next,
+when and where work is scheduled, how operators see it, which carrier
+transports it, and whether credentials or live execution are available.
 
 ## Orchestration Step
 

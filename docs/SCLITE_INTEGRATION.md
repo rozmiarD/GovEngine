@@ -1,170 +1,65 @@
-# GovEngine and SCLite Integration
+# GovEngine and SCLite
 
-GovEngine consumes [SCLite](https://github.com/rozmiarD/SCLite) as its contract lifecycle layer.
+GovEngine depends exactly on the PyPI distribution `sclite-core==2.0.0`; the
+Python import package is `sclite`.
 
-SCLite answers: **what artifacts prove the governed lifecycle?**
-GovEngine answers: **how does a runtime prepare, check, and consume those artifacts safely?**
-
-## Dependency
-
-`pyproject.toml` depends on the published SCLite package distribution:
-
-```toml
-sclite-core==2.0.0
-```
-
-The PyPI distribution name is `sclite-core`; the Python import package remains `sclite`.
-
-This keeps the dependency direction explicit:
+The dependency exists because the projects cooperate, not because they share
+ownership:
 
 ```text
-GovEngine -> SCLite
+GovEngine  governance decision over one bounded attempt
+SCLite     canonical lifecycle/evidence artifacts and their verification
+RExecOp    runtime lifecycle, artifact projection and execution
 ```
 
-## Lifecycle relationship
+## Current v1 seam
 
-SCLite models the lifecycle as schema-backed artifacts and review bundles:
+RExecOp supplies GovEngine with bounded attempt facts and opaque references to
+runtime-owned bytes. GovEngine evaluates policy, approval, scope and
+capabilities and returns `GovernanceDecision`. After execution it checks
+terminal runtime facts against that decision. RExecOp then projects the final
+lifecycle, receipt and evidence artifacts that SCLite verifies.
 
-```text
-intent_contract
--> policy_decision
--> execution_contract
--> execution_ticket
--> execution_receipt
--> evidence_contract
--> artifact_chain_manifest
--> review_record / review bundle
-```
+GovEngine does not:
 
-GovEngine currently provides helpers around the runtime-facing parts of that lifecycle:
+- define or extend SCLite schemas;
+- reproduce SCLite canonical JSON or artifact hashing;
+- verify SCLite lifecycle chains, Kernel Guard, ticket use or review bundles as
+  its own authority;
+- create SCLite receipts/evidence or store raw evidence;
+- replace RExecOp's runtime artifact projection.
 
-- approved-spec and execution-ticket validation helpers;
-- execution-contract shaping and redaction through `govengine.contracts.execution`;
-- dry-run result assembly;
-- host-provided policy and trust decision shape validation through `govengine.admission` and `govengine.signing` (GovEngine does not own domain policy meaning);
-- integration seams for SCLite lifecycle/review verification;
-- guarded-root replay checks for optional SCLite `kernel_guard_hmac_v1`
-  sidecars after SCLite has verified the HMAC guard;
-- `ReplayClaimStore`, a host-neutral claim-once replay freshness port, plus an
-  in-memory development adapter for deterministic local smoke tests;
-- `verify_guard_and_record_replay()`, a high-level adapter that verifies the
-  SCLite guarded-strict profile and then records replay freshness for one
-  runtime-consumable decision;
-- review-bundle verdict mapping through final `sclite-core==2.0.0` review and guarded-strict surfaces, preserving the review-bundle contract.
+SCLite does not evaluate GovEngine policy, approval, scope or capability
+meaning and does not perform runtime claim, lease, fencing or I/O.
 
-GovEngine canonical lifecycle state names are `verified_chain` and
-`verified_lifecycle`. Legacy `chain_verified` and `lifecycle_verified` inputs
-are accepted through `canonical_lifecycle_state()` only as migration shims for
-older Ravenclaw-style consumers. New code and docs must use the canonical
-SCLite-facing names.
+## Digest boundary
 
-Host-owned artifact projection is outside GovEngine. A runtime such as
-Ravenclaw constructs its domain-shaped lifecycle artifacts before consuming
-neutral GovEngine gates and SCLite review/verification services.
+Complete GovEngine-owned records are recomputed with GovEngine's record digest
+rules. SCLite artifact digests and verification results are delegated inputs;
+GovEngine does not reinterpret their canonicalization. See
+[DIGEST_OWNERSHIP.md](DIGEST_OWNERSHIP.md).
 
-## What GovEngine does not replace
+## Compatibility bridges
 
-GovEngine does not replace SCLite schemas, lifecycle verification, artifact
-integrity checks, Kernel Guard HMAC verification, Scope Fidelity checks, or
-review-bundle verdict semantics. Those stay in SCLite.
+`govengine.sclite_contracts` and older replay/admission/review helpers still
+ship for compatibility. They call published SCLite verification/review
+functions or map their outcomes into legacy GovEngine records. SCLite remains
+the authority for every underlying check.
 
-GovEngine's replay helper records observed guarded roots (`root_tag`,
-`chain_id`, ticket/run id, and `key_id`) through a host-supplied state store so
-a runtime can reject reuse in require-fresh mode. It does not store HMAC keys,
-verify tags, or make public PKI claims.
+Legacy lifecycle names `verified_chain` and `verified_lifecycle`, plus migration
+aliases `chain_verified` and `lifecycle_verified`, describe compatibility
+projection state only. They are not a second lifecycle truth model and are not
+part of the canonical v1 authorization protocol.
 
-Production replay freshness should be exposed to GovEngine through a
-claim-once adapter: the first claim for a guarded root or guarded payload can be
-accepted, and later claims for the same replay key must be rejected by the
-host-owned atomic store. `InMemoryReplayClaimStore` is deterministic but
-development-only. `record_guard_replay_file()` remains a local JSON helper and
-is not a production atomic store, database, or concurrency boundary.
-Replay matching prefers the guarded payload digest plus ticket or chain scope
-and key id. The root-tag compatibility fallback is scoped by `chain_id` and
-`key_id` so unrelated domains or key namespaces do not collide.
+`ReplayClaimStore` expresses host-owned claim-once state for already verified
+legacy guarded roots. Its in-memory adapter is development-only. It does not
+verify HMAC, hold keys or provide production atomic storage.
 
-Replay-store responsibilities are split deliberately:
+## Freeze rule
 
-- GovEngine owns the bounded replay record, decision, and claim-once port
-  shapes.
-- SCLite owns guarded bundle and Kernel Guard verification before replay is
-  considered.
-- `InMemoryReplayClaimStore` and `record_guard_replay_file()` are local
-  development helpers for tests and smoke evidence only.
-- Hosts own atomic production persistence, locking, transaction isolation,
-  multi-process concurrency, retention, deletion policy, and recovery.
+SCLite 2.0 is frozen. GovEngine changes must use its existing public contracts.
+A proposed new SCLite schema or semantic change is a stop condition requiring a
+concrete cross-stack blocker, ownership analysis and separate review.
 
-Runtime-consumable artifacts should use this posture with
-`runtime_consumable=True` on the admission composition inputs:
-
-```text
-strict lifecycle pass
-kernel_guard_hmac_v1 pass in SCLite
-replay fresh in GovEngine
-policy/ticket/trust gates pass
-runtime_consumable=True for guarded/replay blockers
-```
-
-`compose_runtime_admission_result()` consumes bounded gate summaries. It does
-not call SCLite verification or record replay state itself. Hosts should obtain
-guarded-strict and replay summaries first — for example through
-`verify_guard_and_record_replay()` — and then pass those summaries into
-admission composition.
-
-GovEngine exposes two replay models:
-
-- `ReplayClaimStore` — host-owned claim-once replay freshness port with a
-  development-only in-memory adapter;
-- `verify_guard_and_record_replay()` — calls SCLite guarded-strict verification,
-  then records replay freshness through a host `GovStateStore` or compatible
-  adapter and returns one runtime decision.
-
-These are complementary: SCLite verifies guarded bundles; GovEngine records
-whether a guarded root or payload has already been consumed for runtime work.
-
-The legacy guarded/replay compatibility path is documented in
-[RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). The current v1 security order is
-documented in [SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md).
-
-GovEngine then keeps the runtime-consumption evidence chain bounded:
-
-```text
-RuntimeAdmissionResult
-  -> SCLite execution ticket / guarded verification reference
-  -> GovRunnerRequest
-  -> GovRunnerReceipt
-  -> GovEvidenceClaim / GovReviewResult references
-```
-
-`validate_runner_receipt_binding()` checks the GovEngine-owned admission,
-request, and receipt references plus SCLite/host ticket references. It compares
-SCLite ticket ids or digests only as bounded references; SCLite still owns
-ticket schema, canonicalization, guarded verification, artifact-chain
-verification, and review-bundle authority. `validate_evidence_review_chain()`
-then checks receipt/evidence/review references and receipt status bounds
-without storing raw evidence or re-deciding SCLite review verdicts.
-Allowed runtime-admission proof inputs require both ticket id and ticket digest
-or bounded ticket digest reference before a receipt/evidence path can be treated
-as complete.
-
-Review-only bundles may remain `integrity_only` or `strict_lifecycle`, but a
-runtime-consumable execution ticket must not be accepted from `validate-chain`
-alone.
-
-GovEngine also does not execute live targets by itself. RExecOp or another host
-runtime remains responsible for concrete execution adapters, artifact
-persistence, operator interaction, and bundle emission; SCLite remains the
-canonical artifact/review authority.
-
-## Why this split matters
-
-The split keeps responsibilities reviewable:
-
-- SCLite is the small auditable contract and integrity layer.
-- GovEngine is the reusable governance service layer that consumes those contracts.
-- RExecOp is the current domain-neutral runtime that wires governance decisions
-  into claim-once permits and bounded execution.
-- Tecrax is the current infrastructure-operations profile; Ravenclaw remains a
-  legacy consumer with its own domain runtime.
-
-This avoids turning one repository into a mixed contract/runtime/UI/protocol bundle and makes each layer easier to validate independently.
+The full evaluation order is in
+[SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md).

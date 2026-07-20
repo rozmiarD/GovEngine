@@ -43,11 +43,10 @@ def test_readme_is_human_facing_and_describes_the_unnamed_component_set() -> Non
         'It does not define artifact truth or verify lifecycle and evidence',
         'This\nset has no formal product name.',
         'Together they separate domain meaning,\ngovernance, execution and proof',
-        '```mermaid',
-        'Profile["Domain profile<br/>(for example Tecrax)"]',
-        'Runtime["RExecOp<br/>runtime and execution"]',
-        'Governance["GovEngine<br/>governance decision"]',
-        'Truth["SCLite<br/>truth and verification"]',
+        'Domain profile                 meaning, workflows, connector contracts',
+        'RExecOp                        lifecycle, lease/fencing, permit, I/O',
+        '+---- request / terminal facts -----> GovEngine',
+        '+---- final lifecycle/evidence --------> SCLite',
         '## Canonical governance flow',
         '## What GovEngine provides',
         '## What GovEngine does not do',
@@ -64,29 +63,20 @@ def test_readme_is_human_facing_and_describes_the_unnamed_component_set() -> Non
         'approved_spec_dry_run_result',
         '## Safety Boundary',
         '## Explicit Non-Claims',
+        '```mermaid',
         '```plantuml',
     ):
         assert stale not in readme
 
 
-def test_superseded_mvp_docs_are_archived_not_active() -> None:
+def test_archive_keeps_only_compact_release_history() -> None:
     readme = _read('README.md')
     docs_index = _read('docs/README.md')
 
-    for basename in (
-        'GOVERNED_RUNTIME_MVP_RUNBOOK.md',
-        'GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md',
-        'LOCAL_SUBPROCESS_RUNNER_DECISION.md',
-    ):
-        assert not (ROOT / 'docs' / basename).exists()
-        archived = ROOT / 'docs' / 'archive' / basename
-        assert archived.is_file()
-        assert f'archive/{basename}' in docs_index
-        assert f'docs/{basename}' not in readme
-
-    assert 'not the current v1 authorization procedure' in _read(
-        'docs/archive/GOVERNED_RUNTIME_MVP_RUNBOOK.md'
-    )
+    archive_names = sorted(path.name for path in (ROOT / 'docs' / 'archive').glob('*.md'))
+    assert archive_names == ['ROADMAP_VERSION_HISTORY.md']
+    assert 'archive/ROADMAP_VERSION_HISTORY.md' in docs_index
+    assert 'docs/archive/' not in readme
     assert 'superseded as the canonical authorization path' in _read(
         'docs/archive/ROADMAP_VERSION_HISTORY.md'
     )
@@ -135,12 +125,14 @@ def test_active_docs_track_release_candidate_and_current_stack_ownership() -> No
 
     assert 'public `1.0.0rc1` package has\npassed independent contract review' in docs['SECURITY.md']
     assert 'exact 40 exports' in docs['docs/API_COMPATIBILITY.md']
-    assert 'RExecOp is the current\ndomain-neutral runtime' in docs['docs/GOVENGINE_KERNEL_BOUNDARY.md']
-    assert 'Tecrax is the governed infrastructure-operations profile for RExecOp' in docs['docs/ROADMAP.md']
-    assert 'Receipt conformance is part of the\ncanonical package protocol but remains module-scoped' in docs['docs/ROADMAP.md']
+    assert 'RExecOp is the current domain-neutral runtime' in docs['docs/GOVENGINE_KERNEL_BOUNDARY.md']
+    assert 'Tecrax is a downstream profile.' in docs['docs/ROADMAP.md']
+    assert 'module-scoped terminal-runtime-fact conformance' in docs['docs/ROADMAP.md']
     assert 'for 80 unique import paths' in docs['docs/DOWNSTREAM_IMPORT_MAP.md']
     assert 'RExecOp owns current orchestration mechanics' in docs['docs/ORCHESTRATOR_MODEL.md']
     assert 'RExecOp owns the current operation\nlifecycle' in docs['docs/STATE_MACHINE.md']
+    assert 'RExecOp then projects the final' in docs['docs/SCLITE_INTEGRATION.md']
+    assert 'SCLite 2.0 is frozen.' in docs['docs/SCLITE_INTEGRATION.md']
 
 
 def test_docs_pin_canonical_lifecycle_vocabulary_and_legacy_alias_status() -> None:
@@ -176,6 +168,22 @@ def test_docs_classify_contract_proofs_as_conformance_artifacts_not_authority() 
     assert 'conformance artifacts' in boundary or 'proof fixtures' in boundary
     assert 'fixture' in matrix
     assert 'not production authority' in matrix or 'not production authority' in boundary or 'Non-claims' in boundary
+
+
+def test_compatibility_docs_do_not_claim_v1_authority() -> None:
+    for relative in (
+        'docs/ADMISSION_POLICY.md',
+        'docs/DOMAIN_PROFILE_CONTRACT.md',
+        'docs/EVENT_MODEL.md',
+        'docs/EVIDENCE_REVIEW.md',
+        'docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md',
+        'docs/PROFILE_GOVERNANCE.md',
+        'docs/RUNNER_SUPERVISION.md',
+        'docs/RUNTIME_ADMISSION.md',
+    ):
+        text = ' '.join(_read(relative).split()).lower()
+        assert 'compatibility' in text, relative
+        assert 'outside' in text and '`govengine.v1`' in text, relative
 
 
 def test_security_docs_pin_canonical_flow_and_malicious_host_non_claim() -> None:

@@ -15,9 +15,9 @@ do not apply when an in-process host bypasses or modifies GovEngine.
 | Scope is not self-authorized | Requested destination is compared with an independent scope policy | `test_scope_capabilities.py`, corpus |
 | Capabilities are operation-driven | Requirements and inventory are independent; host registration booleans fail | `test_scope_capabilities.py`, corpus |
 | Allowed decision is exact and short-lived | Authorization binds attempt/runtime/lease/fencing/spec/payload/scope/inventory/policy, nonce and expiry | `test_governance_decision.py` |
-| Replay is excluded by the runtime | RExecOp verifies signature/bindings/expiry and atomically claims digest plus nonce before I/O | RExecOp G3 and shared conformance gates |
+| Conforming runtime rejects replay | RExecOp verifies signature/bindings/expiry and atomically claims digest plus nonce before I/O | RExecOp G3 and shared conformance gates |
 | Receipt postconditions are bound | Runtime receipt binds decision, permit, attempt and governance facts; output digest/limit checked after I/O | `test_receipt_conformance.py`, corpus |
-| Stable public contract | 40-export facade and v1 record inventory are wheel-shipped and CI-frozen | `validate_api_stability.py`, `validate_v1_freeze.py` |
+| Frozen 1.0 candidate contract | 40-export facade and v1 record inventory are wheel-shipped and CI-frozen | `validate_api_stability.py`, `validate_v1_freeze.py` |
 
 ## Cryptographic and digest binding table
 

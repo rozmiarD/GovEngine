@@ -1,69 +1,78 @@
-# GovEngine documentation map
+# GovEngine documentation
 
-Start here when navigating `docs/`. Package-level status lives in
-[`../PUBLIC_STATUS.md`](../PUBLIC_STATUS.md); release facts in
-[`../CHANGELOG.md`](../CHANGELOG.md).
+Start with [the repository README](../README.md). Current package status is in
+[PUBLIC_STATUS.md](../PUBLIC_STATUS.md), release history in
+[CHANGELOG.md](../CHANGELOG.md), and the operator release procedure in
+[PUBLISHING.md](../PUBLISHING.md).
 
-## Tier 1 — package shape
+## Current v1 contract
 
-| Doc | Purpose |
-| --- | --- |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Layers, public surfaces, dependency direction |
-| [API_BOUNDARY.md](API_BOUNDARY.md) | Module/surface ownership (machine-checked vs registry) |
-| [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md) | Export stability classification |
-| [API_COMPATIBILITY.md](API_COMPATIBILITY.md) | 1.x facade/schema freeze, migration and deprecation policy |
-| [MIGRATING_TO_1.md](MIGRATING_TO_1.md) | Concrete archived 0.16.11 to public 1.0 RC migration and rollback guide |
-| [CONFORMANCE.md](CONFORMANCE.md) | Language-neutral v1 corpus and GovEngine/RExecOp runner ownership |
-| [../PUBLISHING.md](../PUBLISHING.md) | Fail-closed review, Trusted Publisher, tag, public smoke and RC-window procedure |
-| [THREAT_MODEL.md](THREAT_MODEL.md) | TCB, attacker model, trust boundaries and residual risks |
-| [SECURITY_GUARANTEES.md](SECURITY_GUARANTEES.md) | Tested guarantees, binding table and explicit non-claims |
-| [DOWNSTREAM_IMPORT_MAP.md](DOWNSTREAM_IMPORT_MAP.md) | RExecOp/Tecrax import inventory and migration posture |
-| [GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md) | Canonical G2-A request and approval binding |
-| [SCOPE_CAPABILITY_BINDINGS.md](SCOPE_CAPABILITY_BINDINGS.md) | Independent scope and capability inputs/decisions |
-| [GOVERNANCE_DECISION.md](GOVERNANCE_DECISION.md) | Canonical G2-C evaluator and attempt-bound authorization |
-| [GOVENGINE_KERNEL_BOUNDARY.md](GOVENGINE_KERNEL_BOUNDARY.md) | Kernel vs profile vs runtime vs SCLite |
-| [ROADMAP.md](ROADMAP.md) | Current 1.0 release-candidate line and near-term direction |
-| [VALIDATION.md](VALIDATION.md) | **Active** release and operator validation gate |
+- [ARCHITECTURE.md](ARCHITECTURE.md) — ownership, dependency direction and the
+  canonical governance flow.
+- [API_BOUNDARY.md](API_BOUNDARY.md) — stable-candidate, module-scoped and
+  compatibility surfaces.
+- [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md) — machine-checked
+  classification of every root export.
+- [API_COMPATIBILITY.md](API_COMPATIBILITY.md) — 1.x compatibility and
+  deprecation rules.
+- [GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md) — request and approval
+  bindings.
+- [GOVERNANCE_DECISION.md](GOVERNANCE_DECISION.md) — deterministic decision and
+  attempt-bound authorization.
+- [POLICY_ENGINE.md](POLICY_ENGINE.md) — policy language, compiler, evaluator
+  and explanations.
+- [SCOPE_CAPABILITY_BINDINGS.md](SCOPE_CAPABILITY_BINDINGS.md) — independent
+  scope and capability decisions.
+- [RECEIPT_CONFORMANCE.md](RECEIPT_CONFORMANCE.md) — post-I/O obligation checks
+  over bounded terminal runtime facts.
+- [CONFORMANCE.md](CONFORMANCE.md) — shared governance-protocol corpus.
+- [SCLITE_INTEGRATION.md](SCLITE_INTEGRATION.md) — the GovEngine/SCLite
+  ownership seam.
 
-## Tier 2 — active and compatibility operator references
+## Security and operations
 
-| Doc | Purpose |
-| --- | --- |
-| [SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md) | Required security evaluation order |
-| [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md) | Legacy `RuntimeAdmissionResult` compatibility plus supervisor admission/explain |
-| [POLICY_ENGINE.md](POLICY_ENGINE.md) | `govengine.policy` MVP and **policy explain/simulate (G1)** |
-| [ADMISSION_POLICY.md](ADMISSION_POLICY.md) | Admission/audit record validators |
-| [RECEIPT_BINDING.md](RECEIPT_BINDING.md) | Runner receipt binding |
-| [EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md) | Evidence/review chain + OODA receipt bounds |
-| [INSPECT_ONLY_ADMISSION_WORKFLOW.md](INSPECT_ONLY_ADMISSION_WORKFLOW.md) | Read-only admission CLI |
-| [RUNNER_SUPERVISION.md](RUNNER_SUPERVISION.md) | Runner supervision + live-runner safety |
-| [SCLITE_INTEGRATION.md](SCLITE_INTEGRATION.md) | How GovEngine consumes SCLite |
+- [SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md) — required cross-component
+  evaluation order.
+- [THREAT_MODEL.md](THREAT_MODEL.md) — TCB, adversaries and residual risks.
+- [SECURITY_GUARANTEES.md](SECURITY_GUARANTEES.md) — tested guarantees and
+  explicit non-claims.
+- [DIGEST_OWNERSHIP.md](DIGEST_OWNERSHIP.md) — recomputed, delegated,
+  reference-only and produced digests.
+- [VALIDATION.md](VALIDATION.md) — active local, CI, package and release gates.
+- [DOWNSTREAM_IMPORT_MAP.md](DOWNSTREAM_IMPORT_MAP.md) — RExecOp/Tecrax consumer
+  inventory.
+- [MIGRATING_TO_1.md](MIGRATING_TO_1.md) — migration from the archived 0.16
+  line.
+- [ROADMAP.md](ROADMAP.md) — RC completion, stable promotion and bounded
+  post-1.0 work.
+- [security-review/README.md](security-review/README.md) — independent v1 review
+  evidence.
 
-## Tier 3 — neutral contract models
+## Compatibility references
 
-| Doc | Module focus |
-| --- | --- |
-| [ORCHESTRATOR_MODEL.md](ORCHESTRATOR_MODEL.md) | `govengine.orchestration` |
-| [EVENT_MODEL.md](EVENT_MODEL.md) | `govengine.events` |
-| [STATE_MACHINE.md](STATE_MACHINE.md) | `govengine.state_machine` |
-| [CONTROL_MODEL.md](CONTROL_MODEL.md) | `govengine.control` |
-| [RUNTIME_SHELL.md](RUNTIME_SHELL.md) | `govengine.runtime_shell` |
-| [DOMAIN_PROFILE_CONTRACT.md](DOMAIN_PROFILE_CONTRACT.md) | `govengine.profiles` |
+The following pages document APIs that still ship but are outside
+`govengine.v1`: [RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md),
+[RECEIPT_BINDING.md](RECEIPT_BINDING.md),
+[ADMISSION_POLICY.md](ADMISSION_POLICY.md),
+[EVIDENCE_REVIEW.md](EVIDENCE_REVIEW.md),
+[RUNNER_SUPERVISION.md](RUNNER_SUPERVISION.md),
+[INSPECT_ONLY_ADMISSION_WORKFLOW.md](INSPECT_ONLY_ADMISSION_WORKFLOW.md),
+[DOMAIN_PROFILE_CONTRACT.md](DOMAIN_PROFILE_CONTRACT.md),
+[PROFILE_GOVERNANCE.md](PROFILE_GOVERNANCE.md),
+[ORCHESTRATOR_MODEL.md](ORCHESTRATOR_MODEL.md),
+[EVENT_MODEL.md](EVENT_MODEL.md), [STATE_MACHINE.md](STATE_MACHINE.md),
+[CONTROL_MODEL.md](CONTROL_MODEL.md), and [RUNTIME_SHELL.md](RUNTIME_SHELL.md).
 
-Planning contracts (`GovTaskContract`, `GovPlanIntentContract`, `PlannerPort`) are
-documented under **Planning-contracts core** in [API_BOUNDARY.md](API_BOUNDARY.md#planning-contracts-core).
+These are compatibility/migration references, not the current authorization
+protocol and not a claim that GovEngine owns runtime mechanics.
 
 ## Archive
 
-Historical material kept for audit evidence, not as the active gate:
+[archive/ROADMAP_VERSION_HISTORY.md](archive/ROADMAP_VERSION_HISTORY.md) is a
+compact index of superseded release lines. Detailed history remains available
+in Git and `CHANGELOG.md`; obsolete operator procedures are intentionally not
+kept as runnable documentation.
 
-| Doc | Contents |
-| --- | --- |
-| [archive/VALIDATION_HISTORY.md](archive/VALIDATION_HISTORY.md) | Per-release validation records |
-| [archive/ROADMAP_VERSION_HISTORY.md](archive/ROADMAP_VERSION_HISTORY.md) | Delivered `0.2.x`–`0.11.x` milestones |
-| [archive/GOVERNED_RUNTIME_MVP_RUNBOOK.md](archive/GOVERNED_RUNTIME_MVP_RUNBOOK.md) | Superseded 0.14 `RuntimeAdmissionResult` operator chain |
-| [archive/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md](archive/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md) | Legacy guarded/replay admission example |
-| [archive/LOCAL_SUBPROCESS_RUNNER_DECISION.md](archive/LOCAL_SUBPROCESS_RUNNER_DECISION.md) | Historical GE-032 no-runner decision evidence |
-
-When docs disagree, trust `scripts/validate_public_truth.py` and the current
-sections of [VALIDATION.md](VALIDATION.md) over archived records.
+When prose disagrees with executable truth, use package metadata, compatibility
+manifests, validators, tests and workflows, then fix the prose and anti-drift
+gate together.

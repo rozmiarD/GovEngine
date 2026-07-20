@@ -78,16 +78,14 @@ def test_public_truth_validator_rejects_stale_current_roadmap_baseline() -> None
         )
 
 
-def test_public_truth_validator_rejects_validation_history_before_current_gate() -> None:
+def test_public_truth_validator_rejects_history_in_active_validation_runbook() -> None:
     validator = _load_validator()
 
-    with pytest.raises(AssertionError, match='current_gate_not_before_history'):
+    with pytest.raises(AssertionError, match='historical_records_in_active_runbook'):
         validator._assert_validation_current_gate_precedes_history(
-            '## Historical validation records\n'
-            'Historical expected result for the published `0.1.7` source line:\n'
-            '## Current package-line gate\n'
+            '## Current package evidence\n'
             'Expected result for the current `0.16.5` package line\n'
-            'not the active gate\n',
+            '## Historical validation records\n',
             '0.16.5',
         )
 
@@ -98,7 +96,7 @@ def test_public_truth_validator_rejects_unscoped_current_pip_check_guidance() ->
     with pytest.raises(AssertionError, match='unscoped_pip_check_guidance'):
         validator._assert_clean_pip_check_guidance(
             'python -m pip check\n',
-            '## Current package-line gate\n',
+            '## Current package evidence\n',
             'clean release guidance\n',
         )
 
@@ -152,72 +150,65 @@ def test_public_truth_validator_rejects_stale_publishing_dependency_line(monkeyp
         validator._assert_no_published_line_candidate_drift(('PUBLISHING.md',))
 
 
-def test_public_truth_validator_tracks_g1_g2_explain_doc_markers() -> None:
+def test_public_truth_validator_tracks_selected_current_contract_markers() -> None:
     validator = _load_validator()
 
-    validator._assert_g1_g2_explain_doc_truth({
-        'docs/RUNTIME_ADMISSION.md': (
-            'explain_supervisor_action()',
-            'govengine-supervisor explain request.json --json',
+    validator._assert_current_contract_docs({
+        'docs/API_BOUNDARY.md': (
+            '`govengine.v1` exports exactly 40 names',
+            'Root compatibility surface',
         ),
     })
 
 
-def test_public_truth_validator_rejects_missing_g1_g2_explain_doc_marker(
+def test_public_truth_validator_rejects_missing_current_contract_marker(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     validator = _load_validator()
 
     def fake_read(path: str) -> str:
-        if path == 'docs/POLICY_ENGINE.md':
-            return 'PolicyEngine without explain CLI.'
+        if path == 'docs/API_BOUNDARY.md':
+            return 'A boundary without the compatibility classification.'
         return ''
 
     monkeypatch.setattr(validator, '_read', fake_read)
 
     with pytest.raises(
         AssertionError,
-        match='docs/POLICY_ENGINE.md:missing:govengine-policy explain policy.json request.json --json',
+        match='docs/API_BOUNDARY.md:missing:Root compatibility surface',
     ):
-        validator._assert_g1_g2_explain_doc_truth({
-            'docs/POLICY_ENGINE.md': (
-                'govengine-policy explain policy.json request.json --json',
-                'PolicyEvaluationExplanation',
+        validator._assert_current_contract_docs({
+            'docs/API_BOUNDARY.md': (
+                'Root compatibility surface',
             ),
         })
 
 
-def test_public_truth_validator_tracks_current_mvp_surface_docs() -> None:
+def test_public_truth_validator_tracks_current_architecture_docs() -> None:
     validator = _load_validator()
 
-    validator._assert_mvp_surface_docs({
-        'docs/RUNTIME_ADMISSION.md': ('RuntimeAdmissionResult', 'Intent is not execution authority.'),
-        'docs/RECEIPT_BINDING.md': ('GovRunnerReceiptBinding', 'validate_runner_receipt_binding()'),
-        'docs/EVIDENCE_REVIEW.md': ('validate_evidence_review_chain()',),
-        'docs/ADMISSION_POLICY.md': ('AuditLedgerPort', 'JsonlAuditLedgerAdapter'),
-        'docs/SCLITE_INTEGRATION.md': ('ReplayClaimStore', 'claim-once adapter'),
-        'docs/RUNNER_SUPERVISION.md': ('Live Runner Safety Specification', 'LocalSubprocessRunner'),
-        'docs/SECURITY_INTEGRATION.md': ('SCLite secure verification', 'not proof and not execution authority'),
+    validator._assert_current_contract_docs({
+        'docs/ARCHITECTURE.md': ('Canonical v1 flow', 'RExecOp', 'GovEngine', 'SCLite'),
+        'docs/SCLITE_INTEGRATION.md': ('SCLite 2.0 is frozen.',),
     })
 
 
-def test_public_truth_validator_rejects_missing_mvp_surface_doc_marker(
+def test_public_truth_validator_rejects_missing_architecture_marker(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     validator = _load_validator()
 
     def fake_read(path: str) -> str:
-        if path == 'docs/RUNTIME_ADMISSION.md':
-            return 'RuntimeAdmissionResult without the core invariant.'
+        if path == 'docs/ARCHITECTURE.md':
+            return 'Architecture without the canonical flow.'
         return ''
 
     monkeypatch.setattr(validator, '_read', fake_read)
 
-    with pytest.raises(AssertionError, match='docs/RUNTIME_ADMISSION.md:missing:Intent is not execution authority'):
-        validator._assert_mvp_surface_docs({
-            'docs/RUNTIME_ADMISSION.md': (
-                'RuntimeAdmissionResult',
-                'Intent is not execution authority.',
+    with pytest.raises(AssertionError, match='docs/ARCHITECTURE.md:missing:Canonical v1 flow'):
+        validator._assert_current_contract_docs({
+            'docs/ARCHITECTURE.md': (
+                'Canonical v1 flow',
             ),
         })
 

@@ -1,300 +1,103 @@
-# GovEngine API Boundary
+# GovEngine API boundary
 
-GovEngine owns reusable governed-execution services. Its public surface should stay carrier-neutral and SCLite-aware.
+The public package has two different meanings of "available": a small frozen
+1.0 candidate contract and a broad pre-v1 compatibility surface. Consumers must
+not treat root availability as a stability promise.
 
-The top-level export classification lives in [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md). It covers the current `govengine.__all__` surface as `v1-candidate`, `adapter`, `experimental`, `fixture`, or `remove`, and separately inventories compatibility callables exposed outside `__all__`. `python scripts/validate_api_stability.py` derives counts from the rows, rejects undocumented module-owned callables, duplicate classifications, missing owner/migration notes and facade drift, and optionally scans consumer roots. The verified RExecOp/Tecrax usage snapshot lives in [DOWNSTREAM_IMPORT_MAP.md](DOWNSTREAM_IMPORT_MAP.md).
+## 1.x candidate facade
 
-`govengine.v1` is the small frozen 1.0 release-candidate facade. It exports only
-the structured API envelope, deterministic PolicyEngine compilation,
-evaluation and enforcement contracts, approval attestation, the canonical
-governance request and decision/evaluator, and governance trace projection. It is
-the only surface receiving the 1.x compatibility promise and intentionally
-excludes runtime mechanics, SCLite bridges, typed-execution compatibility
-records, profile fixtures and demo signing helpers.
+`govengine.v1` exports exactly 40 names from these owners:
 
-`govengine.surfaces.public_surface_index()` is the tested machine-readable map
-of the current release-candidate package surface set. Its legacy surface
-entries remain alpha-labelled and outside the v1 stability promise. The
-current release-candidate line retains the prior removal of the Ravenclaw-derived
-optional security facade; domain behavior belongs in profiles and execution
-belongs in host runtimes.
-`govengine.boundary.kernel_boundary_report()` is the tested machine-readable boundary report (schema `v0.1`). It combines the kernel/profile/runtime/SCLite ownership contract, known domain-profile contracts such as Ravenclaw, and the current public surface index.
-`govengine.boundary.validate_domain_profile_conformance()` checks that a domain profile does not claim forbidden ownership and consumes only known GovEngine/SCLite surfaces.
-`govengine.orchestration.validate_orchestration_step()` checks deterministic orchestration handoff records without granting agent-loop, scheduler, UI, carrier, credential, or live-execution authority.
-`govengine.events.validate_event_envelope()` checks transport-neutral governance event metadata without accepting raw prompts, credentials, live commands, carrier payloads, or scheduling claims.
-`govengine.state_machine.validate_state_transition()` checks neutral run-state transitions without accepting runtime storage, scheduler, credential, command, or live-execution claims.
-`govengine.replay.record_guard_replay()` checks and records SCLite Kernel Guard root tags through a host-supplied state store without verifying HMAC tags, storing keys, or replacing SCLite guard verification. `govengine.replay.ReplayClaimStore` expresses host-owned claim-once replay freshness semantics; the in-memory adapter is development-only and not production atomic storage. `govengine.replay.verify_guard_and_record_replay()` is the high-level runtime adapter: it calls SCLite's guarded-strict verification profile, then records replay freshness and returns one runtime decision.
-`govengine.control.validate_control_decision()` checks deterministic between-step control decisions and delegates legal state changes to the state machine without accepting raw prompts, commands, schedulers, runtime storage, delivery, or live-execution claims.
-`govengine.runtime_shell.validate_runtime_snapshot()` checks host-provided control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without accepting raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
-`govengine.planning.validate_task_contract()` and `validate_plan_intent_contract()` check neutral planner-to-runtime handoff shapes without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims.
-`govengine.admission.validate_admission_decision()`, `validate_policy_decision()`, `policy_verdict_to_gov_policy_decision()`, `validate_approval_request()`, `validate_audit_record()`, `validate_audit_ledger_entry()`, `validate_audit_ledger_append_result()`, `validate_audit_ledger_verification_result()`, `validate_runtime_admission_result()`, `compose_runtime_admission_result()`, and `validate_runtime_admission_proof_inputs()` check neutral runtime gate and audit-ledger port records without accepting raw targets, raw prompts, commands, storage, schedules, credentials, carrier payloads, or live-execution claims. `compose_runtime_admission_result()` composes host-supplied summaries; it does not verify SCLite tickets or record replay state. `govengine.policy.validate_policy_request()`, `validate_policy_verdict()`, `PolicyCompiler`, and `PolicyEngine` provide deterministic declarative policy evaluation without owning domain semantics or live execution. `govengine.automation.validate_automation_transition_request()` and `admit_automation_transition()` check child-operation planning admission over bounded SCLite `automation_chain.v0.1` refs, depth and child budgets, allowed child intent classes, approval refs, and LLM proposal-only constraints without traversing RExecOp graphs, creating operations, executing work, or validating SCLite artifact storage.
-`govengine.execution.supervision.validate_supervised_runner_request()`,
-`validate_runner_receipt_for_request()`, and
-`validate_runner_receipt_binding()` check approved-spec runner supervision,
-receipt, and bounded admission/ticket/request/receipt binding boundaries without
-accepting raw intent or granting live backend ownership.
-`govengine.review.qualify_evidence_claim()` checks neutral evidence claims against receipt bounds and the bounded `evidence_kind` requirement without accepting raw targets, raw output, commands, credentials, storage, carrier payloads, or live-execution claims.
-`govengine.governance_trace.project_governance_trace()` projects digest-bound policy request, verdict, enforcement plan, admission, required controls and evidence requirements for truth-path consumers without storing SCLite artifacts or executing work.
-`govengine.profiles.validate_profile_conformance()` checks contract-only domain profile declarations without granting domain taxonomy, carrier adapter, credential, product UX, or live-execution ownership.
-`govengine.contract_proofs.validate_runtime_contract_proof()` checks public-safe multi-profile contract proof fixtures without granting adapter, credential, scheduler, storage, live-execution, or new OODA ownership.
+- `govengine.api`;
+- `govengine.approvals`;
+- `govengine.governance`;
+- `govengine.governance_decision`;
+- `govengine.governance_trace`;
+- `govengine.policy`.
 
-`GovApiError` exposes a fixed machine-readable `reason_code` and bounded
-`context`. Dynamic values are separated into context; they are not part of the
-reason-code identifier. Digest handling follows
-[`DIGEST_OWNERSHIP.md`](DIGEST_OWNERSHIP.md): full GovEngine-owned records are
-recomputed, while SCLite/host-owned payloads remain delegated or
-reference-only.
+The exact symbols and 15 GovEngine-owned v1 records are recorded in
+`govengine/v1_compatibility_manifest.json`. The manifest status is
+`frozen_for_1.0`; `scripts/validate_v1_freeze.py` and
+`scripts/validate_api_stability.py` reject drift.
 
-Host-owned lifecycle projection is outside GovEngine. RExecOp maps current
-runtime payloads into SCLite artifacts and owns its proof projection; legacy
-Ravenclaw consumers retain their own projection;
-GovEngine retains only neutral SCLite descriptor/state/transition and
-review-bundle verdict mapping while SCLite owns lifecycle/review verification.
+The facade owns deterministic governance records and decisions. It does not
+include runtime mechanics, SCLite bridges, fixtures or compatibility adapters.
 
-## Public surface groups
+## Module-scoped v1 records
 
-### Artifact-governance core
+The v1 record inventory also includes module-scoped contracts for:
 
-Neutral core modules:
+- policy activation and reason-code registry;
+- independent scope policy and scope decision;
+- operation capability requirements, inventory binding and compatibility;
+- attempt-bound governance authorization;
+- `RuntimeReceiptBinding` and `ReceiptConformanceResult`.
 
-- `govengine.boundary`
-- `govengine.core`
-- `govengine.sclite_contracts`
-- `govengine.lifecycle`
-- `govengine.signing`
-- `govengine.deconfliction`
-- `govengine.state_index`
-- `govengine.state_machine`
-- `govengine.state_store`
-- `govengine.replay`
+These records are part of the protocol implemented by the RC, but their module
+imports are not yet part of the capped `govengine.v1` facade.
 
-Claim: portable kernel/profile boundary contracts, artifact descriptor/state/transition, lifecycle and review-bundle bridges, signing/trust decision, GovEngine-owned record serialization/digests/signed envelopes, guarded-root replay checks, claim-once replay-store port shapes, guarded-bundle runtime decision assembly, deconfliction, and state-index helpers. Non-claims: SCLite schema/canonicalization/review ownership, SCLite Kernel Guard HMAC verification ownership, PKI/key-store ownership, raw artifact storage ownership, production replay persistence/atomicity ownership, workflow scheduler ownership.
+## Root compatibility surface
 
-### Planning-contracts core
+The machine-checked root inventory currently contains:
 
-Neutral planning-contract modules:
+- 40 `v1-candidate` exports;
+- 188 adapter exports;
+- 61 experimental exports;
+- 19 fixture exports;
+- 3 module-owned compatibility callables exposed outside `__all__`.
 
-- `govengine.planning`
+The exact per-module classification and migration note lives in
+[API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md). Legacy admission, audit,
+review, planning, lifecycle, runner, OODA, orchestration, events, state machine,
+runtime shell, profile fixtures and SCLite bridge helpers remain outside the
+1.x promise. Contract-proof objects are conformance artifacts and proof
+fixtures, not production authority.
 
-Objects: `GovTaskContract`, `GovPlanIntentContract`, and `PlannerPort` describe
-planner-to-runtime handoff shapes. Hosts provide redacted `target_ref` values
-rather than raw targets.
-
-Claim: neutral task-contract, plan-intent, and planner-port validators that hosts can use for planner-to-runtime handoff review. Non-claims: planner implementation ownership, Ravenclaw security planning semantics ownership, raw target/prompt ownership, queue/scheduler/storage ownership, protocol adapter ownership, command authority, or live execution.
-
-### Admission-policy core
-
-Neutral admission-policy modules:
-
-- `govengine.admission`
-- `govengine.policy`
-- `govengine.automation`
-- `govengine.automation_explain`
-
-Claim: neutral admission-decision, runtime-admission, policy-decision, approval-request, audit-record, audit-ledger port validators, **PolicyEngine request/verdict/compiler/runtime**, child-operation planning admission and redacted automation explanation, and a JSONL hash-chain development adapter that hosts can use for runtime gate and audit-chain review. Non-claims: domain policy meaning ownership, operator approval workflow ownership, production audit storage, retention, locking, or concurrency ownership, raw target/prompt ownership, queue/scheduler/storage ownership, graph traversal, child-operation creation, protocol adapter ownership, command authority, or live execution.
-
-### Evidence-review core
-
-Neutral evidence-review modules:
-
-- `govengine.review`
-
-Claim: neutral evidence-requirement, evidence-claim, evidence-qualification, review-result, and evidence-review-chain validators that hosts can use for receipt-bounded post-execution review. Non-claims: SCLite review-bundle verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage ownership, raw target/output ownership, protocol adapter ownership, command authority, or live execution.
-
-### Domain-profile SDK
-
-Contract-only domain-profile modules:
-
-- `govengine.profiles`
-
-Claim: minimal domain-profile declarations, registry shapes, Ravenclaw/Tecrax fixture profiles, and conformance reports that hosts can use to bind domain meaning around GovEngine. Non-claims: domain taxonomy ownership, Ravenclaw finding taxonomy ownership, Tecrax infrastructure semantics ownership, product UX, credential/PKI/KMS/key-store ownership, protocol adapter ownership, default live subprocess execution, command authority, or live execution.
-
-### Runtime contract proofs
-
-Neutral runtime-proof modules:
-
-- `govengine.contract_proofs`
-
-Claim: public-safe Ravenclaw and Tecrax proof fixtures, treated as conformance artifacts, plus neutral governance vocabulary over existing planning, runner supervision, runtime snapshot, review-result, and artifact change-order contracts. Non-claims: carrier adapter ownership, domain runtime ownership, scheduler/queue/storage ownership, credential/PKI/KMS/key-store ownership, default live subprocess execution, command authority, live execution, runtime authorization, or a new OODA surface.
-
-### Controlled-execution core
-
-Neutral controlled-execution modules:
-
-- `govengine.execution.*`
-- `govengine.scope_ports`
-- `govengine.contracts.execution`
-- `govengine.ooda`
-- `govengine.orchestration`
-- `govengine.events`
-- `govengine.control`
-- `govengine.runtime_shell`
-
-Claim: approved-spec, execution-ticket, command-shape, runner receipt, runner supervision, OODA, orchestration handoff, event envelope, control-decision, runtime-shell projection, and dry-run-only execution-gate helpers. Non-claims: raw-intent execution, default live subprocess execution, live backend ownership, scanner/campaign execution ownership, protocol adapter ownership, runtime storage ownership, or scheduler ownership.
-
-## Owns
+## Ownership rules
 
 GovEngine owns:
 
-- `govengine.boundary` — serializable kernel/profile/runtime/SCLite ownership contracts and profile-boundary validation helpers.
-- `govengine.core` — portable artifact descriptors/envelopes/state, governance context, transition decisions, reason codes, and execution-prerequisite guardrails.
-- `govengine.deconfliction` / `govengine.state_index` — digest/state conflict, change-order, and lightweight artifact state summary helpers.
-- `govengine.state_machine` — neutral run-state and transition validation without persistence, queue, scheduler, credential, or live-execution authority.
-- `govengine.control` — deterministic between-step control decisions that can apply validated in-memory state transitions without storage, scheduler, delivery, command, or live-execution authority.
-- `govengine.runtime_shell` — neutral host control actions, queue snapshots, runtime snapshots, and scheduler-tick metadata without storage, scheduler, delivery, command, credential, carrier, or live-execution authority.
-- `govengine.planning` — neutral task-contract, plan-intent, and planner-port validators without planner implementation, raw target/prompt, queue/scheduler/storage, command, credential, adapter, or live-execution authority.
-- `govengine.admission` — neutral admission-decision, runtime-admission, policy-decision, approval-request, audit-record, audit-ledger port validators, and JSONL hash-chain development adapter without domain policy meaning, approval workflow, production audit storage/concurrency, command, credential, protocol adapter, or live-execution authority.
-- `govengine.automation` / `govengine.automation_explain` — child-operation
-  planning admission and redacted explanations over bounded automation-chain
-  refs, depth/child budgets, allowed child intent classes, approval refs, and
-  LLM proposal-only constraints without RExecOp runtime mutation, SCLite truth
-  verification, graph traversal, command, credential, protocol adapter, or
-  live-execution authority.
-- `govengine.review` — neutral evidence-requirement, evidence-claim, evidence-qualification, review-result, and evidence-review-chain validators without SCLite review verdict ownership, Ravenclaw finding taxonomy ownership, raw evidence storage, command, credential, adapter, or live-execution authority.
-- `govengine.profiles` — contract-only domain profile declarations, registries, fixture profiles, and conformance reports without domain taxonomy, product UX, credential, adapter, or live-execution ownership.
-- `govengine.contract_proofs` — public-safe runtime contract proof fixtures treated as conformance artifacts and neutral governance vocabulary over existing contracts without adapter, credential, scheduler, storage, live-execution, runtime authorization, domain runtime, or new OODA ownership.
-- `govengine.lifecycle` — lightweight artifact lifecycle transition policy/gate/controller helpers with canonical `verified_chain` / `verified_lifecycle` state names and legacy alias migration only.
-- `govengine.signing` — signature envelopes, signed GovEngine-owned record envelopes, signing/trust policy objects, GovEngine-owned record serialization/digest helpers, host-provided signer/verifier/key-resolver/trust-store ports, deterministic demo signer/verifier fixture ports, and signature transition decisions without PKI/key ownership.
-- `govengine.contracts.execution` — execution-contract shaping and redaction helpers.
-- `govengine.execution.*` — approved-spec, ticket, command-shape, dry-run helpers, and controlled execution gates that keep live backends disabled by default.
-- `govengine.orchestration` — deterministic orchestration handoff contracts without scheduler, UI, adapter, credential, or live-execution authority.
-- `govengine.events` — transport-neutral governance event metadata and envelope validation without scheduler, carrier, credential, or command payload authority.
-- `govengine.scope_ports` — neutral scope-port protocol and host extraction helper used by controlled-execution contracts.
-- `govengine.state_store` — neutral JSON state helper primitives.
-- `govengine.replay` — guarded SCLite root replay records, claim-once replay-store port contracts, and fresh/replayed decisions over host-supplied state without HMAC verification, key storage, runtime storage ownership, production database ownership, or replay policy beyond the supplied store.
-- `govengine.sclite_contracts` — explicit integration seams with SCLite, including descriptor/status/transition mapping that delegates lifecycle verification and review-bundle verdicts to SCLite.
+- typed policy compilation/evaluation and policy controls;
+- approval requirements and attestation validation;
+- bounded governance request/decision records;
+- scope and capability compatibility decisions;
+- stable reason codes, redacted explanations and governance traces;
+- conformance of bounded terminal runtime facts to a decision.
 
-## Consumes
+GovEngine consumes but does not own:
 
-GovEngine consumes:
+- SCLite schemas, artifact canonicalization, lifecycle/evidence integrity,
+  receipts, review bundles or verification verdicts;
+- RExecOp execution specifications, payload bytes, fencing tokens, runtime
+  permits, lifecycle state, queues, leases, retries, connectors or I/O;
+- profile domain taxonomy, intents, workflow meaning or connector semantics;
+- host identity, trust roots, approval workflow, storage and clocks.
 
-- SCLite schemas, lifecycle helpers, review-bundle helpers, and verification surfaces;
-- host-provided filesystem/context paths;
-- host-provided inputs required by neutral runtime ports and contracts.
+`govengine_record_digest()` is limited to GovEngine-owned records. SCLite and
+RExecOp digests stay delegated or reference-only according to
+[DIGEST_OWNERSHIP.md](DIGEST_OWNERSHIP.md).
 
-## Does not own
+## Compatibility and removal
 
-GovEngine must not own Ravenclaw-specific runtime/application concerns:
+An existing root symbol may move or disappear only after its classification,
+consumer scan, migration note and compatibility policy permit it. New work must
+not expand the legacy root. Supported 1.x imports use `govengine.v1`; optional
+module-scoped additions require an explicit API decision and conformance
+evidence.
 
-- Logdash UI/API routes;
-- Ravenclaw public snapshot assembly/publishing scripts;
-- OpenClaw session wiring;
-- BRAIN/AUDITOR/ANALYSIS/LIGHT prompts/personas;
-- LLM provider configuration;
-- PKI, CA, KMS, key storage, trust-store ownership, or production identity proof;
-- protocol adapters such as MCP/A2A;
-- live target campaign orchestration UX;
-- public demo branding/docs owned by Ravenclaw.
+RExecOp and Tecrax import scans run with:
 
-## Demo signing fixture rule
+```bash
+python scripts/validate_api_stability.py \
+  --consumer-root /path/to/rexecop \
+  --consumer-root /path/to/tecrax
+```
 
-`DemoDigestSigner`, `DemoDigestVerifier`, and `demo_sign_and_verify` are test/reviewer helpers. They create deterministic digest-bound demo signatures so hosts can exercise the `SignerPort`/`VerifierPort` contract and inspect trust decisions without bringing real keys into GovEngine. They are not cryptographic identity proof, not a CA/KMS/key-store, and not a replacement for a host-owned production verifier. Hosts that need real signatures must provide their own signer/verifier ports and trust policy.
-
-`canonical_govengine_record()` and `govengine_record_digest()` are
-compatibility helpers for GovEngine-owned records such as admission,
-governance-decision and receipt-conformance records.
-They require a `govengine.*` record type for mappings, auto-scope GovEngine
-dataclasses, and return deterministic JSON or `sha256:` digests. They do not
-canonicalize SCLite records, verify SCLite artifact chains, store raw evidence,
-or provide identity, PKI, KMS, CA, or key-store behavior.
-
-`SignedArtifact`, `signed_artifact_from_record()`, and
-`verify_signed_govengine_record()` bind a GovEngine-owned record digest to a
-payload reference and signer metadata. Verification still uses a host-provided
-`VerifierPort`; GovEngine does not own production identity, trust anchors,
-rotation, revocation, KMS, CA, or key storage. `demo_sign_govengine_record()` is
-fixture-only and uses the same deterministic demo digest-binding convention as
-`DemoDigestSigner`.
-
-`KeyResolutionRequest`, `KeyResolutionResult`, `KeyResolverPort`,
-`TrustStoreDecision`, and `TrustStorePort` are host-neutral trust port contracts.
-They carry signer IDs, key references, trust-anchor references, statuses, and
-bounded metadata only. They reject obvious private key material or credential
-fields at the GovEngine boundary; actual key lookup, trust anchors, revocation,
-rotation, CA/KMS behavior, and policy meaning stay host-owned.
-
-## Execution backend rule
-
-Live subprocess execution is intentionally absent from this scaffold and remains disabled by default for future live backends.
-
-GovEngine must never execute directly from raw intent. Execution requires all of the following boundary inputs:
-
-1. prepared execution contract;
-2. valid policy decision;
-3. approved execution ticket;
-4. valid signature/trust decision;
-5. allowed runner profile.
-
-The governed-runtime MVP exposes those inputs through the canonical runtime
-admission contract described in
-[RUNTIME_ADMISSION.md](RUNTIME_ADMISSION.md). `RuntimeAdmissionResult` carries
-bounded blockers, next actions, and artifact references.
-`compose_runtime_admission_result()` populates it from bounded gate evidence for
-hosts and reviewers; the record does not grant live execution authority by
-itself. After an allowed admission is composed, hosts may call
-`validate_runtime_admission_proof_inputs()` to check that expected proof-input
-summaries are present. That helper does not verify SCLite artifacts or replay
-persistence.
-
-The canonical v1 flow starts with the bounded `GovernanceRequest v1` and
-`ApprovalAttestation v1` inputs described in
-[GOVERNANCE_REQUEST.md](GOVERNANCE_REQUEST.md). They recompute GovEngine-owned
-bindings and reject approval drift/trust/time/revocation failures.
-`evaluate_governance()` composes them with policy activation, host-provided
-approval signature verification, scope and capability decisions into
-`GovernanceDecision v1`. A non-allowed decision has no authorization; an
-allowed decision carries a short-lived attempt-bound consume-once contract,
-not a runtime permit. Runtime claim, permit and I/O ownership remains in
-RExecOp. The decision digest proves integrity, not issuer identity; the runtime
-must additionally use the existing signed-record verifier boundary before
-claim. GovEngine exposes module-scoped `sign_governance_decision()` and
-`require_trusted_governance_decision()` helpers for that exact boundary; they
-do not enter the already capped `govengine.v1` facade.
-
-After runtime I/O, module-scoped `govengine.receipt_conformance` accepts a
-bounded `RuntimeReceiptBinding v1` and returns `ReceiptConformanceResult v1`.
-It recomputes the receipt digest, binds decision/runtime permit/attempt/lease/
-fencing/inventory/policy facts and checks output postconditions from the
-decision. The module intentionally remains outside the capped RC facade; it
-does not create a runtime permit, persist receipts, or replace
-SCLite truth verification.
-
-The request also carries independent G2-B scope policy, operation capability
-requirements and runtime inventory records. GovEngine recomputes their digests
-and evaluates bounded compatibility. RExecOp remains responsible for inventory
-collection, plugin loading, DNS/redirect/origin enforcement and actual I/O.
-
-The canonical operator security order is documented in
-[SECURITY_INTEGRATION.md](SECURITY_INTEGRATION.md). Legacy admission and runner
-binding remain compatibility/review surfaces; they do not add execution
-authority or a second authorization protocol.
-
-Before any execution backend moves into GovEngine:
-
-1. lifecycle gates and signing/trust gates must be explicit;
-2. keep dry-run behavior as the default runner path;
-3. keep concrete execution adapters in the host runtime; RExecOp owns the
-   current connector and subprocess execution boundary;
-4. validate dry-run and scope enforcement parity;
-5. add negative tests for malformed ticket, stale signature/trust, profile mismatch, live-backend-disabled, failure/redaction/artifact handling;
-6. require operator review before making GovEngine own live execution mechanics.
+See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) and
+[DOWNSTREAM_IMPORT_MAP.md](DOWNSTREAM_IMPORT_MAP.md).
 
 ## Dependency rule
 
-Allowed core dependency direction:
-
-```text
-GovEngine -> SCLite
-```
-
-Forbidden dependencies:
-
-```text
-GovEngine -> Ravenclaw engine/*
-GovEngine -> RExecOp runtime internals
-GovEngine -> Logdash
-GovEngine -> OpenClaw/MCP/A2A adapters
-```
-
-RExecOp and legacy Ravenclaw consumers may import GovEngine. GovEngine must
-remain independently importable without either runtime's internal modules.
+Allowed package direction is `GovEngine -> SCLite`. GovEngine must not import
+RExecOp runtime internals, Tecrax/Ravenclaw domain code, Logdash, or
+OpenClaw/MCP/A2A adapters.

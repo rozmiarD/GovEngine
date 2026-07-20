@@ -1,6 +1,7 @@
 # Security Policy
 
-GovEngine is a governance and contract-helper package. It is not a scanner, exploit framework, sandbox, or authorization authority.
+GovEngine is an in-process governance kernel. It is not a scanner, exploit
+framework, sandbox, execution runtime, or remote authorization authority.
 
 ## Supported versions
 
@@ -19,7 +20,7 @@ GovEngine must not:
 
 - treat LLM prose as executable authority;
 - construct live shell commands from untrusted text;
-- widen Ravenclaw/GovEngine/SCLite dependency direction;
+- violate the documented SCLite/GovEngine/RExecOp/profile dependency direction;
 - publish raw stdout/stderr, command logs, credentials, cookies, private paths, or private target identifiers;
 - claim authorization to test a target;
 - claim live vulnerability evidence from dry-run artifacts.
@@ -30,7 +31,7 @@ bindings and explicit non-claims are in
 [`docs/SECURITY_GUARANTEES.md`](docs/SECURITY_GUARANTEES.md).
 
 GovEngine runs in the host process. It does not claim resistance to a malicious
-or fully compromised in-process host that skips the library or ignores its
+or fully compromised in-process host that skips the kernel or ignores its
 decision.
 
 ## Expected safe behavior

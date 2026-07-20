@@ -1,4 +1,4 @@
-"""Small alpha facade for the GovEngine 1.0 candidate kernel.
+"""Frozen facade for the GovEngine 1.0 release-candidate kernel.
 
 The facade is intentionally limited to deterministic API envelopes,
 PolicyEngine compilation/evaluation/enforcement, and governance trace

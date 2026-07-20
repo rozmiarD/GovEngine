@@ -18,26 +18,6 @@ from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 EXPECTED_RELEASE_LABEL = '1.0.0rc1'
 PUBLISHED_VERSION = '1.0.0rc1'
 
-SURFACE_HEADINGS = {
-    'Artifact-governance core': 'artifact_governance_core',
-    'Planning-contracts core': 'planning_contracts_core',
-    'Admission-policy core': 'admission_policy_core',
-    'Evidence-review core': 'evidence_review_core',
-    'Domain-profile SDK': 'domain_profile_sdk',
-    'Runtime contract proofs': 'runtime_contract_proofs',
-    'Controlled-execution core': 'controlled_execution_core',
-}
-
-STATUS_MARKERS = {
-    'artifact_governance_core': 'Core artifact governance boundaries',
-    'planning_contracts_core': 'Planning contracts',
-    'admission_policy_core': 'Admission/policy contracts',
-    'evidence_review_core': 'Evidence review contracts',
-    'domain_profile_sdk': 'Domain profile SDK',
-    'runtime_contract_proofs': 'Runtime contract proofs',
-    'controlled_execution_core': 'Controlled execution gate',
-}
-
 CURRENT_ALPHA_DOCS = (
     'README.md',
     'CONTRIBUTING.md',
@@ -48,53 +28,28 @@ CURRENT_ALPHA_DOCS = (
     'docs/ROADMAP.md',
 )
 
-MVP_SURFACE_DOC_MARKERS = {
-    'docs/RUNTIME_ADMISSION.md': (
-        'RuntimeAdmissionResult',
-        'Intent is not execution authority.',
-        'missing policy blocks',
-        'missing receipt obligation blocks',
-        'production\nruntime readiness',
+CURRENT_CONTRACT_DOC_MARKERS = {
+    'docs/ARCHITECTURE.md': (
+        'Canonical v1 flow',
+        'RExecOp',
+        'GovEngine',
+        'SCLite',
+        'Domain profile',
     ),
-    'docs/RECEIPT_BINDING.md': (
-        'GovRunnerReceiptBinding',
-        'validate_runner_receipt_binding()',
-        'A receipt without admission and ticket bindings is not runtime evidence.',
-        'store raw evidence, or\nenable live execution',
-    ),
-    'docs/EVIDENCE_REVIEW.md': (
-        'validate_evidence_review_chain()',
-        'admission -> receipt -> evidence -> review',
-        'does not store raw evidence',
-        'evaluate SCLite review-bundle verdicts',
-        'stores raw evidence, or grants live execution authority',
-    ),
-    'docs/ADMISSION_POLICY.md': (
-        'AuditLedgerPort',
-        'JsonlAuditLedgerAdapter',
-        'development-only JSONL hash-chain adapter',
-        'does not choose a production database',
-        'concurrency',
+    'docs/API_BOUNDARY.md': (
+        '`govengine.v1` exports exactly 40 names',
+        'Root compatibility surface',
+        'Contract-proof objects are conformance artifacts',
     ),
     'docs/SCLITE_INTEGRATION.md': (
-        'ReplayClaimStore',
-        'claim-once adapter',
-        'SECURITY_INTEGRATION.md',
-        'validate_runner_receipt_binding()',
-        'validate_evidence_review_chain()',
-    ),
-    'docs/RUNNER_SUPERVISION.md': (
-        'Live Runner Safety Specification',
-        'GovEngine does not provide a live subprocess runner in this stage.',
-        'live_backend_enabled',
-        'LocalSubprocessRunner',
-        'Current stage decision: `not_applicable`.',
+        'GovEngine does not:',
+        'SCLite 2.0 is frozen.',
+        'RExecOp then projects the final',
     ),
     'docs/SECURITY_INTEGRATION.md': (
-        'SCLite secure verification',
-        '`RuntimeAdmissionResult` is not proof and not execution authority',
+        'GovernanceRequest v1',
+        'atomically claims decision digest and nonce',
         'PKI, KMS, CA, HSM, private key storage',
-        '`JsonlAuditLedgerAdapter` is a development JSONL hash-chain adapter',
     ),
 }
 
@@ -148,64 +103,6 @@ README_MVP_DOC_LINK_MARKERS = (
     'docs/GOVERNANCE_DECISION.md',
     'docs/SECURITY_INTEGRATION.md',
 )
-
-ARCHIVED_DOC_PATHS = (
-    'docs/archive/GOVERNED_RUNTIME_MVP_RUNBOOK.md',
-    'docs/archive/GUARDED_FRESH_RUNTIME_ADMISSION_EXAMPLE.md',
-    'docs/archive/LOCAL_SUBPROCESS_RUNNER_DECISION.md',
-)
-
-MVP_DELIVERY_DOC_MARKERS = {
-    'docs/RUNTIME_ADMISSION.md': (
-        'Delivered in `0.14.0`',
-        'scripts/inspect_runtime_admission.py',
-        'The implementation exposes a small immutable record',
-    ),
-    'docs/INSPECT_ONLY_ADMISSION_WORKFLOW.md': (
-        'The inspect-only surface is implemented as:',
-        'scripts/inspect_runtime_admission.py',
-    ),
-}
-
-G3_PROFILE_GOVERNANCE_DOC_MARKERS = {
-    'PUBLIC_STATUS.md': (
-        'Profile governance projection (G3)',
-        'ProfileConnectorCompatibilityReport',
-        'govengine-policy profile-governance',
-    ),
-    'docs/DOMAIN_PROFILE_CONTRACT.md': (
-        '[PROFILE_GOVERNANCE.md](PROFILE_GOVERNANCE.md)',
-        'Profile governance projection (G3)',
-    ),
-    'docs/PROFILE_GOVERNANCE.md': (
-        'ProfileGovernanceProjection',
-        'ProfileConnectorCompatibilityReport',
-        'govengine-policy profile-governance',
-    ),
-}
-
-G1_G2_EXPLAIN_DOC_MARKERS = {
-    'PUBLIC_STATUS.md': (
-        'govengine-policy explain|simulate --json',
-        'explain_supervisor_action()',
-        'govengine-supervisor explain --json',
-    ),
-    'docs/POLICY_ENGINE.md': (
-        'govengine-policy explain policy.json request.json --json',
-        'PolicyEvaluationExplanation',
-    ),
-    'docs/RUNTIME_ADMISSION.md': (
-        'explain_supervisor_action()',
-        'govengine-supervisor explain request.json --json',
-        'SupervisorActionExplanation',
-    ),
-    'docs/RUNNER_SUPERVISION.md': (
-        'explain_supervisor_action',
-        'govengine-supervisor explain',
-        'RExecOp consumes G2',
-    ),
-}
-
 
 def _changelog_unreleased_section(changelog: str) -> str:
     if '## Unreleased' not in changelog:
@@ -285,7 +182,7 @@ def _assert_sclite_integration_current_dependency_truth(
     dependency: str,
 ) -> None:
     _assert_contains('docs/SCLITE_INTEGRATION.md', sclite_integration, dependency)
-    _assert_contains('docs/SCLITE_INTEGRATION.md', sclite_integration, 'approved-spec and execution-ticket validation helpers')
+    _assert_contains('docs/SCLITE_INTEGRATION.md', sclite_integration, 'define or extend SCLite schemas')
 
 
 def _assert_readme_mvp_doc_links(readme: str) -> None:
@@ -293,43 +190,18 @@ def _assert_readme_mvp_doc_links(readme: str) -> None:
         _assert_contains('README.md', readme, marker)
 
 
-def _assert_archived_doc_truth(readme: str, docs_index: str) -> None:
-    for archived_path in ARCHIVED_DOC_PATHS:
-        if not (ROOT / archived_path).is_file():
-            raise AssertionError(f'{archived_path}:missing_archived_doc')
-        basename = Path(archived_path).name
-        active_path = ROOT / 'docs' / basename
-        if active_path.exists():
-            raise AssertionError(f'docs/{basename}:legacy_doc_still_active')
-        if f'archive/{basename}' not in docs_index:
-            raise AssertionError(f'docs/README.md:missing_archive_link:{basename}')
-        if f'docs/{basename}' in readme:
-            raise AssertionError(f'README.md:archived_doc_still_active:{basename}')
-
-
-def _assert_mvp_delivery_doc_truth(markers: Mapping[str, Iterable[str]] = MVP_DELIVERY_DOC_MARKERS) -> None:
-    for path, expected_markers in markers.items():
-        text = _read(path)
-        for marker in expected_markers:
-            _assert_contains(path, text, marker)
-
-
-def _assert_g1_g2_explain_doc_truth(
-    markers: Mapping[str, Iterable[str]] = G1_G2_EXPLAIN_DOC_MARKERS,
-) -> None:
-    for path, expected_markers in markers.items():
-        text = _read(path)
-        for marker in expected_markers:
-            _assert_contains(path, text, marker)
-
-
-def _assert_g3_profile_governance_doc_truth(
-    markers: Mapping[str, Iterable[str]] = G3_PROFILE_GOVERNANCE_DOC_MARKERS,
-) -> None:
-    for path, expected_markers in markers.items():
-        text = _read(path)
-        for marker in expected_markers:
-            _assert_contains(path, text, marker)
+def _assert_archive_truth(readme: str, docs_index: str) -> None:
+    archive = ROOT / 'docs' / 'archive'
+    retained = sorted(path.name for path in archive.glob('*.md'))
+    if retained != ['ROADMAP_VERSION_HISTORY.md']:
+        raise AssertionError(f'docs/archive:unexpected_inventory:{retained}')
+    _assert_contains(
+        'docs/README.md',
+        docs_index,
+        'archive/ROADMAP_VERSION_HISTORY.md',
+    )
+    if 'docs/archive/' in readme:
+        raise AssertionError('README.md:archive_promoted_to_active_docs')
 
 
 def _read(path: str) -> str:
@@ -351,25 +223,6 @@ def _project_dependency(project: dict, name: str) -> str:
 def _assert_contains(path: str, text: str, expected: str) -> None:
     if expected not in text:
         raise AssertionError(f'{path}:missing:{expected}')
-
-
-def _documented_surface_names(api_boundary: str) -> list[str]:
-    names: list[str] = []
-    for heading in re.findall(r'^### (.+)$', api_boundary, flags=re.MULTILINE):
-        if heading in SURFACE_HEADINGS:
-            names.append(SURFACE_HEADINGS[heading])
-    return names
-
-
-def _module_is_documented(module: str, api_boundary: str) -> bool:
-    if f'`{module}`' in api_boundary:
-        return True
-    parts = module.split('.')
-    for idx in range(1, len(parts)):
-        wildcard = '.'.join(parts[:idx]) + '.*'
-        if f'`{wildcard}`' in api_boundary:
-            return True
-    return False
 
 
 def _assert_no_current_stale_status(paths: Iterable[str], version: str) -> None:
@@ -425,11 +278,10 @@ def _assert_readme_release_truth(readme: str, version: str) -> None:
 def _assert_readme_architecture_truth(readme: str) -> None:
     for marker in (
         'This\nset has no formal product name.',
-        '```mermaid',
-        'Profile["Domain profile<br/>(for example Tecrax)"]',
-        'Runtime["RExecOp<br/>runtime and execution"]',
-        'Governance["GovEngine<br/>governance decision"]',
-        'Truth["SCLite<br/>truth and verification"]',
+        'Domain profile                 meaning, workflows, connector contracts',
+        'RExecOp                        lifecycle, lease/fencing, permit, I/O',
+        '+---- request / terminal facts -----> GovEngine',
+        '+---- final lifecycle/evidence --------> SCLite',
         'Together they separate domain meaning,\ngovernance, execution and proof',
         'RExecOp and other host runtimes own enforcement. Profiles own domain meaning.',
         'SCLite owns truth and proof.',
@@ -442,6 +294,7 @@ def _assert_readme_architecture_truth(readme: str) -> None:
         'The published `0.16.0` line adds',
         'public_surface_index()',
         'approved_spec_dry_run_result',
+        '```mermaid',
         '```plantuml',
     ):
         if forbidden in readme:
@@ -468,12 +321,12 @@ def _assert_candidate_maturity_truth(paths: Iterable[str]) -> None:
     _assert_contains(
         'docs/ARCHITECTURE.md',
         _read('docs/ARCHITECTURE.md'),
-        'kernel in release-candidate form',
+        'in-process deterministic governance kernel',
     )
     _assert_contains(
         'docs/API_BOUNDARY.md',
         _read('docs/API_BOUNDARY.md'),
-        'current release-candidate package surface set',
+        'small frozen\n1.0 candidate contract',
     )
 
 
@@ -489,34 +342,27 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
     for marker in stale_markers:
         if marker in roadmap:
             raise AssertionError(f'docs/ROADMAP.md:stale_current_roadmap_claim:{marker}')
-    _assert_contains('docs/ROADMAP.md', roadmap, '## Current 1.0 release-candidate line')
+    _assert_contains('docs/ROADMAP.md', roadmap, 'public 1.0 release-candidate phase')
     _assert_contains(
         'docs/ROADMAP.md',
         roadmap,
-        'The current public package line is `govengine==1.0.0rc1`',
+        'Current package baseline: `govengine==1.0.0rc1`',
     )
     _assert_contains('docs/ROADMAP.md', roadmap, f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`')
 
 
 def _assert_validation_current_gate_precedes_history(validation: str, version: str) -> None:
-    current_heading = '## Current package-line gate'
-    historical_heading = '## Historical validation records'
     current_expectation = f'Expected result for the current `{version}` package line'
-    current_pos = validation.find(current_heading)
-    historical_pos = validation.find(historical_heading)
-    expectation_pos = validation.find(current_expectation)
-    if min(current_pos, historical_pos, expectation_pos) < 0:
-        raise AssertionError('docs/VALIDATION.md:missing_current_or_historical_section')
-    if not current_pos < expectation_pos < historical_pos:
-        raise AssertionError('docs/VALIDATION.md:current_gate_not_before_history')
-    _assert_contains('docs/VALIDATION.md', validation, 'not the active gate')
+    _assert_contains('docs/VALIDATION.md', validation, '## Current package evidence')
+    _assert_contains('docs/VALIDATION.md', validation, current_expectation)
+    if '## Historical validation records' in validation:
+        raise AssertionError('docs/VALIDATION.md:historical_records_in_active_runbook')
 
 
 def _assert_clean_pip_check_guidance(contributing: str, validation: str, publishing: str) -> None:
-    current_validation = validation.split('## Historical validation records', 1)[0]
     for path, text in (
         ('CONTRIBUTING.md', contributing),
-        ('docs/VALIDATION.md', current_validation),
+        ('docs/VALIDATION.md', validation),
         ('PUBLISHING.md', publishing),
     ):
         if re.search(r'(?m)^python -m pip check\s*$', text):
@@ -543,7 +389,9 @@ def _assert_no_published_line_candidate_drift(paths: Iterable[str]) -> None:
                 raise AssertionError(f'{path}:published_line_candidate_drift:{reason}')
 
 
-def _assert_mvp_surface_docs(markers: Mapping[str, Iterable[str]] = MVP_SURFACE_DOC_MARKERS) -> None:
+def _assert_current_contract_docs(
+    markers: Mapping[str, Iterable[str]] = CURRENT_CONTRACT_DOC_MARKERS,
+) -> None:
     for path, expected_markers in markers.items():
         text = _read(path)
         for marker in expected_markers:
@@ -597,9 +445,8 @@ def main() -> int:
     _assert_contains('docs/ROADMAP.md', roadmap, f'Current package baseline: `govengine=={version}`')
     _assert_contains('docs/ROADMAP.md', roadmap, dependency)
     _assert_roadmap_current_release_truth(roadmap)
-    _assert_contains('PUBLIC_STATUS.md', public_status, f'Source/package version: `{version}`.')
-    _assert_contains('PUBLIC_STATUS.md', public_status, f'Release label: `{release_label}`.')
-    _assert_contains('PUBLIC_STATUS.md', public_status, f'Latest published PyPI package: `govengine=={PUBLISHED_VERSION}`.')
+    _assert_contains('PUBLIC_STATUS.md', public_status, f'| Source/package version | `{version}` |')
+    _assert_contains('PUBLIC_STATUS.md', public_status, f'| Published distribution | `govengine=={PUBLISHED_VERSION}` |')
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
     _assert_contains('PUBLISHING.md', publishing, 'scripts/validate_clean_package_install.py')
@@ -607,10 +454,10 @@ def main() -> int:
     _assert_contains('docs/VALIDATION.md', validation, f'current `{version}` package line')
     _assert_contains('docs/VALIDATION.md', validation, 'scripts/validate_clean_package_install.py')
     _assert_contains('docs/VALIDATION.md', validation, '--no-editable')
-    _assert_contains('docs/VALIDATION.md', validation, 'broad system interpreter is not')
+    _assert_contains('docs/VALIDATION.md', validation, 'A broad system\ninterpreter is not dependency evidence.')
     _assert_validation_current_gate_precedes_history(validation, version)
     _assert_clean_pip_check_guidance(contributing, validation, publishing)
-    _assert_mvp_surface_docs()
+    _assert_current_contract_docs()
     changelog = _read('CHANGELOG.md')
     _assert_changelog_unreleased_api_names(changelog)
     _assert_source_pypi_gap_docs(version, readme, public_status, roadmap, changelog)
@@ -623,10 +470,7 @@ def main() -> int:
     })
     _assert_sclite_integration_current_dependency_truth(sclite_integration, dependency)
     _assert_readme_mvp_doc_links(readme)
-    _assert_archived_doc_truth(readme, docs_index)
-    _assert_mvp_delivery_doc_truth()
-    _assert_g1_g2_explain_doc_truth()
-    _assert_g3_profile_governance_doc_truth()
+    _assert_archive_truth(readme, docs_index)
     _assert_no_published_line_candidate_drift((
         'README.md',
         'CONTRIBUTING.md',
@@ -658,9 +502,9 @@ def main() -> int:
             raise AssertionError(f'govengine/{relative}:retired_security_module_present')
     if 'security_profile_helpers' in surface_names:
         raise AssertionError('security_profile_helpers:retired_surface_present')
-    _assert_contains('PUBLIC_STATUS.md', public_status, 'Host runtimes own lifecycle artifact projection')
-    _assert_contains('docs/API_BOUNDARY.md', api_boundary, 'Host-owned lifecycle projection is outside GovEngine')
-    _assert_contains('docs/SCLITE_INTEGRATION.md', sclite_integration, 'Host-owned artifact projection is outside GovEngine')
+    _assert_contains('PUBLIC_STATUS.md', public_status, 'RExecOp           lifecycle, queues, leases, fencing, permits, retries and I/O')
+    _assert_contains('docs/API_BOUNDARY.md', api_boundary, 'GovEngine consumes but does not own:')
+    _assert_contains('docs/SCLITE_INTEGRATION.md', sclite_integration, 'RExecOp then projects the final')
     _assert_contains('docs/DOMAIN_PROFILE_CONTRACT.md', domain_profile, 'synthetic Tecrax conformance fixture')
     _assert_contains(
         'docs/THREAT_MODEL.md',
@@ -714,18 +558,17 @@ def main() -> int:
     _assert_contains('.github/workflows/pytest.yml', workflow, '/tmp/govengine-wheel-smoke/bin/python -m pip check')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'v1_compatibility_manifest.json')
 
-    documented = _documented_surface_names(api_boundary)
-    if documented != surface_names:
-        raise AssertionError(f'api_boundary_surface_mismatch:{documented}!={surface_names}')
-
     for surface in surfaces:
         if not surface.status.startswith('alpha_'):
             raise AssertionError(f'surface_status_not_alpha:{surface.name}:{surface.status}')
-        marker = STATUS_MARKERS[surface.name]
-        _assert_contains('PUBLIC_STATUS.md', public_status, marker)
-        for module in surface.modules:
-            if not _module_is_documented(module, api_boundary):
-                raise AssertionError(f'docs/API_BOUNDARY.md:missing_module:{module}')
+    for marker in (
+        '40 `v1-candidate` exports',
+        '188 adapter exports',
+        '61 experimental exports',
+        '19 fixture exports',
+        '3 module-owned compatibility callables',
+    ):
+        _assert_contains('docs/API_BOUNDARY.md', api_boundary, marker)
 
     for proof in (ravenclaw_contract_proof(), tecrax_contract_proof()):
         if proof.profile_conformance.status != 'passed':

@@ -153,13 +153,11 @@ def test_public_docs_keep_live_backend_disabled_by_default_non_claims() -> None:
     combined = ' '.join(f'{api_boundary}\n{runner_supervision}\n{validation}'.split())
 
     required_markers = (
-        'Live subprocess execution is intentionally absent',
-        'remains disabled by default',
         'does not provide a live subprocess runner',
-        'not implementation permission',
         'dry-run remains the default profile',
-        'live backend implementation remain host-owned',
-        'no live subprocess backend',
+        'live execution belongs to a host runtime such as RExecOp',
+        'connectors or I/O',
+        'does not contact live targets or grant execution authority',
     )
 
     for marker in required_markers:

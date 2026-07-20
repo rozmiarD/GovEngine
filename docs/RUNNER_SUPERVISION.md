@@ -1,5 +1,9 @@
 # Runner Supervision
 
+> Compatibility reference outside `govengine.v1`. RExecOp owns the current
+> executor, runtime permit, connector dispatch and I/O boundary. GovEngine does
+> not provide a live subprocess runner.
+
 `govengine.execution.supervision` defines neutral runner-supervision contracts
 for bounded host runner requests.
 
@@ -118,9 +122,6 @@ Missing prerequisites before a live local runner can be added:
 - maximum-output enforcement and output digest contract for live outcomes;
 - redaction policy/hook before any output excerpt can be emitted.
 
-Therefore GE-032 must not add a live subprocess backend unless this readiness
-gate becomes `ready` through tested, host-neutral prerequisites. The safe path is
-to keep `DryRunRunner` as the only GovEngine-owned runner behavior and treat any
-live adapter as future host-owned work. Historical GE-032 decision evidence is
-archived in
-[archive/LOCAL_SUBPROCESS_RUNNER_DECISION.md](archive/LOCAL_SUBPROCESS_RUNNER_DECISION.md).
+Therefore this compatibility gate must not be interpreted as permission to add
+a live subprocess backend to GovEngine. `DryRunRunner` remains compatibility
+behavior; live execution belongs to a host runtime such as RExecOp.

@@ -1,5 +1,8 @@
 # Evidence Review Contracts
 
+> Compatibility reference. These neutral review summaries remain outside
+> `govengine.v1` and do not replace SCLite lifecycle/evidence verification.
+
 `govengine.review` defines neutral evidence requirement, claim,
 qualification, and review-result contracts for host runtimes.
 
