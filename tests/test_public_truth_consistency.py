@@ -120,10 +120,12 @@ def test_public_truth_validator_rejects_published_line_candidate_drift(monkeypat
 def test_public_truth_validator_rejects_stale_readme_release_claim() -> None:
     validator = _load_validator()
     stale = (
-        'GovEngine is a Python governance kernel for systems that execute operations.\n'
-        'It is an embeddable library that answers one narrow question.\n'
-        'GovEngine makes the\n'
-        'governance decision; it does not perform the operation.\n'
+        'GovEngine is an in-process Python governance kernel designed to be integrated\n'
+        'into execution runtimes.\n'
+        'It evaluates policy, approval, scope and capability\n'
+        'facts for one concrete operation attempt.\n'
+        'It does not define artifact truth or verify lifecycle and evidence\n'
+        'bundles; those responsibilities belong to SCLite.\n'
         'Current source/package version: `1.0.0rc1`.\n'
         'Current package pin: `govengine==1.0.0rc1`.\n'
         'Release posture: source candidate only.\n'

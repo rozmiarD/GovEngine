@@ -407,9 +407,12 @@ def _assert_readme_package_truth(readme: str, version: str) -> None:
 
 def _assert_readme_release_truth(readme: str, version: str) -> None:
     for marker in (
-        'GovEngine is a Python governance kernel for systems that execute operations.',
-        'It is an embeddable library that answers one narrow question',
-        'GovEngine makes the\ngovernance decision; it does not perform the operation.',
+        'GovEngine is an in-process Python governance kernel designed to be integrated\n'
+        'into execution runtimes.',
+        'It evaluates policy, approval, scope and capability\n'
+        'facts for one concrete operation attempt',
+        'It does not define artifact truth or verify lifecycle and evidence\n'
+        'bundles; those responsibilities belong to SCLite.',
         f'Current source/package version: `{version}`.',
         f'Current package pin: `govengine=={version}`.',
     ):
@@ -422,11 +425,11 @@ def _assert_readme_release_truth(readme: str, version: str) -> None:
 def _assert_readme_architecture_truth(readme: str) -> None:
     for marker in (
         'This\nset has no formal product name.',
-        '```plantuml',
-        'component "Domain profile\\n(e.g. Tecrax)" as Profile',
-        'component "RExecOp\\nruntime and execution" as Runtime',
-        'component "GovEngine\\ngovernance decision" as Governance',
-        'component "SCLite\\ntruth and verification" as Truth',
+        '```mermaid',
+        'Profile["Domain profile<br/>(for example Tecrax)"]',
+        'Runtime["RExecOp<br/>runtime and execution"]',
+        'Governance["GovEngine<br/>governance decision"]',
+        'Truth["SCLite<br/>truth and verification"]',
         'Together they separate domain meaning,\ngovernance, execution and proof',
         'RExecOp and other host runtimes own enforcement. Profiles own domain meaning.',
         'SCLite owns truth and proof.',
@@ -439,6 +442,7 @@ def _assert_readme_architecture_truth(readme: str) -> None:
         'The published `0.16.0` line adds',
         'public_surface_index()',
         'approved_spec_dry_run_result',
+        '```plantuml',
     ):
         if forbidden in readme:
             raise AssertionError(f'README.md:stale_or_invented_overview:{forbidden}')

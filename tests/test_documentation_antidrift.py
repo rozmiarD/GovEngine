@@ -39,14 +39,15 @@ def test_readme_is_human_facing_and_describes_the_unnamed_component_set() -> Non
     readme = _read('README.md')
 
     for marker in (
-        'It is an embeddable library that answers one narrow question',
+        'GovEngine is an in-process Python governance kernel designed to be integrated',
+        'It does not define artifact truth or verify lifecycle and evidence',
         'This\nset has no formal product name.',
         'Together they separate domain meaning,\ngovernance, execution and proof',
-        '```plantuml',
-        'component "Domain profile\\n(e.g. Tecrax)" as Profile',
-        'component "RExecOp\\nruntime and execution" as Runtime',
-        'component "GovEngine\\ngovernance decision" as Governance',
-        'component "SCLite\\ntruth and verification" as Truth',
+        '```mermaid',
+        'Profile["Domain profile<br/>(for example Tecrax)"]',
+        'Runtime["RExecOp<br/>runtime and execution"]',
+        'Governance["GovEngine<br/>governance decision"]',
+        'Truth["SCLite<br/>truth and verification"]',
         '## Canonical governance flow',
         '## What GovEngine provides',
         '## What GovEngine does not do',
@@ -63,6 +64,7 @@ def test_readme_is_human_facing_and_describes_the_unnamed_component_set() -> Non
         'approved_spec_dry_run_result',
         '## Safety Boundary',
         '## Explicit Non-Claims',
+        '```plantuml',
     ):
         assert stale not in readme
 

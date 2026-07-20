@@ -6,15 +6,16 @@
 [![Dependency: SCLite ==2.0.0](https://img.shields.io/badge/dependency-SCLite%20%3D%3D2.0.0-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-GovEngine is a Python governance kernel for systems that execute operations.
-It is an embeddable library that answers one narrow question: may this exact
-operation attempt proceed under the supplied policy, approval, scope and
-runtime capabilities?
+GovEngine is an in-process Python governance kernel designed to be integrated
+into execution runtimes. It evaluates policy, approval, scope and capability
+facts for one concrete operation attempt and returns a deterministic
+`allowed`, `approval_required` or `denied` governance decision.
 
-GovEngine validates the bindings, evaluates policy and returns a deterministic
-`allowed`, `approval_required` or `denied` decision. GovEngine makes the
-governance decision; it does not perform the operation. It does not schedule
-jobs, manage credentials, contact targets or store evidence.
+GovEngine recomputes and validates its own governance records and decision
+bindings. It does not define artifact truth or verify lifecycle and evidence
+bundles; those responsibilities belong to SCLite. GovEngine does not perform
+the operation, schedule jobs, manage credentials, contact targets or store
+evidence.
 
 The current release-candidate package `1.0.0rc1` exposes a frozen candidate
 contract through `govengine.v1`. The wider package still contains explicitly
@@ -23,7 +24,7 @@ classified compatibility, experimental and fixture surfaces.
 ## Why GovEngine exists
 
 Intent is not execution authority. A request from an operator, UI, agent or
-LLM does not by itself prove that:
+LLM does not by itself establish that:
 
 - the active policy allows the operation;
 - approval covers this exact attempt, target and side-effect class;
@@ -47,8 +48,8 @@ governance, execution and proof:
 - **RExecOp** owns domain-neutral workflow interpretation, operation lifecycle,
   queues, leases, fencing, retries, connector dispatch and I/O.
 - **GovEngine** owns deterministic policy evaluation, approval requirements,
-  scope and capability decisions, governance authorization and receipt
-  conformance.
+  scope and capability decisions, governance authorization and checks that
+  terminal runtime facts satisfy the decision's obligations.
 - **SCLite** owns canonical lifecycle and evidence contracts, integrity,
   receipts, review bundles and verification truth.
 
@@ -56,31 +57,22 @@ Used together, a profile describes what an operation means, RExecOp prepares
 and executes it, GovEngine decides whether the exact attempt may proceed, and
 SCLite makes the resulting lifecycle and evidence independently verifiable.
 
-```plantuml
-@startuml
-left to right direction
-skinparam componentStyle rectangle
-skinparam shadowing false
+```mermaid
+flowchart LR
+    Profile["Domain profile<br/>(for example Tecrax)"]
+    Runtime["RExecOp<br/>runtime and execution"]
+    Governance["GovEngine<br/>governance decision"]
+    Truth["SCLite<br/>truth and verification"]
 
-component "Domain profile\n(e.g. Tecrax)" as Profile
-component "RExecOp\nruntime and execution" as Runtime
-component "GovEngine\ngovernance decision" as Governance
-component "SCLite\ntruth and verification" as Truth
+    Profile -->|"intents, workflows,<br/>connector contracts"| Runtime
+    Runtime -->|"bounded GovernanceRequest<br/>attempt + lease + fencing + inventory"| Governance
+    Governance -->|"GovernanceDecision<br/>allowed / approval_required / denied"| Runtime
+    Runtime -->|"terminal RuntimeReceiptBinding"| Governance
+    Governance -->|"obligation conformance result"| Runtime
+    Runtime -->|"lifecycle, receipt and<br/>evidence artifacts"| Truth
+    Truth -->|"verification result"| Runtime
 
-Profile --> Runtime : intents, workflows,\nconnector contracts
-Runtime --> Governance : bounded GovernanceRequest\nattempt + lease + fencing + inventory
-Governance --> Runtime : GovernanceDecision\nallowed / approval_required / denied
-Runtime --> Runtime : verify signature,\nclaim once, issue permit, execute I/O
-Runtime --> Governance : terminal RuntimeReceiptBinding
-Governance --> Runtime : ReceiptConformanceResult
-Runtime --> Truth : lifecycle, receipt and\nevidence artifacts
-Truth --> Runtime : verification result
-
-note bottom of Governance
-  No queue, scheduler, credentials,
-  connector I/O or evidence storage
-end note
-@enduml
+    Runtime -.->|"verify signature, claim once,<br/>issue permit, execute I/O"| Runtime
 ```
 
 The canonical integration order is documented in
@@ -90,8 +82,8 @@ The canonical integration order is documented in
 
 1. RExecOp constructs a digest-bound `GovernanceRequest` for one operation,
    step and attempt.
-2. GovEngine verifies complete GovEngine-owned bindings and evaluates the
-   active typed policy.
+2. GovEngine recomputes complete GovEngine-owned governance bindings and
+   evaluates the active typed policy.
 3. GovEngine validates independently supplied approval, target scope and
    capability inventory facts.
 4. `evaluate_governance()` returns a `GovernanceDecision`. Only `allowed`
@@ -99,8 +91,8 @@ The canonical integration order is documented in
    lease, fencing token, policy, scope and inventory.
 5. RExecOp verifies the signed decision, atomically claims its digest and
    nonce, issues its own runtime permit and performs the final pre-I/O checks.
-6. After I/O, GovEngine checks the bounded terminal receipt against the exact
-   decision, runtime permit and output postconditions.
+6. After I/O, GovEngine checks whether bounded terminal runtime facts match the
+   exact decision and runtime permit and satisfy its output postconditions.
 7. RExecOp projects final lifecycle and evidence artifacts for SCLite
    verification.
 
@@ -115,17 +107,20 @@ The frozen `govengine.v1` facade provides:
 - policy obligations, constraints, enforcement plans and redacted
   explanations;
 - independently bound `ApprovalAttestation` validation;
-- digest-bound `GovernanceRequest` validation;
-- canonical `GovernanceDecision` evaluation;
+- digest-bound validation of GovEngine-owned `GovernanceRequest` records;
+- deterministic `GovernanceDecision` evaluation;
 - short-lived attempt-bound authorization contracts;
-- governance traces, record digests and stable reason codes.
+- governance traces, digests of GovEngine-owned records and stable reason
+  codes.
 
 Supporting module-scoped contracts provide:
 
 - independent scope-policy and capability-inventory comparison;
 - signed-decision verification through host-provided trust ports;
-- receipt conformance against a decision and opaque RExecOp runtime permit;
-- a language-neutral conformance corpus shared with runtime consumers.
+- checks that terminal runtime facts satisfy a decision and bind to an opaque
+  RExecOp runtime permit;
+- a language-neutral governance-protocol conformance corpus shared with runtime
+  consumers.
 
 Legacy admission, runner, planning, orchestration, state-machine and
 runtime-shell APIs remain available only as classified compatibility or
@@ -248,7 +243,8 @@ GovEngine is deterministic and fail-closed at its documented boundaries:
   and runtime inventory;
 - decision digests provide integrity, not signer identity;
 - the runtime must verify a trusted signed decision before atomic claim;
-- output obligations are checked after I/O through receipt conformance.
+- terminal runtime facts are checked after I/O against decision-bound output
+  obligations.
 
 See the [threat model](docs/THREAT_MODEL.md), tested
 [security guarantees](docs/SECURITY_GUARANTEES.md) and canonical
