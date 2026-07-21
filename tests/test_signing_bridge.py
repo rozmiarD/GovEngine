@@ -327,6 +327,63 @@ def test_key_resolution_request_rejects_api_key_metadata() -> None:
         KeyResolutionRequest(signer_id="owner-demo", metadata={"api_key": "must-not-cross-boundary"})
 
 
+@pytest.mark.parametrize(
+    "record",
+    [
+        lambda metadata: KeyResolutionRequest(
+            signer_id="owner-demo",
+            metadata=metadata,
+        ),
+        lambda metadata: KeyResolutionResult.from_mapping({
+            "status": "resolved",
+            "signer_id": "owner-demo",
+            "key_ref": "host-key://owner-demo/current",
+            "metadata": metadata,
+        }),
+        lambda metadata: TrustStoreDecision.from_mapping({
+            "status": "trusted",
+            "signer_id": "owner-demo",
+            "trust_anchor_ref": "host-trust://anchors/demo",
+            "metadata": metadata,
+        }),
+    ],
+)
+def test_trust_records_reject_forbidden_keys_inside_nested_collections(record) -> None:
+    with pytest.raises(GovApiError, match="forbidden_trust_material"):
+        record({"items": [{"nested": ({"password": "must-not-cross-boundary"},)}]})
+
+
+def test_trust_records_normalize_forbidden_key_spelling() -> None:
+    with pytest.raises(GovApiError, match="forbidden_trust_material"):
+        TrustStoreDecision.from_mapping({
+            "status": "trusted",
+            "signer_id": "owner-demo",
+            "trust_anchor_ref": "host-trust://anchors/demo",
+            "metadata": {"nested": {" PASSWORD ": "must-not-cross-boundary"}},
+        })
+
+
+def test_trust_metadata_uses_shared_json_depth_limit() -> None:
+    metadata = {}
+    cursor = metadata
+    for _ in range(34):
+        cursor["nested"] = {}
+        cursor = cursor["nested"]
+
+    with pytest.raises(GovApiError, match="json_boundary_max_depth"):
+        KeyResolutionRequest(signer_id="owner-demo", metadata=metadata)
+
+
+def test_trust_metadata_rejects_non_finite_numbers() -> None:
+    with pytest.raises(GovApiError, match="json_boundary_non_finite_number"):
+        KeyResolutionResult.from_mapping({
+            "status": "resolved",
+            "signer_id": "owner-demo",
+            "key_ref": "host-key://owner-demo/current",
+            "metadata": {"confidence": nan},
+        })
+
+
 def test_trust_store_decision_unknown_signer_is_not_trusted() -> None:
     decision = TrustStoreDecision.from_mapping({
         "status": "unknown",

@@ -6,6 +6,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Applies the shared bounded-JSON limits to key-resolution and trust-store
+  adapter records, and rejects forbidden trust-material keys recursively across
+  nested mappings, lists and tuples.
 - Removes the unconsumed `govengine.contracts.execution` package and the
   runtime-owned `govengine.execution.command_shape` helper. RExecOp now owns
   argv normalization at its connector boundary, and clean-install/public-truth

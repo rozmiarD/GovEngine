@@ -42,4 +42,6 @@ New safety-sensitive code should be deterministic by default, testable without l
 - approved vs prepared execution shape;
 - dry-run/local/mock/live truth;
 - receipt/evidence non-claims;
+- bounded, recursively filtered metadata at key-resolution and trust-store
+  adapter boundaries;
 - owner-review boundaries.

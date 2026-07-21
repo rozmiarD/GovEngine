@@ -8,6 +8,7 @@ from math import isfinite
 from string import hexdigits
 from typing import Any, Mapping, Protocol
 
+from govengine._json_boundary import bounded_json_copy
 from govengine.api import GovApiError, require_mapping
 from govengine.core import ArtifactDescriptor, GovernanceContext, ReasonCode, TransitionDecision
 
@@ -146,8 +147,9 @@ class KeyResolutionResult:
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any]) -> "KeyResolutionResult":
-        raw = require_mapping(value, reason_code="invalid_key_resolution_result")
-        _reject_forbidden_trust_material(raw)
+        raw = _bounded_trust_mapping(
+            require_mapping(value, reason_code="invalid_key_resolution_result")
+        )
         metadata = raw.get("metadata") if isinstance(raw.get("metadata"), Mapping) else {}
         return cls(
             status=str(raw.get("status") or ""),
@@ -195,8 +197,9 @@ class TrustStoreDecision:
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any]) -> "TrustStoreDecision":
-        raw = require_mapping(value, reason_code="invalid_trust_store_decision")
-        _reject_forbidden_trust_material(raw)
+        raw = _bounded_trust_mapping(
+            require_mapping(value, reason_code="invalid_trust_store_decision")
+        )
         metadata = raw.get("metadata") if isinstance(raw.get("metadata"), Mapping) else {}
         return cls(
             status=str(raw.get("status") or raw.get("trust_status") or ""),
@@ -435,14 +438,27 @@ def _validate_govengine_record_digest(record_digest: str) -> str:
 
 def _bounded_trust_metadata(value: Mapping[str, Any] | None) -> dict[str, Any]:
     metadata = value if isinstance(value, Mapping) else {}
-    _reject_forbidden_trust_material(metadata)
-    return dict(metadata)
+    return _bounded_trust_mapping(metadata)
 
 
-def _reject_forbidden_trust_material(value: Mapping[str, Any]) -> None:
-    for key in value:
-        if str(key).lower() in FORBIDDEN_TRUST_MATERIAL_KEYS:
-            raise GovApiError("forbidden_trust_material")
+def _bounded_trust_mapping(value: Mapping[str, Any]) -> dict[str, Any]:
+    copied = bounded_json_copy(value)
+    if not isinstance(copied, dict):
+        raise GovApiError("invalid_trust_metadata")
+    _reject_forbidden_trust_material(copied)
+    return copied
+
+
+def _reject_forbidden_trust_material(value: Any) -> None:
+    if isinstance(value, Mapping):
+        for key, nested in value.items():
+            if key.strip().lower() in FORBIDDEN_TRUST_MATERIAL_KEYS:
+                raise GovApiError("forbidden_trust_material")
+            _reject_forbidden_trust_material(nested)
+        return
+    if isinstance(value, (list, tuple)):
+        for nested in value:
+            _reject_forbidden_trust_material(nested)
 
 
 def _canonical_record_value(value: Any) -> Any:
