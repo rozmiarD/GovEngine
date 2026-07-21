@@ -4,11 +4,11 @@ This snapshot records the live GovEngine imports used by the current RExecOp
 and Tecrax source trees. It is migration evidence, not a promise that every
 legacy import will enter the stable facade.
 
-Baseline checked on 2026-07-20. Documentation-only GovEngine commits after the
+Baseline checked on 2026-07-21. Documentation-only GovEngine commits after the
 API scan do not change this inventory:
 
 - GovEngine v1/API inventory from the `1.0.0rc1` source line;
-- RExecOp `a3e6404`;
+- RExecOp `8a32638`;
 - Tecrax `a870658`.
 
 The map is produced by `consumer_import_map()` in
@@ -17,8 +17,8 @@ excluding virtual environments, build output, caches, and Git metadata.
 
 ## RExecOp
 
-RExecOp has 44 unique `from govengine import ...` symbols, 35 unique deep
-module imports and one package import, for 80 unique import paths:
+RExecOp has 44 unique `from govengine import ...` symbols, 34 unique deep
+module imports and one package import, for 79 unique import paths:
 
 - 12 root `v1-candidate` imports covering the API envelope, PolicyEngine and
   governance trace;
@@ -26,7 +26,7 @@ module imports and one package import, for 80 unique import paths:
   typed-execution, compatibility, profile explanation, and evidence review;
 - 2 root `internal-exposed` imports: `build_scope_assertion` and
   `build_scope_decision`;
-- 35 deep module imports: 22 `deep-only`, 6 `v1-candidate`, 5 adapters and
+- 34 deep module imports: 21 `deep-only`, 6 `v1-candidate`, 5 adapters and
   2 signing fixtures. These include the canonical decision/signing/receipt
   conformance integration used by the runtime;
 - one package import used for version/surface inspection.

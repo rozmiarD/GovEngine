@@ -52,6 +52,8 @@ retired = [
     'govengine.contracts.signal',
     'govengine.contracts.analysis',
     'govengine.contracts.evidence_policy',
+    'govengine.contracts.execution',
+    'govengine.execution.command_shape',
 ]
 def absent(module):
     try:

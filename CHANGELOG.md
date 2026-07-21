@@ -6,6 +6,11 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Removes the unconsumed `govengine.contracts.execution` package and the
+  runtime-owned `govengine.execution.command_shape` helper. RExecOp now owns
+  argv normalization at its connector boundary, and clean-install/public-truth
+  gates prevent these retired modules from returning.
+
 ### Documentation truth and navigation
 
 - Reframed GovEngine consistently as an in-process governance kernel and

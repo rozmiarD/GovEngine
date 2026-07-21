@@ -74,7 +74,6 @@ packages = [
   "govengine.conformance.v1",
   "govengine.conformance.v1.invalid",
   "govengine.conformance.v1.valid",
-  "govengine.contracts",
   "govengine.execution",
   "govengine.policy",
   "govengine.policy.compiler",

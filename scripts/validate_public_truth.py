@@ -496,6 +496,8 @@ def main() -> int:
         'contracts/signal.py',
         'contracts/analysis.py',
         'contracts/evidence_policy.py',
+        'contracts/execution.py',
+        'execution/command_shape.py',
     )
     for relative in retired_modules:
         if (ROOT / 'govengine' / relative).exists():

@@ -13,7 +13,7 @@ def test_consumer_import_map_classifies_root_and_deep_imports(tmp_path: Path) ->
             (
                 'import govengine',
                 'from govengine import PolicyEngine, compose_runtime_admission_result',
-                'from govengine.execution.command_shape import normalize_argv',
+                'from govengine.governance import requested_scope_digest',
             )
         ),
         encoding='utf-8',
@@ -24,7 +24,7 @@ def test_consumer_import_map_classifies_root_and_deep_imports(tmp_path: Path) ->
 
     assert by_import['govengine.PolicyEngine'].classification == 'v1-candidate'
     assert by_import['govengine.compose_runtime_admission_result'].classification == 'adapter'
-    assert by_import['govengine.execution.command_shape.normalize_argv'].classification == 'deep-only'
+    assert by_import['govengine.governance.requested_scope_digest'].classification == 'deep-only'
     assert by_import['govengine'].classification == 'package'
 
 

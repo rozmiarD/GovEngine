@@ -128,7 +128,7 @@ def test_active_docs_track_release_candidate_and_current_stack_ownership() -> No
     assert 'RExecOp is the current domain-neutral runtime' in docs['docs/GOVENGINE_KERNEL_BOUNDARY.md']
     assert 'Tecrax is a downstream profile.' in docs['docs/ROADMAP.md']
     assert 'module-scoped terminal-runtime-fact conformance' in docs['docs/ROADMAP.md']
-    assert 'for 80 unique import paths' in docs['docs/DOWNSTREAM_IMPORT_MAP.md']
+    assert 'for 79 unique import paths' in docs['docs/DOWNSTREAM_IMPORT_MAP.md']
     assert 'RExecOp owns current orchestration mechanics' in docs['docs/ORCHESTRATOR_MODEL.md']
     assert 'RExecOp owns the current operation\nlifecycle' in docs['docs/STATE_MACHINE.md']
     assert 'RExecOp then projects the final' in docs['docs/SCLITE_INTEGRATION.md']

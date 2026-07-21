@@ -72,13 +72,11 @@ def controlled_execution_surface() -> GovSurface:
         modules=_tuple((
             'govengine.execution.approved_spec',
             'govengine.execution.ticket_gate',
-            'govengine.execution.command_shape',
             'govengine.execution.runner',
             'govengine.execution.runner_protocol',
             'govengine.execution.supervision',
             'govengine.execution.gate',
             'govengine.scope_ports',
-            'govengine.contracts.execution',
             'govengine.ooda',
             'govengine.orchestration',
             'govengine.events',
@@ -86,7 +84,7 @@ def controlled_execution_surface() -> GovSurface:
             'govengine.runtime_shell',
         )),
         claim=(
-            'Approved-spec, execution-ticket, command-shape, runner receipt, OODA, orchestration boundary, event metadata, '
+            'Approved-spec, execution-ticket, runner receipt, OODA, orchestration boundary, event metadata, '
             'control-decision, runtime shell, queue snapshot, scheduler-tick, runner supervision, and dry-run-only execution gate helpers.'
         ),
         non_claims=_tuple((
