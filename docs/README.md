@@ -9,6 +9,8 @@ Start with [the repository README](../README.md). Current package status is in
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — ownership, dependency direction and the
   canonical governance flow.
+- [GOVENGINE_KERNEL_BOUNDARY.md](GOVENGINE_KERNEL_BOUNDARY.md) — concise
+  ownership and non-claim checklist.
 - [API_BOUNDARY.md](API_BOUNDARY.md) — stable-candidate, module-scoped and
   compatibility surfaces.
 - [API_STABILITY_MATRIX.md](API_STABILITY_MATRIX.md) — machine-checked

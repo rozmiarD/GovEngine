@@ -8,6 +8,15 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Adds a whole-active-documentation anti-drift gate for repository links,
+  documented files, CLI commands, docs-index completeness, ownership claims and
+  required release-drift disclosures.
+- Changes the post-tag source-validation result to report
+  `publishable=false` instead of implying that changed `main` is release-ready.
+- Records that the immutable `1.0.0rc1` PyPI long description contains the
+  pre-publication README, and distinguishes the published artifact from
+  post-tag fixes on `main`. The stale metadata is fixed forward in a new release
+  candidate rather than by rewriting the RC tag.
 - Adds a machine-readable current release-train manifest and fail-closed local
   and cross-repository anti-drift validation for package versions, exact
   dependency pins, downstream alignment status and active release

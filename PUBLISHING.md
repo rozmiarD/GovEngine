@@ -6,12 +6,26 @@ releases. It describes the repository as it exists; release history belongs in
 
 ## Current state
 
-- Source and published candidate: `govengine==1.0.0rc1`.
+- Current `main` version label: `1.0.0rc1`, with unreleased post-tag fixes.
+- Published immutable candidate: `govengine==1.0.0rc1` from `v1.0.0rc1`.
 - Exact dependency: `sclite-core==2.0.0`.
-- Review status: independently reviewed, with no open P0/P1 findings.
+- Published `rc1` review: independently reviewed, with no open P0/P1 findings.
+- Current `main` review: pending new-candidate review after the release commit is
+  frozen.
 - Publication: tag-bound GitHub OIDC workflow, run
   [29764475143](https://github.com/rozmiarD/GovEngine/actions/runs/29764475143).
 - RC observation window: active until `2026-07-27T17:39:58.058090Z`.
+
+Current `main` retains the `1.0.0rc1` version label but differs from the
+published artifact. Do not treat a source build from `main` as a reproduction
+of the immutable RC. The post-tag security and compatibility fixes require a
+new release-candidate version and qualification before stable promotion.
+
+The immutable PyPI long description for `1.0.0rc1` is stale because the tag was
+built from the pre-publication README. It still contains obsolete
+release-blocked and `0.16.11` installation wording. The uploaded wheel/sdist,
+dependency metadata and recorded hashes remain immutable; correct the long
+description only through the next version, never by recreating the tag.
 
 The relevant commits have different roles and must not be conflated:
 
@@ -113,8 +127,15 @@ Then run the release-only gates:
 git diff --check
 ```
 
-For an RC, `python scripts/validate_rc_window.py` must pass. RC-window status must be `prepared` before first publication. For stable promotion,
-`python scripts/validate_rc_window.py --require-completed` must pass.
+On current post-tag `main`, `validate_release_readiness.py` intentionally
+reports `publishable=false`. The `rc2` release slice must update version,
+dependency, review and candidate records before any tag is created.
+
+For an RC, the candidate-specific RC-window validator must pass.
+RC-window status must be `prepared` before first publication.
+The current `scripts/validate_rc_window.py` still validates immutable `rc1` evidence; the
+`rc2` release slice must retarget it to a new record before tagging. Stable
+promotion requires the new candidate record, not the completed `rc1` record.
 
 The clean-install script is the dependency-consistency gate. Do not use
 `pip check` from a broad system interpreter as release evidence.
@@ -198,17 +219,22 @@ move the release tag to include it.
 
 ## Stable promotion
 
-Stable `1.0.0` remains blocked until at least seven complete days have elapsed
-from the RC `published_at` time and all of the following remain true:
+Stable `1.0.0` remains blocked on a new `1.0.0rc2` candidate containing current
+`main`. Completion of the existing `rc1` observation remains historical
+evidence but is insufficient for the post-tag changes. After `rc2` is
+published, at least seven complete days must elapse from its `published_at`
+time and all of the following must remain true:
 
 - the RC record is `completed` with an aware `completed_at`;
 - frozen facade/schema/corpus/reason inputs have not drifted;
-- the independent review still reports zero open P0/P1 findings;
+- the review covering the `rc2` release commit reports zero open P0/P1
+  findings;
 - public-index installation and RExecOp consumption remain reproducible;
 - source truth, changelog, version metadata, and release evidence are aligned.
 
-After `python scripts/validate_rc_window.py --require-completed` passes, prepare
-and review a separate `1.0.0` release commit, rerun every gate, and use the same
+After the `rc2`-specific
+`python scripts/validate_rc_window.py --require-completed` passes, prepare and
+review a separate `1.0.0` release commit, rerun every gate, and use the same
 tag-confirmed OIDC workflow with `v1.0.0`.
 
 ## Failure handling
@@ -218,8 +244,9 @@ tag-confirmed OIDC workflow with `v1.0.0`.
 - After tag but before upload: do not move the tag; use a new version/tag.
 - After upload: PyPI artifacts are immutable. Document the issue, yank only
   when justified, fix forward, and publish a new version.
-- A contract, schema, corpus, or reason-registry change during an RC window
-  requires a new RC and a new observation record.
+- A contract, schema, corpus, reason-registry or security-relevant code change
+  after an RC tag requires a new RC and observation record before stable
+  promotion.
 
 Publishing does not certify production safety of the whole stack and does not
 grant legal or operational authorization.

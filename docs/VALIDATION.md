@@ -31,8 +31,10 @@ Use the repository environment when available:
 bash scripts/run_ci_parity_checks.sh
 ```
 
-This runs public truth, local release-train truth, API stability, release
-readiness, G3 receipt conformance, Ruff, mypy and full pytest.
+This runs public truth, local release-train truth, API stability, release-source
+validation, G3 receipt conformance, Ruff, mypy and full pytest. Current
+post-tag `main` reports `publishable=false`; this is a successful validation of
+the explicitly unreleased source posture, not release authorization.
 `git diff --check` remains a separate local delivery check.
 
 ## Contract gates
@@ -40,6 +42,7 @@ readiness, G3 receipt conformance, Ruff, mypy and full pytest.
 ```bash
 .venv/bin/python scripts/validate_v1_freeze.py
 .venv/bin/python scripts/generate_conformance_corpus.py --check
+.venv/bin/python scripts/validate_documentation_antidrift.py
 .venv/bin/python scripts/validate_digest_ownership.py
 .venv/bin/python scripts/validate_workflow_security.py
 .venv/bin/python scripts/validate_v1_security_review.py
@@ -50,6 +53,9 @@ readiness, G3 receipt conformance, Ruff, mypy and full pytest.
 - `validate_v1_freeze.py` enforces 40 facade exports, 15 v1 records and five
   retained v0.1 facade schemas.
 - corpus generation enforces 33 reproducible cases: five valid and 28 negative.
+- documentation anti-drift scans all 42 active Markdown files for broken local
+  links/references, unknown CLI commands, index gaps, ownership contradictions
+  and required release disclosures.
 - digest ownership rejects GovEngine recomputation claims over SCLite- or
   RExecOp-owned payloads.
 - normal review validation checks structure; release mode adds
@@ -110,11 +116,15 @@ rm -rf dist build *.egg-info
 .venv/bin/python -m twine check dist/*
 ```
 
-Stable promotion replaces the RC command with:
+For the immutable published `rc1`, completion is checked with:
 
 ```bash
 .venv/bin/python scripts/validate_rc_window.py --require-completed
 ```
+
+That command currently targets the `rc1` record and is not sufficient to
+qualify post-tag `main`. The `rc2` release slice must create and validate its
+own record before stable promotion.
 
 Tagging, publishing and public-index verification follow
 [PUBLISHING.md](../PUBLISHING.md). Validation never creates a tag or uploads a
@@ -136,9 +146,22 @@ Expected result for the current `1.0.0rc1` package line:
   `10d08555497f15efcaa988510fdb88729331fa2e14f00144825e0e8124c3ed72`;
 - clean public-index install, `pip check`, independent review and the RExecOp G6
   consumer evidence passed;
-- the RC record is active and final promotion remains time-gated.
+- the `rc1` record is active; stable promotion is additionally blocked on a new
+  candidate containing current `main`.
 
 These are immutable release facts, not instructions to recreate the tag.
+The immutable PyPI long description for `1.0.0rc1` is stale because it contains
+the pre-publication README and obsolete `0.16.11` installation guidance.
+Current `main` also contains unreleased post-tag fixes while retaining the
+`1.0.0rc1` version label. Therefore the successful RC evidence above does not
+qualify current `main` for stable promotion; a new candidate must rebuild,
+publish and repeat the relevant gates.
+
+`validate_public_truth.py` also scans every active root/docs Markdown file. It
+fails on broken repository links, missing documented files, unknown GovEngine
+CLI commands, unindexed top-level docs, common ownership-boundary
+contradictions and missing release-drift disclosures. Historical archive pages
+remain outside current-truth semantics.
 
 ## Compatibility checks
 

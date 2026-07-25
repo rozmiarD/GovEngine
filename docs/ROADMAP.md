@@ -6,6 +6,8 @@ mechanics.
 
 Current package baseline: `govengine==1.0.0rc1`, exact-pinned to
 `sclite-core==2.0.0`. Published PyPI baseline is `govengine==1.0.0rc1`.
+Current `main` retains that version label but contains unreleased post-tag
+fixes and is not byte-identical to the immutable published artifact.
 
 ## Responsibility boundary
 
@@ -39,25 +41,34 @@ Legacy admission, audit, planning, runner, OODA, orchestration, state-machine
 and runtime-shell APIs still ship as classified compatibility/experimental
 surfaces. They are not part of the 1.x promise.
 
-## Gate to 1.0.0
+## Gate to the next candidate and 1.0.0
 
-Final promotion requires all of the following:
+`1.0.0rc2` is required before stable promotion. The coordinated release train
+will first publish the SCLite `2.0.1` patch and then pin and qualify GovEngine
+`1.0.0rc2`; until that release work begins, current package metadata correctly
+remains `govengine==1.0.0rc1` with `sclite-core==2.0.0`.
 
-- the RC observation window ends at `2026-07-27T17:39:58.058090Z` and its
-  record is completed;
+The next candidate must include the post-tag security and compatibility fixes,
+the corrected package long description and the complete documentation
+anti-drift gate. It receives its own immutable tag, review/qualification
+evidence and observation record. Final promotion then requires all of the
+following:
+
+- the new RC observation record is completed;
 - no frozen facade, schema, corpus or reason-registry drift;
-- no open P0/P1 security finding;
-- public installation of `govengine==1.0.0rc1` with
-  `sclite-core==2.0.0` remains reproducible;
+- the review covering the new candidate reports no open P0/P1 security finding;
+- public installation of the new exact GovEngine/SCLite candidate pair remains
+  reproducible;
 - the matching RExecOp candidate continues to pass shared conformance and
   pre-I/O decision gates;
 - API, migration, security, validation, publishing and package metadata remain
   consistent;
-- `python scripts/validate_rc_window.py --require-completed` and every release
-  gate in [PUBLISHING.md](../PUBLISHING.md) pass.
+- the candidate-specific RC-window record is completed and every release gate
+  in [PUBLISHING.md](../PUBLISHING.md) passes.
 
-If a frozen contract changes, the correct response is a new RC and observation
-record, not refreshing `rc1` in place.
+The existing `rc1` tag and artifacts remain immutable. A contract change or a
+security-relevant post-tag fix is handled through a new RC and observation
+record, never by refreshing `rc1` in place.
 
 ## Release train
 

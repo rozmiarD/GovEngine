@@ -43,8 +43,9 @@ def test_release_readiness_validator_passes() -> None:
     )
 
     assert result.stdout.strip().startswith(
-        'release_readiness_ok:govengine==1.0.0rc1:'
+        'release_source_validation_ok:govengine==1.0.0rc1:'
     )
+    assert 'posture=post_tag_unreleased:publishable=false' in result.stdout
 
 
 def test_current_public_docs_do_not_reintroduce_pre_alpha_maturity_claims() -> None:
@@ -124,8 +125,8 @@ def test_public_truth_validator_rejects_stale_readme_release_claim() -> None:
         'facts for one concrete operation attempt.\n'
         'It does not define artifact truth or verify lifecycle and evidence\n'
         'bundles; those responsibilities belong to SCLite.\n'
-        'Current source/package version: `1.0.0rc1`.\n'
-        'Current package pin: `govengine==1.0.0rc1`.\n'
+        'The published release-candidate package `1.0.0rc1` is available.\n'
+        'python -m pip install govengine==1.0.0rc1\n'
         'Release posture: source candidate only.\n'
     )
 

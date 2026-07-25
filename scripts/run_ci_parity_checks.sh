@@ -35,7 +35,7 @@ run_step() {
 run_step public_truth "$PYTHON" scripts/validate_public_truth.py
 run_step release_train_truth "$PYTHON" scripts/validate_release_train_truth.py
 run_step api_stability "$PYTHON" scripts/validate_api_stability.py
-run_step release_readiness "$PYTHON" scripts/validate_release_readiness.py
+run_step release_source_validation "$PYTHON" scripts/validate_release_readiness.py
 run_step g3_receipt_conformance "$PYTHON" scripts/validate_g3_receipt_conformance_gate.py
 run_step ruff "$PYTHON" -m ruff check .
 run_step mypy "$PYTHON" -m mypy govengine

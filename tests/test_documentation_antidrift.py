@@ -3,6 +3,19 @@ from __future__ import annotations
 import tomllib
 from pathlib import Path
 
+import pytest
+
+from govengine.cli_contracts import cli_contract_registry
+from scripts.validate_documentation_antidrift import (
+    active_markdown_paths,
+    validate_document_references,
+    validate_documentation_antidrift,
+    validate_documentation_index,
+    validate_documented_cli_commands,
+    validate_markdown_links,
+    validate_ownership_claims,
+)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLISHED_VERSION = '1.0.0rc1'
@@ -28,8 +41,8 @@ def test_current_public_docs_track_package_version() -> None:
     assert f'govengine=={version}' in docs['docs/ROADMAP.md']
     assert f'govengine=={version}' in docs['PUBLIC_STATUS.md']
     assert f'Expected result for the current `{version}` package line' in docs['docs/VALIDATION.md']
-    assert f'Current source/package version: `{version}`' in docs['README.md']
-    assert f'Current package pin: `govengine=={version}`' in docs['README.md']
+    assert f'published release-candidate package `{version}`' in docs['README.md']
+    assert f'python -m pip install govengine=={version}' in docs['README.md']
     assert f'python -m pip install govengine=={PUBLISHED_VERSION}' in docs['README.md']
     assert 'Current 0.12.x alpha line' not in docs['docs/ROADMAP.md']
     assert 'published `0.12` alpha line' not in docs['README.md']
@@ -204,3 +217,81 @@ def test_security_docs_pin_canonical_flow_and_malicious_host_non_claim() -> None
     assert 'atomically claims decision digest and nonce' in integration
     assert 'legacy governed-runtime composition adapter' in runtime_admission
     assert 'canonical v1 attempt path' in receipt_binding
+
+
+def test_all_active_documentation_passes_fail_closed_antidrift() -> None:
+    supported = {
+        str(contract['command'])
+        for contract in cli_contract_registry()['contracts']
+    }
+
+    result = validate_documentation_antidrift(supported_commands=supported)
+
+    assert result == {'active_markdown_files': len(active_markdown_paths())}
+
+
+def test_documentation_antidrift_rejects_broken_local_link(tmp_path: Path) -> None:
+    document = tmp_path / 'README.md'
+    document.write_text('[missing](MISSING.md)\n', encoding='utf-8')
+
+    with pytest.raises(AssertionError, match='broken_markdown_link:MISSING.md'):
+        validate_markdown_links((document,), root=tmp_path)
+
+
+def test_documentation_antidrift_rejects_unindexed_active_doc(tmp_path: Path) -> None:
+    docs = tmp_path / 'docs'
+    docs.mkdir()
+    (docs / 'README.md').write_text('# Index\n', encoding='utf-8')
+    (docs / 'BOUNDARY.md').write_text('# Boundary\n', encoding='utf-8')
+
+    with pytest.raises(
+        AssertionError,
+        match='unindexed_active_docs:BOUNDARY.md',
+    ):
+        validate_documentation_index(root=tmp_path)
+
+
+def test_documentation_antidrift_rejects_missing_documented_file(
+    tmp_path: Path,
+) -> None:
+    document = tmp_path / 'README.md'
+    document.write_text(
+        'Run `scripts/validate_missing_gate.py`.\n',
+        encoding='utf-8',
+    )
+
+    with pytest.raises(
+        AssertionError,
+        match='missing_documented_file:scripts/validate_missing_gate.py',
+    ):
+        validate_document_references((document,), root=tmp_path)
+
+
+def test_documentation_antidrift_rejects_unknown_cli_command(
+    tmp_path: Path,
+) -> None:
+    document = tmp_path / 'README.md'
+    document.write_text('Run `govengine-policy invent`.\n', encoding='utf-8')
+
+    with pytest.raises(
+        AssertionError,
+        match='unknown_documented_cli_command:govengine-policy invent',
+    ):
+        validate_documented_cli_commands(
+            (document,),
+            supported_commands={'govengine-policy validate'},
+            root=tmp_path,
+        )
+
+
+def test_documentation_antidrift_rejects_cross_owner_claim(
+    tmp_path: Path,
+) -> None:
+    document = tmp_path / 'README.md'
+    document.write_text(
+        'GovEngine executes live connector I/O.\n',
+        encoding='utf-8',
+    )
+
+    with pytest.raises(AssertionError, match='forbidden_ownership_claim'):
+        validate_ownership_claims((document,), root=tmp_path)

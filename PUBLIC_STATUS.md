@@ -9,21 +9,29 @@ decision. It does not execute the operation or define artifact truth.
 
 | Item | Current truth |
 | --- | --- |
-| Source/package version | `1.0.0rc1` |
-| Published distribution | `govengine==1.0.0rc1` |
+| Current `main` version label | `1.0.0rc1`; contains unreleased post-tag fixes |
+| Published immutable artifact | `govengine==1.0.0rc1` from tag `v1.0.0rc1` |
 | Python | `>=3.11`; CI covers 3.11, 3.12 and 3.13 |
 | Required dependency | `sclite-core==2.0.0` |
 | Stable-candidate facade | `govengine.v1`, exactly 40 exports |
 | GovEngine-owned v1 records | 15 |
 | Conformance corpus | 33 cases: 5 valid, 28 negative |
-| Independent review | complete; zero open P0/P1 findings |
+| Independent review | published `rc1` complete; current `main` requires new-candidate review |
 | RC observation | active until `2026-07-27T17:39:58.058090Z` |
 | Reference runtime | `rexecop==1.0.0rc1` |
 | Profile alignment | Tecrax `0.4.0rc3` pending realignment from `rexecop==0.3.0rc3` |
 
 The release was published from immutable tag `v1.0.0rc1` through the
-tag-confirmed OIDC workflow. Final `1.0.0` remains blocked until the observation
-record is completed without frozen-contract drift or a new P0/P1 finding.
+tag-confirmed OIDC workflow. Current `main` retains the `1.0.0rc1` version label
+but differs from the published artifact because it includes unreleased
+security, compatibility and documentation fixes. Those changes require
+`1.0.0rc2` qualification before final `1.0.0`; the published RC observation
+does not qualify them by itself.
+
+The immutable PyPI long description for `1.0.0rc1` is stale: it contains the
+pre-publication README, including obsolete release-blocked and `0.16.11`
+installation wording. The wheel version, exact dependency and recorded hashes
+remain valid. The corrected description will ship with the next candidate.
 The machine-readable current release train is
 [`docs/release-train.json`](docs/release-train.json).
 

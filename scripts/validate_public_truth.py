@@ -11,8 +11,12 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from govengine import __version__ as package_version  # noqa: E402
+from govengine.cli_contracts import cli_contract_registry  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
+from scripts.validate_documentation_antidrift import (  # noqa: E402
+    validate_documentation_antidrift,
+)
 from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 
 EXPECTED_RELEASE_LABEL = '1.0.0rc1'
@@ -266,8 +270,8 @@ def _assert_readme_release_truth(readme: str, version: str) -> None:
         'facts for one concrete operation attempt',
         'It does not define artifact truth or verify lifecycle and evidence\n'
         'bundles; those responsibilities belong to SCLite.',
-        f'Current source/package version: `{version}`.',
-        f'Current package pin: `govengine=={version}`.',
+        f'published release-candidate package `{version}`',
+        f'python -m pip install govengine=={version}',
     ):
         _assert_contains('README.md', readme, marker)
     for claim in README_STALE_RELEASE_CLAIMS:
@@ -408,6 +412,10 @@ def main() -> int:
     dependency = _project_dependency(project, 'sclite-core')
     surfaces = public_surface_index()
     surface_names = [surface.name for surface in surfaces]
+    supported_cli_commands = {
+        str(contract['command'])
+        for contract in cli_contract_registry()['contracts']
+    }
 
     if package_version != version:
         raise AssertionError(f'package_version_mismatch:{package_version}!={version}')
@@ -445,8 +453,16 @@ def main() -> int:
     _assert_contains('docs/ROADMAP.md', roadmap, f'Current package baseline: `govengine=={version}`')
     _assert_contains('docs/ROADMAP.md', roadmap, dependency)
     _assert_roadmap_current_release_truth(roadmap)
-    _assert_contains('PUBLIC_STATUS.md', public_status, f'| Source/package version | `{version}` |')
-    _assert_contains('PUBLIC_STATUS.md', public_status, f'| Published distribution | `govengine=={PUBLISHED_VERSION}` |')
+    _assert_contains(
+        'PUBLIC_STATUS.md',
+        public_status,
+        f'| Current `main` version label | `{version}`; contains unreleased post-tag fixes |',
+    )
+    _assert_contains(
+        'PUBLIC_STATUS.md',
+        public_status,
+        f'| Published immutable artifact | `govengine=={PUBLISHED_VERSION}` from tag `v{PUBLISHED_VERSION}` |',
+    )
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
     _assert_contains('PUBLISHING.md', publishing, 'scripts/validate_clean_package_install.py')
@@ -593,8 +609,15 @@ def main() -> int:
         version,
     )
     _assert_candidate_maturity_truth(CURRENT_ALPHA_DOCS)
+    documentation = validate_documentation_antidrift(
+        supported_commands=supported_cli_commands,
+    )
 
-    print(f'public_truth_ok:govengine=={version}:{dependency}:surfaces={len(surface_names)}')
+    print(
+        f'public_truth_ok:govengine=={version}:{dependency}:'
+        f'surfaces={len(surface_names)}:'
+        f"active_docs={documentation['active_markdown_files']}"
+    )
     return 0
 
 

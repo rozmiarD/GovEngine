@@ -17,9 +17,18 @@ bundles; those responsibilities belong to SCLite. GovEngine does not perform
 the operation, schedule jobs, manage credentials, contact targets or store
 evidence.
 
-The current release-candidate package `1.0.0rc1` exposes a frozen candidate
-contract through `govengine.v1`. The wider package still contains explicitly
-classified compatibility, experimental and fixture surfaces.
+The published release-candidate package `1.0.0rc1` exposes a frozen candidate
+contract through `govengine.v1`. Current `main` retains the `1.0.0rc1` version
+label but is not the immutable published artifact: it contains documented
+unreleased fixes that require a new release candidate before stable promotion.
+The wider package still contains explicitly classified compatibility,
+experimental and fixture surfaces.
+
+The immutable PyPI long description for `1.0.0rc1` is stale: it was built from
+the pre-publication README and still describes the old release posture and
+`0.16.11` installation path. The wheel, dependency pin and release hashes are
+unaffected. This repository README is the corrected project description; the
+next release candidate must publish it as package metadata.
 
 ## Why GovEngine exists
 
@@ -277,6 +286,10 @@ python -m ruff check .
 python scripts/validate_public_truth.py
 python scripts/validate_release_readiness.py
 ```
+
+On current post-tag `main`, `validate_release_readiness.py` validates source
+invariants but reports `publishable=false`. It does not authorize republishing
+`rc1` or promoting the changed source directly to stable.
 
 Use `scripts/validate_clean_package_install.py --no-editable --venv <path>` for
 an isolated package-install smoke test. See

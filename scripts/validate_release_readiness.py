@@ -24,6 +24,7 @@ from scripts.validate_release_train_truth import validate_release_train_truth  #
 
 EXPECTED_VERSION = '1.0.0rc1'
 EXPECTED_RELEASE_LABEL = '1.0.0rc1'
+CURRENT_SOURCE_POSTURE = 'post_tag_unreleased'
 EXPECTED_SURFACES = [
     'artifact_governance_core',
     'planning_contracts_core',
@@ -105,6 +106,7 @@ def main() -> int:
             'docs/VALIDATION.md',
         )
     )
+    normalized_public_text = ' '.join(public_text.split())
     _assert(EXPECTED_RELEASE_LABEL in public_text, 'missing_release_candidate_label')
     for marker in (
         'RC-window status must be `prepared` before first publication',
@@ -112,15 +114,21 @@ def main() -> int:
         'python scripts/validate_rc_window.py --require-completed',
         'at least seven complete days',
         'Do not add a `PYPI_API_TOKEN` secret.',
+        '`1.0.0rc2` is required before stable promotion',
+        'does not qualify current `main` for stable promotion',
     ):
-        _assert(marker in public_text, f'missing_release_process_marker:{marker}')
+        _assert(
+            ' '.join(marker.split()) in normalized_public_text,
+            f'missing_release_process_marker:{marker}',
+        )
     for term in FORBIDDEN_PUBLIC_TERMS:
         _assert(term not in public_text, f'forbidden_public_term:{term}')
     _assert('production-readiness claims' in public_text or 'production readiness' in public_text, 'missing_production_non_claim')
 
     print(
-        f'release_readiness_ok:govengine=={EXPECTED_VERSION}:'
-        f'{EXPECTED_RELEASE_LABEL}:surfaces={len(surface_names)}'
+        f'release_source_validation_ok:govengine=={EXPECTED_VERSION}:'
+        f'{EXPECTED_RELEASE_LABEL}:surfaces={len(surface_names)}:'
+        f'posture={CURRENT_SOURCE_POSTURE}:publishable=false'
     )
     return 0
 
