@@ -104,7 +104,7 @@ CLI_CONTRACTS: tuple[CliContract, ...] = (
     CliContract(
         command=('govengine-policy', 'explain'),
         entrypoint='govengine-policy',
-        schema='govengine.policy_evaluation_explanation.v0.1',
+        schema='govengine.policy_evaluation_explanation.v0.1_or_v1',
         stability='alpha_contract',
         group='policy_explain',
         exit_codes=(
@@ -116,7 +116,7 @@ CLI_CONTRACTS: tuple[CliContract, ...] = (
     CliContract(
         command=('govengine-policy', 'simulate'),
         entrypoint='govengine-policy',
-        schema='govengine.policy_evaluation_explanation.v0.1',
+        schema='govengine.policy_evaluation_explanation.v0.1_or_v1',
         stability='alpha_contract',
         group='policy_explain',
         exit_codes=(

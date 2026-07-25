@@ -243,6 +243,9 @@ GovEngine publishes a machine-readable registry for `govengine-policy` and
 - schema: `govengine.cli_contract_registry.v0.1`
 - module: `govengine.cli_contracts.cli_contract_registry()`
 - error envelope: `govengine.cli_error.v0.1` on `--json` failure paths
+- `explain` / `simulate` output:
+  `govengine.policy_evaluation_explanation.v0.1_or_v1`, selected from the
+  compiled policy-pack schema
 
 Exit-code policy:
 

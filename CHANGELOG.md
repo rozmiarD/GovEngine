@@ -6,6 +6,9 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 ## Unreleased
 
+- Corrects the machine-readable CLI registry for `govengine-policy explain`
+  and `simulate`: legacy policy packs emit explanation schema `v0.1`, while
+  typed policy packs emit schema `v1`.
 - Applies the shared bounded-JSON limits to key-resolution and trust-store
   adapter records, and rejects forbidden trust-material keys recursively across
   nested mappings, lists and tuples.
