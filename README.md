@@ -147,6 +147,10 @@ Install the published release candidate:
 python -m pip install govengine==1.0.0rc1
 ```
 
+Use the exact pin shown above. Because `1.0.0rc1` is a pre-release, an
+unqualified `pip install govengine` continues to select the latest stable
+`0.16.11` line.
+
 Requirements:
 
 - Python 3.11 or newer;

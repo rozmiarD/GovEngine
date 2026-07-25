@@ -4,12 +4,12 @@ This snapshot records the live GovEngine imports used by the current RExecOp
 and Tecrax source trees. It is migration evidence, not a promise that every
 legacy import will enter the stable facade.
 
-Baseline checked on 2026-07-21. Documentation-only GovEngine commits after the
+Baseline checked on 2026-07-25. Documentation-only GovEngine commits after the
 API scan do not change this inventory:
 
 - GovEngine v1/API inventory from the `1.0.0rc1` source line;
-- RExecOp `8a32638`;
-- Tecrax `a870658`.
+- RExecOp `f5b6911`;
+- Tecrax `34b2663`.
 
 The map is produced by `consumer_import_map()` in
 `scripts/validate_api_stability.py`. The scanner covers Python files while

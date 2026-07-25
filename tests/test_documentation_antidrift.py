@@ -126,7 +126,10 @@ def test_active_docs_track_release_candidate_and_current_stack_ownership() -> No
     assert 'public `1.0.0rc1` package has\npassed independent contract review' in docs['SECURITY.md']
     assert 'exact 40 exports' in docs['docs/API_COMPATIBILITY.md']
     assert 'RExecOp is the current domain-neutral runtime' in docs['docs/GOVENGINE_KERNEL_BOUNDARY.md']
-    assert 'Tecrax is a downstream profile.' in docs['docs/ROADMAP.md']
+    assert (
+        'Tecrax is a downstream profile, but\n'
+        'its current source candidate is not aligned'
+    ) in docs['docs/ROADMAP.md']
     assert 'module-scoped terminal-runtime-fact conformance' in docs['docs/ROADMAP.md']
     assert 'for 79 unique import paths' in docs['docs/DOWNSTREAM_IMPORT_MAP.md']
     assert 'RExecOp owns current orchestration mechanics' in docs['docs/ORCHESTRATOR_MODEL.md']

@@ -65,12 +65,15 @@ The current dependency order is:
 
 ```text
 sclite-core 2.0.0 -> govengine 1.0.0rc1
-                  -> rexecop 0.3.0rc3
-                  -> tecrax 0.4.0rc3
+                  -> rexecop 1.0.0rc1
+
+tecrax 0.4.0rc3: pending repin from rexecop 0.3.0rc3 and requalification
 ```
 
-RExecOp is the reference runtime. Tecrax is a downstream profile. Ravenclaw is
-a legacy/external consumer and is not the next stage of this release train.
+RExecOp is the published reference runtime. Tecrax is a downstream profile, but
+its current source candidate is not aligned with the published runtime line.
+Ravenclaw is a legacy/external consumer and is not the next stage of this
+release train.
 
 ## After 1.0
 

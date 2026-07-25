@@ -160,7 +160,7 @@ def validate_v1_freeze(path: Path = MANIFEST_PATH) -> dict[str, int]:
     for marker in (
         'govengine==0.16.11',
         'govengine==1.0.0rc1',
-        'rexecop==0.3.0rc3',
+        'rexecop==1.0.0rc1',
         'sclite-core==2.0.0',
         'Admission is not approval.',
         'GovEngine does not issue RExecOp runtime permits',

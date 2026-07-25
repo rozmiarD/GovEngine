@@ -34,15 +34,17 @@ sclite-core 2.0.0     truth/contracts; published and frozen
 govengine 1.0.0rc1    governance; published RC
         |
         v
-rexecop 0.3.0rc3      reference runtime; source candidate
-        |
-        v
-tecrax 0.4.0rc3       profile; source candidate
+rexecop 1.0.0rc1      reference runtime; published RC
+
+tecrax 0.4.0rc3       profile source candidate; pending realignment
 ```
 
 Ravenclaw is a legacy/external consumer, not the next package in the current
-release train. A downstream release must consume the exact already-published
-upstream versions; it does not authorize changing upstream ownership.
+release train. Tecrax is not currently aligned with the published train because
+its source candidate still pins `rexecop==0.3.0rc3`; it must be repinned and
+requalified before it is presented as a matching downstream release. A
+downstream release must consume the exact already-published upstream versions;
+it does not authorize changing upstream ownership.
 
 ## External configuration
 

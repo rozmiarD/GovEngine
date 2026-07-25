@@ -1,21 +1,23 @@
 # Migrating to GovEngine 1
 
 This guide covers migration from the archived `govengine==0.16.11` line to
-the published `govengine==1.0.0rc1` release candidate. The candidate depends on frozen
-`sclite-core==2.0.0`; the matching runtime candidate is
-`rexecop==0.3.0rc3`.
+the published `govengine==1.0.0rc1` release candidate. The candidate depends on
+frozen `sclite-core==2.0.0`; the matching published runtime candidate is
+`rexecop==1.0.0rc1`.
 
 Do not mix the archived stack and release-candidate stack in one environment.
-Install the public governance/truth pair with exact pins:
+Install the published governance, truth and runtime candidates with exact pins:
 
 ```bash
 python -m pip install \
   "sclite-core==2.0.0" \
-  "govengine==1.0.0rc1"
+  "govengine==1.0.0rc1" \
+  "rexecop==1.0.0rc1"
 ```
 
-RExecOp `0.3.0rc3` remains an exact-pinned source candidate and is not promoted
-to a public or 1.0 line by the GovEngine publication.
+Tecrax `0.4.0rc3` is not a matching downstream release for this train: its
+current source candidate still pins `rexecop==0.3.0rc3`. Repin and requalify
+Tecrax separately before installing it with this runtime line.
 
 ## Candidate 1.x import boundary
 
@@ -84,7 +86,7 @@ gates.
 
 ## RExecOp consumer migration
 
-Use `rexecop==0.3.0rc3` for the matching runtime candidate. It consumes the shared
+Use `rexecop==1.0.0rc1` for the matching runtime candidate. It consumes the shared
 33-case governance corpus, verifies trusted signed decisions, atomically
 claims the decision nonce, produces the runtime permit and terminal receipt,
 and checks the decision again before connector I/O.
