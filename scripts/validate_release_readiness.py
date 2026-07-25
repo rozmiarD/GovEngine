@@ -19,6 +19,7 @@ from govengine.contract_proofs import (  # noqa: E402
 )
 from govengine.surfaces import public_surface_index  # noqa: E402
 from govengine._digest_ownership import validate_digest_ownership_inventory  # noqa: E402
+from scripts.validate_release_train_truth import validate_release_train_truth  # noqa: E402
 
 
 EXPECTED_VERSION = '1.0.0rc1'
@@ -59,6 +60,7 @@ def _assert(condition: bool, reason: str) -> None:
 
 
 def main() -> int:
+    validate_release_train_truth()
     project = _pyproject()['project']
     version = str(project['version'])
     classifiers = tuple(str(item) for item in project.get('classifiers', ()))

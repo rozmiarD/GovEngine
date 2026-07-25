@@ -8,6 +8,10 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Adds a machine-readable current release-train manifest and fail-closed local
+  and cross-repository anti-drift validation for package versions, exact
+  dependency pins, downstream alignment status and active release
+  documentation. The gate now runs in CI and release readiness.
 - Corrects the machine-readable CLI registry for `govengine-policy explain`
   and `simulate`: legacy policy packs emit explanation schema `v0.1`, while
   typed policy packs emit schema `v1`.

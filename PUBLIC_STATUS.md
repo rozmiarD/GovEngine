@@ -18,10 +18,14 @@ decision. It does not execute the operation or define artifact truth.
 | Conformance corpus | 33 cases: 5 valid, 28 negative |
 | Independent review | complete; zero open P0/P1 findings |
 | RC observation | active until `2026-07-27T17:39:58.058090Z` |
+| Reference runtime | `rexecop==1.0.0rc1` |
+| Profile alignment | Tecrax `0.4.0rc3` pending realignment from `rexecop==0.3.0rc3` |
 
 The release was published from immutable tag `v1.0.0rc1` through the
 tag-confirmed OIDC workflow. Final `1.0.0` remains blocked until the observation
 record is completed without frozen-contract drift or a new P0/P1 finding.
+The machine-readable current release train is
+[`docs/release-train.json`](docs/release-train.json).
 
 ## Supported contract
 

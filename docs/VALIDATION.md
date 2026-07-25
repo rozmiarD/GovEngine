@@ -6,9 +6,10 @@ contact live targets or grant execution authority.
 ## CI
 
 `.github/workflows/pytest.yml` runs on Python 3.11, 3.12 and 3.13 with exact
-`sclite-core==2.0.0`. It checks public truth, API stability, v1 freeze, the RC
-window, generated conformance, workflow security, review structure, release
-readiness, Ruff, mypy, strict facade typing and full pytest.
+`sclite-core==2.0.0`. It checks public truth, the machine-readable release
+train, API stability, v1 freeze, the RC window, generated conformance, workflow
+security, review structure, release readiness, Ruff, mypy, strict facade typing
+and full pytest.
 
 Separate jobs:
 
@@ -30,9 +31,9 @@ Use the repository environment when available:
 bash scripts/run_ci_parity_checks.sh
 ```
 
-This runs public truth, API stability, release readiness, G3 receipt
-conformance, Ruff, mypy and full pytest. `git diff --check` remains a separate
-local delivery check.
+This runs public truth, local release-train truth, API stability, release
+readiness, G3 receipt conformance, Ruff, mypy and full pytest.
+`git diff --check` remains a separate local delivery check.
 
 ## Contract gates
 
@@ -43,6 +44,7 @@ local delivery check.
 .venv/bin/python scripts/validate_workflow_security.py
 .venv/bin/python scripts/validate_v1_security_review.py
 .venv/bin/python scripts/validate_rc_window.py
+.venv/bin/python scripts/validate_release_train_truth.py
 ```
 
 - `validate_v1_freeze.py` enforces 40 facade exports, 15 v1 records and five
@@ -53,6 +55,8 @@ local delivery check.
 - normal review validation checks structure; release mode adds
   `--require-independent`.
 - RC validation binds the facade manifest, corpus manifest and reason registry.
+- release-train validation checks current GovEngine package metadata and active
+  documentation against `docs/release-train.json`.
 
 ## Downstream import and protocol gates
 
@@ -66,6 +70,17 @@ The gate classifies every GovEngine root export, detects unlisted callables and
 checks supported downstream root imports. RExecOp separately executes the
 shared corpus cases it owns, including trusted signed-decision verification and
 atomic decision/nonce claim semantics.
+
+For a checked-out sibling stack, verify every package version and exact
+dependency pin:
+
+```bash
+.venv/bin/python scripts/validate_release_train_truth.py --cross-repo
+```
+
+The cross-repo gate fails on version, dependency or alignment-status drift.
+Historical changelog entries and immutable security-review evidence are
+deliberately outside this current-truth scan.
 
 ## Clean installed-package gate
 
@@ -89,6 +104,7 @@ Before tagging, additionally require:
 ```bash
 .venv/bin/python scripts/validate_v1_security_review.py --require-independent
 .venv/bin/python scripts/validate_rc_window.py
+.venv/bin/python scripts/validate_release_train_truth.py --cross-repo
 rm -rf dist build *.egg-info
 .venv/bin/python -m build
 .venv/bin/python -m twine check dist/*

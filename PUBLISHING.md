@@ -45,6 +45,8 @@ its source candidate still pins `rexecop==0.3.0rc3`; it must be repinned and
 requalified before it is presented as a matching downstream release. A
 downstream release must consume the exact already-published upstream versions;
 it does not authorize changing upstream ownership.
+The same facts are recorded in machine-readable form in
+`docs/release-train.json`.
 
 ## External configuration
 
@@ -96,6 +98,7 @@ Then run the release-only gates:
 
 ```bash
 .venv/bin/python scripts/validate_v1_freeze.py
+.venv/bin/python scripts/validate_release_train_truth.py --cross-repo
 .venv/bin/python scripts/generate_conformance_corpus.py --check
 .venv/bin/python scripts/validate_workflow_security.py
 .venv/bin/python scripts/validate_v1_security_review.py --require-independent

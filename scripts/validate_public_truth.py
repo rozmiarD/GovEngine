@@ -535,6 +535,11 @@ def main() -> int:
         raise AssertionError('.github/workflows/pytest.yml:moving_sclite_main_ref')
     _assert_contains('.github/workflows/pytest.yml', workflow, "python-version: ['3.11', '3.12', '3.13']")
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_public_truth.py')
+    _assert_contains(
+        '.github/workflows/pytest.yml',
+        workflow,
+        'python scripts/validate_release_train_truth.py',
+    )
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_api_stability.py')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python scripts/validate_v1_freeze.py')
     _assert_contains(

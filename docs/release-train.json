@@ -1,0 +1,39 @@
+{
+  "schema_version": "govengine.release_train.v1",
+  "checked_at": "2026-07-25",
+  "components": {
+    "sclite": {
+      "project": "sclite-core",
+      "version": "2.0.0",
+      "status": "published_frozen",
+      "dependencies": {}
+    },
+    "govengine": {
+      "project": "govengine",
+      "version": "1.0.0rc1",
+      "status": "published_rc",
+      "dependencies": {
+        "sclite-core": "2.0.0"
+      }
+    },
+    "rexecop": {
+      "project": "rexecop",
+      "version": "1.0.0rc1",
+      "status": "published_rc",
+      "dependencies": {
+        "govengine": "1.0.0rc1",
+        "sclite-core": "2.0.0"
+      }
+    },
+    "tecrax": {
+      "project": "tecrax",
+      "version": "0.4.0rc3",
+      "status": "pending_realignment",
+      "dependencies": {
+        "govengine": "1.0.0rc1",
+        "rexecop": "0.3.0rc3",
+        "sclite-core": "2.0.0"
+      }
+    }
+  }
+}

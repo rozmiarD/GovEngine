@@ -39,6 +39,8 @@ Start with [the repository README](../README.md). Current package status is in
 - [DIGEST_OWNERSHIP.md](DIGEST_OWNERSHIP.md) — recomputed, delegated,
   reference-only and produced digests.
 - [VALIDATION.md](VALIDATION.md) — active local, CI, package and release gates.
+- [release-train.json](release-train.json) — machine-readable current versions,
+  exact dependency pins and alignment status.
 - [DOWNSTREAM_IMPORT_MAP.md](DOWNSTREAM_IMPORT_MAP.md) — RExecOp/Tecrax consumer
   inventory.
 - [MIGRATING_TO_1.md](MIGRATING_TO_1.md) — migration from the archived 0.16
