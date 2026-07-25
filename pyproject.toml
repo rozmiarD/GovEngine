@@ -39,7 +39,7 @@ dev = [
   "hypothesis>=6,<7",
   "mypy>=1.18,<2",
   "pytest>=8,<9",
-  "ruff>=0.14,<1",
+  "ruff==0.15.17",
 ]
 
 [project.scripts]

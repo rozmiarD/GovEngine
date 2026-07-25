@@ -12,6 +12,8 @@ experimental and fixture classifications.
   and cross-repository anti-drift validation for package versions, exact
   dependency pins, downstream alignment status and active release
   documentation. The gate now runs in CI and release readiness.
+- Pins the CI lint contract to `ruff==0.15.17` so a newly published formatter
+  rule set cannot invalidate an otherwise unchanged release branch.
 - Corrects the machine-readable CLI registry for `govengine-policy explain`
   and `simulate`: legacy policy packs emit explanation schema `v0.1`, while
   typed policy packs emit schema `v1`.
