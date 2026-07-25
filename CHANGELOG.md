@@ -2,7 +2,9 @@
 
 All notable public GovEngine changes should be documented here.
 
-GovEngine follows conservative pre-1.0 versioning while the API boundary is still being extracted from Ravenclaw.
+The frozen `govengine.v1` facade follows the documented 1.x compatibility
+policy. The wider package root retains its explicit compatibility,
+experimental and fixture classifications.
 
 ## Unreleased
 
@@ -21,6 +23,8 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 
 - Reframed GovEngine consistently as an in-process governance kernel and
   separated GovEngine-owned bindings from SCLite lifecycle/evidence truth.
+- Rebuilt the README around the frozen v1 quick start, canonical governance
+  flow, ownership boundaries and security non-claims.
 - Replaced the README renderer-dependent diagram with a compact ASCII ownership
   flow.
 - Rebuilt architecture, API boundary, validation, publishing, roadmap and
@@ -29,12 +33,6 @@ GovEngine follows conservative pre-1.0 versioning while the API boundary is stil
 - Marked pre-v1 runtime-shaped pages as compatibility references and removed
   obsolete runnable MVP/archive instructions duplicated by Git history and this
   changelog.
-
-- Rebuilds the README around GovEngine's actual role as an embeddable
-  deterministic governance library, adds a PlantUML view of the cooperating
-  profile/RExecOp/GovEngine/SCLite components without inventing a product name,
-  and replaces release-history/API-inventory narration with a test-backed v1
-  quick start, canonical flow, ownership and security boundaries.
 - Archives the superseded 0.14 governed-runtime MVP runbook, guarded/replay
   example and GE-032 local-runner decision evidence. Active compatibility
   references remain documented, while the canonical operator path now points

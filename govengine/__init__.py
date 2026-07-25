@@ -1,8 +1,8 @@
-"""GovEngine package-in-place seam for Ravenclaw extraction.
+"""GovEngine in-process deterministic governance kernel.
 
-This package exposes neutral context, policy, runner, and safety-control
-contracts without importing optional contract-lifecycle dependencies at package
-import time.
+The frozen 1.x contract is exposed by :mod:`govengine.v1`. The wider package
+root retains classified compatibility, experimental and fixture surfaces
+without acquiring runtime execution or SCLite truth ownership.
 """
 
 from typing import Any

@@ -1,9 +1,9 @@
 """Frozen facade for the GovEngine 1.0 release-candidate kernel.
 
-The facade is intentionally limited to deterministic API envelopes,
-PolicyEngine compilation/evaluation/enforcement, and governance trace
-projection. Runtime mechanics, SCLite bridges, fixtures, and compatibility
-adapters remain available through their existing alpha modules only.
+The facade is intentionally limited to deterministic API envelopes, approval
+and governance records, PolicyEngine compilation/evaluation/enforcement, and
+governance trace projection. Runtime mechanics, SCLite bridges, fixtures, and
+compatibility adapters remain outside the 1.x import promise.
 """
 
 from __future__ import annotations

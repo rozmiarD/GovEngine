@@ -57,8 +57,9 @@ The admission result composes existing GovEngine and SCLite-facing signals:
 - `artifact_refs`: bounded references or digests for inputs. Raw payloads,
   targets, credentials, and noisy logs stay outside the admission record.
   `normalize_admission_artifact_refs()` exposes those bounded review references
-  as alpha API by normalizing existing IDs, refs, paths, and digest strings; it
-  does not compute content digests or redefine SCLite canonicalization.
+  as a compatibility helper by normalizing existing IDs, refs, paths, and digest
+  strings; it does not compute content digests or redefine SCLite
+  canonicalization.
 
 ## Output Shape
 
@@ -263,48 +264,16 @@ instead of replacing them:
 - `govengine.review` for receipt-bounded evidence/review reference checks through
   `validate_evidence_review_chain()`.
 
-## Implementation Status And Next Tasks
+## Compatibility status
 
-Delivered in `0.14.0`:
+The package still ships the runtime-admission record, composer, bounded public
+summaries, inspect-only command and read-only receipt/audit verifiers for
+existing consumers. In-memory replay and JSONL audit helpers remain development
+fixtures without production durability or concurrency guarantees.
 
-1. `RuntimeAdmissionResult` exists as the core record;
-2. `validate_runtime_admission_result()` enforces core status/allowed/blocker
-   consistency;
-3. `compose_runtime_admission_result()` composes bounded gate summaries into the
-   record;
-4. `normalize_admission_artifact_refs()` is exposed as an alpha bounded-reference
-   helper for admission review output;
-5. `canonical_govengine_record()` and `govengine_record_digest()` provide a
-   GovEngine-owned record serialization/digest boundary for admission/receipt
-   binding without canonicalizing SCLite artifacts;
-6. `SignedArtifact` binds a GovEngine-owned record digest to signer metadata
-   and a payload reference while leaving production verification to
-   host-provided verifier ports;
-7. key-resolver and trust-store port records carry references and decisions
-   only, not private key material, credentials, KMS, CA, or trust-anchor
-   storage;
-8. `validate_runner_receipt_binding()` and `validate_evidence_review_chain()`
-   validate bounded receipt and evidence/review reference chains;
-9. `AuditLedgerPort` and `JsonlAuditLedgerAdapter` provide a development-only
-   hash-chained audit append/read/verify surface;
-10. `ReplayClaimStore`, `InMemoryReplayClaimStore`, and
-    `verify_guard_and_record_replay()` provide replay claim-once and
-    guarded-strict composition helpers;
-11. `scripts/inspect_runtime_admission.py` implements the inspect-only operator
-    workflow;
-12. `scripts/verify_runner_receipt_binding.py` and
-    `scripts/verify_audit_ledger.py` provide read-only operator verifiers;
-13. focused negative tests cover missing policy, ticket, trust, replay,
-    runner-profile, and receipt-obligation blockers in admission composition.
-
-Remaining work:
-
-1. keep live backend support disabled by default;
-2. keep production replay, audit, and evidence persistence host-owned beyond the
-   development adapters;
-3. keep optional `LocalSubprocessRunner` out of the kernel until host-owned live
-   profile authorization and safety gates are implemented and tested.
-
-The result is usable by hosts for receipt, audit-ledger, replay-store,
-inspect-only, and dry-run runner workflows, but it must not claim production
+This compatibility surface does not receive the `govengine.v1` stability
+promise. It must remain side-effect free with respect to connector execution:
+GovEngine does not ship `LocalSubprocessRunner`, and live backend support,
+production replay/audit/evidence persistence and runtime recovery remain
+RExecOp or host responsibilities. This surface must not claim production
 runtime readiness.

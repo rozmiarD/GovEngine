@@ -3,7 +3,7 @@
 GovEngine treats a digest according to the payload available at the boundary,
 not according to the caller's label. The machine-readable inventory is
 `govengine._digest_ownership.DIGEST_OWNERSHIP_INVENTORY`; CI validates it through
-`scripts/validate_digest_ownership.py` and the alpha-readiness gate.
+`scripts/validate_digest_ownership.py` and the release-readiness gate.
 
 | Mode | GovEngine behavior |
 | --- | --- |
