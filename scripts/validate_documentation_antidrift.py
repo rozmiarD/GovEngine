@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import re
 import sys
+import tomllib
 from pathlib import Path
 from typing import Iterable
+from urllib.parse import unquote
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -69,6 +71,14 @@ FORBIDDEN_OWNERSHIP_PATTERNS = (
         re.IGNORECASE,
     ),
     re.compile(
+        r'\b(?:operation lifecycle|queues?|leases?|fencing|runtime permits?|'
+        r'connectors?|retries|rollback|'
+        r'(?:(?:live|connector|network|subprocess)\s+)+I/O)\s+'
+        r'(?:is|are)\s+(?:owned|executed|performed|run|dispatched|scheduled|handled)\s+'
+        r'by\s+GovEngine\b',
+        re.IGNORECASE,
+    ),
+    re.compile(
         r'\bSCLite\s+owns\s+(?:policy|governance|approval|admission|runtime execution)\b',
         re.IGNORECASE,
     ),
@@ -77,14 +87,25 @@ FORBIDDEN_OWNERSHIP_PATTERNS = (
         re.IGNORECASE,
     ),
 )
+FORBIDDEN_RELEASE_PATTERNS = (
+    re.compile(r'\bpublishable\s*=\s*true\b', re.IGNORECASE),
+    re.compile(r'\bmay\s+be\s+promoted\s+directly\s+to\s+stable\b', re.IGNORECASE),
+)
+CURRENT_VERSION_CLAIM = re.compile(
+    r'\bcurrent\s+(?:GovEngine|source/package|source|package)\s+version\s*[:=]?\s*'
+    r'`?(?:govengine==)?'
+    r'(?P<version>\d+\.\d+\.\d+(?:[A-Za-z][A-Za-z0-9.-]*)?)`?',
+    re.IGNORECASE,
+)
 MARKDOWN_LINK = re.compile(r'!?\[[^\]]*\]\(([^)\n]+)\)')
 PATH_REFERENCE = re.compile(
     r'(?<![\w.-])'
     r'((?:\.github/|docs/|govengine/|scripts/|tests/)'
-    r'[A-Za-z0-9_./*-]+\.(?:py|json|yaml|yml|sh))'
+    r'[A-Za-z0-9_./*-]+\.(?:md|py|json|yaml|yml|sh))'
 )
-BACKTICK_FILE_REFERENCE = re.compile(r'`([^`\n]+\.(?:py|json|yaml|yml|sh))`')
+BACKTICK_FILE_REFERENCE = re.compile(r'`([^`\n]+\.(?:md|py|json|yaml|yml|sh))`')
 CLI_COMMAND = re.compile(r'\b(govengine-(?:policy|supervisor))\s+([a-z][a-z0-9-]*)')
+MARKDOWN_HEADING = re.compile(r'^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$', re.MULTILINE)
 
 
 def active_markdown_paths(root: Path = ROOT) -> tuple[Path, ...]:
@@ -111,19 +132,42 @@ def _link_target(raw: str) -> str:
     return target.split(maxsplit=1)[0]
 
 
+def _markdown_heading_anchors(path: Path) -> set[str]:
+    anchors: set[str] = set()
+    occurrences: dict[str, int] = {}
+    for heading in MARKDOWN_HEADING.findall(path.read_text(encoding='utf-8')):
+        normalized = re.sub(r'!\[([^\]]*)\]\([^)]+\)', r'\1', heading)
+        normalized = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', normalized)
+        normalized = re.sub(r'<[^>]+>', '', normalized)
+        normalized = normalized.replace('`', '').replace('*', '').replace('_', '')
+        normalized = ''.join(
+            character
+            for character in normalized.lower()
+            if character.isalnum() or character in {' ', '-'}
+        )
+        base = re.sub(r'\s+', '-', normalized.strip())
+        if not base:
+            continue
+        occurrence = occurrences.get(base, 0)
+        occurrences[base] = occurrence + 1
+        anchors.add(base if occurrence == 0 else f'{base}-{occurrence}')
+    return anchors
+
+
 def validate_markdown_links(paths: Iterable[Path], *, root: Path = ROOT) -> None:
     allowed_schemes = ('https://', 'http://', 'mailto:')
     for path in paths:
         text = path.read_text(encoding='utf-8')
         for raw_target in MARKDOWN_LINK.findall(text):
             target = _link_target(raw_target)
-            if not target or target.startswith('#') or target.startswith(allowed_schemes):
+            if not target or target.startswith(allowed_schemes):
                 continue
             if re.match(r'^[A-Za-z][A-Za-z0-9+.-]*:', target):
                 raise AssertionError(
                     f'{_relative(path, root)}:unsupported_markdown_link_scheme:{target}'
                 )
-            local = (path.parent / target.split('#', 1)[0]).resolve()
+            target_path, separator, fragment = target.partition('#')
+            local = path.resolve() if not target_path else (path.parent / target_path).resolve()
             try:
                 local.relative_to(root.resolve())
             except ValueError as exc:
@@ -134,6 +178,12 @@ def validate_markdown_links(paths: Iterable[Path], *, root: Path = ROOT) -> None
                 raise AssertionError(
                     f'{_relative(path, root)}:broken_markdown_link:{target}'
                 )
+            if separator and fragment and local.suffix.lower() == '.md':
+                anchor = unquote(fragment).lower()
+                if anchor not in _markdown_heading_anchors(local):
+                    raise AssertionError(
+                        f'{_relative(path, root)}:broken_markdown_anchor:{target}'
+                    )
 
 
 def _index_targets(index_path: Path) -> set[str]:
@@ -165,6 +215,17 @@ def _normalize_reference(value: str) -> str:
     return reference
 
 
+def _current_truth_text(path: Path, text: str) -> str:
+    if path.name != 'CHANGELOG.md':
+        return text
+    match = re.search(
+        r'^## Unreleased\s*$(?P<section>.*?)(?=^##\s+|\Z)',
+        text,
+        flags=re.MULTILINE | re.DOTALL,
+    )
+    return match.group('section') if match else ''
+
+
 def _reference_path(reference: str, source: Path, root: Path) -> Path | None:
     if reference in EXTERNAL_SCRIPT_OWNERS:
         return None
@@ -178,12 +239,18 @@ def _reference_path(reference: str, source: Path, root: Path) -> Path | None:
         ('.py', '.sh')
     ):
         return root / 'scripts' / reference
-    return source.parent / reference
+    candidate = source.parent / reference
+    if reference.endswith('.md') and not candidate.is_file():
+        root_candidate = root / reference
+        if root_candidate.is_file():
+            return root_candidate
+    return candidate
 
 
 def validate_document_references(paths: Iterable[Path], *, root: Path = ROOT) -> None:
     for path in paths:
         text = path.read_text(encoding='utf-8')
+        text = _current_truth_text(path, text)
         references = set(PATH_REFERENCE.findall(text))
         references.update(
             _normalize_reference(value)
@@ -226,15 +293,47 @@ def validate_documented_cli_commands(
 
 def validate_ownership_claims(paths: Iterable[Path], *, root: Path = ROOT) -> None:
     for path in paths:
-        if path.name == 'CHANGELOG.md' or 'security-review' in path.parts:
+        if 'security-review' in path.parts:
             continue
         text = path.read_text(encoding='utf-8')
+        text = _current_truth_text(path, text)
         for pattern in FORBIDDEN_OWNERSHIP_PATTERNS:
             match = pattern.search(text)
             if match:
                 claim = ' '.join(match.group(0).split())
                 raise AssertionError(
                     f'{_relative(path, root)}:forbidden_ownership_claim:{claim}'
+                )
+
+
+def validate_current_version_claims(
+    paths: Iterable[Path],
+    *,
+    expected_version: str,
+    root: Path = ROOT,
+) -> None:
+    for path in paths:
+        text = _current_truth_text(path, path.read_text(encoding='utf-8'))
+        for match in CURRENT_VERSION_CLAIM.finditer(text):
+            claimed = match.group('version')
+            if claimed != expected_version:
+                raise AssertionError(
+                    f'{_relative(path, root)}:stale_current_version:'
+                    f'{claimed}:expected={expected_version}'
+                )
+
+
+def validate_release_claims(paths: Iterable[Path], *, root: Path = ROOT) -> None:
+    for path in paths:
+        if 'security-review' in path.parts:
+            continue
+        text = _current_truth_text(path, path.read_text(encoding='utf-8'))
+        for pattern in FORBIDDEN_RELEASE_PATTERNS:
+            match = pattern.search(text)
+            if match:
+                claim = ' '.join(match.group(0).split())
+                raise AssertionError(
+                    f'{_relative(path, root)}:contradictory_release_claim:{claim}'
                 )
 
 
@@ -262,6 +361,13 @@ def validate_documentation_antidrift(
         root=root,
     )
     validate_ownership_claims(paths, root=root)
+    project = tomllib.loads((root / 'pyproject.toml').read_text(encoding='utf-8'))
+    validate_current_version_claims(
+        paths,
+        expected_version=str(project['project']['version']),
+        root=root,
+    )
+    validate_release_claims(paths, root=root)
     validate_release_disclosures(root=root)
     return {'active_markdown_files': len(paths)}
 

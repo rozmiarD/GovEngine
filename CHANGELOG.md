@@ -8,9 +8,10 @@ experimental and fixture classifications.
 
 ## Unreleased
 
-- Adds a whole-active-documentation anti-drift gate for repository links,
-  documented files, CLI commands, docs-index completeness, ownership claims and
-  required release-drift disclosures.
+- Adds a whole-active-documentation anti-drift gate for repository links and
+  anchors, documented files including Markdown references, CLI commands,
+  docs-index completeness, active ownership/version claims and mutually
+  consistent release-drift disclosures.
 - Changes the post-tag source-validation result to report
   `publishable=false` instead of implying that changed `main` is release-ready.
 - Records that the immutable `1.0.0rc1` PyPI long description contains the
@@ -48,10 +49,10 @@ experimental and fixture classifications.
 - Marked pre-v1 runtime-shaped pages as compatibility references and removed
   obsolete runnable MVP/archive instructions duplicated by Git history and this
   changelog.
-- Archives the superseded 0.14 governed-runtime MVP runbook, guarded/replay
-  example and GE-032 local-runner decision evidence. Active compatibility
-  references remain documented, while the canonical operator path now points
-  to the v1 security integration order.
+- Removes the superseded 0.14 governed-runtime MVP runbook, guarded/replay
+  example and GE-032 local-runner decision evidence rather than retaining a
+  duplicate archive. Active compatibility references remain documented, while
+  the canonical operator path now points to the v1 security integration order.
 
 ## 1.0.0rc1 - 2026-07-20 - independently reviewed public release candidate
 

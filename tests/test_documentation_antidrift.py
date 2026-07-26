@@ -8,12 +8,14 @@ import pytest
 from govengine.cli_contracts import cli_contract_registry
 from scripts.validate_documentation_antidrift import (
     active_markdown_paths,
+    validate_current_version_claims,
     validate_document_references,
     validate_documentation_antidrift,
     validate_documentation_index,
     validate_documented_cli_commands,
     validate_markdown_links,
     validate_ownership_claims,
+    validate_release_claims,
 )
 
 
@@ -238,6 +240,21 @@ def test_documentation_antidrift_rejects_broken_local_link(tmp_path: Path) -> No
         validate_markdown_links((document,), root=tmp_path)
 
 
+def test_documentation_antidrift_rejects_broken_markdown_anchor(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / 'TARGET.md'
+    target.write_text('# Existing section\n', encoding='utf-8')
+    document = tmp_path / 'README.md'
+    document.write_text('[missing](TARGET.md#missing-section)\n', encoding='utf-8')
+
+    with pytest.raises(
+        AssertionError,
+        match='broken_markdown_anchor:TARGET.md#missing-section',
+    ):
+        validate_markdown_links((document,), root=tmp_path)
+
+
 def test_documentation_antidrift_rejects_unindexed_active_doc(tmp_path: Path) -> None:
     docs = tmp_path / 'docs'
     docs.mkdir()
@@ -263,6 +280,19 @@ def test_documentation_antidrift_rejects_missing_documented_file(
     with pytest.raises(
         AssertionError,
         match='missing_documented_file:scripts/validate_missing_gate.py',
+    ):
+        validate_document_references((document,), root=tmp_path)
+
+
+def test_documentation_antidrift_rejects_missing_markdown_reference(
+    tmp_path: Path,
+) -> None:
+    document = tmp_path / 'README.md'
+    document.write_text('See `DOES_NOT_EXIST.md`.\n', encoding='utf-8')
+
+    with pytest.raises(
+        AssertionError,
+        match='missing_documented_file:DOES_NOT_EXIST.md',
     ):
         validate_document_references((document,), root=tmp_path)
 
@@ -295,3 +325,84 @@ def test_documentation_antidrift_rejects_cross_owner_claim(
 
     with pytest.raises(AssertionError, match='forbidden_ownership_claim'):
         validate_ownership_claims((document,), root=tmp_path)
+
+
+def test_documentation_antidrift_rejects_passive_cross_owner_claim(
+    tmp_path: Path,
+) -> None:
+    document = tmp_path / 'README.md'
+    document.write_text(
+        'Live connector I/O is executed by GovEngine.\n',
+        encoding='utf-8',
+    )
+
+    with pytest.raises(AssertionError, match='forbidden_ownership_claim'):
+        validate_ownership_claims((document,), root=tmp_path)
+
+
+def test_documentation_antidrift_checks_unreleased_changelog_claims(
+    tmp_path: Path,
+) -> None:
+    changelog = tmp_path / 'CHANGELOG.md'
+    changelog.write_text(
+        '# Changelog\n\n'
+        '## Unreleased\n\n'
+        '- GovEngine executes live connector I/O.\n\n'
+        '## 0.1.0\n\n'
+        '- Historical text.\n',
+        encoding='utf-8',
+    )
+
+    with pytest.raises(AssertionError, match='forbidden_ownership_claim'):
+        validate_ownership_claims((changelog,), root=tmp_path)
+
+
+def test_documentation_antidrift_ignores_historical_changelog_ownership_wording(
+    tmp_path: Path,
+) -> None:
+    changelog = tmp_path / 'CHANGELOG.md'
+    changelog.write_text(
+        '# Changelog\n\n'
+        '## Unreleased\n\n'
+        '- Current documentation fix.\n\n'
+        '## 0.1.0\n\n'
+        '- GovEngine executes live connector I/O.\n',
+        encoding='utf-8',
+    )
+
+    validate_ownership_claims((changelog,), root=tmp_path)
+
+
+@pytest.mark.parametrize(
+    'claim',
+    (
+        'Current main is publishable=true.',
+        'Current main may be promoted directly to stable.',
+    ),
+)
+def test_documentation_antidrift_rejects_contradictory_release_claim(
+    tmp_path: Path,
+    claim: str,
+) -> None:
+    document = tmp_path / 'ROADMAP.md'
+    document.write_text(f'{claim}\n', encoding='utf-8')
+
+    with pytest.raises(AssertionError, match='contradictory_release_claim'):
+        validate_release_claims((document,), root=tmp_path)
+
+
+def test_documentation_antidrift_rejects_stale_current_version(
+    tmp_path: Path,
+) -> None:
+    document = tmp_path / 'API_COMPATIBILITY.md'
+    document.write_text('Current GovEngine version: 0.16.11.\n', encoding='utf-8')
+
+    with pytest.raises(
+        AssertionError,
+        match=r'stale_current_version:0\.16\.11:expected=1\.0\.0rc1',
+    ):
+        validate_current_version_claims(
+            (document,),
+            expected_version='1.0.0rc1',
+            root=tmp_path,
+        )

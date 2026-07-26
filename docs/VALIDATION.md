@@ -54,8 +54,10 @@ the explicitly unreleased source posture, not release authorization.
   retained v0.1 facade schemas.
 - corpus generation enforces 33 reproducible cases: five valid and 28 negative.
 - documentation anti-drift scans all 42 active Markdown files for broken local
-  links/references, unknown CLI commands, index gaps, ownership contradictions
-  and required release disclosures.
+  links and anchors, missing file references, unknown CLI commands, index gaps,
+  active ownership/version contradictions and inconsistent release
+  disclosures. Historical CHANGELOG sections remain outside current-truth
+  semantics; `Unreleased` is checked.
 - digest ownership rejects GovEngine recomputation claims over SCLite- or
   RExecOp-owned payloads.
 - normal review validation checks structure; release mode adds
