@@ -9,6 +9,10 @@ from string import hexdigits
 from typing import Any, Mapping, Protocol
 
 from govengine._json_boundary import bounded_json_copy
+from govengine._trust_references import (
+    select_validated_opaque_trust_reference,
+    validate_opaque_trust_reference,
+)
 from govengine.api import GovApiError, require_mapping
 from govengine.core import ArtifactDescriptor, GovernanceContext, ReasonCode, TransitionDecision
 
@@ -141,7 +145,15 @@ class KeyResolutionResult:
         metadata = _bounded_trust_metadata(self.metadata)
         object.__setattr__(self, "status", str(self.status or "unknown"))
         object.__setattr__(self, "signer_id", signer_id)
-        object.__setattr__(self, "key_ref", str(self.key_ref or ""))
+        object.__setattr__(
+            self,
+            "key_ref",
+            validate_opaque_trust_reference(
+                self.key_ref,
+                allow_empty=True,
+                reason_code="invalid_key_ref",
+            ),
+        )
         object.__setattr__(self, "reason_code", str(self.reason_code or ReasonCode.OK.value))
         object.__setattr__(self, "metadata", metadata)
 
@@ -154,7 +166,12 @@ class KeyResolutionResult:
         return cls(
             status=str(raw.get("status") or ""),
             signer_id=str(raw.get("signer_id") or ""),
-            key_ref=str(raw.get("key_ref") or raw.get("public_key_ref") or ""),
+            key_ref=select_validated_opaque_trust_reference(
+                raw,
+                primary_key="key_ref",
+                alias_key="public_key_ref",
+                reason_code="invalid_key_ref",
+            ),
             reason_code=str(raw.get("reason_code") or ReasonCode.OK.value),
             metadata=dict(metadata),
         )
@@ -191,7 +208,15 @@ class TrustStoreDecision:
         metadata = _bounded_trust_metadata(self.metadata)
         object.__setattr__(self, "status", str(self.status or "unknown"))
         object.__setattr__(self, "signer_id", signer_id)
-        object.__setattr__(self, "trust_anchor_ref", str(self.trust_anchor_ref or ""))
+        object.__setattr__(
+            self,
+            "trust_anchor_ref",
+            validate_opaque_trust_reference(
+                self.trust_anchor_ref,
+                allow_empty=True,
+                reason_code="invalid_trust_anchor_ref",
+            ),
+        )
         object.__setattr__(self, "reason_code", str(self.reason_code or ReasonCode.OK.value))
         object.__setattr__(self, "metadata", metadata)
 
@@ -204,7 +229,12 @@ class TrustStoreDecision:
         return cls(
             status=str(raw.get("status") or raw.get("trust_status") or ""),
             signer_id=str(raw.get("signer_id") or ""),
-            trust_anchor_ref=str(raw.get("trust_anchor_ref") or raw.get("anchor_ref") or ""),
+            trust_anchor_ref=select_validated_opaque_trust_reference(
+                raw,
+                primary_key="trust_anchor_ref",
+                alias_key="anchor_ref",
+                reason_code="invalid_trust_anchor_ref",
+            ),
             reason_code=str(raw.get("reason_code") or ReasonCode.OK.value),
             metadata=dict(metadata),
         )

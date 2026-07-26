@@ -302,6 +302,500 @@ def test_key_resolver_and_trust_store_ports_carry_references_only() -> None:
     assert trust_result.as_dict()["trust_anchor_ref"] == "host-trust://anchors/demo"
 
 
+@pytest.mark.parametrize(
+    ("factory", "expected"),
+    [
+        (
+            lambda reference: KeyResolutionResult(
+                status="resolved",
+                signer_id="owner-demo",
+                key_ref=reference,
+            ),
+            "host-key://owner/current",
+        ),
+        (
+            lambda reference: KeyResolutionResult.from_mapping({
+                "status": "resolved",
+                "signer_id": "owner-demo",
+                "key_ref": reference,
+            }),
+            "host-key://owner/current",
+        ),
+        (
+            lambda reference: TrustStoreDecision(
+                status="trusted",
+                signer_id="owner-demo",
+                trust_anchor_ref=reference,
+            ),
+            "host-trust://anchors/demo",
+        ),
+        (
+            lambda reference: TrustStoreDecision.from_mapping({
+                "status": "trusted",
+                "signer_id": "owner-demo",
+                "trust_anchor_ref": reference,
+            }),
+            "host-trust://anchors/demo",
+        ),
+    ],
+    ids=["key-direct", "key-mapping", "trust-direct", "trust-mapping"],
+)
+def test_trust_references_preserve_known_valid_forms(factory, expected: str) -> None:
+    record = factory(expected)
+
+    assert expected in record.as_dict().values()
+
+
+@pytest.mark.parametrize(
+    ("factory", "reference"),
+    [
+        (
+            lambda reference: KeyResolutionResult(
+                status="resolved",
+                signer_id="owner-demo",
+                key_ref=reference,
+            ),
+            "host-key:begin-private-key-rotation-v2",
+        ),
+        (
+            lambda reference: KeyResolutionResult.from_mapping({
+                "status": "resolved",
+                "signer_id": "owner-demo",
+                "key_ref": reference,
+            }),
+            "host-key:begin-private-key-rotation-v2",
+        ),
+        (
+            lambda reference: TrustStoreDecision(
+                status="trusted",
+                signer_id="owner-demo",
+                trust_anchor_ref=reference,
+            ),
+            "host-cert:end-user-certificate-2026",
+        ),
+        (
+            lambda reference: TrustStoreDecision.from_mapping({
+                "status": "trusted",
+                "signer_id": "owner-demo",
+                "trust_anchor_ref": reference,
+            }),
+            "host-cert:end-user-certificate-2026",
+        ),
+        (
+            lambda reference: KeyResolutionResult.from_mapping({
+                "status": "resolved",
+                "signer_id": "owner-demo",
+                "key_ref": reference,
+            }),
+            "host-key:QUJDREVGR0g=",
+        ),
+        (
+            lambda reference: KeyResolutionResult(
+                status="resolved",
+                signer_id="owner-demo",
+                key_ref=reference,
+            ),
+            "host-key:-----endpoint-current-----",
+        ),
+        (
+            lambda reference: KeyResolutionResult.from_mapping({
+                "status": "resolved",
+                "signer_id": "owner-demo",
+                "key_ref": reference,
+            }),
+            "host-key:-----BEGINENDPOINT-----",
+        ),
+    ],
+    ids=[
+        "begin-words-direct",
+        "begin-words-mapping",
+        "end-words-direct",
+        "end-words-mapping",
+        "headerless-base64-residual",
+        "non-material-five-dash-label",
+        "begin-non-material-five-dash-label",
+    ],
+)
+def test_trust_reference_material_words_require_structural_armor(
+    factory,
+    reference: str,
+) -> None:
+    record = factory(reference)
+
+    assert reference in record.as_dict().values()
+
+
+@pytest.mark.parametrize(
+    ("factory", "reference"),
+    [
+        (
+            lambda reference: KeyResolutionResult(
+                status="resolved",
+                signer_id="owner-demo",
+                key_ref=reference,
+            ),
+            "host-key://owner/current",
+        ),
+        (
+            lambda reference: KeyResolutionResult.from_mapping({
+                "status": "resolved",
+                "signer_id": "owner-demo",
+                "key_ref": reference,
+            }),
+            "host-key://owner/current",
+        ),
+        (
+            lambda reference: TrustStoreDecision(
+                status="trusted",
+                signer_id="owner-demo",
+                trust_anchor_ref=reference,
+            ),
+            "host-trust://anchors/demo",
+        ),
+        (
+            lambda reference: TrustStoreDecision.from_mapping({
+                "status": "trusted",
+                "signer_id": "owner-demo",
+                "trust_anchor_ref": reference,
+            }),
+            "host-trust://anchors/demo",
+        ),
+    ],
+    ids=["key-direct", "key-mapping", "trust-direct", "trust-mapping"],
+)
+def test_trust_reference_normalizes_ordinary_surrounding_spaces(
+    factory,
+    reference: str,
+) -> None:
+    record = factory(f"  {reference}  ")
+
+    assert reference in record.as_dict().values()
+
+
+@pytest.mark.parametrize(
+    ("factory", "reason_code"),
+    [
+        (
+            lambda reference: KeyResolutionResult(
+                status="resolved",
+                signer_id="owner-demo",
+                key_ref=reference,
+            ),
+            "invalid_key_ref",
+        ),
+        (
+            lambda reference: KeyResolutionResult.from_mapping({
+                "status": "resolved",
+                "signer_id": "owner-demo",
+                "key_ref": reference,
+            }),
+            "invalid_key_ref",
+        ),
+        (
+            lambda reference: TrustStoreDecision(
+                status="trusted",
+                signer_id="owner-demo",
+                trust_anchor_ref=reference,
+            ),
+            "invalid_trust_anchor_ref",
+        ),
+        (
+            lambda reference: TrustStoreDecision.from_mapping({
+                "status": "trusted",
+                "signer_id": "owner-demo",
+                "trust_anchor_ref": reference,
+            }),
+            "invalid_trust_anchor_ref",
+        ),
+    ],
+    ids=["key-direct", "key-mapping", "trust-direct", "trust-mapping"],
+)
+@pytest.mark.parametrize(
+    "reference",
+    [
+        "host-key://owner/\x00current",
+        "host-key://owner/\x1fcurrent",
+        "host-key://owner/\ncurrent",
+        "\nhost-key://owner/current",
+        "\u2028host-key://owner/current",
+        "host-key://owner/current\u2029",
+        "host-key:-----PRIVATEKEY-----",
+        "host-key:-----ENDCERTIFICATE-----",
+        "host-key:-----benign-----PRIVATEKEY-----",
+        "host-key:-----PRIVATE-----KEY-----",
+        "host-key:-----PUB-----LICKEY-----",
+        "host-key:-----CERT-----IFICATE-----",
+        "host-key:-----" + ("x" * 129) + "PRIVATEKEY-----",
+        "host-key://-----bEgInRsAPrIvAtEkEy-----",
+        "host-key://-----BEGIN   OPENSSH   PRIVATE   KEY-----",
+        "pem:opaque-id",
+        "data:application/pkcs8;base64,QUJD",
+        "pkcs8:QUJDREVGR0g=",
+        "pkcs-8:QUJDREVGR0g=",
+        "private-key-material:opaque-id",
+        "private_key_material:opaque-id",
+        "raw-private-material",
+        "host-key:",
+        ":owner/current",
+        "1host-key:owner/current",
+        "host-key:////",
+        "host-key:owner current",
+        "host-key:" + ("x" * 2_040),
+    ],
+    ids=[
+        "nul",
+        "control",
+        "newline",
+        "leading-newline",
+        "leading-unicode-line-separator",
+        "trailing-unicode-paragraph-separator",
+        "bare-private-key-armor",
+        "end-certificate-armor",
+        "adjacent-delimiter-private-key-armor",
+        "split-private-key-armor",
+        "split-public-key-armor",
+        "split-certificate-armor",
+        "long-armored-private-key-bypass",
+        "compact-pem-marker",
+        "spaced-pem-marker",
+        "pem-namespace",
+        "data-namespace",
+        "pkcs8-namespace",
+        "punctuated-pkcs8-namespace",
+        "private-key-material-namespace",
+        "punctuated-private-key-material-namespace",
+        "missing-namespace",
+        "missing-opaque-id",
+        "missing-namespace-name",
+        "invalid-namespace",
+        "punctuation-only-id",
+        "embedded-space",
+        "over-limit",
+    ],
+)
+def test_trust_references_reject_material_and_non_reference_shapes_without_echo(
+    factory,
+    reason_code: str,
+    reference: str,
+) -> None:
+    with pytest.raises(GovApiError, match=reason_code) as exc_info:
+        factory(reference)
+
+    assert reference not in str(exc_info.value)
+    assert reference not in json.dumps(exc_info.value.as_dict())
+
+
+@pytest.mark.parametrize(
+    ("factory", "namespace"),
+    [
+        (
+            lambda reference: KeyResolutionResult(
+                status="resolved",
+                signer_id="owner-demo",
+                key_ref=reference,
+            ),
+            "host-key:",
+        ),
+        (
+            lambda reference: KeyResolutionResult.from_mapping({
+                "status": "resolved",
+                "signer_id": "owner-demo",
+                "key_ref": reference,
+            }),
+            "host-key:",
+        ),
+        (
+            lambda reference: TrustStoreDecision(
+                status="trusted",
+                signer_id="owner-demo",
+                trust_anchor_ref=reference,
+            ),
+            "host-trust:",
+        ),
+        (
+            lambda reference: TrustStoreDecision.from_mapping({
+                "status": "trusted",
+                "signer_id": "owner-demo",
+                "trust_anchor_ref": reference,
+            }),
+            "host-trust:",
+        ),
+    ],
+    ids=["key-direct", "key-mapping", "trust-direct", "trust-mapping"],
+)
+def test_trust_reference_length_boundary(factory, namespace: str) -> None:
+    maximum = namespace + ("x" * (2_048 - len(namespace)))
+
+    factory(maximum)
+    with pytest.raises(GovApiError):
+        factory(maximum + "x")
+
+
+@pytest.mark.parametrize(
+    ("factory", "primary_key", "alias_key", "reason_code"),
+    [
+        (
+            lambda value: KeyResolutionResult.from_mapping({
+                "status": "resolved",
+                "signer_id": "owner-demo",
+                **value,
+            }),
+            "key_ref",
+            "public_key_ref",
+            "invalid_key_ref",
+        ),
+        (
+            lambda value: TrustStoreDecision.from_mapping({
+                "status": "trusted",
+                "signer_id": "owner-demo",
+                **value,
+            }),
+            "trust_anchor_ref",
+            "anchor_ref",
+            "invalid_trust_anchor_ref",
+        ),
+    ],
+    ids=["key", "trust-anchor"],
+)
+@pytest.mark.parametrize("field_kind", ["primary", "alias"])
+@pytest.mark.parametrize(
+    "invalid_value",
+    [False, 0, [], {}],
+    ids=["false", "zero", "empty-list", "empty-mapping"],
+)
+def test_trust_reference_mapping_rejects_falsey_non_strings(
+    factory,
+    primary_key: str,
+    alias_key: str,
+    reason_code: str,
+    field_kind: str,
+    invalid_value,
+) -> None:
+    value = {primary_key: "host-key://owner/current"}
+    value[primary_key if field_kind == "primary" else alias_key] = invalid_value
+
+    with pytest.raises(GovApiError, match=reason_code) as exc_info:
+        factory(value)
+
+    assert exc_info.value.message == ""
+    assert exc_info.value.context == {}
+
+
+@pytest.mark.parametrize(
+    ("factory", "primary_key", "alias_key", "primary_reference", "alias_reference"),
+    [
+        (
+            lambda value: KeyResolutionResult.from_mapping({
+                "status": "resolved",
+                "signer_id": "owner-demo",
+                **value,
+            }),
+            "key_ref",
+            "public_key_ref",
+            "host-key://owner/primary",
+            "host-key://owner/alias",
+        ),
+        (
+            lambda value: TrustStoreDecision.from_mapping({
+                "status": "trusted",
+                "signer_id": "owner-demo",
+                **value,
+            }),
+            "trust_anchor_ref",
+            "anchor_ref",
+            "host-trust://anchors/primary",
+            "host-trust://anchors/alias",
+        ),
+    ],
+    ids=["key", "trust-anchor"],
+)
+def test_trust_reference_mapping_validates_alias_before_primary_precedence(
+    factory,
+    primary_key: str,
+    alias_key: str,
+    primary_reference: str,
+    alias_reference: str,
+) -> None:
+    selected = factory({
+        primary_key: primary_reference,
+        alias_key: alias_reference,
+    })
+    assert primary_reference in selected.as_dict().values()
+
+    malicious_alias = "pem:synthetic-private-material"
+    with pytest.raises(GovApiError) as exc_info:
+        factory({
+            primary_key: primary_reference,
+            alias_key: malicious_alias,
+        })
+    assert malicious_alias not in str(exc_info.value)
+    assert malicious_alias not in repr(exc_info.value.as_dict())
+
+
+@pytest.mark.parametrize(
+    ("factory", "primary_key", "alias_key", "alias_reference"),
+    [
+        (
+            lambda value: KeyResolutionResult.from_mapping({
+                "status": "resolved",
+                "signer_id": "owner-demo",
+                **value,
+            }),
+            "key_ref",
+            "public_key_ref",
+            "host-key://owner/alias",
+        ),
+        (
+            lambda value: TrustStoreDecision.from_mapping({
+                "status": "trusted",
+                "signer_id": "owner-demo",
+                **value,
+            }),
+            "trust_anchor_ref",
+            "anchor_ref",
+            "host-trust://anchors/alias",
+        ),
+    ],
+    ids=["key", "trust-anchor"],
+)
+@pytest.mark.parametrize("primary_value", [None, ""], ids=["none", "empty"])
+def test_trust_reference_mapping_falls_back_only_for_empty_primary(
+    factory,
+    primary_key: str,
+    alias_key: str,
+    alias_reference: str,
+    primary_value,
+) -> None:
+    selected = factory({
+        primary_key: primary_value,
+        alias_key: alias_reference,
+    })
+
+    assert alias_reference in selected.as_dict().values()
+
+
+def test_trust_reference_mapping_falls_back_when_primary_is_absent() -> None:
+    result = KeyResolutionResult.from_mapping({
+        "status": "resolved",
+        "signer_id": "owner-demo",
+        "public_key_ref": "host-key://owner/alias",
+    })
+
+    assert result.key_ref == "host-key://owner/alias"
+
+
+def test_trust_reference_mapping_does_not_fallback_from_space_only_primary() -> None:
+    result = KeyResolutionResult.from_mapping({
+        "status": "resolved",
+        "signer_id": "owner-demo",
+        "key_ref": "   ",
+        "public_key_ref": "host-key://owner/alias",
+    })
+
+    assert result.key_ref == ""
+    assert result.resolved is False
+
+
 def test_key_resolution_result_rejects_private_key_material() -> None:
     with pytest.raises(GovApiError, match="forbidden_trust_material"):
         KeyResolutionResult.from_mapping({

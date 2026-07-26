@@ -229,6 +229,197 @@ def test_governance_request_round_trip_recomputes_owned_digests() -> None:
 
 
 @pytest.mark.parametrize(
+    ('constructor', 'field', 'known_reference'),
+    [
+        (lambda payload: ApprovalAttestation(**payload), 'signature_ref', 'sigstore:bundle-123'),
+        (ApprovalAttestation.from_mapping, 'signature_ref', 'sigstore:bundle-123'),
+        (
+            lambda payload: ApprovalAttestation(**payload),
+            'revocation_ref',
+            'approval-revocations:v1',
+        ),
+        (
+            ApprovalAttestation.from_mapping,
+            'revocation_ref',
+            'approval-revocations:v1',
+        ),
+    ],
+    ids=[
+        'signature-direct',
+        'signature-mapping',
+        'revocation-direct',
+        'revocation-mapping',
+    ],
+)
+def test_approval_trust_references_preserve_known_valid_forms(
+    constructor,
+    field: str,
+    known_reference: str,
+) -> None:
+    payload = dict(_request_mapping_with_approval()['approval_attestation'])
+    payload[field] = known_reference
+
+    attestation = constructor(payload)
+
+    assert getattr(attestation, field) == known_reference
+
+
+@pytest.mark.parametrize(
+    ('constructor', 'field', 'reason_code'),
+    [
+        (
+            lambda payload: ApprovalAttestation(**payload),
+            'signature_ref',
+            'invalid_signature_ref',
+        ),
+        (
+            ApprovalAttestation.from_mapping,
+            'signature_ref',
+            'invalid_signature_ref',
+        ),
+        (
+            lambda payload: ApprovalAttestation(**payload),
+            'revocation_ref',
+            'invalid_revocation_ref',
+        ),
+        (
+            ApprovalAttestation.from_mapping,
+            'revocation_ref',
+            'invalid_revocation_ref',
+        ),
+    ],
+    ids=[
+        'signature-direct',
+        'signature-mapping',
+        'revocation-direct',
+        'revocation-mapping',
+    ],
+)
+@pytest.mark.parametrize(
+    'reference',
+    [
+        'sigstore:bundle\x00-123',
+        'sigstore:bundle\x1f-123',
+        'sigstore:bundle\n123',
+        '\nsigstore:bundle-123',
+        '\u2028sigstore:bundle-123',
+        'sigstore:bundle-123\u2029',
+        'sigstore:-----PRIVATEKEY-----',
+        'sigstore:-----ENDCERTIFICATE-----',
+        'sigstore:-----' + ('x' * 129) + 'PRIVATEKEY-----',
+        'sigstore:-----bEgInEnCrYpTeDPrIvAtEkEy-----',
+        'sigstore:-----BEGIN   PRIVATE   KEY-----',
+        'pem:opaque-id',
+        'data:application/pkcs8;base64,QUJD',
+        'pkcs8:QUJDREVGR0g=',
+        'pkcs-8:QUJDREVGR0g=',
+        'private-key-material:opaque-id',
+        'private_key_material:opaque-id',
+        'raw-private-material',
+        'sigstore:',
+        ':bundle-123',
+        '1sigstore:bundle-123',
+        'sigstore:////',
+        'sigstore:bundle 123',
+        'sigstore:' + ('x' * 2_040),
+    ],
+    ids=[
+        'nul',
+        'control',
+        'newline',
+        'leading-newline',
+        'leading-unicode-line-separator',
+        'trailing-unicode-paragraph-separator',
+        'bare-private-key-armor',
+        'end-certificate-armor',
+        'long-armored-private-key-bypass',
+        'compact-pem-marker',
+        'spaced-pem-marker',
+        'pem-namespace',
+        'data-namespace',
+        'pkcs8-namespace',
+        'punctuated-pkcs8-namespace',
+        'private-key-material-namespace',
+        'punctuated-private-key-material-namespace',
+        'missing-namespace',
+        'missing-opaque-id',
+        'missing-namespace-name',
+        'invalid-namespace',
+        'punctuation-only-id',
+        'embedded-space',
+        'over-limit',
+    ],
+)
+def test_approval_trust_references_reject_material_without_echo(
+    constructor,
+    field: str,
+    reason_code: str,
+    reference: str,
+) -> None:
+    payload = dict(_request_mapping_with_approval()['approval_attestation'])
+    payload[field] = reference
+
+    with pytest.raises(GovApiError, match=reason_code) as exc_info:
+        constructor(payload)
+
+    assert reference not in str(exc_info.value)
+    assert reference not in repr(exc_info.value.as_dict())
+
+
+@pytest.mark.parametrize(
+    ('constructor', 'field', 'namespace'),
+    [
+        (
+            lambda payload: ApprovalAttestation(**payload),
+            'signature_ref',
+            'sigstore:',
+        ),
+        (ApprovalAttestation.from_mapping, 'signature_ref', 'sigstore:'),
+        (
+            lambda payload: ApprovalAttestation(**payload),
+            'revocation_ref',
+            'approval-revocations:',
+        ),
+        (
+            ApprovalAttestation.from_mapping,
+            'revocation_ref',
+            'approval-revocations:',
+        ),
+    ],
+    ids=[
+        'signature-direct',
+        'signature-mapping',
+        'revocation-direct',
+        'revocation-mapping',
+    ],
+)
+def test_approval_trust_reference_length_boundary(
+    constructor,
+    field: str,
+    namespace: str,
+) -> None:
+    payload = dict(_request_mapping_with_approval()['approval_attestation'])
+    maximum = namespace + ('x' * (2_048 - len(namespace)))
+    payload[field] = maximum
+
+    assert getattr(constructor(payload), field) == maximum
+    payload[field] = maximum + 'x'
+    with pytest.raises(GovApiError):
+        constructor(payload)
+
+
+def test_approval_optional_empty_signature_reference_has_constructor_parity() -> None:
+    payload = dict(_request_mapping_with_approval()['approval_attestation'])
+    payload['signature_ref'] = ''
+
+    direct = ApprovalAttestation(**payload)
+    parsed = ApprovalAttestation.from_mapping(payload)
+
+    assert direct.signature_ref == ''
+    assert parsed.signature_ref == ''
+
+
+@pytest.mark.parametrize(
     ('field', 'reason_code'),
     [
         ('policy_pack_digest', 'policy_pack_digest_mismatch'),

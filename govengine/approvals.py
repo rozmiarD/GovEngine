@@ -15,6 +15,7 @@ from govengine._governance_validation import (
     schema_version,
     text_tuple,
 )
+from govengine._trust_references import validate_opaque_trust_reference
 from govengine.api import GovApiError, require_mapping
 from govengine.signing import govengine_record_digest
 
@@ -79,6 +80,26 @@ class ApprovalAttestation:
     schema_version: str = APPROVAL_ATTESTATION_SCHEMA_VERSION
     signature_ref: str = ''
 
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            'revocation_ref',
+            validate_opaque_trust_reference(
+                self.revocation_ref,
+                allow_empty=False,
+                reason_code='invalid_revocation_ref',
+            ),
+        )
+        object.__setattr__(
+            self,
+            'signature_ref',
+            validate_opaque_trust_reference(
+                self.signature_ref,
+                allow_empty=True,
+                reason_code='invalid_signature_ref',
+            ),
+        )
+
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any]) -> 'ApprovalAttestation':
         raw = require_mapping(value, reason_code='invalid_approval_attestation')
@@ -87,6 +108,16 @@ class ApprovalAttestation:
             allowed=APPROVAL_ATTESTATION_FIELDS,
             reason_code='unknown_approval_attestation_field',
         )
+        revocation_ref = required_text(
+            raw,
+            'revocation_ref',
+            'missing_approval_revocation_ref',
+        )
+        signature_ref = optional_text(raw, 'signature_ref')
+        if isinstance(raw.get('revocation_ref'), str):
+            revocation_ref = raw['revocation_ref']
+        if isinstance(raw.get('signature_ref'), str):
+            signature_ref = raw['signature_ref']
         item = cls(
             approval_id=required_text(raw, 'approval_id', 'missing_approval_id'),
             subject_digest=require_sha256_digest(
@@ -144,17 +175,13 @@ class ApprovalAttestation:
             issued_at=required_text(raw, 'issued_at', 'missing_approval_issued_at'),
             not_before=required_text(raw, 'not_before', 'missing_approval_not_before'),
             expires_at=required_text(raw, 'expires_at', 'missing_approval_expires_at'),
-            revocation_ref=required_text(
-                raw,
-                'revocation_ref',
-                'missing_approval_revocation_ref',
-            ),
+            revocation_ref=revocation_ref,
             schema_version=schema_version(
                 raw,
                 default=APPROVAL_ATTESTATION_SCHEMA_VERSION,
                 reason_code='invalid_approval_attestation_schema_version',
             ),
-            signature_ref=optional_text(raw, 'signature_ref'),
+            signature_ref=signature_ref,
         )
         _validate_approval_attestation_shape(item)
         return item
