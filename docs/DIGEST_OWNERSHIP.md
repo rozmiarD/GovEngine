@@ -18,6 +18,7 @@ records and ledger entries, policy enforcement and governance trace inputs,
 canonical governance-request policy/facts/scope/approval bindings, independent
 scope-policy and operation-requirement/runtime-inventory bindings,
 canonical governance decisions and embedded attempt-bound authorizations,
+the optional typed governed-admission cross-binding projection,
 SCLite ticket/replay references, RExecOp execution/output references,
 trigger/automation references, and GovEngine-produced projection/report/bundle
 digests.
@@ -43,6 +44,10 @@ digests.
   every approval binding before consulting trust and revocation policy.
 - `GovernanceDecision.from_mapping()` recomputes the complete decision body;
   the supplied decision digest cannot replace the computed value.
+- `TypedExecutionGovernedAdmission.from_mapping()` recomputes the complete
+  composite body. `validate_typed_execution_governed_admission()` additionally
+  recomputes the unchanged typed request/projection/bundle and frozen v1
+  request/decision/approval bindings against the owner records.
 
 Execution-spec, raw-payload and fencing-token bytes remain RExecOp-owned opaque
 references. SCLite tickets and guarded replay roots remain delegated. This repository does

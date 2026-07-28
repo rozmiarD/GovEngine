@@ -40,6 +40,8 @@ approval provider
 RExecOp bounded attempt facts
   -> GovernanceRequest
 GovEngine
+  -> GovernanceDecision + typed_execution_governed_admission:v0.1 projection
+host signer
   -> signed GovernanceDecision
 RExecOp pre-I/O verifier + atomic claim + runtime permit
   -> connector I/O
@@ -72,6 +74,7 @@ governance request. RExecOp provides bounded facts and opaque digests.
 | Threat | GovEngine/RExecOp mitigation | Residual risk |
 | --- | --- | --- |
 | Confused deputy / approval reuse | Approval binds operation, step, attempt, spec, facts, scope, policy epoch and side-effect class | Compromised trust/revocation adapter can lie |
+| Typed mutation/recovery relabelling | The optional governed-admission projection cross-binds the complete unchanged typed v0.1 request, explicit actual mode, frozen v1 request/decision/approval, attempt, lease, spec, facts, payload, scope, inventory and policy | A host that skips the composite or signed-decision path remains outside the cooperating-host guarantee |
 | Policy drift | Request and activation binding carry policy digest/epoch/issuer/validity | Compromised activation source can authorize a malicious pack |
 | Target or destination substitution | Independent scope policy and requested-scope digest; request cannot carry allowlist fields | DNS resolution, redirect and socket enforcement remain RExecOp/plugin duties |
 | Capability self-attestation | Operation requirements and independently sourced inventory are separate records | A compromised inventory attestor can lie |
@@ -95,6 +98,13 @@ destination checks, proxy behavior and connector I/O.
 
 - Unknown enums and fields fail closed on v1 governance records.
 - Admission summaries and opaque refs are never approval.
+- The governed typed-execution adapter discounts only the two deliberate
+  typed-v0.1 mutation-approval blockers, and only after actual frozen-v1
+  evaluation. Every other typed blocker remains fatal.
+- `recovery` is bound explicitly by the composite and v1 execution facts; the
+  unchanged nested typed-v0.1 `apply` value is only a mutating-posture alias.
+- `TypedExecutionGovernedAdmission` is not authority. RExecOp must separately
+  verify and atomically claim the signed `GovernanceDecision`.
 - Only `GovernanceDecision.status=allowed` carries authorization.
 - Authorization is short-lived, attempt/runtime/lease/fencing/inventory-bound
   and consume-once.
@@ -108,6 +118,7 @@ destination checks, proxy behavior and connector I/O.
 - `scripts/generate_conformance_corpus.py --check`
 - `tests/test_security_properties.py`
 - `tests/test_governance_decision.py`
+- `tests/test_typed_execution_governed_admission.py`
 - `tests/test_receipt_conformance.py`
 - RExecOp `scripts/validate_governance_conformance.py`
 - RExecOp `scripts/validate_g3_runtime_governance_gate.py`

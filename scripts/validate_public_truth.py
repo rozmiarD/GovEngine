@@ -4,7 +4,7 @@ import re
 import sys
 import tomllib
 from pathlib import Path
-from typing import Iterable, Mapping
+from typing import Any, Iterable, Mapping
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -12,6 +12,7 @@ if str(ROOT) not in sys.path:
 
 from govengine import __version__ as package_version  # noqa: E402
 from govengine.cli_contracts import cli_contract_registry  # noqa: E402
+from govengine.contract_compatibility import supported_contract_report  # noqa: E402
 from govengine.contract_proofs import ravenclaw_contract_proof, tecrax_contract_proof  # noqa: E402
 from govengine.surfaces import public_surface_index  # noqa: E402
 from scripts.validate_documentation_antidrift import (  # noqa: E402
@@ -54,6 +55,23 @@ CURRENT_CONTRACT_DOC_MARKERS = {
         'GovernanceRequest v1',
         'atomically claims decision digest and nonce',
         'PKI, KMS, CA, HSM, private key storage',
+    ),
+    'docs/API_STABILITY_MATRIX.md': (
+        'typed_execution_governed_admission:v0.1',
+        'does not expand `govengine.__all__` or `govengine.v1`',
+        'not decision authority or an execution permit',
+    ),
+    'docs/THREAT_MODEL.md': (
+        'discounts only the two deliberate',
+        'not authority',
+    ),
+    'docs/SECURITY_GUARANTEES.md': (
+        'Optional typed mutation/recovery admission is exact',
+        'not decision authority',
+    ),
+    'docs/DIGEST_OWNERSHIP.md': (
+        'optional typed governed-admission cross-binding projection',
+        'validate_typed_execution_governed_admission()',
     ),
 }
 
@@ -212,11 +230,11 @@ def _read(path: str) -> str:
     return (ROOT / path).read_text(encoding='utf-8')
 
 
-def _pyproject() -> dict:
+def _pyproject() -> dict[str, Any]:
     return tomllib.loads(_read('pyproject.toml'))
 
 
-def _project_dependency(project: dict, name: str) -> str:
+def _project_dependency(project: Mapping[str, Any], name: str) -> str:
     prefix = name
     for dependency in project.get('dependencies', []):
         if str(dependency).startswith(prefix):
@@ -416,6 +434,24 @@ def main() -> int:
         str(contract['command'])
         for contract in cli_contract_registry()['contracts']
     }
+    governed_contracts = [
+        item
+        for item in supported_contract_report()['contracts']
+        if item['surface_id'] == 'typed_execution_governed_admission'
+    ]
+    if len(governed_contracts) != 1:
+        raise AssertionError(
+            'contract_catalog:typed_execution_governed_admission_inventory'
+        )
+    governed_contract = governed_contracts[0]
+    if (
+        governed_contract['supported_versions'] != ('v0.1',)
+        or governed_contract['rexecop_consumer'] is not False
+        or governed_contract['status'] != 'supported'
+    ):
+        raise AssertionError(
+            'contract_catalog:typed_execution_governed_admission_not_optional_v0_1'
+        )
 
     if package_version != version:
         raise AssertionError(f'package_version_mismatch:{package_version}!={version}')

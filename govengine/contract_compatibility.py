@@ -116,6 +116,17 @@ _CONTRACT_ENTRIES: tuple[dict[str, Any], ...] = (
         'status': 'supported',
     },
     {
+        'surface_id': 'typed_execution_governed_admission',
+        'owner': 'govengine.typed_execution_governed_admission',
+        'record_type': (
+            'govengine.typed_execution_governed_admission.'
+            'TypedExecutionGovernedAdmission'
+        ),
+        'supported_versions': ('v0.1',),
+        'rexecop_consumer': False,
+        'status': 'supported',
+    },
+    {
         'surface_id': 'profile_governance_request',
         'owner': 'govengine.profile_governance',
         'record_type': 'govengine.profile_governance.ProfileGovernanceRequest',

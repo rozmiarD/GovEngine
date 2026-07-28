@@ -87,6 +87,34 @@ or host-specific Ravenclaw/Tecrax runtime behavior.
 | fixture | govengine.replay development adapters | `InMemoryReplayClaimStore`, `record_guard_replay_file` | Non-production replay fixtures without durable atomicity guarantees. |
 | internal-exposed | govengine.scope_assertion compatibility imports | `build_scope_assertion`, `build_scope_decision`, `scope_decision_digest` | Explicit top-level compatibility imports consumed by RExecOp but intentionally excluded from `govengine.__all__`; migrate the consumer before removal or stable classification. |
 
+## Explicit module-scoped additions
+
+`govengine.typed_execution_governed_admission` exposes the optional
+`typed_execution_governed_admission:v0.1` adapter through its deep module only.
+It intentionally does not expand `govengine.__all__` or `govengine.v1`. The
+module provides
+`TYPED_EXECUTION_GOVERNED_ADMISSION_SCHEMA_VERSION`,
+`TypedExecutionGovernedAdmission`,
+`evaluate_typed_execution_governed_admission()`,
+`validate_typed_execution_governed_admission()` and
+`typed_execution_governed_admission_digest()`.
+
+The evaluator consumes the unchanged typed-execution request v0.1 and performs
+the actual frozen-v1 `GovernanceRequest -> GovernanceDecision` evaluation. It
+may discount only the unchanged typed v0.1
+`mutation_requires_approval_evidence` or
+`mutation_requires_approval_attestation` precheck blocker after the v1
+approval has been independently validated. `recovery` is explicit in the new
+projection and in v1 execution facts; the nested v0.1 request remains
+`operation_mode=apply` as a mutating-posture compatibility alias.
+
+The result is a digest-bound admission/binding projection. It is not decision authority or an execution permit.
+The runtime must separately verify and claim the signed `GovernanceDecision`,
+bind its own permit and lease, recheck
+freshness and revocation before I/O, and enforce receipt conformance. The
+central contract catalog advertises this surface as optional so consumers that
+do not explicitly adopt it retain unchanged stable-read-only behavior.
+
 Current summary:
 
 - v1-candidate exports: 40
