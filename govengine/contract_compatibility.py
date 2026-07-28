@@ -122,7 +122,7 @@ _CONTRACT_ENTRIES: tuple[dict[str, Any], ...] = (
             'govengine.typed_execution_governed_admission.'
             'TypedExecutionGovernedAdmission'
         ),
-        'supported_versions': ('v0.1',),
+        'supported_versions': ('v0.1', 'v0.2'),
         'rexecop_consumer': False,
         'status': 'supported',
     },

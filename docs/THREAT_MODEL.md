@@ -40,7 +40,7 @@ approval provider
 RExecOp bounded attempt facts
   -> GovernanceRequest
 GovEngine
-  -> GovernanceDecision + typed_execution_governed_admission:v0.1 projection
+  -> GovernanceDecision + typed_execution_governed_admission:v0.1/v0.2 projection
 host signer
   -> signed GovernanceDecision
 RExecOp pre-I/O verifier + atomic claim + runtime permit
@@ -75,6 +75,7 @@ governance request. RExecOp provides bounded facts and opaque digests.
 | --- | --- | --- |
 | Confused deputy / approval reuse | Approval binds operation, step, attempt, spec, facts, scope, policy epoch and side-effect class | Compromised trust/revocation adapter can lie |
 | Typed mutation/recovery relabelling | The optional governed-admission projection cross-binds the complete unchanged typed v0.1 request, explicit actual mode, frozen v1 request/decision/approval, attempt, lease, spec, facts, payload, scope, inventory and policy | A host that skips the composite or signed-decision path remains outside the cooperating-host guarantee |
+| Request-driven plugin authorization | v0.2 ignores request metadata as authority and requires exact singleton signed-decision controls for the non-built-in backend and `no_network` or `local_subprocess` egress | A compromised policy source, signer or in-process host can still authorize or bypass a malicious plugin |
 | Policy drift | Request and activation binding carry policy digest/epoch/issuer/validity | Compromised activation source can authorize a malicious pack |
 | Target or destination substitution | Independent scope policy and requested-scope digest; request cannot carry allowlist fields | DNS resolution, redirect and socket enforcement remain RExecOp/plugin duties |
 | Capability self-attestation | Operation requirements and independently sourced inventory are separate records | A compromised inventory attestor can lie |
@@ -101,6 +102,13 @@ destination checks, proxy behavior and connector I/O.
 - The governed typed-execution adapter discounts only the two deliberate
   typed-v0.1 mutation-approval blockers, and only after actual frozen-v1
   evaluation. Every other typed blocker remains fatal.
+- The additive v0.2 adapter discounts exactly one of those approval blockers
+  plus `unsupported_backend_class` only for an exact plugin-shaped descriptor.
+  All network-policy, undeclared-egress, raw-shell, destination, secret and
+  capability blockers remain fatal.
+- A v0.2 allow requires exact singleton signed-decision controls equal to the
+  plugin backend and selected egress, plus exact frozen-v1 requirements and
+  attested-inventory compatibility. Request metadata is never authority.
 - `recovery` is bound explicitly by the composite and v1 execution facts; the
   unchanged nested typed-v0.1 `apply` value is only a mutating-posture alias.
 - `TypedExecutionGovernedAdmission` is not authority. RExecOp must separately
@@ -119,6 +127,7 @@ destination checks, proxy behavior and connector I/O.
 - `tests/test_security_properties.py`
 - `tests/test_governance_decision.py`
 - `tests/test_typed_execution_governed_admission.py`
+- `tests/test_typed_execution_governed_admission_v02.py`
 - `tests/test_receipt_conformance.py`
 - RExecOp `scripts/validate_governance_conformance.py`
 - RExecOp `scripts/validate_g3_runtime_governance_gate.py`

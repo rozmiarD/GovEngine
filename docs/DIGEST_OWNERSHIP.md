@@ -44,10 +44,16 @@ digests.
   every approval binding before consulting trust and revocation policy.
 - `GovernanceDecision.from_mapping()` recomputes the complete decision body;
   the supplied decision digest cannot replace the computed value.
-- `TypedExecutionGovernedAdmission.from_mapping()` recomputes the complete
+- `TypedExecutionGovernedAdmission.from_mapping()` recomputes the complete v0.1
   composite body. `validate_typed_execution_governed_admission()` additionally
   recomputes the unchanged typed request/projection/bundle and frozen v1
   request/decision/approval bindings against the owner records.
+- `TypedExecutionGovernedAdmissionV02.from_mapping()` independently recomputes
+  the complete v0.2 body.
+  `validate_typed_execution_governed_admission_v02()` additionally recomputes
+  plugin descriptor/egress posture, exact operation requirements and attested
+  inventory agreement, actual decision controls and every existing owner
+  digest binding. It does not certify the plugin or create a new certificate.
 
 Execution-spec, raw-payload and fencing-token bytes remain RExecOp-owned opaque
 references. SCLite tickets and guarded replay roots remain delegated. This repository does

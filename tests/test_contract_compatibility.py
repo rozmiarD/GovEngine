@@ -29,7 +29,7 @@ def test_supported_contract_report_lists_rexecop_surfaces() -> None:
         for item in report['contracts']
         if item['surface_id'] == 'typed_execution_governed_admission'
     )
-    assert governed['supported_versions'] == ('v0.1',)
+    assert governed['supported_versions'] == ('v0.1', 'v0.2')
     assert governed['rexecop_consumer'] is False
     assert 'gov_admission_decision' in surface_ids
     assert 'trigger_planning_request' in surface_ids
@@ -50,6 +50,10 @@ def test_optional_governed_admission_version_is_explicit_and_fail_closed() -> No
     validate_supported_contract_version(
         'typed_execution_governed_admission',
         'v0.1',
+    )
+    validate_supported_contract_version(
+        'typed_execution_governed_admission',
+        'v0.2',
     )
     with pytest.raises(GovApiError, match='unsupported_contract_major_version'):
         validate_supported_contract_version(

@@ -53,6 +53,29 @@ runtime shell, profile fixtures and SCLite bridge helpers remain outside the
 1.x promise. Contract-proof objects are conformance artifacts and proof
 fixtures, not production authority.
 
+## Optional governed-admission versions
+
+`govengine.typed_execution_governed_admission` is a deep-module-only adapter
+family. The catalog advertises `typed_execution_governed_admission:v0.1` and
+`typed_execution_governed_admission:v0.2`; neither version adds a root export
+or a `govengine.v1` export.
+
+Version v0.1 remains the exact approval-attested built-in-backend projection.
+The additive v0.2 names are
+`TYPED_EXECUTION_GOVERNED_ADMISSION_V02_SCHEMA_VERSION`,
+`TypedExecutionGovernedAdmissionV02`,
+`evaluate_typed_execution_governed_admission_v02()`,
+`validate_typed_execution_governed_admission_v02()` and
+`typed_execution_governed_admission_v02_digest()`.
+
+The v0.2 evaluator accepts only a non-built-in, non-raw-shell plugin descriptor
+with a nonempty exact capability declaration and `no_network` or
+`local_subprocess` egress. It calls the actual frozen-v1 governance evaluator
+and requires the resulting decision controls to be exact singleton matches for
+that backend and egress. Request metadata is not policy authority. The record
+is not decision authority or an execution permit; a host still verifies and
+atomically claims the separately signed decision before I/O.
+
 ## Ownership rules
 
 GovEngine owns:

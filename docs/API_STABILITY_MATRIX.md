@@ -90,9 +90,10 @@ or host-specific Ravenclaw/Tecrax runtime behavior.
 ## Explicit module-scoped additions
 
 `govengine.typed_execution_governed_admission` exposes the optional
-`typed_execution_governed_admission:v0.1` adapter through its deep module only.
-It intentionally does not expand `govengine.__all__` or `govengine.v1`. The
-module provides
+`typed_execution_governed_admission:v0.1` and
+`typed_execution_governed_admission:v0.2` adapters through its deep module
+only. It intentionally does not expand `govengine.__all__` or `govengine.v1`.
+The v0.1 module surface remains
 `TYPED_EXECUTION_GOVERNED_ADMISSION_SCHEMA_VERSION`,
 `TypedExecutionGovernedAdmission`,
 `evaluate_typed_execution_governed_admission()`,
@@ -108,7 +109,21 @@ approval has been independently validated. `recovery` is explicit in the new
 projection and in v1 execution facts; the nested v0.1 request remains
 `operation_mode=apply` as a mutating-posture compatibility alias.
 
-The result is a digest-bound admission/binding projection. It is not decision authority or an execution permit.
+The additive v0.2 surface is
+`TYPED_EXECUTION_GOVERNED_ADMISSION_V02_SCHEMA_VERSION`,
+`TypedExecutionGovernedAdmissionV02`,
+`evaluate_typed_execution_governed_admission_v02()`,
+`validate_typed_execution_governed_admission_v02()` and
+`typed_execution_governed_admission_v02_digest()`. It may discount exactly one
+of the existing v0.1 approval blockers plus `unsupported_backend_class`, only
+for a non-built-in/non-raw-shell plugin descriptor with nonempty exact
+capabilities and exact `no_network` or `local_subprocess` egress. Every other
+v0.1 blocker remains fatal. An allowed result requires actual frozen-v1
+evaluation, matching operation requirements and attested inventory, and exact
+singleton decision controls for the plugin backend and egress. Request
+metadata never authorizes that posture.
+
+Both versions are digest-bound admission/binding projections. Each is not decision authority or an execution permit.
 The runtime must separately verify and claim the signed `GovernanceDecision`,
 bind its own permit and lease, recheck
 freshness and revocation before I/O, and enforce receipt conformance. The

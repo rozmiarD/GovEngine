@@ -58,20 +58,24 @@ CURRENT_CONTRACT_DOC_MARKERS = {
     ),
     'docs/API_STABILITY_MATRIX.md': (
         'typed_execution_governed_admission:v0.1',
+        'typed_execution_governed_admission:v0.2',
         'does not expand `govengine.__all__` or `govengine.v1`',
         'not decision authority or an execution permit',
     ),
     'docs/THREAT_MODEL.md': (
         'discounts only the two deliberate',
+        'exact singleton signed-decision controls',
         'not authority',
     ),
     'docs/SECURITY_GUARANTEES.md': (
         'Optional typed mutation/recovery admission is exact',
+        'Policy-bound plugin admission is exact',
         'not decision authority',
     ),
     'docs/DIGEST_OWNERSHIP.md': (
         'optional typed governed-admission cross-binding projection',
         'validate_typed_execution_governed_admission()',
+        'validate_typed_execution_governed_admission_v02()',
     ),
 }
 
@@ -445,12 +449,12 @@ def main() -> int:
         )
     governed_contract = governed_contracts[0]
     if (
-        governed_contract['supported_versions'] != ('v0.1',)
+        governed_contract['supported_versions'] != ('v0.1', 'v0.2')
         or governed_contract['rexecop_consumer'] is not False
         or governed_contract['status'] != 'supported'
     ):
         raise AssertionError(
-            'contract_catalog:typed_execution_governed_admission_not_optional_v0_1'
+            'contract_catalog:typed_execution_governed_admission_not_optional_v0_1_v0_2'
         )
 
     if package_version != version:
