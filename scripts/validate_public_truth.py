@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import hashlib
 import sys
 import tomllib
 from pathlib import Path
@@ -22,6 +23,8 @@ from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 
 EXPECTED_RELEASE_LABEL = '1.0.0rc1'
 PUBLISHED_VERSION = '1.0.0rc1'
+PYPI_LONG_DESCRIPTION_PATH = 'PYPI_LONG_DESCRIPTION.md'
+PYPI_LONG_DESCRIPTION_SHA256 = 'e600766f447f1d7a085176de02b7b99778b298af80344c009cce2dc3f70c37a0'
 
 CURRENT_ALPHA_DOCS = (
     'README.md',
@@ -251,6 +254,26 @@ def _assert_contains(path: str, text: str, expected: str) -> None:
         raise AssertionError(f'{path}:missing:{expected}')
 
 
+def _assert_release_substrate() -> None:
+    project = _pyproject()['project']
+    if project.get('readme') != PYPI_LONG_DESCRIPTION_PATH:
+        raise AssertionError('release_substrate:project_readme_mismatch')
+    actual = hashlib.sha256((ROOT / PYPI_LONG_DESCRIPTION_PATH).read_bytes()).hexdigest()
+    if actual != PYPI_LONG_DESCRIPTION_SHA256:
+        raise AssertionError(f'{PYPI_LONG_DESCRIPTION_PATH}:sha256:{actual}!={PYPI_LONG_DESCRIPTION_SHA256}')
+    expected_build = ('pip==26.1.2', 'setuptools==83.0.0', 'wheel==0.47.0', 'build==1.5.0', 'twine==6.2.0')
+    expected_test = ('jsonschema==4.26.0', 'mypy==1.20.2', 'pytest==8.4.2', 'pytest-cov==6.3.0', 'ruff==0.15.20', 'types-jsonschema==4.26.0.20260518')
+    for path, expected in (
+        ('.github/release-build-requirements.txt', expected_build),
+        ('.github/release-test-requirements.txt', expected_test),
+    ):
+        if tuple(_read(path).splitlines()) != expected:
+            raise AssertionError(f'{path}:exact_requirement_inventory_mismatch')
+    manifest = _read('MANIFEST.in')
+    for path in ('scripts/build_release_artifacts.sh', 'scripts/validate_distribution_metadata.py', 'scripts/validate_rc2_release_records.py', 'scripts/validate_release_record_commit.py'):
+        _assert_contains('MANIFEST.in', manifest, f'include {path}')
+
+
 def _assert_no_current_stale_status(paths: Iterable[str], version: str) -> None:
     del version
     stale_current = re.compile(
@@ -475,6 +498,8 @@ def main() -> int:
     workflow = _read('.github/workflows/pytest.yml')
     clean_install_script = _read('scripts/validate_clean_package_install.py')
 
+    _assert_release_substrate()
+
     _assert_contains('README.md', readme, f'release-candidate package `{version}`')
     _assert_contains('README.md', readme, release_label)
     _assert_contains('README.md', readme, dependency)
@@ -616,10 +641,11 @@ def main() -> int:
     _assert_contains('.github/workflows/pytest.yml', workflow, 'Mypy stable facade strict')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'python -m mypy --strict')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'package-dry-run:')
-    _assert_contains('.github/workflows/pytest.yml', workflow, 'rm -rf dist build *.egg-info')
-    _assert_contains('.github/workflows/pytest.yml', workflow, 'python -m twine check dist/*')
-    _assert_contains('.github/workflows/pytest.yml', workflow, '/tmp/govengine-wheel-smoke/bin/python -m pip check')
-    _assert_contains('.github/workflows/pytest.yml', workflow, 'v1_compatibility_manifest.json')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'scripts/build_release_artifacts.sh --outdir dist')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'scripts/reproducible_build_gate.sh')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'scripts/release_ab_repro_gate.sh')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'scripts/package_smoke.sh')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'govengine-hosted-runner-review-artifacts')
 
     for surface in surfaces:
         if not surface.status.startswith('alpha_'):

@@ -1,0 +1,10 @@
+include PYPI_LONG_DESCRIPTION.md
+include scripts/build_release_artifacts.sh
+include scripts/normalize_sdist.sh
+include scripts/compare_release_builds.py
+include scripts/package_smoke.sh
+include scripts/reproducible_build_gate.sh
+include scripts/release_ab_repro_gate.sh
+include scripts/validate_distribution_metadata.py
+include scripts/validate_rc2_release_records.py
+include scripts/validate_release_record_commit.py

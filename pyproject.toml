@@ -1,12 +1,12 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools==83.0.0", "wheel==0.47.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "govengine"
 version = "1.0.0rc1"
 description = "In-process Python governance kernel for deterministic policy, approval, scope, and capability decisions."
-readme = "README.md"
+readme = "PYPI_LONG_DESCRIPTION.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "Krzysztof Probola" }]
@@ -36,10 +36,13 @@ Documentation = "https://github.com/rozmiarD/GovEngine#readme"
 
 [project.optional-dependencies]
 dev = [
-  "hypothesis>=6,<7",
-  "mypy>=1.18,<2",
-  "pytest>=8,<9",
-  "ruff==0.15.17",
+  "hypothesis==6.156.6",
+  "jsonschema==4.26.0",
+  "mypy==1.20.2",
+  "pytest==8.4.2",
+  "pytest-cov==6.3.0",
+  "ruff==0.15.20",
+  "types-jsonschema==4.26.0.20260518",
 ]
 
 [project.scripts]

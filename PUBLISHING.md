@@ -75,8 +75,8 @@ upload GovEngine. PyPI Trusted Publishing must bind:
 
 The GitHub `pypi` environment must exist. Repository reviewers or branch rules
 are optional policy, not an OIDC protocol requirement. Do not add a `PYPI_API_TOKEN` secret. The workflow requests a short-lived token with
-`id-token: write`, builds once, attests those distributions, and publishes the
-same artifacts without `skip-existing`.
+`id-token: write`, rebuilds the reviewed source deterministically, and publishes
+only the byte-identical reviewed artifacts without `skip-existing`.
 
 ## Prepare the release commit
 
@@ -144,20 +144,31 @@ Passing these gates does not create whole-stack production-readiness claims.
 ## Build and inspect distributions
 
 ```bash
-rm -rf dist build *.egg-info
-.venv/bin/python -m build
-.venv/bin/python -m twine check dist/*
-python -m venv /tmp/govengine-wheel-smoke
-/tmp/govengine-wheel-smoke/bin/python -m pip install --upgrade pip
-/tmp/govengine-wheel-smoke/bin/python -m pip install dist/*.whl
-/tmp/govengine-wheel-smoke/bin/python -m pip check
-/tmp/govengine-wheel-smoke/bin/python -c \
-  "import importlib.metadata as m, govengine; print(m.version('govengine'), govengine.__version__)"
-sha256sum dist/*
+ .venv/bin/python -m pip install -r .github/release-build-requirements.txt
+PYTHON=.venv/bin/python bash scripts/build_release_artifacts.sh --outdir /tmp/govengine-dist
+PYTHON=.venv/bin/python bash scripts/reproducible_build_gate.sh
+PYTHON=.venv/bin/python bash scripts/package_smoke.sh
 ```
 
-Confirm that wheel and sdist contain the compatibility manifest and conformance
-corpus and contain no repository-only, private, cached, or secret material.
+The helper sets a deterministic environment and umask, normalizes the sdist,
+requires exactly one wheel and sdist, runs `twine check`, and validates exact
+name, version, `sclite-core==2.0.0`, Markdown content type and publication
+description bytes. Package smoke is an explicit disposable `/tmp` check for
+both wheel and sdist; it is deliberately outside normal unit tests.
+
+## Future rc2 review child
+
+The future `v1.0.0rc2` tag must name B, a single-parent child of reviewed source
+A. B may add exactly the external security-review JSON and prepared RC-window
+JSON paths defined by `validate_release_record_commit.py`. The external security record binds A, the
+official GitHub-hosted-runner wheel and normalized-sdist SHA-256 values, the
+confidential report hash, reviewer, review date, approved verdict, and zero
+unresolved P0/P1 findings. The prepared window binds A and frozen-input hashes
+and cryptographically references that review record without copying its fields.
+
+The publish workflow rebuilds A and B, requires artifact equality before OIDC,
+and never creates these records itself. `scripts/release_ab_repro_gate.sh` uses
+only temporary synthetic records to prove the mechanism; it is not rc2 evidence.
 
 ## Tag and publish
 

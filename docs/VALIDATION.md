@@ -16,9 +16,10 @@ Separate jobs:
 - test the SCLite edge integration at immutable commit
   `2470373c6384c284ab48df7ce763f0938797d155`;
 - clean and build wheel/sdist;
-- run `twine check`;
-- install the wheel in an isolated environment and run `pip check`;
-- verify that the wheel ships the v1 manifest and 33-case corpus.
+- use the canonical deterministic release helper, including `twine check` and
+  exact distribution metadata validation;
+- run reproducibility and synthetic record-only A/B gates;
+- install wheel and sdist in explicit disposable `/tmp` smoke environments.
 
 The scheduled security workflow runs dependency audit and CodeQL. All GitHub
 Actions are pinned to full commit SHAs.
@@ -48,6 +49,8 @@ the explicitly unreleased source posture, not release authorization.
 .venv/bin/python scripts/validate_v1_security_review.py
 .venv/bin/python scripts/validate_rc_window.py
 .venv/bin/python scripts/validate_release_train_truth.py
+.venv/bin/python scripts/validate_distribution_metadata.py --wheel WHEEL --sdist SDIST
+.venv/bin/python scripts/validate_rc2_release_records.py --help
 ```
 
 - `validate_v1_freeze.py` enforces 40 facade exports, 15 v1 records and five
@@ -113,9 +116,10 @@ Before tagging, additionally require:
 .venv/bin/python scripts/validate_v1_security_review.py --require-independent
 .venv/bin/python scripts/validate_rc_window.py
 .venv/bin/python scripts/validate_release_train_truth.py --cross-repo
-rm -rf dist build *.egg-info
-.venv/bin/python -m build
-.venv/bin/python -m twine check dist/*
+PYTHON=.venv/bin/python bash scripts/build_release_artifacts.sh --outdir /tmp/govengine-dist
+PYTHON=.venv/bin/python bash scripts/reproducible_build_gate.sh
+PYTHON=.venv/bin/python bash scripts/release_ab_repro_gate.sh
+PYTHON=.venv/bin/python bash scripts/package_smoke.sh
 ```
 
 For the immutable published `rc1`, completion is checked with:

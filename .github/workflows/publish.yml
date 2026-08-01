@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.13'
@@ -36,10 +38,10 @@ jobs:
           PY
       - name: Install exact dependency and release tooling
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install -r .github/release-build-requirements.txt
+          python -m pip install -r .github/release-test-requirements.txt
           python -m pip install "sclite-core==2.0.0"
-          python -m pip install "build>=1,<2" "twine>=6,<7"
-          python -m pip install -e '.[dev]'
+          python -m pip install --no-build-isolation -e '.[dev]'
       - name: Run release contract gates
         run: |
           python scripts/validate_public_truth.py
@@ -57,11 +59,33 @@ jobs:
           python scripts/validate_workflow_security.py
           python scripts/validate_v1_security_review.py --require-independent
           python -m pytest -q
-      - name: Build and check distributions
+      - name: Build reviewed source artifacts
         run: |
-          rm -rf dist build *.egg-info
-          python -m build
-          python -m twine check dist/*
+          if [[ "$GITHUB_REF_NAME" == "v1.0.0rc2" ]]; then
+            SOURCE_COMMIT="$(python scripts/validate_release_record_commit.py --review-commit "$GITHUB_SHA")"
+            mkdir -p "$RUNNER_TEMP/rc2-records"
+            cp docs/security-review/rc2-external-review.json "$RUNNER_TEMP/rc2-records/review.json"
+            cp docs/rc-window/1.0.0rc2.json "$RUNNER_TEMP/rc2-records/window.json"
+            git checkout --detach "$SOURCE_COMMIT"
+            echo "$SOURCE_COMMIT" > "$RUNNER_TEMP/reviewed-source-commit"
+          fi
+          PYTHON=python bash scripts/build_release_artifacts.sh --outdir dist
+          mkdir -p "$RUNNER_TEMP/reviewed-dist"
+          cp dist/*.whl dist/*.tar.gz "$RUNNER_TEMP/reviewed-dist/"
+      - name: Require rc2 review binding and exact A/B artifact equality
+        run: |
+          if [[ "$GITHUB_REF_NAME" != "v1.0.0rc2" ]]; then exit 0; fi
+          SOURCE_COMMIT="$(cat "$RUNNER_TEMP/reviewed-source-commit")"
+          python scripts/validate_rc2_release_records.py \
+            --review "$RUNNER_TEMP/rc2-records/review.json" \
+            --window "$RUNNER_TEMP/rc2-records/window.json" \
+            --source-commit "$SOURCE_COMMIT" \
+            --wheel "$RUNNER_TEMP"/reviewed-dist/*.whl \
+            --sdist "$RUNNER_TEMP"/reviewed-dist/*.tar.gz
+          git checkout --detach "$GITHUB_SHA"
+          PYTHON=python bash scripts/build_release_artifacts.sh --outdir "$RUNNER_TEMP/published-dist"
+          python scripts/compare_release_builds.py --reviewed "$RUNNER_TEMP/reviewed-dist" --published "$RUNNER_TEMP/published-dist"
+          cp "$RUNNER_TEMP"/published-dist/* dist/
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: distributions

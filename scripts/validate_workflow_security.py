@@ -51,11 +51,32 @@ def validate_workflow_security() -> dict[str, int]:
         'python scripts/validate_v1_security_review.py --require-independent',
         'test "$GITHUB_REF_TYPE" = "tag"',
         'tag_version_mismatch',
+        'fetch-depth: 0',
+        'release-build-requirements.txt',
+        'scripts/build_release_artifacts.sh --outdir dist',
+        'scripts/validate_release_record_commit.py',
+        'scripts/validate_rc2_release_records.py',
+        'scripts/compare_release_builds.py',
+        'v1.0.0rc2',
     ):
         if marker not in publish:
             raise AssertionError(f'workflow_publish_missing:{marker}')
     if 'password:' in publish or 'api-token:' in publish or 'skip-existing:' in publish:
         raise AssertionError('workflow_publish_long_lived_or_unsafe_upload_setting')
+    if '--allow-synthetic' in publish:
+        raise AssertionError('workflow_publish_synthetic_release_evidence_opt_in')
+    pytest = (WORKFLOW_ROOT / 'pytest.yml').read_text(encoding='utf-8')
+    for marker in (
+        'release-build-requirements.txt',
+        'release-test-requirements.txt',
+        'scripts/build_release_artifacts.sh --outdir dist',
+        'scripts/reproducible_build_gate.sh',
+        'scripts/release_ab_repro_gate.sh',
+        'scripts/package_smoke.sh',
+        'govengine-hosted-runner-review-artifacts',
+    ):
+        if marker not in pytest:
+            raise AssertionError(f'workflow_pytest_missing:{marker}')
     return {
         'workflows': len(workflows),
         'actions': action_count,
