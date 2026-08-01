@@ -6,7 +6,7 @@ contact live targets or grant execution authority.
 ## CI
 
 `.github/workflows/pytest.yml` runs on Python 3.11, 3.12 and 3.13 with exact
-`sclite-core==2.0.0`. It checks public truth, the machine-readable release
+`sclite-core==2.0.1`. It checks public truth, the machine-readable release
 train, API stability, v1 freeze, the RC window, generated conformance, workflow
 security, review structure, release readiness, Ruff, mypy, strict facade typing
 and full pytest.
@@ -14,7 +14,7 @@ and full pytest.
 Separate jobs:
 
 - test the SCLite edge integration at immutable commit
-  `2470373c6384c284ab48df7ce763f0938797d155`;
+  `66dff5cf7d75059e13db92b553c192caf67c0338`;
 - clean and build wheel/sdist;
 - use the canonical deterministic release helper, including `twine check` and
   exact distribution metadata validation;
@@ -138,7 +138,16 @@ package by itself.
 
 ## Current package evidence
 
-Expected result for the current `1.0.0rc1` package line:
+Expected result for the current `1.0.0rc2` package line: prepared/unpublished,
+with `publishable=false` until its authentic review-record child exists.
+
+The latest public package remains `govengine==1.0.0rc1`; prepared rc2 source is
+not public installation evidence and remains `publishable=false` pending its
+authentic review-record child.
+
+## Immutable published rc1 evidence
+
+Expected result for the immutable `1.0.0rc1` package line:
 
 - PyPI serves `govengine==1.0.0rc1` with exact `sclite-core==2.0.0`;
 - tag `v1.0.0rc1` points to

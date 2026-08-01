@@ -7,7 +7,7 @@ legacy import will enter the stable facade.
 Baseline checked on 2026-07-25. Documentation-only GovEngine commits after the
 API scan do not change this inventory:
 
-- GovEngine v1/API inventory from the `1.0.0rc1` source line;
+- GovEngine v1/API inventory from the prepared `1.0.0rc2` source line;
 - RExecOp `f5b6911`;
 - Tecrax `34b2663`.
 

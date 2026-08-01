@@ -21,7 +21,7 @@ from scripts.validate_documentation_antidrift import (  # noqa: E402
 )
 from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '1.0.0rc1'
+EXPECTED_RELEASE_LABEL = '1.0.0rc2'
 PUBLISHED_VERSION = '1.0.0rc1'
 PYPI_LONG_DESCRIPTION_PATH = 'PYPI_LONG_DESCRIPTION.md'
 PYPI_LONG_DESCRIPTION_SHA256 = 'e600766f447f1d7a085176de02b7b99778b298af80344c009cce2dc3f70c37a0'
@@ -324,6 +324,20 @@ def _assert_readme_release_truth(readme: str, version: str) -> None:
             raise AssertionError(f'README.md:stale_release_claim:{claim}')
 
 
+def _assert_publishing_current_artifact_helper_dependency(
+    publishing: str, dependency: str
+) -> None:
+    claims = re.findall(
+        r'name, version, `(sclite-core==[^`]+)`, Markdown content type and '
+        r'publication\s+description bytes\.',
+        publishing,
+    )
+    if claims != [dependency]:
+        raise AssertionError(
+            'PUBLISHING.md:current_artifact_helper_dependency_mismatch'
+        )
+
+
 def _assert_readme_architecture_truth(readme: str) -> None:
     for marker in (
         'This\nset has no formal product name.',
@@ -365,7 +379,7 @@ def _assert_candidate_maturity_truth(paths: Iterable[str]) -> None:
     _assert_contains(
         'SECURITY.md',
         _read('SECURITY.md'),
-        'currently a 1.0 release candidate',
+        'prepared/unpublished `1.0.0rc2` release',
     )
     _assert_contains(
         'docs/ARCHITECTURE.md',
@@ -395,7 +409,7 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
     _assert_contains(
         'docs/ROADMAP.md',
         roadmap,
-        'Current package baseline: `govengine==1.0.0rc1`',
+        'Current source baseline: `govengine==1.0.0rc2`',
     )
     _assert_contains('docs/ROADMAP.md', roadmap, f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`')
 
@@ -500,11 +514,11 @@ def main() -> int:
 
     _assert_release_substrate()
 
-    _assert_contains('README.md', readme, f'release-candidate package `{version}`')
+    _assert_contains('README.md', readme, f'Current source is `{version}`')
     _assert_contains('README.md', readme, release_label)
     _assert_contains('README.md', readme, dependency)
-    _assert_readme_package_truth(readme, version)
-    _assert_readme_release_truth(readme, version)
+    _assert_readme_package_truth(readme, PUBLISHED_VERSION)
+    _assert_readme_release_truth(readme, PUBLISHED_VERSION)
     _assert_readme_architecture_truth(readme)
     _assert_contains('README.md', readme, '## License and provenance')
     _assert_contains('README.md', readme, 'originating Ravenclaw contribution lineage')
@@ -512,16 +526,16 @@ def main() -> int:
     _assert_contains(
         'CONTRIBUTING.md',
         contributing,
-        f'release-candidate package (`{release_label}`)',
+        f'prepared/unpublished `{release_label}`',
     )
     _assert_contains('CONTRIBUTING.md', contributing, 'scripts/validate_clean_package_install.py')
-    _assert_contains('docs/ROADMAP.md', roadmap, f'Current package baseline: `govengine=={version}`')
+    _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`')
     _assert_contains('docs/ROADMAP.md', roadmap, dependency)
     _assert_roadmap_current_release_truth(roadmap)
     _assert_contains(
         'PUBLIC_STATUS.md',
         public_status,
-        f'| Current `main` version label | `{version}`; contains unreleased post-tag fixes |',
+        f'| Current source version | `govengine=={version}`; prepared and unpublished |',
     )
     _assert_contains(
         'PUBLIC_STATUS.md',
@@ -530,6 +544,7 @@ def main() -> int:
     )
     _assert_contains('PUBLIC_STATUS.md', public_status, dependency)
     _assert_contains('PUBLISHING.md', publishing, dependency)
+    _assert_publishing_current_artifact_helper_dependency(publishing, dependency)
     _assert_contains('PUBLISHING.md', publishing, 'scripts/validate_clean_package_install.py')
     _assert_contains('PUBLISHING.md', publishing, '--no-editable')
     _assert_contains('docs/VALIDATION.md', validation, f'current `{version}` package line')
@@ -606,11 +621,11 @@ def main() -> int:
     )
     if 'unreleased deterministic demo signer/verifier ports' in public_status:
         raise AssertionError('PUBLIC_STATUS.md:published_demo_ports_marked_unreleased')
-    _assert_contains('.github/workflows/pytest.yml', workflow, 'sclite-core==2.0.0')
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'sclite-core==2.0.1')
     _assert_contains(
         '.github/workflows/pytest.yml',
         workflow,
-        'SCLite.git@2470373c6384c284ab48df7ce763f0938797d155',
+        'SCLite.git@66dff5cf7d75059e13db92b553c192caf67c0338',
     )
     if 'SCLite.git@main' in workflow:
         raise AssertionError('.github/workflows/pytest.yml:moving_sclite_main_ref')

@@ -21,11 +21,11 @@ for kind in wheel sdist; do
   "$python_bin" -m venv "$work/$kind"
   install_py="$work/$kind/bin/python"
   "$install_py" -m pip install pip==26.1.2 >/dev/null
-  "$install_py" -m pip install "sclite-core==2.0.0" >/dev/null
+  "$install_py" -m pip install "sclite-core==2.0.1" >/dev/null
   if [ "$kind" = wheel ]; then artifact="$work"/dist/*.whl; else artifact="$work"/dist/*.tar.gz; fi
   # The isolated artifact directory is made by mktemp and contains one artifact.
   "$install_py" -m pip install $artifact >/dev/null
   "$install_py" -m pip check
-  "$install_py" -c "import importlib.metadata as md, govengine; assert md.version('govengine') == govengine.__version__ == '1.0.0rc1'"
+  "$install_py" -c "import importlib.metadata as md, govengine; assert md.version('govengine') == govengine.__version__ == '1.0.0rc2'"
 done
 echo "govengine_package_smoke_ok:wheel_and_sdist"

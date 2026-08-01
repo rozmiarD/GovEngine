@@ -28,7 +28,7 @@ jobs:
         run: |
           python -m pip install -r .github/release-build-requirements.txt
           python -m pip install -r .github/release-test-requirements.txt
-          python -m pip install "sclite-core==2.0.0"
+          python -m pip install "sclite-core==2.0.1"
           python -m pip install --no-build-isolation -e '.[dev]'
       - name: Validate public truth
         run: python scripts/validate_public_truth.py
@@ -38,8 +38,10 @@ jobs:
         run: python scripts/validate_api_stability.py
       - name: Validate v1 API and schema freeze
         run: python scripts/validate_v1_freeze.py
-      - name: Validate active RC window
-        run: python scripts/validate_rc_window.py
+      - name: Validate immutable rc1 window history
+        run: >-
+          python scripts/validate_rc_window.py
+          --record docs/rc-window/1.0.0rc1.json --expected-version 1.0.0rc1
       - name: Validate conformance corpus generation
         run: python scripts/generate_conformance_corpus.py --check
       - name: Validate workflow supply-chain security
@@ -72,7 +74,7 @@ jobs:
         run: |
           python -m pip install -r .github/release-build-requirements.txt
           python -m pip install -r .github/release-test-requirements.txt
-          python -m pip install "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@2470373c6384c284ab48df7ce763f0938797d155"
+          python -m pip install "sclite-core @ git+https://github.com/rozmiarD/SCLite.git@66dff5cf7d75059e13db92b553c192caf67c0338"
           python -m pip install --no-build-isolation -e '.[dev]'
       - name: Test pinned edge integration
         run: python -m pytest -q
@@ -87,7 +89,7 @@ jobs:
       - name: Install exact release tooling
         run: |
           python -m pip install -r .github/release-build-requirements.txt
-          python -m pip install "sclite-core==2.0.0"
+          python -m pip install "sclite-core==2.0.1"
       - name: Build exact hosted-runner review artifacts
         run: PYTHON=python bash scripts/build_release_artifacts.sh --outdir dist
       - name: Prove deterministic source artifacts

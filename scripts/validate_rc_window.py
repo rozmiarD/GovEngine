@@ -18,6 +18,7 @@ from scripts.validate_v1_freeze import validate_v1_freeze  # noqa: E402
 
 
 RECORD_PATH = ROOT / 'docs' / 'rc-window' / '1.0.0rc1.json'
+V2_REVIEW_PATH = 'docs/security-review/rc2-external-review.json'
 FULL_SHA = re.compile(r'^[0-9a-f]{40}$')
 DIGEST = re.compile(r'^[0-9a-f]{64}$')
 HASHED_FILES = {
@@ -59,11 +60,87 @@ def _timestamp(value: Any, reason: str) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
+def _validate_v2(
+    record: Mapping[str, Any], *, expected_version: str, now: datetime
+) -> Mapping[str, Any]:
+    required = {
+        'schema_version', 'status', 'version', 'source_commit', 'prepared_at',
+        'published_at', 'observation_ends_at', 'completed_at',
+        'minimum_observation_days', 'public_evidence_ref', 'frozen_inputs',
+        'security_review', 'facade_exports', 'v1_records', 'rule', 'notes',
+    }
+    if set(record) != required:
+        raise AssertionError('rc_window_v2_fields_drift')
+    if record['schema_version'] != 'govengine.rc_window.v2':
+        raise AssertionError('rc_window_v2_schema_mismatch')
+    if record['version'] != expected_version or record['version'] != '1.0.0rc2':
+        raise AssertionError('rc_window_v2_version_mismatch')
+    if not isinstance(record['source_commit'], str) or not FULL_SHA.fullmatch(record['source_commit']):
+        raise AssertionError('rc_window_v2_source_commit_invalid')
+    status = record['status']
+    if status not in {'prepared', 'active', 'completed'}:
+        raise AssertionError('rc_window_v2_status_invalid')
+    prepared_at = _timestamp(record['prepared_at'], 'rc_window_v2_prepared_at_invalid')
+    minimum_days = record['minimum_observation_days']
+    if type(minimum_days) is not int or minimum_days != 7:
+        raise AssertionError('rc_window_v2_minimum_observation_days_invalid')
+    if status == 'prepared':
+        if any(record[field] is not None for field in ('published_at', 'observation_ends_at', 'completed_at')):
+            raise AssertionError('rc_window_v2_prepared_has_public_timestamps')
+        if record['public_evidence_ref'] != '':
+            raise AssertionError('rc_window_v2_prepared_has_public_evidence')
+    else:
+        published_at = _timestamp(record['published_at'], 'rc_window_v2_published_at_invalid')
+        ends_at = _timestamp(record['observation_ends_at'], 'rc_window_v2_observation_ends_at_invalid')
+        if published_at < prepared_at or published_at > now or ends_at != published_at + timedelta(days=7):
+            raise AssertionError('rc_window_v2_lifecycle_timing_invalid')
+        if not isinstance(record['public_evidence_ref'], str) or not record['public_evidence_ref'].strip():
+            raise AssertionError('rc_window_v2_public_evidence_missing')
+        if status == 'active' and record['completed_at'] is not None:
+            raise AssertionError('rc_window_v2_active_has_completed_at')
+        if status == 'completed':
+            completed_at = _timestamp(record['completed_at'], 'rc_window_v2_completed_at_invalid')
+            if completed_at < ends_at or now < ends_at or completed_at > now:
+                raise AssertionError('rc_window_v2_completed_timing_invalid')
+    frozen = record['frozen_inputs']
+    expected_frozen = {
+        'pyproject_sha256': ROOT / 'pyproject.toml',
+        'v1_compatibility_manifest_sha256': ROOT / 'govengine/v1_compatibility_manifest.json',
+        'v1_conformance_manifest_sha256': ROOT / 'govengine/conformance/v1/manifest.json',
+        'policy_reason_registry_sha256': ROOT / 'govengine/policy/reasons.py',
+    }
+    if not isinstance(frozen, Mapping) or set(frozen) != set(expected_frozen):
+        raise AssertionError('rc_window_v2_frozen_inputs_invalid')
+    for field, source in expected_frozen.items():
+        if not isinstance(frozen[field], str) or not DIGEST.fullmatch(frozen[field]) or frozen[field] != _sha256(source):
+            raise AssertionError(f'rc_window_v2_frozen_input_drift:{field}')
+    review = record['security_review']
+    if not isinstance(review, Mapping) or set(review) != {'path', 'sha256'} or review['path'] != V2_REVIEW_PATH or not isinstance(review['sha256'], str) or not DIGEST.fullmatch(review['sha256']):
+        raise AssertionError('rc_window_v2_security_review_invalid')
+    review_path = ROOT / str(review['path'])
+    if not review_path.is_file() or review['sha256'] != _sha256(review_path):
+        raise AssertionError('rc_window_v2_security_review_binding_invalid')
+    review_data = json.loads(review_path.read_text(encoding='utf-8'))
+    if review_data.get('source_commit') != record['source_commit']:
+        raise AssertionError('rc_window_v2_review_source_mismatch')
+    if type(record['facade_exports']) is not int or record['facade_exports'] != 40:
+        raise AssertionError('rc_window_v2_facade_export_invalid')
+    if type(record['v1_records']) is not int or record['v1_records'] != 15:
+        raise AssertionError('rc_window_v2_v1_record_invalid')
+    freeze = validate_v1_freeze()
+    if record['facade_exports'] != freeze['facade_exports'] or record['v1_records'] != freeze['v1_records']:
+        raise AssertionError('rc_window_v2_freeze_count_drift')
+    if record['rule'] != 'schema_facade_corpus_or_reason_registry_change_requires_new_rc' or not isinstance(record['notes'], str) or not record['notes'].strip():
+        raise AssertionError('rc_window_v2_rule_or_notes_invalid')
+    return record
+
+
 def validate_rc_window(
     path: Path = RECORD_PATH,
     *,
     require_published: bool = False,
     require_completed: bool = False,
+    expected_version: str = '1.0.0rc1',
     now: datetime | None = None,
 ) -> Mapping[str, Any]:
     record = json.loads(
@@ -75,6 +152,14 @@ def validate_rc_window(
     )
     if not isinstance(record, Mapping):
         raise AssertionError('rc_window_not_mapping')
+    checked_now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    if record.get('schema_version') == 'govengine.rc_window.v2':
+        checked = _validate_v2(record, expected_version=expected_version, now=checked_now)
+        if require_published and checked['status'] == 'prepared':
+            raise AssertionError('published_rc_evidence_required')
+        if require_completed and checked['status'] != 'completed':
+            raise AssertionError('completed_rc_window_required')
+        return checked
     required = {
         'schema_version',
         'status',
@@ -99,7 +184,7 @@ def validate_rc_window(
     status = record['status']
     if status not in {'prepared', 'active', 'completed'}:
         raise AssertionError('rc_window_status_invalid')
-    if record['version'] != '1.0.0rc1':
+    if record['version'] != expected_version:
         raise AssertionError('rc_window_version_mismatch')
     prepared_at = _timestamp(
         record['prepared_at'],
@@ -179,6 +264,10 @@ def validate_rc_window(
     if not isinstance(record['notes'], str) or not record['notes'].strip():
         raise AssertionError('rc_window_notes_missing')
 
+    if type(record['facade_exports']) is not int or record['facade_exports'] != 40:
+        raise AssertionError('rc_window_facade_export_invalid')
+    if type(record['v1_records']) is not int or record['v1_records'] != 15:
+        raise AssertionError('rc_window_v1_record_invalid')
     freeze = validate_v1_freeze()
     if record['facade_exports'] != freeze['facade_exports']:
         raise AssertionError('rc_window_facade_export_drift')
@@ -196,6 +285,7 @@ def validate_rc_window(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--record', type=Path, default=RECORD_PATH)
+    parser.add_argument('--expected-version', default='1.0.0rc1')
     parser.add_argument('--require-published', action='store_true')
     parser.add_argument('--require-completed', action='store_true')
     args = parser.parse_args(argv)
@@ -203,6 +293,7 @@ def main(argv: list[str] | None = None) -> int:
         args.record,
         require_published=args.require_published or args.require_completed,
         require_completed=args.require_completed,
+        expected_version=args.expected_version,
     )
     print(
         'rc_window_ok:'

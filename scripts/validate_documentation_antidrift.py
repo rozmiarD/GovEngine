@@ -29,18 +29,15 @@ EXTERNAL_SCRIPT_OWNERS = {
 REQUIRED_RELEASE_DISCLOSURES = {
     'README.md': (
         'The immutable PyPI long description for `1.0.0rc1` is stale',
-        'Current `main` retains the `1.0.0rc1` version label but is not the '
-        'immutable published artifact',
+        'Current source is `1.0.0rc2`,',
     ),
     'PUBLIC_STATUS.md': (
         'The immutable PyPI long description for `1.0.0rc1` is stale',
-        'Current `main` retains the `1.0.0rc1` version label but differs from '
-        'the published artifact',
+        'Current source version | `govengine==1.0.0rc2`; prepared and unpublished',
     ),
     'PUBLISHING.md': (
         'The immutable PyPI long description for `1.0.0rc1` is stale',
-        'Current `main` retains the `1.0.0rc1` version label but differs from '
-        'the published artifact',
+        'Current source version: `1.0.0rc2`, prepared and unpublished.',
         'validate_release_readiness.py` intentionally reports '
         '`publishable=false`',
     ),
@@ -50,11 +47,11 @@ REQUIRED_RELEASE_DISCLOSURES = {
     'docs/VALIDATION.md': (
         'The immutable PyPI long description for `1.0.0rc1` is stale',
         'does not qualify current `main` for stable promotion',
-        'post-tag `main` reports `publishable=false`',
+        'prepared rc2 source is',
     ),
     'SECURITY.md': (
-        'Current `main` contains post-tag security',
-        'final `1.0.0` promotion requires a new candidate',
+        'prepared/unpublished `1.0.0rc2` release',
+        'Final `1.0.0` promotion requires rc2 authentic review',
     ),
 }
 FORBIDDEN_OWNERSHIP_PATTERNS = (

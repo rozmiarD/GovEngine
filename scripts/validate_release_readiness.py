@@ -22,9 +22,9 @@ from govengine._digest_ownership import validate_digest_ownership_inventory  # n
 from scripts.validate_release_train_truth import validate_release_train_truth  # noqa: E402
 
 
-EXPECTED_VERSION = '1.0.0rc1'
-EXPECTED_RELEASE_LABEL = '1.0.0rc1'
-CURRENT_SOURCE_POSTURE = 'post_tag_unreleased'
+EXPECTED_VERSION = '1.0.0rc2'
+EXPECTED_RELEASE_LABEL = '1.0.0rc2'
+CURRENT_SOURCE_POSTURE = 'prepared_unpublished'
 EXPECTED_SURFACES = [
     'artifact_governance_core',
     'planning_contracts_core',
@@ -115,6 +115,8 @@ def main() -> int:
         'at least seven complete days',
         'Do not add a `PYPI_API_TOKEN` secret.',
         '`1.0.0rc2` is required before stable promotion',
+        'prepared and unpublished',
+        'authentic review-record child',
         'does not qualify current `main` for stable promotion',
     ):
         _assert(

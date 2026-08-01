@@ -8,6 +8,12 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+## 1.0.0rc2 - prepared/unpublished source candidate
+
+- Prepares the next GovEngine candidate with exact `sclite-core==2.0.1` while
+  retaining immutable published rc1 history and deferring the record-only
+  authentic-review child.
+
 - Adds a whole-active-documentation anti-drift gate for repository links and
   anchors, documented files including Markdown references, CLI commands,
   docs-index completeness, active ownership/version claims and mutually

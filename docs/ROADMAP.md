@@ -4,10 +4,12 @@ GovEngine is in its public 1.0 release-candidate phase. The roadmap is now about
 finishing and maintaining a narrow governance contract, not adding runtime
 mechanics.
 
-Current package baseline: `govengine==1.0.0rc1`, exact-pinned to
-`sclite-core==2.0.0`. Published PyPI baseline is `govengine==1.0.0rc1`.
-Current `main` retains that version label but contains unreleased post-tag
-fixes and is not byte-identical to the immutable published artifact.
+## Current 1.0 release-candidate line
+
+Current source baseline: `govengine==1.0.0rc2`, exact-pinned to
+`sclite-core==2.0.1`, prepared and unpublished. Published PyPI baseline remains
+immutable `govengine==1.0.0rc1` on `sclite-core==2.0.0`.
+Published PyPI baseline is `govengine==1.0.0rc1`.
 
 ## Responsibility boundary
 
@@ -44,9 +46,8 @@ surfaces. They are not part of the 1.x promise.
 ## Gate to the next candidate and 1.0.0
 
 `1.0.0rc2` is required before stable promotion. The coordinated release train
-will first publish the SCLite `2.0.1` patch and then pin and qualify GovEngine
-`1.0.0rc2`; until that release work begins, current package metadata correctly
-remains `govengine==1.0.0rc1` with `sclite-core==2.0.0`.
+published SCLite `2.0.1` patch is pinned by the prepared GovEngine
+`1.0.0rc2` source. The rc2 record-only review child and tag remain deferred.
 
 The next candidate must include the post-tag security and compatibility fixes,
 the corrected package long description and the complete documentation
@@ -75,10 +76,11 @@ record, never by refreshing `rc1` in place.
 The current dependency order is:
 
 ```text
-sclite-core 2.0.0 -> govengine 1.0.0rc1
-                  -> rexecop 1.0.0rc1
+sclite-core 2.0.1 -> govengine 1.0.0rc2 (prepared/unpublished)
 
-tecrax 0.4.0rc3: pending repin from rexecop 0.3.0rc3 and requalification
+sclite-core 2.0.0 -> govengine 1.0.0rc1 -> rexecop 1.0.0rc1
+
+tecrax 0.4.0rc3: source-aligned/unpublished on govengine/rexecop rc1
 ```
 
 RExecOp is the published reference runtime. Tecrax is a downstream profile, but

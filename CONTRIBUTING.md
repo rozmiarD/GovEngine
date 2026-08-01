@@ -1,6 +1,6 @@
 # Contributing to GovEngine
 
-GovEngine is a release-candidate package (`1.0.0rc1`) for the stable v1
+GovEngine source is the prepared/unpublished `1.0.0rc2` candidate for the stable v1
 governance facade. Legacy top-level surfaces retain their documented
 compatibility/alpha posture. Contributions should preserve the package boundary:
 

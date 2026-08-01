@@ -12,7 +12,10 @@ from typing import Any, Mapping
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / 'docs' / 'release-train.json'
 COMPONENTS = ('sclite', 'govengine', 'rexecop', 'tecrax')
-STATUSES = frozenset({'published_frozen', 'published_rc', 'pending_realignment'})
+STATUSES = frozenset({
+    'published_frozen', 'published_rc', 'prepared_rc', 'pending_realignment',
+    'source_aligned_unpublished',
+})
 STACK_PROJECTS = frozenset({'sclite-core', 'govengine', 'rexecop', 'tecrax'})
 ACTIVE_TRAIN_DOCS = (
     'README.md',
@@ -147,14 +150,14 @@ def _validate_active_docs(manifest: Mapping[str, Any], *, root: Path = ROOT) -> 
         'PUBLIC_STATUS.md': (
             f'govengine=={govengine_version}',
             f'rexecop=={rexecop_version}',
-            'pending realignment',
+            'source-aligned/unpublished',
         ),
         'PUBLISHING.md': (
             f'govengine {govengine_version}',
             f'rexecop {rexecop_version}',
             f'tecrax {tecrax["version"]}',
             f'rexecop=={stale_rexecop_pin}',
-            'pending realignment',
+            'source-aligned/unpublished',
         ),
         'docs/MIGRATING_TO_1.md': (
             f'govengine=={govengine_version}',
@@ -164,11 +167,11 @@ def _validate_active_docs(manifest: Mapping[str, Any], *, root: Path = ROOT) -> 
         ),
         'docs/README.md': ('release-train.json',),
         'docs/ROADMAP.md': (
-            f'govengine {govengine_version}',
+            f'govengine=={govengine_version}',
             f'rexecop {rexecop_version}',
             f'tecrax {tecrax["version"]}',
             f'rexecop {stale_rexecop_pin}',
-            'pending repin',
+            'source-aligned/unpublished',
         ),
         'docs/VALIDATION.md': ('validate_release_train_truth.py',),
     }

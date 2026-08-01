@@ -58,6 +58,8 @@ def validate_workflow_security() -> dict[str, int]:
         'scripts/validate_rc2_release_records.py',
         'scripts/compare_release_builds.py',
         'v1.0.0rc2',
+        '--record docs/rc-window/1.0.0rc2.json',
+        '--expected-version 1.0.0rc2',
     ):
         if marker not in publish:
             raise AssertionError(f'workflow_publish_missing:{marker}')
@@ -74,6 +76,7 @@ def validate_workflow_security() -> dict[str, int]:
         'scripts/release_ab_repro_gate.sh',
         'scripts/package_smoke.sh',
         'govengine-hosted-runner-review-artifacts',
+        '--record docs/rc-window/1.0.0rc1.json --expected-version 1.0.0rc1',
     ):
         if marker not in pytest:
             raise AssertionError(f'workflow_pytest_missing:{marker}')

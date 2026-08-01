@@ -11,12 +11,12 @@ from scripts import validate_distribution_metadata as validator
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ROOT_NAME = 'govengine-1.0.0rc1'
+ROOT_NAME = 'govengine-1.0.0rc2'
 
 
-def _metadata(*, dependency: str = 'sclite-core==2.0.0', description: bytes | None = None) -> bytes:
+def _metadata(*, dependency: str = 'sclite-core==2.0.1', description: bytes | None = None) -> bytes:
     body = description if description is not None else (ROOT / 'PYPI_LONG_DESCRIPTION.md').read_bytes()
-    return (f'Name: govengine\nVersion: 1.0.0rc1\nDescription-Content-Type: text/markdown\nRequires-Dist: {dependency}\n\n').encode() + body
+    return (f'Name: govengine\nVersion: 1.0.0rc2\nDescription-Content-Type: text/markdown\nRequires-Dist: {dependency}\n\n').encode() + body
 
 
 def _artifacts(tmp_path: Path, *, wheel_metadata: bytes | None = None) -> tuple[Path, Path]:
@@ -38,7 +38,7 @@ def test_accepts_exact_distribution_metadata(tmp_path: Path) -> None:
 
 
 def test_rejects_dependency_drift(tmp_path: Path) -> None:
-    wheel, sdist = _artifacts(tmp_path, wheel_metadata=_metadata(dependency='sclite-core==2.0.1'))
+    wheel, sdist = _artifacts(tmp_path, wheel_metadata=_metadata(dependency='sclite-core==2.0.0'))
     with pytest.raises(validator.MetadataValidationError, match='wheel:requires_dist'):
         validator.validate_distribution_metadata(wheel=wheel, sdist=sdist)
 

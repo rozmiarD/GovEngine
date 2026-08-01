@@ -21,6 +21,8 @@ def _write_records(
     reviewer: str = 'reviewer@example.invalid',
     open_p0: object = 0,
     open_p1: object = 0,
+    facade_exports: object = 40,
+    v1_records: object = 15,
 ) -> tuple[Path, Path]:
     review = tmp_path / 'review.json'
     review.write_text(json.dumps({
@@ -31,9 +33,13 @@ def _write_records(
     }), encoding='utf-8')
     window = tmp_path / 'window.json'
     window.write_text(json.dumps({
-        'schema_version': 'govengine.rc2_window.v1', 'status': 'prepared', 'source_commit': SOURCE,
+        'schema_version': 'govengine.rc_window.v2', 'status': 'prepared', 'version': '1.0.0rc2', 'source_commit': SOURCE,
+        'prepared_at': '2026-01-01T00:00:00Z', 'published_at': None, 'observation_ends_at': None, 'completed_at': None,
+        'minimum_observation_days': 7, 'public_evidence_ref': '',
         'frozen_inputs': {'pyproject_sha256': hashlib.sha256((ROOT / 'pyproject.toml').read_bytes()).hexdigest(), 'v1_compatibility_manifest_sha256': hashlib.sha256((ROOT / 'govengine/v1_compatibility_manifest.json').read_bytes()).hexdigest(), 'v1_conformance_manifest_sha256': hashlib.sha256((ROOT / 'govengine/conformance/v1/manifest.json').read_bytes()).hexdigest(), 'policy_reason_registry_sha256': hashlib.sha256((ROOT / 'govengine/policy/reasons.py').read_bytes()).hexdigest()},
         'security_review': {'path': 'docs/security-review/rc2-external-review.json', 'sha256': hashlib.sha256(review.read_bytes()).hexdigest()},
+        'facade_exports': facade_exports, 'v1_records': v1_records,
+        'rule': 'schema_facade_corpus_or_reason_registry_change_requires_new_rc', 'notes': 'Synthetic fixture.',
     }), encoding='utf-8')
     return review, window
 
@@ -68,6 +74,33 @@ def test_rejects_reason_registry_hash_drift(tmp_path: Path) -> None:
     window.write_text(json.dumps(value), encoding='utf-8')
     with pytest.raises(ValueError, match='rc2_window_frozen_input_hash_mismatch'):
         validate_rc2_release_records(review=review, window=window, source_commit=SOURCE, wheel=wheel, sdist=sdist)
+
+
+@pytest.mark.parametrize(
+    ('field', 'invalid_value'),
+    (
+        ('facade_exports', False),
+        ('facade_exports', 40.0),
+        ('facade_exports', '40'),
+        ('facade_exports', None),
+        ('v1_records', False),
+        ('v1_records', 15.0),
+        ('v1_records', '15'),
+        ('v1_records', None),
+    ),
+)
+def test_rejects_non_integer_v2_freeze_counts(
+    tmp_path: Path, field: str, invalid_value: object
+) -> None:
+    wheel, sdist = tmp_path / 'a.whl', tmp_path / 'a.tar.gz'
+    wheel.write_bytes(b'wheel')
+    sdist.write_bytes(b'sdist')
+    review, window = _write_records(tmp_path, wheel, sdist, **{field: invalid_value})
+
+    with pytest.raises(ValueError, match='rc2_window_prepared_lifecycle_invalid'):
+        validate_rc2_release_records(
+            review=review, window=window, source_commit=SOURCE, wheel=wheel, sdist=sdist
+        )
 
 
 @pytest.mark.parametrize(

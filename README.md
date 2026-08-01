@@ -17,10 +17,12 @@ bundles; those responsibilities belong to SCLite. GovEngine does not perform
 the operation, schedule jobs, manage credentials, contact targets or store
 evidence.
 
-The published release-candidate package `1.0.0rc1` exposes a frozen candidate
-contract through `govengine.v1`. Current `main` retains the `1.0.0rc1` version
-label but is not the immutable published artifact: it contains documented
-unreleased fixes that require a new release candidate before stable promotion.
+The immutable published release-candidate package `1.0.0rc1` exposes the frozen
+candidate contract through `govengine.v1`. Current source is `1.0.0rc2`,
+prepared and unpublished; it requires an authentic review-record child before
+tagging or publication.
+
+Current source package coordinate: `govengine==1.0.0rc2`.
 The wider package still contains explicitly classified compatibility,
 experimental and fixture surfaces.
 
@@ -163,7 +165,8 @@ unqualified `pip install govengine` continues to select the latest stable
 Requirements:
 
 - Python 3.11 or newer;
-- exact dependency `sclite-core==2.0.0`;
+- published rc1 dependency `sclite-core==2.0.0`; prepared rc2 source dependency
+  `sclite-core==2.0.1`;
 - imports intended for 1.x compatibility should come from `govengine.v1`.
 
 ## Quick start: evaluate a typed policy
@@ -227,15 +230,15 @@ continue with the bound request and decision contracts described in
 
 | Item | Current status |
 | --- | --- |
-| Source/package version | `1.0.0rc1` |
+| Source/package version | `1.0.0rc2` prepared/unpublished |
 | Package maturity | Public release candidate |
 | Candidate 1.x facade | `govengine.v1`, exactly 40 exports |
 | GovEngine-owned v1 records | 15 frozen records |
-| SCLite dependency | `sclite-core==2.0.0` |
+| Source SCLite dependency | `sclite-core==2.0.1` |
 | Legacy root modules | Compatibility, experimental or fixture classifications |
 
-Current source/package version: `1.0.0rc1`.
-Current package pin: `govengine==1.0.0rc1`.
+Current source/package version: `1.0.0rc2` prepared/unpublished.
+Latest public package pin: `govengine==1.0.0rc1`.
 
 The final `1.0.0` promotion state is maintained in
 [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md). Exact facade and schema compatibility

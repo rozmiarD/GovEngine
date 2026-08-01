@@ -16,8 +16,9 @@ python -m pip install \
 ```
 
 Tecrax `0.4.0rc3` is not a matching downstream release for this train: its
-current source candidate still pins `rexecop==0.3.0rc3`. Repin and requalify
-Tecrax separately before installing it with this runtime line.
+current source is aligned to the published rc1 train. Prepared
+`govengine==1.0.0rc2` source and `sclite-core==2.0.1` are not public install
+targets until their own review and publication gates complete.
 
 ## Candidate 1.x import boundary
 

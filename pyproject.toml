@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "govengine"
-version = "1.0.0rc1"
+version = "1.0.0rc2"
 description = "In-process Python governance kernel for deterministic policy, approval, scope, and capability decisions."
 readme = "PYPI_LONG_DESCRIPTION.md"
 requires-python = ">=3.11"
@@ -24,7 +24,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-  "sclite-core==2.0.0",
+  "sclite-core==2.0.1",
 ]
 
 [project.urls]

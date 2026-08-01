@@ -43,8 +43,7 @@ def test_current_public_docs_track_package_version() -> None:
     assert f'govengine=={version}' in docs['docs/ROADMAP.md']
     assert f'govengine=={version}' in docs['PUBLIC_STATUS.md']
     assert f'Expected result for the current `{version}` package line' in docs['docs/VALIDATION.md']
-    assert f'published release-candidate package `{version}`' in docs['README.md']
-    assert f'python -m pip install govengine=={version}' in docs['README.md']
+    assert f'Current source is `{version}`' in docs['README.md']
     assert f'python -m pip install govengine=={PUBLISHED_VERSION}' in docs['README.md']
     assert 'Current 0.12.x alpha line' not in docs['docs/ROADMAP.md']
     assert 'published `0.12` alpha line' not in docs['README.md']
@@ -138,7 +137,7 @@ def test_active_docs_track_release_candidate_and_current_stack_ownership() -> No
     ):
         assert stale not in joined
 
-    assert 'public `1.0.0rc1` package has\npassed independent contract review' in docs['SECURITY.md']
+    assert 'public `1.0.0rc1` package has passed independent contract review' in docs['SECURITY.md']
     assert 'exact 40 exports' in docs['docs/API_COMPATIBILITY.md']
     assert 'RExecOp is the current domain-neutral runtime' in docs['docs/GOVENGINE_KERNEL_BOUNDARY.md']
     assert (

@@ -78,11 +78,36 @@ def validate_rc2_release_records(
     ):
         raise ValueError("rc2_security_review_open_counter_invalid")
 
-    window_fields = {"schema_version", "status", "source_commit", "frozen_inputs", "security_review"}
+    window_fields = {
+        "schema_version", "status", "version", "source_commit", "prepared_at",
+        "published_at", "observation_ends_at", "completed_at",
+        "minimum_observation_days", "public_evidence_ref", "frozen_inputs",
+        "security_review", "facade_exports", "v1_records", "rule", "notes",
+    }
     if set(candidate) != window_fields:
         raise ValueError("rc2_window_fields_invalid")
-    if candidate["schema_version"] != "govengine.rc2_window.v1" or candidate["status"] != "prepared" or candidate["source_commit"] != source_commit:
+    if (
+        candidate["schema_version"] != "govengine.rc_window.v2"
+        or candidate["status"] != "prepared"
+        or candidate["version"] != "1.0.0rc2"
+        or candidate["source_commit"] != source_commit
+    ):
         raise ValueError("rc2_window_identity_invalid")
+    if (
+        not _aware(candidate["prepared_at"])
+        or any(candidate[field] is not None for field in ("published_at", "observation_ends_at", "completed_at"))
+        or candidate["public_evidence_ref"] != ""
+        or type(candidate["minimum_observation_days"]) is not int
+        or candidate["minimum_observation_days"] != 7
+        or type(candidate["facade_exports"]) is not int
+        or candidate["facade_exports"] != 40
+        or type(candidate["v1_records"]) is not int
+        or candidate["v1_records"] != 15
+        or candidate["rule"] != "schema_facade_corpus_or_reason_registry_change_requires_new_rc"
+        or not isinstance(candidate["notes"], str)
+        or not candidate["notes"].strip()
+    ):
+        raise ValueError("rc2_window_prepared_lifecycle_invalid")
     frozen = candidate["frozen_inputs"]
     expected_frozen = {
         "pyproject_sha256",

@@ -6,20 +6,18 @@ releases. It describes the repository as it exists; release history belongs in
 
 ## Current state
 
-- Current `main` version label: `1.0.0rc1`, with unreleased post-tag fixes.
+- Current source version: `1.0.0rc2`, prepared and unpublished.
 - Published immutable candidate: `govengine==1.0.0rc1` from `v1.0.0rc1`.
-- Exact dependency: `sclite-core==2.0.0`.
+- Source dependency: `sclite-core==2.0.1`; published rc1 remains on `2.0.0`.
 - Published `rc1` review: independently reviewed, with no open P0/P1 findings.
-- Current `main` review: pending new-candidate review after the release commit is
-  frozen.
+- Current source review: pending authentic review-record child B.
 - Publication: tag-bound GitHub OIDC workflow, run
   [29764475143](https://github.com/rozmiarD/GovEngine/actions/runs/29764475143).
 - RC observation window: active until `2026-07-27T17:39:58.058090Z`.
 
-Current `main` retains the `1.0.0rc1` version label but differs from the
-published artifact. Do not treat a source build from `main` as a reproduction
-of the immutable RC. The post-tag security and compatibility fixes require a
-new release-candidate version and qualification before stable promotion.
+Current `main` is the prepared/unpublished `1.0.0rc2` source candidate. Do not
+treat it as a public package or immutable artifact; it remains
+`publishable=false` until authentic review child B and its tag exist.
 
 The immutable PyPI long description for `1.0.0rc1` is stale because the tag was
 built from the pre-publication README. It still contains obsolete
@@ -42,21 +40,20 @@ The relevant commits have different roles and must not be conflated:
 Publish in dependency order:
 
 ```text
-sclite-core 2.0.0     truth/contracts; published and frozen
+sclite-core 2.0.1     truth/contracts; published and frozen
         |
         v
-govengine 1.0.0rc1    governance; published RC
+govengine 1.0.0rc2    governance; prepared/unpublished
         |
         v
 rexecop 1.0.0rc1      reference runtime; published RC
 
-tecrax 0.4.0rc3       profile source candidate; pending realignment
+tecrax 0.4.0rc3       profile source candidate; source-aligned/unpublished
 ```
 
 Ravenclaw is a legacy/external consumer, not the next package in the current
-release train. Tecrax is not currently aligned with the published train because
-its source candidate still pins `rexecop==0.3.0rc3`; it must be repinned and
-requalified before it is presented as a matching downstream release. A
+release train. Tecrax is source-aligned/unpublished and pins the published
+`rexecop==1.0.0rc1` runtime line; it is not itself a release authority. A
 downstream release must consume the exact already-published upstream versions;
 it does not authorize changing upstream ownership.
 The same facts are recorded in machine-readable form in
@@ -152,7 +149,7 @@ PYTHON=.venv/bin/python bash scripts/package_smoke.sh
 
 The helper sets a deterministic environment and umask, normalizes the sdist,
 requires exactly one wheel and sdist, runs `twine check`, and validates exact
-name, version, `sclite-core==2.0.0`, Markdown content type and publication
+name, version, `sclite-core==2.0.1`, Markdown content type and publication
 description bytes. Package smoke is an explicit disposable `/tmp` check for
 both wheel and sdist; it is deliberately outside normal unit tests.
 

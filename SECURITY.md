@@ -5,10 +5,10 @@ framework, sandbox, execution runtime, or remote authorization authority.
 
 ## Supported versions
 
-GovEngine is currently a 1.0 release candidate. Security fixes should target
-`main` until the stable release line exists. The public `1.0.0rc1` package has
-passed independent contract review. Current `main` contains post-tag security
-and compatibility fixes, so final `1.0.0` promotion requires a new candidate,
+GovEngine source is currently the prepared/unpublished `1.0.0rc2` release
+candidate. Security fixes should target `main` until the stable release line
+exists. The public `1.0.0rc1` package has passed independent contract review.
+Final `1.0.0` promotion requires rc2 authentic review and publication,
 review covering that release commit and a completed candidate observation
 window without an open P0/P1.
 

@@ -9,24 +9,23 @@ decision. It does not execute the operation or define artifact truth.
 
 | Item | Current truth |
 | --- | --- |
-| Current `main` version label | `1.0.0rc1`; contains unreleased post-tag fixes |
+| Current source version | `govengine==1.0.0rc2`; prepared and unpublished |
 | Published immutable artifact | `govengine==1.0.0rc1` from tag `v1.0.0rc1` |
 | Python | `>=3.11`; CI covers 3.11, 3.12 and 3.13 |
-| Required dependency | `sclite-core==2.0.0` |
+| Source dependency | `sclite-core==2.0.1` |
 | Stable-candidate facade | `govengine.v1`, exactly 40 exports |
 | GovEngine-owned v1 records | 15 |
 | Conformance corpus | 33 cases: 5 valid, 28 negative |
-| Independent review | published `rc1` complete; current `main` requires new-candidate review |
-| RC observation | active until `2026-07-27T17:39:58.058090Z` |
+| Independent review | published `rc1` complete; rc2 awaits authentic review-record child |
+| RC observation | rc1 history retained; rc2 prepared record is not yet created |
 | Reference runtime | `rexecop==1.0.0rc1` |
-| Profile alignment | Tecrax `0.4.0rc3` pending realignment from `rexecop==0.3.0rc3` |
+| Profile alignment | Tecrax `0.4.0rc3` source-aligned/unpublished on the rc1 train |
 
 The release was published from immutable tag `v1.0.0rc1` through the
-tag-confirmed OIDC workflow. Current `main` retains the `1.0.0rc1` version label
-but differs from the published artifact because it includes unreleased
-security, compatibility and documentation fixes. Those changes require
-`1.0.0rc2` qualification before final `1.0.0`; the published RC observation
-does not qualify them by itself.
+tag-confirmed OIDC workflow. Current `main` is the `1.0.0rc2`
+prepared/unpublished source candidate. It remains `publishable=false` until an
+authentic review-record child binds the reviewed source and artifacts; rc1
+observation evidence does not qualify it by itself.
 
 The immutable PyPI long description for `1.0.0rc1` is stale: it contains the
 pre-publication README, including obsolete release-blocked and `0.16.11`
@@ -34,6 +33,9 @@ installation wording. The wheel version, exact dependency and recorded hashes
 remain valid. The corrected description will ship with the next candidate.
 The machine-readable current release train is
 [`docs/release-train.json`](docs/release-train.json).
+
+Source/package version: `1.0.0rc2`.
+Latest published PyPI package: `govengine==1.0.0rc1`.
 
 ## Supported contract
 

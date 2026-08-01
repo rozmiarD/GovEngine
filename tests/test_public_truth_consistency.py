@@ -30,7 +30,7 @@ def test_public_truth_validator_passes() -> None:
         check=True,
     )
 
-    assert result.stdout.strip().startswith('public_truth_ok:govengine==1.0.0rc1:')
+    assert result.stdout.strip().startswith('public_truth_ok:govengine==1.0.0rc2:')
 
 
 def test_release_readiness_validator_passes() -> None:
@@ -43,9 +43,9 @@ def test_release_readiness_validator_passes() -> None:
     )
 
     assert result.stdout.strip().startswith(
-        'release_source_validation_ok:govengine==1.0.0rc1:'
+        'release_source_validation_ok:govengine==1.0.0rc2:'
     )
-    assert 'posture=post_tag_unreleased:publishable=false' in result.stdout
+    assert 'posture=prepared_unpublished:publishable=false' in result.stdout
 
 
 def test_current_public_docs_do_not_reintroduce_pre_alpha_maturity_claims() -> None:
@@ -149,6 +149,46 @@ def test_public_truth_validator_rejects_stale_publishing_dependency_line(monkeyp
 
     with pytest.raises(AssertionError, match='published_line_candidate_drift:stale_publishing_dependency_line'):
         validator._assert_no_published_line_candidate_drift(('PUBLISHING.md',))
+
+
+def test_public_truth_validator_rejects_stale_current_artifact_helper_dependency() -> None:
+    validator = _load_validator()
+    publishing = (
+        'Source dependency: `sclite-core==2.0.1`; published rc1 remains on `2.0.0`.\n'
+        'The helper validates exact name, version, `sclite-core==2.0.0`, Markdown '
+        'content type and publication\n'
+        'description bytes.\n'
+    )
+
+    with pytest.raises(
+        AssertionError,
+        match='PUBLISHING.md:current_artifact_helper_dependency_mismatch',
+    ):
+        validator._assert_publishing_current_artifact_helper_dependency(
+            publishing,
+            'sclite-core==2.0.1',
+        )
+
+
+def test_public_truth_validator_rejects_additional_stale_artifact_helper_claim() -> None:
+    validator = _load_validator()
+    publishing = (
+        'The helper validates exact name, version, `sclite-core==2.0.1`, Markdown '
+        'content type and publication\n'
+        'description bytes.\n'
+        'A stale helper claims name, version, `sclite-core==2.0.0`, Markdown '
+        'content type and publication\n'
+        'description bytes.\n'
+    )
+
+    with pytest.raises(
+        AssertionError,
+        match='PUBLISHING.md:current_artifact_helper_dependency_mismatch',
+    ):
+        validator._assert_publishing_current_artifact_helper_dependency(
+            publishing,
+            'sclite-core==2.0.1',
+        )
 
 
 def test_public_truth_validator_tracks_selected_current_contract_markers() -> None:

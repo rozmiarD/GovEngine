@@ -77,7 +77,8 @@ def test_control_model_doc_tracks_between_step_boundaries() -> None:
 def test_validation_doc_tracks_current_v1_boundary() -> None:
     text = (ROOT / 'docs' / 'VALIDATION.md').read_text(encoding='utf-8')
 
-    assert 'current `1.0.0rc1` package line' in text
+    assert 'current `1.0.0rc2` package line' in text
+    assert 'immutable `1.0.0rc1` package line' in text
     assert '40 facade exports' in text
     assert '15 v1 records' in text
     assert '33 reproducible cases' in text

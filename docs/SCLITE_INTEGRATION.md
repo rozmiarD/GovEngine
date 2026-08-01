@@ -1,6 +1,8 @@
 # GovEngine and SCLite
 
-GovEngine depends exactly on the PyPI distribution `sclite-core==2.0.0`; the
+Prepared GovEngine rc2 source depends exactly on the PyPI distribution
+`sclite-core==2.0.1`; the immutable published rc1 package remains on
+`sclite-core==2.0.0`. The
 Python import package is `sclite`.
 
 The dependency exists because the projects cooperate, not because they share

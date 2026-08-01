@@ -15,7 +15,7 @@ from typing import NamedTuple
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_HEADERS = ("Name", "Version", "Description-Content-Type")
-EXPECTED_DEPENDENCY = "sclite-core==2.0.0"
+EXPECTED_DEPENDENCY = "sclite-core==2.0.1"
 
 
 class MetadataValidationError(ValueError):
