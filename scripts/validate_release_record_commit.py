@@ -5,9 +5,9 @@ import subprocess
 from pathlib import Path
 
 
-ALLOWED_RECORD_PATHS = (
-    "docs/rc-window/1.0.0rc2.json",
-    "docs/security-review/rc2-external-review.json",
+EXPECTED_RECORD_CHANGES = (
+    ("A", "docs/rc-window/1.0.0rc2.json"),
+    ("M", "docs/security-review/rc2-external-review.json"),
 )
 
 
@@ -21,9 +21,11 @@ def validate_record_commit(repo: Path, review_commit: str) -> str:
         raise ValueError("rc2 review record commit must have exactly one parent")
     source_commit = parents[1]
     changes = _git(repo, "diff", "--name-status", source_commit, review_commit).splitlines()
-    expected = [f"A\t{path}" for path in ALLOWED_RECORD_PATHS]
+    expected = [f"{status}\t{path}" for status, path in EXPECTED_RECORD_CHANGES]
     if changes != expected:
-        raise ValueError("rc2 review record commit must add exactly the two record paths")
+        raise ValueError(
+            "rc2 review record commit must add the window and modify the seeded review form"
+        )
     return source_commit
 
 

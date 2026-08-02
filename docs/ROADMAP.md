@@ -47,7 +47,9 @@ surfaces. They are not part of the 1.x promise.
 
 `1.0.0rc2` is required before stable promotion. The coordinated release train
 published SCLite `2.0.1` patch is pinned by the prepared GovEngine
-`1.0.0rc2` source. The rc2 record-only review child and tag remain deferred.
+`1.0.0rc2` source. The fail-closed external-review form is seeded at its final
+path for authentic reviewer completion. The rc2 record-only child, prepared
+window and tag remain deferred.
 
 The next candidate must include the post-tag security and compatibility fixes,
 the corrected package long description and the complete documentation

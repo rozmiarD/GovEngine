@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import re
 import hashlib
+import json
+import re
 import sys
 import tomllib
 from pathlib import Path
@@ -25,6 +26,23 @@ EXPECTED_RELEASE_LABEL = '1.0.0rc2'
 PUBLISHED_VERSION = '1.0.0rc1'
 PYPI_LONG_DESCRIPTION_PATH = 'PYPI_LONG_DESCRIPTION.md'
 PYPI_LONG_DESCRIPTION_SHA256 = 'e600766f447f1d7a085176de02b7b99778b298af80344c009cce2dc3f70c37a0'
+RC2_REVIEW_RECORD_PATH = 'docs/security-review/rc2-external-review.json'
+RC2_WINDOW_RECORD_PATH = 'docs/rc-window/1.0.0rc2.json'
+PENDING_RC2_REVIEW_FORM = {
+    'schema_version': 'govengine.rc2_external_security_review.v1',
+    'source_commit': '',
+    'artifacts': {
+        'runner': 'github-hosted-runner',
+        'wheel_sha256': '',
+        'normalized_sdist_sha256': '',
+    },
+    'confidential_report_sha256': '',
+    'reviewer': '',
+    'reviewed_at': None,
+    'verdict': 'pending_external_reviewer',
+    'open_p0': None,
+    'open_p1': None,
+}
 
 CURRENT_ALPHA_DOCS = (
     'README.md',
@@ -79,6 +97,24 @@ CURRENT_CONTRACT_DOC_MARKERS = {
         'optional typed governed-admission cross-binding projection',
         'validate_typed_execution_governed_admission()',
         'validate_typed_execution_governed_admission_v02()',
+    ),
+}
+
+RC2_REVIEW_FORM_DOC_MARKERS = {
+    'CHANGELOG.md': (
+        'Seeds the final rc2 external-review JSON path with a fail-closed pending form',
+    ),
+    'PUBLISHING.md': (
+        'B modifies the seeded\nexternal security-review JSON and adds the prepared '
+        'RC-window JSON.',
+    ),
+    'docs/ROADMAP.md': (
+        'The fail-closed external-review form is seeded at its final\npath',
+    ),
+    'docs/VALIDATION.md': (
+        'Source A contains the valid-JSON pending external-review form and no rc2 '
+        'window\nrecord.',
+        'one modified seeded review form plus one added prepared rc2 window',
     ),
 }
 
@@ -461,6 +497,25 @@ def _assert_current_contract_docs(
             _assert_contains(path, text, marker)
 
 
+def _assert_rc2_review_form_state(
+    review: object,
+    *,
+    window_exists: bool,
+) -> None:
+    if not isinstance(review, Mapping) or set(review) != set(PENDING_RC2_REVIEW_FORM):
+        raise AssertionError(f'{RC2_REVIEW_RECORD_PATH}:field_inventory_invalid')
+    if window_exists:
+        if review.get('verdict') != 'approved':
+            raise AssertionError(
+                f'{RC2_REVIEW_RECORD_PATH}:record_child_review_not_approved'
+            )
+        return
+    if review != PENDING_RC2_REVIEW_FORM:
+        raise AssertionError(
+            f'{RC2_REVIEW_RECORD_PATH}:source_a_pending_form_mismatch'
+        )
+
+
 def main() -> int:
     import_errors = validate_consumer_imports('govengine', ROOT)
     if import_errors:
@@ -554,6 +609,11 @@ def main() -> int:
     _assert_validation_current_gate_precedes_history(validation, version)
     _assert_clean_pip_check_guidance(contributing, validation, publishing)
     _assert_current_contract_docs()
+    _assert_current_contract_docs(RC2_REVIEW_FORM_DOC_MARKERS)
+    _assert_rc2_review_form_state(
+        json.loads(_read(RC2_REVIEW_RECORD_PATH)),
+        window_exists=(ROOT / RC2_WINDOW_RECORD_PATH).exists(),
+    )
     changelog = _read('CHANGELOG.md')
     _assert_changelog_unreleased_api_names(changelog)
     _assert_source_pypi_gap_docs(version, readme, public_status, roadmap, changelog)

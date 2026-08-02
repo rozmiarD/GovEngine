@@ -140,6 +140,12 @@ package by itself.
 
 Expected result for the current `1.0.0rc2` package line: prepared/unpublished,
 with `publishable=false` until its authentic review-record child exists.
+Source A contains the valid-JSON pending external-review form and no rc2 window
+record. Public-truth validation requires that exact fail-closed form. The
+production rc2 validator rejects it as unauthenticated, while the synthetic A/B
+gate replaces it only in a disposable child and proves the exact one-parent
+topology: one modified seeded review form plus one added prepared rc2 window,
+with package-byte equality.
 
 The latest public package remains `govengine==1.0.0rc1`; prepared rc2 source is
 not public installation evidence and remains `publishable=false` pending its

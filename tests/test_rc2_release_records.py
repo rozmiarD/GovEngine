@@ -10,6 +10,33 @@ from scripts.validate_rc2_release_records import ROOT, validate_rc2_release_reco
 
 
 SOURCE = 'a' * 40
+SEEDED_REVIEW = ROOT / 'docs/security-review/rc2-external-review.json'
+RC2_WINDOW = ROOT / 'docs/rc-window/1.0.0rc2.json'
+PENDING_REVIEW = {
+    'schema_version': 'govengine.rc2_external_security_review.v1',
+    'source_commit': '',
+    'artifacts': {
+        'runner': 'github-hosted-runner',
+        'wheel_sha256': '',
+        'normalized_sdist_sha256': '',
+    },
+    'confidential_report_sha256': '',
+    'reviewer': '',
+    'reviewed_at': None,
+    'verdict': 'pending_external_reviewer',
+    'open_p0': None,
+    'open_p1': None,
+}
+
+
+def _assert_live_review_posture(review_path: Path, window_path: Path) -> str:
+    review = json.loads(review_path.read_text(encoding='utf-8'))
+    assert isinstance(review, dict)
+    if window_path.exists():
+        assert review.get('verdict') == 'approved'
+        return 'record_child_b'
+    assert review == PENDING_REVIEW
+    return 'source_a'
 
 
 def _write_records(
@@ -50,6 +77,45 @@ def test_accepts_bound_review_and_prepared_window(tmp_path: Path) -> None:
     sdist.write_bytes(b'sdist')
     review, window = _write_records(tmp_path, wheel, sdist)
     validate_rc2_release_records(review=review, window=window, source_commit=SOURCE, wheel=wheel, sdist=sdist)
+
+
+def test_live_review_matches_repository_posture_and_pending_fails_authentic_validation(
+    tmp_path: Path,
+) -> None:
+    posture = _assert_live_review_posture(SEEDED_REVIEW, RC2_WINDOW)
+    if posture == 'record_child_b':
+        return
+
+    wheel, sdist = tmp_path / 'a.whl', tmp_path / 'a.tar.gz'
+    wheel.write_bytes(b'wheel')
+    sdist.write_bytes(b'sdist')
+    _, window = _write_records(tmp_path, wheel, sdist)
+    with pytest.raises(ValueError, match='rc2_security_review_identity_invalid'):
+        validate_rc2_release_records(
+            review=SEEDED_REVIEW,
+            window=window,
+            source_commit=SOURCE,
+            wheel=wheel,
+            sdist=sdist,
+        )
+
+
+def test_live_review_posture_helper_accepts_source_a_and_record_child_b(
+    tmp_path: Path,
+) -> None:
+    source_a = tmp_path / 'source-a'
+    source_a.mkdir()
+    pending_review = source_a / 'review.json'
+    pending_review.write_text(json.dumps(PENDING_REVIEW), encoding='utf-8')
+    assert _assert_live_review_posture(pending_review, source_a / 'window.json') == 'source_a'
+
+    record_child = tmp_path / 'record-child-b'
+    record_child.mkdir()
+    wheel, sdist = record_child / 'a.whl', record_child / 'a.tar.gz'
+    wheel.write_bytes(b'wheel')
+    sdist.write_bytes(b'sdist')
+    approved_review, window = _write_records(record_child, wheel, sdist)
+    assert _assert_live_review_posture(approved_review, window) == 'record_child_b'
 
 
 def test_rejects_window_field_duplication(tmp_path: Path) -> None:

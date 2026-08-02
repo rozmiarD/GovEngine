@@ -25,10 +25,16 @@ import hashlib, json, sys
 from pathlib import Path
 source, wheel, sdist, pyproject, compatibility, corpus, reason_registry = sys.argv[1:]
 review_path = Path("docs/security-review/rc2-external-review.json")
+window_path = Path("docs/rc-window/1.0.0rc2.json")
+pending_review = json.loads(review_path.read_text(encoding="utf-8"))
+if pending_review.get("verdict") != "pending_external_reviewer":
+    raise SystemExit("source A must contain the seeded pending external-review form")
+if window_path.exists():
+    raise SystemExit("source A must not contain the rc2 window record")
 review = {"schema_version": "govengine.rc2_external_security_review.v1", "source_commit": source, "artifacts": {"runner": "github-hosted-runner", "wheel_sha256": wheel, "normalized_sdist_sha256": sdist}, "confidential_report_sha256": "0" * 64, "reviewer": "synthetic-record-only-gate", "reviewed_at": "2026-01-01T00:00:00Z", "verdict": "approved", "open_p0": 0, "open_p1": 0}
 review_path.write_text(json.dumps(review, sort_keys=True) + "\n", encoding="utf-8")
 window = {"schema_version": "govengine.rc_window.v2", "status": "prepared", "version": "1.0.0rc2", "source_commit": source, "prepared_at": "2026-01-01T00:00:00Z", "published_at": None, "observation_ends_at": None, "completed_at": None, "minimum_observation_days": 7, "public_evidence_ref": "", "frozen_inputs": {"pyproject_sha256": pyproject, "v1_compatibility_manifest_sha256": compatibility, "v1_conformance_manifest_sha256": corpus, "policy_reason_registry_sha256": reason_registry}, "security_review": {"path": str(review_path), "sha256": hashlib.sha256(review_path.read_bytes()).hexdigest()}, "facade_exports": 40, "v1_records": 15, "rule": "schema_facade_corpus_or_reason_registry_change_requires_new_rc", "notes": "Synthetic record-only gate."}
-Path("docs/rc-window/1.0.0rc2.json").write_text(json.dumps(window, sort_keys=True) + "\n", encoding="utf-8")
+window_path.write_text(json.dumps(window, sort_keys=True) + "\n", encoding="utf-8")
 PY
 git config user.name "GovEngine release gate"
 git config user.email "release-gate@example.invalid"

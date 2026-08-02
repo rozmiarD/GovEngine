@@ -1,0 +1,15 @@
+{
+  "schema_version": "govengine.rc2_external_security_review.v1",
+  "source_commit": "",
+  "artifacts": {
+    "runner": "github-hosted-runner",
+    "wheel_sha256": "",
+    "normalized_sdist_sha256": ""
+  },
+  "confidential_report_sha256": "",
+  "reviewer": "",
+  "reviewed_at": null,
+  "verdict": "pending_external_reviewer",
+  "open_p0": null,
+  "open_p1": null
+}

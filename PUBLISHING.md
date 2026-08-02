@@ -10,7 +10,8 @@ releases. It describes the repository as it exists; release history belongs in
 - Published immutable candidate: `govengine==1.0.0rc1` from `v1.0.0rc1`.
 - Source dependency: `sclite-core==2.0.1`; published rc1 remains on `2.0.0`.
 - Published `rc1` review: independently reviewed, with no open P0/P1 findings.
-- Current source review: pending authentic review-record child B.
+- Current source review: fail-closed pending form seeded at its final path;
+  authentic reviewer completion and review-record child B remain pending.
 - Publication: tag-bound GitHub OIDC workflow, run
   [29764475143](https://github.com/rozmiarD/GovEngine/actions/runs/29764475143).
 - RC observation window: active until `2026-07-27T17:39:58.058090Z`.
@@ -156,16 +157,24 @@ both wheel and sdist; it is deliberately outside normal unit tests.
 ## Future rc2 review child
 
 The future `v1.0.0rc2` tag must name B, a single-parent child of reviewed source
-A. B may add exactly the external security-review JSON and prepared RC-window
-JSON paths defined by `validate_release_record_commit.py`. The external security record binds A, the
-official GitHub-hosted-runner wheel and normalized-sdist SHA-256 values, the
-confidential report hash, reviewer, review date, approved verdict, and zero
-unresolved P0/P1 findings. The prepared window binds A and frozen-input hashes
-and cryptographically references that review record without copying its fields.
+A. Source A contains a valid-JSON, explicitly pending external-review form at
+`docs/security-review/rc2-external-review.json` and no rc2 window. The authentic
+reviewer edits that existing form through GitHub Web. B modifies the seeded
+external security-review JSON and adds the prepared RC-window JSON. Those must
+be the only two changed paths, as enforced by
+`validate_release_record_commit.py`. The completed external security record
+binds A, the official GitHub-hosted-runner wheel and normalized-sdist SHA-256
+values, the confidential report hash, reviewer, review date, approved verdict,
+and zero unresolved P0/P1 findings. The prepared window binds A and frozen-input
+hashes and cryptographically references that review record without copying its
+fields.
 
 The publish workflow rebuilds A and B, requires artifact equality before OIDC,
-and never creates these records itself. `scripts/release_ab_repro_gate.sh` uses
-only temporary synthetic records to prove the mechanism; it is not rc2 evidence.
+and never creates or fills authentic records itself. The seeded form is not
+approval, identity proof or publication authority and contains no confidential
+report content. `scripts/release_ab_repro_gate.sh` modifies the seeded form and
+adds only a temporary synthetic window to prove the mechanism; neither is rc2
+evidence.
 
 ## Tag and publish
 

@@ -13,6 +13,10 @@ experimental and fixture classifications.
 - Prepares the next GovEngine candidate with exact `sclite-core==2.0.1` while
   retaining immutable published rc1 history and deferring the record-only
   authentic-review child.
+- Seeds the final rc2 external-review JSON path with a fail-closed pending form
+  for the authentic reviewer to complete in GitHub Web. The record-only child
+  must modify that form and add the prepared rc2 window; the form is neither
+  approval nor confidential report content.
 
 - Adds a whole-active-documentation anti-drift gate for repository links and
   anchors, documented files including Markdown references, CLI commands,

@@ -234,6 +234,37 @@ def test_public_truth_validator_tracks_current_architecture_docs() -> None:
     })
 
 
+def test_public_truth_validator_requires_exact_pending_rc2_review_form() -> None:
+    validator = _load_validator()
+
+    validator._assert_rc2_review_form_state(
+        validator.PENDING_RC2_REVIEW_FORM,
+        window_exists=False,
+    )
+    altered = dict(validator.PENDING_RC2_REVIEW_FORM)
+    altered['verdict'] = 'approved'
+    with pytest.raises(AssertionError, match='source_a_pending_form_mismatch'):
+        validator._assert_rc2_review_form_state(altered, window_exists=False)
+
+
+def test_public_truth_validator_accepts_approved_record_child_state() -> None:
+    validator = _load_validator()
+
+    approved = dict(validator.PENDING_RC2_REVIEW_FORM)
+    approved['verdict'] = 'approved'
+    validator._assert_rc2_review_form_state(approved, window_exists=True)
+
+
+def test_public_truth_validator_rejects_pending_form_with_rc2_window() -> None:
+    validator = _load_validator()
+
+    with pytest.raises(AssertionError, match='record_child_review_not_approved'):
+        validator._assert_rc2_review_form_state(
+            validator.PENDING_RC2_REVIEW_FORM,
+            window_exists=True,
+        )
+
+
 def test_public_truth_validator_rejects_missing_architecture_marker(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
