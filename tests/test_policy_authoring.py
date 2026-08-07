@@ -67,7 +67,11 @@ def test_policy_authoring_schema_is_public_and_boundary_explicit() -> None:
     schema = policy_json_schema('policy-pack')
 
     assert schema['title'] == 'GovEngine policy pack'
-    assert schema['required'] == ['policy_id', 'version', 'rules']
+    assert schema['required'] == ['version', 'rules']
+    assert schema['oneOf'] == [
+        {'required': ['policy_id']},
+        {'required': ['id']},
+    ]
     assert 'not SCLite truth and not execution authority' in schema['description']
 
 
@@ -156,6 +160,60 @@ def test_policy_cli_validate_fails_closed_for_invalid_policy(tmp_path: Path) -> 
     assert proc.returncode == 2
     assert report['status'] == 'failed'
     assert report['reason_code'] == 'conflicting_policy_rules'
+
+
+def test_policy_cli_validate_rejects_unknown_legacy_rule_field(
+    tmp_path: Path,
+) -> None:
+    bad_path = tmp_path / 'legacy-rule-typo.json'
+    bad_path.write_text(
+        render_policy_pack_json(
+            {
+                'policy_id': 'legacy-typo',
+                'version': '0.1',
+                'rules': [
+                    {
+                        'rule_id': 'allow-read',
+                        'effect': 'allow',
+                        'conditions': {'action.mode': 'read'},
+                        'constraintss': [
+                            {
+                                'constraint_id': 'bounded-output',
+                                'kind': 'output_limit',
+                                'value': 1,
+                            }
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding='utf-8',
+    )
+
+    proc = subprocess.run(
+        [sys.executable, str(SCRIPT), 'validate', str(bad_path), '--json'],
+        cwd=str(ROOT),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    report = json.loads(proc.stdout)
+
+    assert proc.returncode == 2
+    assert report['status'] == 'failed'
+    assert report['reason_code'] == 'invalid_policy_rule'
+
+    compile_proc = subprocess.run(
+        [sys.executable, str(SCRIPT), 'compile', str(bad_path), '--json'],
+        cwd=str(ROOT),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    compile_report = json.loads(compile_proc.stdout)
+
+    assert compile_proc.returncode == 2
+    assert compile_report['reason_code'] == 'invalid_policy_rule'
 
 
 @pytest.mark.parametrize(

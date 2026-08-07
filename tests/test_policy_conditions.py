@@ -6,7 +6,9 @@ from govengine import PolicyCompiler, PolicyEngine, explain_policy_evaluation
 from govengine.api import GovApiError
 from govengine.policy.compiler import (
     _POLICY_CONDITION_V1_FIELDS,
+    _POLICY_PACK_V0_1_FIELDS,
     _POLICY_PACK_V1_FIELDS,
+    _POLICY_RULE_V0_1_FIELDS,
     _POLICY_RULE_V1_FIELDS,
     _POLICY_VALIDITY_V1_FIELDS,
     PolicyCondition,
@@ -39,6 +41,24 @@ def _v1_policy_pack() -> dict[str, object]:
                 "conditions": [
                     {"path": "action.mode", "operator": "eq", "value": "read"}
                 ],
+            }
+        ],
+    }
+
+
+def _v0_1_policy_pack(*, aliases: bool = False) -> dict[str, object]:
+    pack_id = 'id' if aliases else 'policy_id'
+    rule_id = 'id' if aliases else 'rule_id'
+    effect = 'decision' if aliases else 'effect'
+    return {
+        pack_id: 'legacy-policy',
+        'version': '0.1',
+        'schema_version': 'v0.1',
+        'rules': [
+            {
+                rule_id: 'legacy-read',
+                effect: 'allow',
+                'conditions': {'action.mode': 'read'},
             }
         ],
     }
@@ -262,29 +282,113 @@ def test_v1_constraint_typo_is_rejected_before_policy_evaluation() -> None:
     assert result.reason_code == "invalid_policy_rule"
 
 
-def test_legacy_v0_1_preserves_unknown_field_tolerance_and_aliases() -> None:
-    result = PolicyCompiler().compile(
-        {
-            "id": "legacy-policy",
-            "version": "0.1",
-            "schema_version": "v0.1",
-            "legacy_pack_extension": True,
-            "rules": [
-                {
-                    "id": "legacy-read",
-                    "decision": "allow",
-                    "conditions": {"action.mode": "read"},
-                    "legacy_rule_extension": True,
-                }
-            ],
-        }
-    )
+def test_v0_1_runtime_closed_field_inventories_exactly_match_json_schema() -> None:
+    schema = policy_json_schema('policy-pack')
+    rule_schema = schema['properties']['rules']['items']
 
-    assert result.ok
-    assert result.policy_pack is not None
-    assert result.policy_pack.policy_id == "legacy-policy"
-    assert result.policy_pack.rules[0].rule_id == "legacy-read"
-    assert result.policy_pack.rules[0].effect == "allow"
+    assert schema['additionalProperties'] is False
+    assert rule_schema['additionalProperties'] is False
+    assert _POLICY_PACK_V0_1_FIELDS == frozenset(schema['properties'])
+    assert _POLICY_RULE_V0_1_FIELDS == frozenset(rule_schema['properties'])
+    assert schema['required'] == ['version', 'rules']
+    assert schema['oneOf'] == [
+        {'required': ['policy_id']},
+        {'required': ['id']},
+    ]
+    assert rule_schema['required'] == ['conditions']
+    assert rule_schema['allOf'] == [
+        {
+            'oneOf': [
+                {'required': ['rule_id']},
+                {'required': ['id']},
+            ]
+        },
+        {
+            'oneOf': [
+                {'required': ['effect']},
+                {'required': ['decision']},
+            ]
+        },
+    ]
+
+
+def test_v0_1_intentional_aliases_normalize_to_canonical_output() -> None:
+    canonical = PolicyCompiler().compile(_v0_1_policy_pack())
+    aliases = PolicyCompiler().compile(_v0_1_policy_pack(aliases=True))
+
+    assert canonical.ok
+    assert aliases.ok
+    assert canonical.policy_pack is not None
+    assert aliases.policy_pack == canonical.policy_pack
+    normalized = aliases.policy_pack.as_dict()
+    assert normalized['policy_id'] == 'legacy-policy'
+    assert 'id' not in normalized
+    rule = normalized['rules'][0]
+    assert rule['rule_id'] == 'legacy-read'
+    assert rule['effect'] == 'allow'
+    assert 'id' not in rule
+    assert 'decision' not in rule
+
+
+@pytest.mark.parametrize(
+    ('object_level', 'unknown_field'),
+    [
+        ('pack', 'unexpected_pack_field'),
+        ('rule', 'unexpected_rule_field'),
+        ('rule', 'constraintss'),
+    ],
+)
+def test_v0_1_schema_and_compiler_reject_unknown_closed_object_fields(
+    object_level: str,
+    unknown_field: str,
+) -> None:
+    policy = _v0_1_policy_pack()
+    schema = policy_json_schema('policy-pack')
+    schema_node = schema
+    reason_code = 'invalid_policy_pack'
+    if object_level == 'pack':
+        policy[unknown_field] = True
+    else:
+        rules = policy['rules']
+        assert isinstance(rules, list)
+        rule = rules[0]
+        assert isinstance(rule, dict)
+        rule[unknown_field] = True
+        schema_node = schema['properties']['rules']['items']
+        reason_code = 'invalid_policy_rule'
+
+    assert schema_node['additionalProperties'] is False
+    assert unknown_field not in schema_node['properties']
+    result = PolicyCompiler().compile(policy)
+    assert result.status == 'rejected'
+    assert result.policy_pack is None
+    assert result.reason_code == reason_code
+
+
+@pytest.mark.parametrize(
+    'dual_form',
+    ['pack-id', 'rule-id', 'rule-effect'],
+)
+def test_v0_1_rejects_ambiguous_canonical_and_alias_pairs(dual_form: str) -> None:
+    policy = _v0_1_policy_pack()
+    rules = policy['rules']
+    assert isinstance(rules, list)
+    rule = rules[0]
+    assert isinstance(rule, dict)
+    if dual_form == 'pack-id':
+        policy['id'] = 'legacy-policy'
+        reason_code = 'invalid_policy_pack'
+    elif dual_form == 'rule-id':
+        rule['id'] = 'legacy-read'
+        reason_code = 'invalid_policy_rule'
+    else:
+        rule['decision'] = 'allow'
+        reason_code = 'invalid_policy_rule'
+
+    result = PolicyCompiler().compile(policy)
+    assert result.status == 'rejected'
+    assert result.policy_pack is None
+    assert result.reason_code == reason_code
 
 
 @pytest.mark.parametrize(

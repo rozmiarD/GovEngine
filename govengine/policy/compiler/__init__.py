@@ -51,6 +51,31 @@ MAX_POLICY_RULES = 256
 MAX_POLICY_CONDITIONS_PER_RULE = 32
 MAX_POLICY_TOTAL_CONDITIONS = 4096
 MAX_POLICY_CONTROLS_PER_RULE = 64
+_POLICY_PACK_V0_1_FIELDS = frozenset(
+    {
+        'policy_id',
+        'id',
+        'version',
+        'schema_version',
+        'rules',
+        'metadata',
+    }
+)
+_POLICY_RULE_V0_1_FIELDS = frozenset(
+    {
+        'rule_id',
+        'id',
+        'effect',
+        'decision',
+        'conditions',
+        'priority',
+        'reason_code',
+        'risk_class',
+        'risk_score',
+        'obligations',
+        'constraints',
+    }
+)
 _POLICY_PACK_V1_FIELDS = frozenset(
     {
         'policy_id',
@@ -156,6 +181,16 @@ class PolicyRule:
                 allowed=_POLICY_RULE_V1_FIELDS,
                 reason_code='invalid_policy_rule',
             )
+        else:
+            _reject_unknown_fields(
+                raw,
+                allowed=_POLICY_RULE_V0_1_FIELDS,
+                reason_code='invalid_policy_rule',
+            )
+            if ('rule_id' in raw and 'id' in raw) or (
+                'effect' in raw and 'decision' in raw
+            ):
+                raise GovApiError('invalid_policy_rule')
         rule_id = str(raw.get('rule_id') or raw.get('id') or '').strip()
         effect = str(raw.get('effect') or raw.get('decision') or '').strip()
         if not rule_id:
@@ -313,6 +348,14 @@ class PolicyCompiler:
                 allowed=_POLICY_PACK_V1_FIELDS,
                 reason_code='invalid_policy_pack',
             )
+        else:
+            _reject_unknown_fields(
+                raw,
+                allowed=_POLICY_PACK_V0_1_FIELDS,
+                reason_code='invalid_policy_pack',
+            )
+            if 'policy_id' in raw and 'id' in raw:
+                raise GovApiError('invalid_policy_pack')
         issuer_ref = ''
         policy_epoch = 0
         not_before = ''

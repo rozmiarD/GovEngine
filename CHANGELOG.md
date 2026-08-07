@@ -8,6 +8,11 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Closes the v0.1 policy pack and rule field inventories while preserving only
+  the intentional pack `id`, rule `id`, and rule `decision` compatibility
+  aliases. The authoring schema and runtime compiler now reject ambiguous dual
+  spellings and unknown fields such as `constraintss`; compiled output remains
+  canonical and typed v1 behavior is unchanged.
 - Caps each new governance authorization at the policy activation expiry
   validated during issuance, while preserving the independent 60-second and
   approval-expiry bounds. This is fail-closed issuance-time validation and

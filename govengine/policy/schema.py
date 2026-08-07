@@ -14,11 +14,29 @@ POLICY_SCHEMA_KINDS = (
 
 _POLICY_RULE_SCHEMA: dict[str, Any] = {
     'type': 'object',
-    'required': ['rule_id', 'effect', 'conditions'],
+    'required': ['conditions'],
+    'allOf': [
+        {
+            'oneOf': [
+                {'required': ['rule_id']},
+                {'required': ['id']},
+            ]
+        },
+        {
+            'oneOf': [
+                {'required': ['effect']},
+                {'required': ['decision']},
+            ]
+        },
+    ],
     'additionalProperties': False,
     'properties': {
         'rule_id': {'type': 'string', 'minLength': 1},
+        'id': {'type': 'string', 'minLength': 1},
         'effect': {'enum': ['allow', 'allow_with_obligations', 'approval_required', 'deny']},
+        'decision': {
+            'enum': ['allow', 'allow_with_obligations', 'approval_required', 'deny']
+        },
         'conditions': {
             'type': 'object',
             'minProperties': 1,
@@ -93,6 +111,10 @@ _POLICY_CONDITION_V1_SCHEMA: dict[str, Any] = {
 }
 
 _POLICY_RULE_V1_SCHEMA = deepcopy(_POLICY_RULE_SCHEMA)
+_POLICY_RULE_V1_SCHEMA['required'] = ['rule_id', 'effect', 'conditions']
+_POLICY_RULE_V1_SCHEMA.pop('allOf')
+_POLICY_RULE_V1_SCHEMA['properties'].pop('id')
+_POLICY_RULE_V1_SCHEMA['properties'].pop('decision')
 _POLICY_RULE_V1_SCHEMA['properties']['conditions'] = {
     'type': 'array',
     'minItems': 1,
@@ -107,10 +129,15 @@ _SCHEMAS: dict[str, dict[str, Any]] = {
         'title': 'GovEngine policy pack',
         'description': 'Declarative governance policy input compiled by GovEngine; not SCLite truth and not execution authority.',
         'type': 'object',
-        'required': ['policy_id', 'version', 'rules'],
+        'required': ['version', 'rules'],
+        'oneOf': [
+            {'required': ['policy_id']},
+            {'required': ['id']},
+        ],
         'additionalProperties': False,
         'properties': {
             'policy_id': {'type': 'string', 'minLength': 1},
+            'id': {'type': 'string', 'minLength': 1},
             'version': {'type': 'string', 'minLength': 1},
             'schema_version': {'const': 'v0.1'},
             'rules': {'type': 'array', 'minItems': 1, 'items': _POLICY_RULE_SCHEMA},

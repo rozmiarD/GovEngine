@@ -78,8 +78,12 @@ rules:
 
 Compiler rejects:
 
-- packs without `policy_id`, `version`, or rules
-- rules without `rule_id`, `effect`, or non-empty `conditions`
+- packs without exactly one identity (`policy_id`, or the v0.1 compatibility
+  alias `id`), `version`, or rules
+- rules without exactly one identity (`rule_id`, or v0.1 `id`), exactly one
+  effect (`effect`, or v0.1 `decision`), or non-empty `conditions`
+- unknown pack or rule fields, including misspelled controls such as
+  `constraintss`
 - duplicate rule ids
 - **conflicting rules** that share identical conditions but differ in `effect`
 - redundant rules that repeat the exact predicate and effect
@@ -88,6 +92,13 @@ Compiler rejects:
   controls per rule
 - invalid or unbounded priorities
 - invalid reason-code identifiers, risk classes or non-bounded risk scores
+
+The v0.1 pack and rule object levels are closed rather than
+extension-tolerant. At those levels, the only aliases are pack `id`, rule `id`,
+and rule `decision`; canonical and alias spellings cannot be supplied together.
+This statement does not redefine the nested obligation or constraint object
+compatibility aliases. Compiled output always uses `policy_id`, `rule_id`, and
+`effect`. Typed v1 remains canonical-only.
 
 Compiled rules are sorted by `priority` (lower first).
 The compiler performs exact deterministic analysis only; it does not attempt
