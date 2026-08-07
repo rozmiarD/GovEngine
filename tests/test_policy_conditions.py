@@ -4,7 +4,13 @@ import pytest
 
 from govengine import PolicyCompiler, PolicyEngine, explain_policy_evaluation
 from govengine.api import GovApiError
-from govengine.policy.compiler import PolicyCondition
+from govengine.policy.compiler import (
+    _POLICY_CONDITION_V1_FIELDS,
+    _POLICY_PACK_V1_FIELDS,
+    _POLICY_RULE_V1_FIELDS,
+    _POLICY_VALIDITY_V1_FIELDS,
+    PolicyCondition,
+)
 from govengine.policy.schema import policy_json_schema
 
 
@@ -18,6 +24,23 @@ def _v1_fields() -> dict[str, object]:
             "expires_at": "2026-08-16T00:00:00Z",
         },
         "supersedes": [],
+    }
+
+
+def _v1_policy_pack() -> dict[str, object]:
+    return {
+        **_v1_fields(),
+        "policy_id": "typed-policy",
+        "version": "1.0.0",
+        "rules": [
+            {
+                "rule_id": "typed-allow",
+                "effect": "allow",
+                "conditions": [
+                    {"path": "action.mode", "operator": "eq", "value": "read"}
+                ],
+            }
+        ],
     }
 
 
@@ -155,6 +178,113 @@ def test_legacy_equality_map_compiles_to_typed_ast_without_wire_drift() -> None:
     assert result.policy_pack.as_dict()["rules"][0]["conditions"] == {
         "action.mode": "read"
     }
+
+
+def test_v1_runtime_closed_field_inventories_exactly_match_json_schema() -> None:
+    schema = policy_json_schema("policy-pack-v1")
+    rule_schema = schema["properties"]["rules"]["items"]
+    validity_schema = schema["properties"]["validity"]
+    condition_schema = rule_schema["properties"]["conditions"]["items"]
+
+    assert schema["additionalProperties"] is False
+    assert rule_schema["additionalProperties"] is False
+    assert validity_schema["additionalProperties"] is False
+    assert condition_schema["additionalProperties"] is False
+    assert _POLICY_PACK_V1_FIELDS == frozenset(schema["properties"])
+    assert _POLICY_RULE_V1_FIELDS == frozenset(rule_schema["properties"])
+    assert _POLICY_VALIDITY_V1_FIELDS == frozenset(validity_schema["properties"])
+    assert _POLICY_CONDITION_V1_FIELDS == frozenset(condition_schema["properties"])
+
+
+@pytest.mark.parametrize(
+    ("object_level", "unknown_field", "reason_code"),
+    [
+        ("pack", "unexpected_pack_field", "invalid_policy_pack"),
+        ("rule", "unexpected_rule_field", "invalid_policy_rule"),
+        ("validity", "unexpected_validity_field", "invalid_policy_validity"),
+        ("condition", "unexpected_condition_field", "unknown_policy_condition_field"),
+    ],
+)
+def test_v1_schema_and_compiler_reject_unknown_closed_object_fields(
+    object_level: str,
+    unknown_field: str,
+    reason_code: str,
+) -> None:
+    policy = _v1_policy_pack()
+    schema = policy_json_schema("policy-pack-v1")
+    schema_node = schema
+
+    if object_level == "pack":
+        policy[unknown_field] = True
+    elif object_level == "validity":
+        validity = policy["validity"]
+        assert isinstance(validity, dict)
+        validity[unknown_field] = True
+        schema_node = schema["properties"]["validity"]
+    else:
+        rules = policy["rules"]
+        assert isinstance(rules, list)
+        rule = rules[0]
+        assert isinstance(rule, dict)
+        schema_node = schema["properties"]["rules"]["items"]
+        if object_level == "rule":
+            rule[unknown_field] = True
+        else:
+            conditions = rule["conditions"]
+            assert isinstance(conditions, list)
+            condition = conditions[0]
+            assert isinstance(condition, dict)
+            condition[unknown_field] = True
+            schema_node = schema_node["properties"]["conditions"]["items"]
+
+    assert schema_node["additionalProperties"] is False
+    assert unknown_field not in schema_node["properties"]
+    result = PolicyCompiler().compile(policy)
+    assert not result.ok
+    assert result.policy_pack is None
+    assert result.reason_code == reason_code
+
+
+def test_v1_constraint_typo_is_rejected_before_policy_evaluation() -> None:
+    policy = _v1_policy_pack()
+    rules = policy["rules"]
+    assert isinstance(rules, list)
+    rule = rules[0]
+    assert isinstance(rule, dict)
+    rule["constraintss"] = [
+        {"constraint_id": "output", "kind": "output_limit", "value": 1}
+    ]
+
+    result = PolicyCompiler().compile(policy)
+
+    assert result.status == "rejected"
+    assert result.policy_pack is None
+    assert result.reason_code == "invalid_policy_rule"
+
+
+def test_legacy_v0_1_preserves_unknown_field_tolerance_and_aliases() -> None:
+    result = PolicyCompiler().compile(
+        {
+            "id": "legacy-policy",
+            "version": "0.1",
+            "schema_version": "v0.1",
+            "legacy_pack_extension": True,
+            "rules": [
+                {
+                    "id": "legacy-read",
+                    "decision": "allow",
+                    "conditions": {"action.mode": "read"},
+                    "legacy_rule_extension": True,
+                }
+            ],
+        }
+    )
+
+    assert result.ok
+    assert result.policy_pack is not None
+    assert result.policy_pack.policy_id == "legacy-policy"
+    assert result.policy_pack.rules[0].rule_id == "legacy-read"
+    assert result.policy_pack.rules[0].effect == "allow"
 
 
 @pytest.mark.parametrize(

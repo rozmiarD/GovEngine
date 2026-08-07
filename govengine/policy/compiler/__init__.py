@@ -46,6 +46,48 @@ MAX_POLICY_RULES = 256
 MAX_POLICY_CONDITIONS_PER_RULE = 32
 MAX_POLICY_TOTAL_CONDITIONS = 4096
 MAX_POLICY_CONTROLS_PER_RULE = 64
+_POLICY_PACK_V1_FIELDS = frozenset(
+    {
+        'policy_id',
+        'version',
+        'schema_version',
+        'issuer_ref',
+        'policy_epoch',
+        'validity',
+        'supersedes',
+        'rules',
+        'metadata',
+    }
+)
+_POLICY_RULE_V1_FIELDS = frozenset(
+    {
+        'rule_id',
+        'effect',
+        'conditions',
+        'priority',
+        'reason_code',
+        'risk_class',
+        'risk_score',
+        'obligations',
+        'constraints',
+    }
+)
+_POLICY_VALIDITY_V1_FIELDS = frozenset({'not_before', 'expires_at'})
+_POLICY_CONDITION_V1_FIELDS = frozenset({'path', 'operator', 'value'})
+
+
+def _reject_unknown_fields(
+    value: Mapping[str, Any],
+    *,
+    allowed: frozenset[str],
+    reason_code: str,
+) -> None:
+    unknown = set(value) - allowed
+    if unknown:
+        raise GovApiError(
+            reason_code,
+            context={'field': sorted(str(item) for item in unknown)[0]},
+        )
 
 
 @dataclass(frozen=True)
@@ -62,12 +104,11 @@ class PolicyCondition:
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any]) -> 'PolicyCondition':
         raw = require_mapping(value, reason_code='invalid_policy_condition')
-        unknown = set(raw) - {'path', 'operator', 'value'}
-        if unknown:
-            raise GovApiError(
-                'unknown_policy_condition_field',
-                context={'field': sorted(str(item) for item in unknown)[0]},
-            )
+        _reject_unknown_fields(
+            raw,
+            allowed=_POLICY_CONDITION_V1_FIELDS,
+            reason_code='unknown_policy_condition_field',
+        )
         if 'value' not in raw:
             raise GovApiError('missing_policy_condition_value')
         return cls(
@@ -104,6 +145,12 @@ class PolicyRule:
         schema_version: str = POLICY_PACK_SCHEMA_VERSION,
     ) -> 'PolicyRule':
         raw = require_mapping(value, reason_code='invalid_policy_rule')
+        if schema_version == POLICY_PACK_V1_SCHEMA_VERSION:
+            _reject_unknown_fields(
+                raw,
+                allowed=_POLICY_RULE_V1_FIELDS,
+                reason_code='invalid_policy_rule',
+            )
         rule_id = str(raw.get('rule_id') or raw.get('id') or '').strip()
         effect = str(raw.get('effect') or raw.get('decision') or '').strip()
         if not rule_id:
@@ -255,6 +302,12 @@ class PolicyCompiler:
         schema_version = str(raw.get('schema_version') or POLICY_PACK_SCHEMA_VERSION).strip()
         if schema_version not in POLICY_PACK_SCHEMA_VERSIONS:
             raise GovApiError(f'unknown_policy_pack_schema_version:{schema_version or "missing"}')
+        if schema_version == POLICY_PACK_V1_SCHEMA_VERSION:
+            _reject_unknown_fields(
+                raw,
+                allowed=_POLICY_PACK_V1_FIELDS,
+                reason_code='invalid_policy_pack',
+            )
         issuer_ref = ''
         policy_epoch = 0
         not_before = ''
@@ -270,6 +323,11 @@ class PolicyCompiler:
             policy_epoch = raw_epoch
             validity = require_mapping(
                 raw.get('validity'),
+                reason_code='invalid_policy_validity',
+            )
+            _reject_unknown_fields(
+                validity,
+                allowed=_POLICY_VALIDITY_V1_FIELDS,
                 reason_code='invalid_policy_validity',
             )
             not_before = _policy_timestamp(
