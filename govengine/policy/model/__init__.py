@@ -294,19 +294,18 @@ def _reject_forbidden_policy_metadata(value: Mapping[str, Any]) -> None:
         raise GovApiError(f'forbidden_policy_metadata:{key}')
 
 
-def _find_forbidden_key(value: Mapping[str, Any]) -> str:
-    for key, item in value.items():
-        name = str(key).lower()
-        if name in FORBIDDEN_POLICY_METADATA_KEYS:
-            return name
-        if isinstance(item, Mapping):
+def _find_forbidden_key(value: Any) -> str:
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            name = str(key).strip().lower()
+            if name in FORBIDDEN_POLICY_METADATA_KEYS:
+                return name
             found = _find_forbidden_key(item)
             if found:
                 return found
-        if isinstance(item, (list, tuple)):
-            for entry in item:
-                if isinstance(entry, Mapping):
-                    found = _find_forbidden_key(entry)
-                    if found:
-                        return found
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            found = _find_forbidden_key(item)
+            if found:
+                return found
     return ''

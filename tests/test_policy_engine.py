@@ -11,6 +11,7 @@ from govengine import (
     validate_policy_verdict,
 )
 from govengine.api import GovApiError
+from govengine.policy.model import PolicyConstraint, PolicyObligation
 
 
 def _compiled_pack():
@@ -37,6 +38,65 @@ def _compiled_pack():
     assert result.ok
     assert result.policy_pack is not None
     return result.policy_pack
+
+
+def _policy_metadata_result(surface: str, metadata):
+    if surface == 'pack':
+        result = PolicyCompiler().compile({
+            'policy_id': 'metadata-pack',
+            'version': '1',
+            'schema_version': 'v1',
+            'issuer_ref': 'issuer://fixture/security',
+            'policy_epoch': 1,
+            'validity': {
+                'not_before': '2026-01-01T00:00:00Z',
+                'expires_at': '2027-01-01T00:00:00Z',
+            },
+            'supersedes': [],
+            'rules': [
+                {
+                    'rule_id': 'allow-read',
+                    'effect': 'allow',
+                    'conditions': [
+                        {'path': 'action.mode', 'operator': 'eq', 'value': 'read'},
+                    ],
+                },
+            ],
+            'metadata': metadata,
+        })
+        if not result.ok:
+            assert result.policy_pack is None
+            raise GovApiError(result.diagnostics[0])
+        assert result.policy_pack is not None
+        return result.policy_pack.as_dict()['metadata']
+    if surface == 'request':
+        return validate_policy_request({
+            'request_id': 'metadata-request',
+            'subject_ref': 'artifact://fixture/metadata',
+            'metadata': metadata,
+        }).as_dict()['metadata']
+    if surface == 'obligation':
+        return PolicyObligation.from_mapping({
+            'obligation_id': 'metadata-obligation',
+            'kind': 'receipt',
+            'metadata': metadata,
+        }).as_dict()['metadata']
+    if surface == 'constraint':
+        return PolicyConstraint.from_mapping({
+            'constraint_id': 'metadata-constraint',
+            'kind': 'output_limit',
+            'value': 1024,
+            'metadata': metadata,
+        }).as_dict()['metadata']
+    if surface == 'verdict':
+        return PolicyVerdict.from_mapping({
+            'verdict_id': 'metadata-verdict',
+            'request_id': 'metadata-request',
+            'subject_ref': 'artifact://fixture/metadata',
+            'decision': 'allow',
+            'metadata': metadata,
+        }).as_dict()['metadata']
+    raise AssertionError(f'unknown test surface: {surface}')
 
 
 def test_policy_compiler_rejects_invalid_or_conflicting_packs() -> None:
@@ -144,6 +204,83 @@ def test_policy_boundary_rejects_unsupported_json_values_and_keys() -> None:
             'subject_ref': 'artifact://task/key',
             'action': {1: 'read'},
         })
+
+
+@pytest.mark.parametrize('surface', ('pack', 'request', 'obligation', 'constraint', 'verdict'))
+@pytest.mark.parametrize(
+    ('metadata', 'forbidden_key'),
+    [
+        ({'password': 'fixture-value'}, 'password'),
+        ({'ToKeN': 'fixture-value'}, 'token'),
+        ({' secret': 'fixture-value'}, 'secret'),
+        ({'api_key ': 'fixture-value'}, 'api_key'),
+        ({'nested': {' Credential ': 'fixture-value'}}, 'credential'),
+        ({'nested': [{'command': 'fixture-value'}]}, 'command'),
+        ({'nested': ({' shell ': 'fixture-value'},)}, 'shell'),
+        ({'outer': [[{' Token ': 'fixture-value'}]]}, 'token'),
+    ],
+    ids=(
+        'exact',
+        'case',
+        'leading-whitespace',
+        'trailing-whitespace',
+        'nested-mapping',
+        'mapping-inside-list',
+        'mapping-inside-tuple',
+        'mapping-inside-nested-sequences',
+    ),
+)
+def test_policy_metadata_surfaces_reject_normalized_forbidden_keys(
+    surface,
+    metadata,
+    forbidden_key,
+) -> None:
+    with pytest.raises(GovApiError) as exc_info:
+        _policy_metadata_result(surface, metadata)
+
+    assert exc_info.value.reason_code == 'forbidden_policy_metadata'
+    assert exc_info.value.context['detail'] == forbidden_key
+
+
+@pytest.mark.parametrize('surface', ('pack', 'request', 'obligation', 'constraint', 'verdict'))
+def test_policy_metadata_surfaces_preserve_safe_bounded_metadata(surface) -> None:
+    metadata = {
+        'labels': ['fixture', {'owner_ref': 'artifact://fixture/owner'}],
+        'tuple_values': ('alpha', {'note': 'deterministic'}),
+    }
+    expected = {
+        'labels': ['fixture', {'owner_ref': 'artifact://fixture/owner'}],
+        'tuple_values': ['alpha', {'note': 'deterministic'}],
+    }
+
+    assert _policy_metadata_result(surface, metadata) == expected
+    assert _policy_metadata_result(surface, metadata) == expected
+
+
+@pytest.mark.parametrize(
+    ('metadata', 'reason_code'),
+    [
+        ({'items': {'not', 'json'}}, 'json_boundary_unsupported_type'),
+        ({1: 'not-a-string-key'}, 'json_boundary_non_string_key'),
+    ],
+)
+def test_policy_pack_metadata_preserves_bounded_json_rejection(metadata, reason_code) -> None:
+    result = PolicyCompiler().compile({
+        'policy_id': 'bounded-metadata-pack',
+        'version': '1',
+        'rules': [
+            {
+                'rule_id': 'allow-read',
+                'effect': 'allow',
+                'conditions': {'action.mode': 'read'},
+            },
+        ],
+        'metadata': metadata,
+    })
+
+    assert result.status == 'rejected'
+    assert result.reason_code == reason_code
+    assert result.policy_pack is None
 
 
 def test_policy_engine_denies_unsafe_and_unmatched_requests() -> None:

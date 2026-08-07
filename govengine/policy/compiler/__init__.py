@@ -9,7 +9,12 @@ from typing import Any, Mapping
 from govengine._json_boundary import bounded_json_copy
 from govengine._governance_validation import parse_aware_timestamp
 from govengine.api import GovApiError, require_mapping
-from govengine.policy.model import POLICY_RISK_CLASSES, PolicyConstraint, PolicyObligation
+from govengine.policy.model import (
+    POLICY_RISK_CLASSES,
+    PolicyConstraint,
+    PolicyObligation,
+    _reject_forbidden_policy_metadata,
+)
 from govengine.policy.reasons import validate_policy_reason_code
 from govengine.signing import govengine_record_digest
 
@@ -364,12 +369,17 @@ class PolicyCompiler:
             raise GovApiError('policy_condition_limit_exceeded')
         _reject_conflicts(rules)
         _reject_control_conflicts(rules)
+        metadata = _safe_mapping(
+            raw.get('metadata'),
+            reason_code='invalid_policy_pack_metadata',
+        )
+        _reject_forbidden_policy_metadata(metadata)
         return CompiledPolicyPack(
             policy_id=policy_id,
             version=version,
             schema_version=schema_version,
             rules=rules,
-            metadata=_safe_mapping(raw.get('metadata'), reason_code='invalid_policy_pack_metadata'),
+            metadata=metadata,
             issuer_ref=issuer_ref,
             policy_epoch=policy_epoch,
             not_before=not_before,
