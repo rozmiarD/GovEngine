@@ -28,7 +28,7 @@ from govengine.governance import (
     requested_scope_digest,
     validate_governance_request,
 )
-from govengine.policy import PolicyCompiler, policy_pack_digest
+from govengine.policy import CompiledPolicyPack, PolicyCompiler, policy_pack_digest
 from govengine.scope_policy import ScopePolicyBinding, scope_policy_binding_digest
 from govengine.signing import govengine_record_digest
 
@@ -62,6 +62,40 @@ def _compiled_policy():
                     'reason_code': 'mutation_requires_approval',
                 }
             ],
+        }
+    )
+    assert result.ok
+    assert result.policy_pack is not None
+    return result.policy_pack
+
+
+def _compiled_v1_policy() -> CompiledPolicyPack:
+    result = PolicyCompiler().compile(
+        {
+            'schema_version': 'v1',
+            'policy_id': 'typed-policy',
+            'version': '1.0.0',
+            'issuer_ref': 'organization:example',
+            'policy_epoch': 42,
+            'validity': {
+                'not_before': '2026-07-15T00:00:00Z',
+                'expires_at': '2026-08-15T00:00:00Z',
+            },
+            'supersedes': [],
+            'rules': [
+                {
+                    'rule_id': 'typed-approval',
+                    'effect': 'approval_required',
+                    'conditions': [
+                        {
+                            'path': 'action.mode',
+                            'operator': 'eq',
+                            'value': 'mutation',
+                        }
+                    ],
+                }
+            ],
+            'metadata': {'owner': 'governance'},
         }
     )
     assert result.ok
@@ -173,6 +207,21 @@ def _base_request_mapping() -> dict[str, Any]:
     }
 
 
+def _request_mapping_for_policy_pack(
+    policy_pack: CompiledPolicyPack,
+) -> dict[str, Any]:
+    request = _base_request_mapping()
+    compiled_policy_digest = policy_pack_digest(policy_pack)
+    scope_policy_payload = dict(request['scope_policy_binding'])
+    scope_policy_payload['policy_pack_digest'] = compiled_policy_digest
+    scope_policy = ScopePolicyBinding.from_mapping(scope_policy_payload)
+    request['policy_pack'] = policy_pack
+    request['policy_pack_digest'] = compiled_policy_digest
+    request['scope_policy_binding'] = scope_policy.as_dict()
+    request['scope_policy_binding_digest'] = scope_policy_binding_digest(scope_policy)
+    return request
+
+
 def _request_mapping_with_approval(
     *,
     attestation_patch: Mapping[str, Any] | None = None,
@@ -221,11 +270,118 @@ def _trust_policy() -> ApprovalTrustPolicy:
 
 def test_governance_request_round_trip_recomputes_owned_digests() -> None:
     request = GovernanceRequest.from_mapping(_request_mapping_with_approval())
+    validated = validate_governance_request(request)
 
-    assert validate_governance_request(request) == request
+    assert validated == request
+    assert validated.policy_pack is not request.policy_pack
     assert GovernanceRequest.from_mapping(request.as_dict()) == request
     assert request.approval_attestation is not None
     assert governance_request_digest(request).startswith('sha256:')
+
+
+def test_governance_request_rejects_mutated_typed_policy_pack_metadata() -> None:
+    policy_pack = _compiled_policy()
+    assert isinstance(policy_pack.metadata, dict)
+    policy_pack.metadata['password'] = 'REDACTED-FIXTURE'
+    request = _request_mapping_for_policy_pack(policy_pack)
+
+    with pytest.raises(GovApiError, match='forbidden_policy_metadata'):
+        GovernanceRequest.from_mapping(request)
+
+
+def test_direct_governance_request_rejects_mutated_typed_policy_pack_metadata() -> None:
+    request = GovernanceRequest.from_mapping(
+        _request_mapping_for_policy_pack(_compiled_policy())
+    )
+    assert isinstance(request.policy_pack.metadata, dict)
+    request.policy_pack.metadata['password'] = 'REDACTED-FIXTURE'
+    compiled_policy_digest = policy_pack_digest(request.policy_pack)
+    scope_policy_payload = request.scope_policy_binding.as_dict()
+    scope_policy_payload['policy_pack_digest'] = compiled_policy_digest
+    scope_policy = ScopePolicyBinding.from_mapping(scope_policy_payload)
+    request = replace(
+        request,
+        policy_pack_digest=compiled_policy_digest,
+        scope_policy_binding=scope_policy,
+        scope_policy_binding_digest=scope_policy_binding_digest(scope_policy),
+    )
+
+    with pytest.raises(GovApiError, match='forbidden_policy_metadata'):
+        validate_governance_request(request)
+
+
+def test_subject_digest_rejects_mutated_typed_policy_pack_metadata() -> None:
+    request = GovernanceRequest.from_mapping(_base_request_mapping())
+    assert isinstance(request.policy_pack.metadata, dict)
+    request.policy_pack.metadata['password'] = 'REDACTED-FIXTURE'
+    compiled_policy_digest = policy_pack_digest(request.policy_pack)
+    scope_policy_payload = request.scope_policy_binding.as_dict()
+    scope_policy_payload['policy_pack_digest'] = compiled_policy_digest
+    scope_policy = ScopePolicyBinding.from_mapping(scope_policy_payload)
+    request = replace(
+        request,
+        policy_pack_digest=compiled_policy_digest,
+        scope_policy_binding=scope_policy,
+        scope_policy_binding_digest=scope_policy_binding_digest(scope_policy),
+    )
+
+    with pytest.raises(GovApiError, match='forbidden_policy_metadata'):
+        governance_subject_digest(request)
+
+
+def test_approval_subject_digest_has_mapping_and_typed_request_parity() -> None:
+    request_mapping = _request_mapping_with_approval()
+    request = GovernanceRequest.from_mapping(request_mapping)
+    assert request.approval_attestation is not None
+    expected = request.approval_attestation.subject_digest
+
+    assert governance_subject_digest(request_mapping) == expected
+    assert governance_subject_digest(request) == expected
+
+
+def test_governance_request_rejects_invalid_approval_subject_binding() -> None:
+    request = _request_mapping_with_approval()
+    attestation_payload = dict(request['approval_attestation'])
+    attestation_payload['subject_digest'] = 'sha256:' + 'f' * 64
+    attestation = ApprovalAttestation.from_mapping(attestation_payload)
+    request['approval_attestation'] = attestation.as_dict()
+    request['approval_attestation_digest'] = approval_attestation_digest(attestation)
+
+    with pytest.raises(GovApiError, match='approval_subject_digest_mismatch'):
+        GovernanceRequest.from_mapping(request)
+
+
+@pytest.mark.parametrize(
+    'schema_version',
+    ['v0.1', 'v1'],
+    ids=['legacy-v0.1', 'v1'],
+)
+def test_safe_typed_policy_pack_matches_mapping_request(
+    schema_version: str,
+) -> None:
+    policy_pack = (
+        _compiled_v1_policy() if schema_version == 'v1' else _compiled_policy()
+    )
+    typed_payload = _request_mapping_for_policy_pack(policy_pack)
+    mapping_payload = {**typed_payload, 'policy_pack': policy_pack.as_dict()}
+
+    typed_request = GovernanceRequest.from_mapping(typed_payload)
+    mapping_request = GovernanceRequest.from_mapping(mapping_payload)
+
+    assert typed_request == mapping_request
+    assert typed_request.policy_pack == policy_pack
+    assert typed_request.policy_pack is not policy_pack
+    assert governance_request_digest(typed_request) == governance_request_digest(
+        mapping_request
+    )
+
+
+def test_governance_request_rejects_directly_constructed_invalid_typed_pack() -> None:
+    policy_pack = replace(_compiled_v1_policy(), issuer_ref='')
+    request = _request_mapping_for_policy_pack(policy_pack)
+
+    with pytest.raises(GovApiError, match='missing_policy_issuer_ref'):
+        GovernanceRequest.from_mapping(request)
 
 
 @pytest.mark.parametrize(

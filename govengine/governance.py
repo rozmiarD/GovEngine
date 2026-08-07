@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from hmac import compare_digest
 from typing import Any, Mapping
 
@@ -322,13 +322,15 @@ def requested_scope_digest(value: Mapping[str, Any]) -> str:
 def governance_subject_digest(
     request: Mapping[str, Any] | GovernanceRequest,
 ) -> str:
-    checked = (
-        request
-        if isinstance(request, GovernanceRequest)
-        else GovernanceRequest.from_mapping(request)
-    )
+    checked = validate_governance_request(request)
+    return _validated_governance_subject_digest(checked)
+
+
+def _validated_governance_subject_digest(request: GovernanceRequest) -> str:
+    """Hash subject fields after the caller has fully validated the request."""
+
     return govengine_record_digest(
-        _subject_record(checked),
+        _subject_record(request),
         record_type='govengine.governance.GovernanceSubject',
     )
 
@@ -393,6 +395,7 @@ def validate_governance_request(
     compiled_policy = _compiled_policy_pack(item.policy_pack)
     if compiled_policy != item.policy_pack:
         raise GovApiError('invalid_governance_policy_pack')
+    item = replace(item, policy_pack=compiled_policy)
     _bounded_mapping(item.execution_facts, 'invalid_governance_execution_facts')
     _bounded_mapping(item.requested_scope, 'invalid_governance_requested_scope')
     reject_forbidden_governance_input(item.execution_facts)
@@ -451,9 +454,8 @@ def validate_governance_request(
 
 
 def _compiled_policy_pack(value: Any) -> CompiledPolicyPack:
-    if isinstance(value, CompiledPolicyPack):
-        return value
-    raw = require_mapping(value, reason_code='invalid_governance_policy_pack')
+    candidate = value.as_dict() if isinstance(value, CompiledPolicyPack) else value
+    raw = require_mapping(candidate, reason_code='invalid_governance_policy_pack')
     result = PolicyCompiler().compile(raw)
     if not result.ok or result.policy_pack is None:
         raise GovApiError(result.reason_code or 'invalid_governance_policy_pack')

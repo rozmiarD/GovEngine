@@ -392,12 +392,12 @@ def _validate_request_binding(
     attestation: ApprovalAttestation,
     request: 'GovernanceRequest',
 ) -> None:
-    from govengine.governance import governance_subject_digest
+    from govengine.governance import _validated_governance_subject_digest
 
     bindings = (
         (
             attestation.subject_digest,
-            governance_subject_digest(request),
+            _validated_governance_subject_digest(request),
             'approval_subject_digest_mismatch',
         ),
         (attestation.operation_id, request.operation_id, 'approval_operation_id_mismatch'),
