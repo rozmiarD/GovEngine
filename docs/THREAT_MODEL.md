@@ -76,10 +76,10 @@ governance request. RExecOp provides bounded facts and opaque digests.
 | Confused deputy / approval reuse | Approval binds operation, step, attempt, spec, facts, scope, policy epoch and side-effect class | Compromised trust/revocation adapter can lie |
 | Typed mutation/recovery relabelling | The optional governed-admission projection cross-binds the complete unchanged typed v0.1 request, explicit actual mode, frozen v1 request/decision/approval, attempt, lease, spec, facts, payload, scope, inventory and policy | A host that skips the composite or signed-decision path remains outside the cooperating-host guarantee |
 | Request-driven plugin authorization | v0.2 ignores request metadata as authority and requires exact singleton signed-decision controls for the non-built-in backend and `no_network` or `local_subprocess` egress | A compromised policy source, signer or in-process host can still authorize or bypass a malicious plugin |
-| Policy drift | Request and activation binding carry policy digest/epoch/issuer/validity | Compromised activation source can authorize a malicious pack |
+| Policy drift | Request and activation binding carry policy digest/epoch/issuer/validity; authorization cannot outlive the activation expiry observed at issuance | A later status change needs host re-evaluation or a fresh activation check for effect before authorization expiry; a compromised activation source can authorize a malicious pack |
 | Target or destination substitution | Independent scope policy and requested-scope digest; request cannot carry allowlist fields | DNS resolution, redirect and socket enforcement remain RExecOp/plugin duties |
 | Capability self-attestation | Operation requirements and independently sourced inventory are separate records | A compromised inventory attestor can lie |
-| TOCTOU / stale executor | Decision authorization binds runtime, attempt, lease epoch and fencing digest and expires within 60 seconds | In-process runtime can bypass the check |
+| TOCTOU / stale executor | Decision authorization binds runtime, attempt, lease epoch and fencing digest and expires within 60 seconds, policy activation expiry and approval expiry when present | Activation is not continuously queried after issuance; an in-process runtime can bypass the check |
 | Replay | RExecOp atomically claims decision digest and nonce before I/O | Production durability depends on the selected claim store |
 | Digest substitution | GovEngine-owned complete records are recomputed and compared in constant-time where applicable | Opaque RExecOp/SCLite digests prove only the referenced owner computation |
 | Receipt overclaim | Receipt binds decision, runtime permit, attempt, lease/fencing, scope, inventory, policy and postconditions | Compromised runtime can fabricate bounded facts |
@@ -114,8 +114,10 @@ destination checks, proxy behavior and connector I/O.
 - `TypedExecutionGovernedAdmission` is not authority. RExecOp must separately
   verify and atomically claim the signed `GovernanceDecision`.
 - Only `GovernanceDecision.status=allowed` carries authorization.
-- Authorization is short-lived, attempt/runtime/lease/fencing/inventory-bound
-  and consume-once.
+- Authorization is short-lived, cannot outlive the policy activation observed
+  at issuance or its approval, and is attempt/runtime/lease/fencing/inventory-
+  bound and consume-once. Later activation changes require a fresh host check
+  or governance re-evaluation to take effect before authorization expiry.
 - RExecOp verifies the signed decision and atomically claims it before I/O.
 - Receipt conformance is a postcondition and cannot authorize execution.
 - SCLite remains the final lifecycle/proof authority.

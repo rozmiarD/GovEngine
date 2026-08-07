@@ -32,7 +32,18 @@ Only an allowed decision contains `GovernanceAuthorization`. It binds:
 - execution-spec and payload digests;
 - requested-scope and runtime-inventory digests/epoch;
 - policy pack and policy epoch;
-- an explicit nonce and validity window of at most 60 seconds.
+- an explicit nonce and validity window that ends no later than 60 seconds
+  after issuance, the validated policy activation expiry, or the validated
+  approval expiry when approval is present.
+
+These are issuance-time bounds. GovEngine queries `PolicyActivationPort` once
+while evaluating the request and rejects an authorization whose expiry is
+later than the activation expiry observed by that evaluation. Exact equality
+with the activation expiry is allowed. A later activation revocation,
+supersession or status change does not modify an already signed decision or
+invalidate it in the background: it remains usable only until its already
+bounded authorization expiry unless the cooperating host performs a fresh
+activation check or re-evaluates governance before I/O.
 
 The authorization declares `consume_once: true`, but GovEngine does not claim
 or persist it. RExecOp owns the atomic decision claim, its runtime attempt

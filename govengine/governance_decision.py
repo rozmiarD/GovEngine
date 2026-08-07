@@ -523,7 +523,7 @@ def evaluate_governance(
 
     checked = validate_governance_request(request)
     evaluation_time = _aware_utc(evaluated_at, 'governance_evaluation_time_timezone_required')
-    _validate_policy_activation(
+    policy_activation_expires_at = _validate_policy_activation(
         checked,
         policy_activation_port,
         evaluated_at=evaluation_time,
@@ -591,6 +591,7 @@ def evaluate_governance(
             issued_at=evaluation_time,
             expires_at=authorization_expires_at,
             approval=validated_approval,
+            policy_activation_expires_at=policy_activation_expires_at,
         )
 
     item = GovernanceDecision(
@@ -708,7 +709,7 @@ def _validate_policy_activation(
     port: PolicyActivationPort,
     *,
     evaluated_at: datetime,
-) -> None:
+) -> datetime:
     current = validate_policy_activation_binding(
         port.current_binding(request.policy_pack.policy_id)
     )
@@ -762,6 +763,7 @@ def _validate_policy_activation(
         raise GovApiError('policy_not_yet_valid')
     if evaluated_at >= expires_at:
         raise GovApiError('policy_expired')
+    return expires_at
 
 
 def _validated_approval(
@@ -862,6 +864,7 @@ def _authorization(
     issued_at: datetime,
     expires_at: datetime | None,
     approval: ApprovalAttestation | None,
+    policy_activation_expires_at: datetime,
 ) -> GovernanceAuthorization:
     if not isinstance(nonce, str) or not nonce.strip():
         raise GovApiError('authorization_nonce_required')
@@ -878,6 +881,8 @@ def _authorization(
     lifetime = (checked_expiry - issued_at).total_seconds()
     if lifetime > MAX_AUTHORIZATION_LIFETIME_SECONDS:
         raise GovApiError('authorization_lifetime_exceeded')
+    if checked_expiry > policy_activation_expires_at:
+        raise GovApiError('authorization_outlives_policy_activation')
     if approval is not None:
         approval_expiry = parse_aware_timestamp(
             approval.expires_at,

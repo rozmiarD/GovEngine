@@ -10,11 +10,11 @@ do not apply when an in-process host bypasses or modifies GovEngine.
 | --- | --- | --- |
 | Strict bounded input | Shared JSON byte/depth/node/collection/string limits, duplicate-key and non-finite rejection, recursive forbidden keys | `test_api_hardening.py`, `test_security_properties.py`, conformance corpus |
 | Deterministic policy | Typed closed operators, strict operand types, canonical condition order, bounded compilation, deny-first evaluation | `test_policy_conditions.py`, `test_policy_v1_stability.py` |
-| Active policy binding | Digest/epoch/issuer/status/validity checked against host activation port | `test_governance_decision.py` |
+| Active policy binding | Digest/epoch/issuer/status/validity checked against host activation port; authorization cannot outlive the activation observed at issuance | `test_governance_decision.py` |
 | Approval is independent | Exact subject binding, trust policy, validity, revocation and host signature verification | `test_governance_request.py`, `test_governance_decision.py` |
 | Scope is not self-authorized | Requested destination is compared with an independent scope policy | `test_scope_capabilities.py`, corpus |
 | Capabilities are operation-driven | Requirements and inventory are independent; host registration booleans fail | `test_scope_capabilities.py`, corpus |
-| Allowed decision is exact and short-lived | Authorization binds attempt/runtime/lease/fencing/spec/payload/scope/inventory/policy, nonce and expiry | `test_governance_decision.py` |
+| Allowed decision is exact and short-lived | Authorization binds attempt/runtime/lease/fencing/spec/payload/scope/inventory/policy and nonce; expiry is bounded by 60 seconds, policy activation and approval when present | `test_governance_decision.py` |
 | Optional typed mutation/recovery admission is exact | A deep-module-only composite calls the actual v1 evaluator, preserves typed v0.1 denial semantics, discounts only its deliberate approval blocker and cross-binds actual mode plus typed/request/decision/approval digests | `test_typed_execution_governed_admission.py` |
 | Policy-bound plugin admission is exact | Additive v0.2 discounts exactly one approval blocker plus `unsupported_backend_class` only for an exact non-built-in/non-raw-shell plugin posture, then requires matching frozen-v1 requirements/inventory and exact singleton signed-decision backend/egress controls; request metadata never authorizes | `test_typed_execution_governed_admission_v02.py` |
 | Conforming runtime rejects replay | RExecOp verifies signature/bindings/expiry and atomically claims digest plus nonce before I/O | RExecOp G3 and shared conformance gates |
@@ -62,6 +62,8 @@ GovEngine does not guarantee:
 - DNS, redirect, proxy, socket or subprocess enforcement;
 - production storage atomicity for host-provided activation/revocation/claim
   ports;
+- continuous activation lookup or background invalidation of an authorization
+  after it is issued;
 - accuracy of host clocks, inventory attestations or external catalogs;
 - raw evidence/output authenticity or storage;
 - SCLite canonicalization, lifecycle or review-bundle verdicts;
@@ -85,5 +87,8 @@ publication. It adds no standalone plugin certificate.
 The host must use current activation/revocation/trust adapters, verify the
 signed decision, compare all runtime bindings, atomically claim authorization,
 check a fresh runtime permit immediately before I/O, enforce connector/network
-controls and emit the bound terminal receipt. Skipping any step voids the
-corresponding guarantee.
+controls and emit the bound terminal receipt. If the deployment requires a
+policy status change after issuance to take effect before the bounded
+authorization expiry, the host must perform a fresh activation check or
+re-evaluate governance. Skipping any required step voids the corresponding
+guarantee.

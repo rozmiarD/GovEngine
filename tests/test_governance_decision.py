@@ -201,10 +201,43 @@ def _compiled_policy(*, effect: str = 'approval_required'):
     return result.policy_pack
 
 
+def _compiled_legacy_policy():
+    result = PolicyCompiler().compile(
+        {
+            'policy_id': 'production-mutation',
+            'version': '1',
+            'schema_version': 'v0.1',
+            'rules': [
+                {
+                    'rule_id': 'govern-mutation',
+                    'effect': 'approval_required',
+                    'conditions': {'action.mode': 'mutation'},
+                    'reason_code': 'mutation_requires_approval',
+                    'obligations': [
+                        {'obligation_id': 'receipt', 'kind': 'receipt'}
+                    ],
+                    'constraints': [
+                        {
+                            'constraint_id': 'bounded-output',
+                            'kind': 'output_limit',
+                            'value': 4096,
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+    assert result.ok
+    assert result.policy_pack is not None
+    return result.policy_pack
+
+
 def _request_mapping(
     *,
     with_approval: bool,
     policy_effect: str = 'approval_required',
+    policy_schema_version: str = 'v1',
+    approval_expires_at: str = '2026-07-15T12:15:00Z',
     scope_namespace: str = 'service.inventory',
     inventory_capabilities: tuple[str, ...] = (
         'connector.inventory.update',
@@ -212,7 +245,11 @@ def _request_mapping(
         'receipt.terminal',
     ),
 ) -> dict[str, Any]:
-    policy_pack = _compiled_policy(effect=policy_effect)
+    policy_pack = (
+        _compiled_policy(effect=policy_effect)
+        if policy_schema_version == 'v1'
+        else _compiled_legacy_policy()
+    )
     pack_digest = policy_pack_digest(policy_pack)
     execution_facts = {
         'schema_version': 'v0.1',
@@ -334,7 +371,7 @@ def _request_mapping(
                 'trust_domain': 'organization:example',
                 'issued_at': '2026-07-15T12:00:00Z',
                 'not_before': '2026-07-15T12:00:00Z',
-                'expires_at': '2026-07-15T12:15:00Z',
+                'expires_at': approval_expires_at,
                 'revocation_ref': 'approval-revocations:v1',
                 'signature_ref': 'sigstore:bundle-123',
             }
@@ -527,6 +564,64 @@ def test_authorization_is_short_lived() -> None:
         _evaluate(
             _request_mapping(with_approval=True),
             authorization_expires_at=NOW + timedelta(seconds=61),
+        )
+
+
+@pytest.mark.parametrize('policy_schema_version', ['v1', 'v0.1'])
+def test_authorization_cannot_outlive_policy_activation(
+    policy_schema_version: str,
+) -> None:
+    request = _request_mapping(
+        with_approval=True,
+        policy_schema_version=policy_schema_version,
+    )
+
+    with pytest.raises(
+        GovApiError,
+        match='authorization_outlives_policy_activation',
+    ):
+        _evaluate(
+            request,
+            policy_activation_port=_PolicyActivation(
+                request,
+                expires_at='2026-07-15T12:05:29Z',
+            ),
+            authorization_expires_at=NOW + timedelta(seconds=30),
+        )
+
+
+@pytest.mark.parametrize('policy_schema_version', ['v1', 'v0.1'])
+def test_authorization_may_expire_exactly_with_policy_activation(
+    policy_schema_version: str,
+) -> None:
+    request = _request_mapping(
+        with_approval=True,
+        policy_schema_version=policy_schema_version,
+    )
+
+    decision = _evaluate(
+        request,
+        policy_activation_port=_PolicyActivation(
+            request,
+            expires_at='2026-07-15T12:05:30Z',
+        ),
+        authorization_expires_at=NOW + timedelta(seconds=30),
+    )
+
+    assert decision.authorization is not None
+    assert decision.authorization.expires_at == '2026-07-15T12:05:30Z'
+
+
+def test_authorization_cannot_outlive_approval() -> None:
+    request = _request_mapping(
+        with_approval=True,
+        approval_expires_at='2026-07-15T12:05:29Z',
+    )
+
+    with pytest.raises(GovApiError, match='authorization_outlives_approval'):
+        _evaluate(
+            request,
+            authorization_expires_at=NOW + timedelta(seconds=30),
         )
 
 

@@ -8,6 +8,11 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Caps each new governance authorization at the policy activation expiry
+  validated during issuance, while preserving the independent 60-second and
+  approval-expiry bounds. This is fail-closed issuance-time validation and
+  does not claim continuous activation lookup or background invalidation.
+
 ## 1.0.0rc2 - prepared/unpublished source candidate
 
 - Prepares the next GovEngine candidate with exact `sclite-core==2.0.1` while
