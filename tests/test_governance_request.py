@@ -209,9 +209,15 @@ def _base_request_mapping() -> dict[str, Any]:
 
 def _request_mapping_for_policy_pack(
     policy_pack: CompiledPolicyPack,
+    *,
+    rebound_policy_pack_digest: str | None = None,
 ) -> dict[str, Any]:
     request = _base_request_mapping()
-    compiled_policy_digest = policy_pack_digest(policy_pack)
+    compiled_policy_digest = (
+        rebound_policy_pack_digest
+        if rebound_policy_pack_digest is not None
+        else policy_pack_digest(policy_pack)
+    )
     scope_policy_payload = dict(request['scope_policy_binding'])
     scope_policy_payload['policy_pack_digest'] = compiled_policy_digest
     scope_policy = ScopePolicyBinding.from_mapping(scope_policy_payload)
@@ -220,6 +226,15 @@ def _request_mapping_for_policy_pack(
     request['scope_policy_binding'] = scope_policy.as_dict()
     request['scope_policy_binding_digest'] = scope_policy_binding_digest(scope_policy)
     return request
+
+
+def _raw_policy_pack_digest_for_mutation_fixture(
+    policy_pack: CompiledPolicyPack,
+) -> str:
+    return govengine_record_digest(
+        policy_pack,
+        record_type='govengine.policy.compiler.CompiledPolicyPack',
+    )
 
 
 def _request_mapping_with_approval(
@@ -283,7 +298,14 @@ def test_governance_request_rejects_mutated_typed_policy_pack_metadata() -> None
     policy_pack = _compiled_policy()
     assert isinstance(policy_pack.metadata, dict)
     policy_pack.metadata['password'] = 'REDACTED-FIXTURE'
-    request = _request_mapping_for_policy_pack(policy_pack)
+    with pytest.raises(GovApiError, match='invalid_compiled_policy_pack'):
+        policy_pack_digest(policy_pack)
+    request = _request_mapping_for_policy_pack(
+        policy_pack,
+        rebound_policy_pack_digest=_raw_policy_pack_digest_for_mutation_fixture(
+            policy_pack
+        ),
+    )
 
     with pytest.raises(GovApiError, match='forbidden_policy_metadata'):
         GovernanceRequest.from_mapping(request)
@@ -295,7 +317,11 @@ def test_direct_governance_request_rejects_mutated_typed_policy_pack_metadata() 
     )
     assert isinstance(request.policy_pack.metadata, dict)
     request.policy_pack.metadata['password'] = 'REDACTED-FIXTURE'
-    compiled_policy_digest = policy_pack_digest(request.policy_pack)
+    with pytest.raises(GovApiError, match='invalid_compiled_policy_pack'):
+        policy_pack_digest(request.policy_pack)
+    compiled_policy_digest = _raw_policy_pack_digest_for_mutation_fixture(
+        request.policy_pack
+    )
     scope_policy_payload = request.scope_policy_binding.as_dict()
     scope_policy_payload['policy_pack_digest'] = compiled_policy_digest
     scope_policy = ScopePolicyBinding.from_mapping(scope_policy_payload)
@@ -314,7 +340,11 @@ def test_subject_digest_rejects_mutated_typed_policy_pack_metadata() -> None:
     request = GovernanceRequest.from_mapping(_base_request_mapping())
     assert isinstance(request.policy_pack.metadata, dict)
     request.policy_pack.metadata['password'] = 'REDACTED-FIXTURE'
-    compiled_policy_digest = policy_pack_digest(request.policy_pack)
+    with pytest.raises(GovApiError, match='invalid_compiled_policy_pack'):
+        policy_pack_digest(request.policy_pack)
+    compiled_policy_digest = _raw_policy_pack_digest_for_mutation_fixture(
+        request.policy_pack
+    )
     scope_policy_payload = request.scope_policy_binding.as_dict()
     scope_policy_payload['policy_pack_digest'] = compiled_policy_digest
     scope_policy = ScopePolicyBinding.from_mapping(scope_policy_payload)
@@ -378,7 +408,12 @@ def test_safe_typed_policy_pack_matches_mapping_request(
 
 def test_governance_request_rejects_directly_constructed_invalid_typed_pack() -> None:
     policy_pack = replace(_compiled_v1_policy(), issuer_ref='')
-    request = _request_mapping_for_policy_pack(policy_pack)
+    request = _request_mapping_for_policy_pack(
+        policy_pack,
+        rebound_policy_pack_digest=_raw_policy_pack_digest_for_mutation_fixture(
+            policy_pack
+        ),
+    )
 
     with pytest.raises(GovApiError, match='missing_policy_issuer_ref'):
         GovernanceRequest.from_mapping(request)

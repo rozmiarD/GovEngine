@@ -11,6 +11,7 @@ from govengine import (
     validate_policy_verdict,
 )
 from govengine.api import GovApiError
+from govengine.policy import CompiledPolicyPack
 from govengine.policy.model import PolicyConstraint, PolicyObligation
 
 
@@ -137,6 +138,48 @@ def test_policy_engine_allows_with_obligations_and_projects_to_admission_decisio
     assert decision.subject_ref == 'artifact://task/1'
     assert 'obligation:receipt-required' in decision.controls
     assert 'constraint:bounded-output' in decision.controls
+
+
+def test_policy_engine_rejects_mutated_compiled_pack_metadata() -> None:
+    pack = _compiled_pack()
+    assert isinstance(pack.metadata, dict)
+    pack.metadata['labels'] = {'tier': 'mutated'}
+
+    with pytest.raises(GovApiError, match='invalid_compiled_policy_pack'):
+        PolicyEngine().evaluate(
+            {
+                'request_id': 'request-mutated-pack',
+                'subject_ref': 'artifact://task/mutated-pack',
+                'action': {'mode': 'read'},
+            },
+            pack,
+        )
+
+
+def test_policy_engine_rejects_deterministic_mid_snapshot_mutation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pack = _compiled_pack()
+    original_as_dict = CompiledPolicyPack.as_dict
+
+    def mutating_as_dict(item: CompiledPolicyPack) -> dict[str, object]:
+        payload = original_as_dict(item)
+        if item is pack:
+            assert isinstance(item.metadata, dict)
+            item.metadata['mid_snapshot'] = 'mutated'
+        return payload
+
+    monkeypatch.setattr(CompiledPolicyPack, 'as_dict', mutating_as_dict)
+
+    with pytest.raises(GovApiError, match='invalid_compiled_policy_pack'):
+        PolicyEngine().evaluate(
+            {
+                'request_id': 'request-mid-snapshot',
+                'subject_ref': 'artifact://task/mid-snapshot',
+                'action': {'mode': 'read'},
+            },
+            pack,
+        )
 
 
 def test_policy_engine_requires_approval_for_critical_mutation_without_evidence() -> None:

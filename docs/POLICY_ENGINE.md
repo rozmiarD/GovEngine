@@ -104,6 +104,15 @@ Compiled rules are sorted by `priority` (lower first).
 The compiler performs exact deterministic analysis only; it does not attempt
 partial-overlap reasoning, subsumption or SAT solving.
 
+Each `CompiledPolicyPack` returned by the compiler records a private,
+process-local seal over its complete compiled payload. Policy evaluation,
+policy-pack digesting and enforcement admission compare the current payload to
+that seal, recompile a detached canonical snapshot and reject instability with
+`invalid_compiled_policy_pack`. This catches post-compilation changes inside
+mutable condition values, pack/control metadata and constraint values. The
+seal is an in-process consistency check, not a signature, authenticity proof
+or defense against a malicious host that deliberately bypasses GovEngine.
+
 ### Typed conditions (`schema_version: v1`)
 
 Policy pack v1 replaces the implicit equality map with an explicit condition

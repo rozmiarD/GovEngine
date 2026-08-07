@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from govengine import PolicyCompiler, PolicyEngine, explain_policy_evaluation
+from govengine import (
+    PolicyCompiler,
+    PolicyEngine,
+    evaluate_policy,
+    explain_policy_evaluation,
+)
 from govengine.api import GovApiError
 from govengine.policy.compiler import (
     _POLICY_CONDITION_V1_FIELDS,
@@ -174,6 +179,27 @@ def test_typed_policy_conditions_are_canonical_and_round_trip() -> None:
             "redacted": True,
         },
     ]
+
+
+def test_runtime_rejects_mutated_nested_compiled_condition_value() -> None:
+    pack = _compile(
+        {
+            'path': 'action.labels',
+            'operator': 'in',
+            'value': [{'scope': {'name': 'read'}}],
+        }
+    )
+    value = pack.rules[0].conditions[0].value
+    assert isinstance(value, list)
+    first = value[0]
+    assert isinstance(first, dict)
+    scope = first['scope']
+    assert isinstance(scope, dict)
+    scope['name'] = 'write'
+
+    for consumer in (PolicyEngine().evaluate, evaluate_policy):
+        with pytest.raises(GovApiError, match='invalid_compiled_policy_pack'):
+            consumer(_request(), pack)
 
 
 def test_legacy_equality_map_compiles_to_typed_ast_without_wire_drift() -> None:

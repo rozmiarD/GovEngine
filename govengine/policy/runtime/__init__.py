@@ -3,7 +3,12 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from govengine.api import GovApiError
-from govengine.policy.compiler import CompiledPolicyPack, PolicyCondition, PolicyRule
+from govengine.policy.compiler import (
+    CompiledPolicyPack,
+    PolicyCondition,
+    PolicyRule,
+    _validated_compiled_policy_pack_snapshot,
+)
 from govengine.policy.model import PolicyRequest, PolicyVerdict, validate_policy_request, validate_policy_verdict
 
 
@@ -21,8 +26,7 @@ class PolicyEngine:
         context: Mapping[str, Any] | None = None,
     ) -> PolicyVerdict:
         checked_request = validate_policy_request(request)
-        if not isinstance(policy_pack, CompiledPolicyPack):
-            raise GovApiError('invalid_compiled_policy_pack')
+        policy_pack = _validated_compiled_policy_pack_snapshot(policy_pack)
         runtime_context = dict(context or {})
 
         invariant = self._evaluate_invariants(checked_request, policy_pack)

@@ -10,6 +10,7 @@ do not apply when an in-process host bypasses or modifies GovEngine.
 | --- | --- | --- |
 | Strict bounded input | Shared JSON byte/depth/node/collection/string limits, duplicate-key and non-finite rejection, recursive forbidden keys | `test_api_hardening.py`, `test_security_properties.py`, conformance corpus |
 | Deterministic policy | Typed closed operators, strict operand types, canonical condition order, bounded compilation, deny-first evaluation | `test_policy_conditions.py`, `test_policy_v1_stability.py` |
+| Compiled policy snapshot integrity | Private complete-payload seal plus detached canonical recompilation before evaluation, digesting and enforcement admission | `test_policy_conditions.py`, `test_policy_engine.py`, `test_policy_enforcement.py` |
 | Active policy binding | Digest/epoch/issuer/status/validity checked against host activation port; authorization cannot outlive the activation observed at issuance | `test_governance_decision.py` |
 | Approval is independent | Exact subject binding, trust policy, validity, revocation and host signature verification | `test_governance_request.py`, `test_governance_decision.py` |
 | Scope is not self-authorized | Requested destination is compared with an independent scope policy | `test_scope_capabilities.py`, corpus |
@@ -25,7 +26,7 @@ do not apply when an in-process host bypasses or modifies GovEngine.
 
 | Binding | Complete payload owner | GovEngine behavior | Security meaning |
 | --- | --- | --- | --- |
-| Policy pack digest | GovEngine | Recomputes canonical GovEngine digest | Exact compiled policy content, not issuer identity |
+| Policy pack digest | GovEngine | Validates a sealed detached snapshot, then recomputes the unchanged canonical GovEngine digest | Exact compiled policy content, not issuer identity or producer authenticity |
 | Execution facts digest | GovEngine bounded projection | Recomputes | Exact bounded policy-evaluation facts |
 | Requested scope digest | GovEngine bounded projection | Recomputes | Exact requested namespace/destination metadata |
 | Scope policy digest | GovEngine | Recomputes | Exact independent allow policy |

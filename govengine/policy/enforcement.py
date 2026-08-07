@@ -11,7 +11,10 @@ from govengine.admission import (
     admission_decision_from_host_gate,
     validate_admission_decision,
 )
-from govengine.policy.compiler import CompiledPolicyPack
+from govengine.policy.compiler import (
+    CompiledPolicyPack,
+    _validated_compiled_policy_pack_snapshot,
+)
 from govengine.policy.model import PolicyVerdict, validate_policy_verdict
 from govengine.signing import govengine_record_digest
 
@@ -151,8 +154,7 @@ class PolicyEnforcementPlan:
 
 
 def policy_pack_digest(policy_pack: CompiledPolicyPack) -> str:
-    if not isinstance(policy_pack, CompiledPolicyPack):
-        raise GovApiError("invalid_compiled_policy_pack")
+    policy_pack = _validated_compiled_policy_pack_snapshot(policy_pack)
     return govengine_record_digest(
         policy_pack,
         record_type="govengine.policy.compiler.CompiledPolicyPack",
@@ -317,6 +319,7 @@ def admit_policy_execution(
     policy_pack: CompiledPolicyPack,
     verdict: Mapping[str, Any] | PolicyVerdict,
 ) -> PolicyEnforcementPlan:
+    policy_pack = _validated_compiled_policy_pack_snapshot(policy_pack)
     checked = validate_policy_verdict(verdict)
     blockers = list(checked.blockers)
     reason_code = checked.reason_code or checked.decision

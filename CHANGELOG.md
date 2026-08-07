@@ -8,6 +8,12 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Adds a private complete-payload seal to compiled policy packs and requires a
+  stable, detached canonical snapshot before policy evaluation, pack digesting
+  or enforcement admission. Post-compilation mutation of nested condition,
+  metadata, obligation or constraint values now fails closed with the existing
+  `invalid_compiled_policy_pack` reason without changing public records,
+  signatures or digest payloads.
 - Closes the v0.1 policy pack and rule field inventories while preserving only
   the intentional pack `id`, rule `id`, and rule `decision` compatibility
   aliases. The authoring schema and runtime compiler now reject ambiguous dual

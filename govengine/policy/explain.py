@@ -3,8 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Any, Mapping
 
-from govengine.api import GovApiError
-from govengine.policy.compiler import CompiledPolicyPack, PolicyRule
+from govengine.policy.compiler import (
+    CompiledPolicyPack,
+    PolicyRule,
+    _validated_compiled_policy_pack_snapshot,
+)
 from govengine.policy.enforcement import (
     SUPPORTED_POLICY_CONSTRAINTS,
     SUPPORTED_POLICY_OBLIGATIONS,
@@ -100,8 +103,7 @@ def explain_policy_evaluation(
     context: Mapping[str, Any] | None = None,
 ) -> PolicyEvaluationExplanation:
     checked_request = validate_policy_request(request)
-    if not isinstance(policy_pack, CompiledPolicyPack):
-        raise GovApiError("invalid_compiled_policy_pack")
+    policy_pack = _validated_compiled_policy_pack_snapshot(policy_pack)
     runtime_context = dict(context or {})
     verdict = PolicyEngine().evaluate(
         checked_request,

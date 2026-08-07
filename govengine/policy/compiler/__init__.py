@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import timezone
+from hmac import compare_digest
 import math
 import re
 from typing import Any, Mapping
@@ -271,6 +272,9 @@ class CompiledPolicyPack:
     expires_at: str = ''
     supersedes: tuple[str, ...] = field(default_factory=tuple)
 
+    def __post_init__(self) -> None:
+        object.__setattr__(self, '_integrity_seal', _compiled_policy_pack_seal(self))
+
     def as_dict(self) -> dict[str, Any]:
         payload: dict[str, Any] = {
             'policy_id': self.policy_id,
@@ -433,6 +437,53 @@ class PolicyCompiler:
 
 def compile_policy_pack(policy_pack: Mapping[str, Any]) -> CompileResult:
     return PolicyCompiler().compile(policy_pack)
+
+
+def _compiled_policy_pack_seal(policy_pack: CompiledPolicyPack) -> str:
+    return govengine_record_digest(
+        policy_pack,
+        record_type='govengine.policy.compiler.CompiledPolicyPackIntegritySeal',
+    )
+
+
+def _validated_compiled_policy_pack_snapshot(
+    policy_pack: CompiledPolicyPack,
+) -> CompiledPolicyPack:
+    if not isinstance(policy_pack, CompiledPolicyPack):
+        raise GovApiError('invalid_compiled_policy_pack')
+    try:
+        initial_seal = getattr(policy_pack, '_integrity_seal', None)
+        if not isinstance(initial_seal, str):
+            raise GovApiError('invalid_compiled_policy_pack')
+        result = PolicyCompiler().compile(policy_pack.as_dict())
+        if not result.ok or result.policy_pack is None:
+            raise GovApiError('invalid_compiled_policy_pack')
+        snapshot = result.policy_pack
+        snapshot_seal = getattr(snapshot, '_integrity_seal', None)
+        if (
+            not isinstance(snapshot_seal, str)
+            or not compare_digest(
+                snapshot_seal,
+                _compiled_policy_pack_seal(snapshot),
+            )
+        ):
+            raise GovApiError('invalid_compiled_policy_pack')
+        final_stored_seal = getattr(policy_pack, '_integrity_seal', None)
+        final_payload_seal = _compiled_policy_pack_seal(policy_pack)
+        if (
+            snapshot != policy_pack
+            or not isinstance(final_stored_seal, str)
+            or not compare_digest(initial_seal, final_stored_seal)
+            or not compare_digest(initial_seal, final_payload_seal)
+        ):
+            raise GovApiError('invalid_compiled_policy_pack')
+    except GovApiError as exc:
+        if exc.reason_code == 'invalid_compiled_policy_pack':
+            raise
+        raise GovApiError('invalid_compiled_policy_pack') from exc
+    except (AttributeError, RecursionError, TypeError, ValueError) as exc:
+        raise GovApiError('invalid_compiled_policy_pack') from exc
+    return snapshot
 
 
 def _reject_conflicts(rules: tuple[PolicyRule, ...]) -> None:
