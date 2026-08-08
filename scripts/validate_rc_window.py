@@ -295,10 +295,15 @@ def main(argv: list[str] | None = None) -> int:
         require_completed=args.require_completed,
         expected_version=args.expected_version,
     )
+    commit_label, commit = (
+        ('source', record['source_commit'])
+        if record['schema_version'] == 'govengine.rc_window.v2'
+        else ('baseline', record['baseline_commit'])
+    )
     print(
         'rc_window_ok:'
         f"version={record['version']}:status={record['status']}:"
-        f"baseline={record['baseline_commit']}"
+        f'{commit_label}={commit}'
     )
     return 0
 
