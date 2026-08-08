@@ -1,0 +1,26 @@
+{
+  "schema_version": "govengine.rc_window.v2",
+  "status": "prepared",
+  "version": "1.0.0rc2",
+  "source_commit": "f4845c1076df848c1be2df7aa7817450472e6e11",
+  "prepared_at": "2026-08-08T11:45:53+02:00",
+  "published_at": null,
+  "observation_ends_at": null,
+  "completed_at": null,
+  "minimum_observation_days": 7,
+  "public_evidence_ref": "",
+  "frozen_inputs": {
+    "pyproject_sha256": "8ad37b137814c0774b7737f666d514c722ad81ecff92470c4c02599280b5d631",
+    "v1_compatibility_manifest_sha256": "663be1ef13d162d09a98a2cdf6448076394d0d5f02fab3acff10a59b01fb5882",
+    "v1_conformance_manifest_sha256": "30c29603b2b48b82d2384d467168a3d7da9a11318cac91451f833ea5d1ba5d9d",
+    "policy_reason_registry_sha256": "1b59bc57d483604fc0febd289783ac3a4cc492ce03656bc3febffe50c86316d7"
+  },
+  "security_review": {
+    "path": "docs/security-review/rc2-external-review.json",
+    "sha256": "56e520ff66c652a5ac76c4f1ddd82fe699f334b51ff0fe02f99fa0d23fc59594"
+  },
+  "facade_exports": 40,
+  "v1_records": 15,
+  "rule": "schema_facade_corpus_or_reason_registry_change_requires_new_rc",
+  "notes": "Prepared after authentic ExatronOmega external re-review #4 approval; publication and the seven-day observation window have not started."
+}
