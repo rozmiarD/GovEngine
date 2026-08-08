@@ -5,12 +5,12 @@ framework, sandbox, execution runtime, or remote authorization authority.
 
 ## Supported versions
 
-GovEngine source is currently the prepared/unpublished `1.0.0rc2` release
-candidate. Security fixes should target `main` until the stable release line
-exists. The public `1.0.0rc1` package has passed independent contract review.
-Final `1.0.0` promotion requires rc2 authentic review and publication,
-review covering that release commit and a completed candidate observation
-window without an open P0/P1.
+GovEngine source currently tracks the published `1.0.0rc2` release candidate.
+Security fixes should target `main` until the stable release line exists. The
+public rc2 artifacts passed independent external review with zero open P0/P1
+and were published through the tag-confirmed OIDC workflow. Final `1.0.0`
+promotion requires the candidate observation window to complete without an
+open P0/P1 and the remaining downstream qualification to stay green.
 
 ## Reporting issues
 

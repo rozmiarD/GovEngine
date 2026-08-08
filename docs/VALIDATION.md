@@ -128,9 +128,9 @@ For the immutable published `rc1`, completion is checked with:
 .venv/bin/python scripts/validate_rc_window.py --require-completed
 ```
 
-That command currently targets the `rc1` record and is not sufficient to
-qualify post-tag `main`. The `rc2` release slice must create and validate its
-own record before stable promotion.
+The default command targets immutable rc1 history. Current rc2 evidence uses
+`--record docs/rc-window/1.0.0rc2.json --expected-version 1.0.0rc2
+--require-published`; stable promotion later requires `--require-completed`.
 
 Tagging, publishing and public-index verification follow
 [PUBLISHING.md](../PUBLISHING.md). Validation never creates a tag or uploads a
@@ -138,18 +138,23 @@ package by itself.
 
 ## Current package evidence
 
-Expected result for the current `1.0.0rc2` package line: prepared/unpublished,
-with `publishable=false` until its authentic review-record child exists.
-Source A contains the valid-JSON pending external-review form and no rc2 window
-record. Public-truth validation requires that exact fail-closed form. The
-production rc2 validator rejects it as unauthenticated, while the synthetic A/B
-gate replaces it only in a disposable child and proves the exact one-parent
-topology: one modified seeded review form plus one added prepared rc2 window,
-with package-byte equality.
+Expected result for the current `1.0.0rc2` package line: published release
+candidate with an active observation window and stable promotion still
+`publishable=false`. Reviewed source A is
+`f4845c1076df848c1be2df7aa7817450472e6e11`; tagged record child B is
+`e65ad22ec25d74bbbb4969bd614981a8ed5e47c8`. B contains one modified seeded
+review form plus one added prepared rc2 window and was published only after the
+workflow proved package-byte equality.
 
-The latest public package remains `govengine==1.0.0rc1`; prepared rc2 source is
-not public installation evidence and remains `publishable=false` pending its
-authentic review-record child.
+Tag `v1.0.0rc2` and publish run
+[31254483143](https://github.com/rozmiarD/GovEngine/actions/runs/31254483143)
+produced public wheel
+`e9da63696c58ad3f096a856ff75716918e3f0b397050212c13487573921d7676`
+and normalized sdist
+`ea214948896ef5850bb3f536f20fa40bbacbae1a3221dba94bb7ff051276c9cd`.
+Both match the external review and pass clean public-index installation with
+`sclite-core==2.0.1`. Observation is active through
+`2026-08-15T11:15:02.258488Z`.
 
 ## Immutable published rc1 evidence
 
@@ -173,10 +178,9 @@ Expected result for the immutable `1.0.0rc1` package line:
 These are immutable release facts, not instructions to recreate the tag.
 The immutable PyPI long description for `1.0.0rc1` is stale because it contains
 the pre-publication README and obsolete `0.16.11` installation guidance.
-Current `main` also contains unreleased post-tag fixes while retaining the
-`1.0.0rc1` version label. Therefore the successful RC evidence above does not
-qualify current `main` for stable promotion; a new candidate must rebuild,
-publish and repeat the relevant gates.
+That stale rc1 metadata and its successful RC evidence are retained as
+immutable history; they do not supersede or qualify the published rc2 candidate
+for stable promotion.
 
 `validate_public_truth.py` also scans every active root/docs Markdown file. It
 fails on broken repository links, missing documented files, unknown GovEngine

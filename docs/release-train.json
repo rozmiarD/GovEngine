@@ -1,6 +1,6 @@
 {
   "schema_version": "govengine.release_train.v1",
-  "checked_at": "2026-08-01",
+  "checked_at": "2026-08-08",
   "components": {
     "sclite": {
       "project": "sclite-core",
@@ -11,7 +11,7 @@
     "govengine": {
       "project": "govengine",
       "version": "1.0.0rc2",
-      "status": "prepared_rc",
+      "status": "published_rc",
       "dependencies": {
         "sclite-core": "2.0.1"
       }

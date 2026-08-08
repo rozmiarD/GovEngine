@@ -45,7 +45,7 @@ def test_release_readiness_validator_passes() -> None:
     assert result.stdout.strip().startswith(
         'release_source_validation_ok:govengine==1.0.0rc2:'
     )
-    assert 'posture=prepared_unpublished:publishable=false' in result.stdout
+    assert 'posture=published_active_observation:publishable=false' in result.stdout
 
 
 def test_current_public_docs_do_not_reintroduce_pre_alpha_maturity_claims() -> None:

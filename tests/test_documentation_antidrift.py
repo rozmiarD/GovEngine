@@ -20,7 +20,7 @@ from scripts.validate_documentation_antidrift import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PUBLISHED_VERSION = '1.0.0rc1'
+PUBLISHED_VERSION = '1.0.0rc2'
 
 
 def _read(relative: str) -> str:
@@ -137,7 +137,7 @@ def test_active_docs_track_release_candidate_and_current_stack_ownership() -> No
     ):
         assert stale not in joined
 
-    assert 'public `1.0.0rc1` package has passed independent contract review' in docs['SECURITY.md']
+    assert 'public rc2 artifacts passed independent external review' in docs['SECURITY.md']
     assert 'exact 40 exports' in docs['docs/API_COMPATIBILITY.md']
     assert 'RExecOp is the current domain-neutral runtime' in docs['docs/GOVENGINE_KERNEL_BOUNDARY.md']
     assert (

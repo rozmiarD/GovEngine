@@ -1,8 +1,9 @@
 # Contributing to GovEngine
 
-GovEngine source is the prepared/unpublished `1.0.0rc2` candidate for the stable v1
-governance facade. Legacy top-level surfaces retain their documented
-compatibility/alpha posture. Contributions should preserve the package boundary:
+GovEngine source tracks the published `1.0.0rc2` candidate for the stable v1
+governance facade while its observation window is active. Legacy top-level
+surfaces retain their documented compatibility/alpha posture. Contributions
+should preserve the package boundary:
 
 ```text
 domain profile -> host runtime -> GovEngine -> SCLite

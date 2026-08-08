@@ -23,7 +23,7 @@ from scripts.validate_documentation_antidrift import (  # noqa: E402
 from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 
 EXPECTED_RELEASE_LABEL = '1.0.0rc2'
-PUBLISHED_VERSION = '1.0.0rc1'
+PUBLISHED_VERSION = '1.0.0rc2'
 PYPI_LONG_DESCRIPTION_PATH = 'PYPI_LONG_DESCRIPTION.md'
 PYPI_LONG_DESCRIPTION_SHA256 = 'e600766f447f1d7a085176de02b7b99778b298af80344c009cce2dc3f70c37a0'
 RC2_REVIEW_RECORD_PATH = 'docs/security-review/rc2-external-review.json'
@@ -102,19 +102,17 @@ CURRENT_CONTRACT_DOC_MARKERS = {
 
 RC2_REVIEW_FORM_DOC_MARKERS = {
     'CHANGELOG.md': (
-        'Seeds the final rc2 external-review JSON path with a fail-closed pending form',
+        'Publishes `govengine==1.0.0rc2` with exact `sclite-core==2.0.1`',
     ),
     'PUBLISHING.md': (
-        'B modifies the seeded\nexternal security-review JSON and adds the prepared '
-        'RC-window JSON.',
+        'The immutable `v1.0.0rc2` tag names B, a single-parent child of reviewed source\nA.',
     ),
     'docs/ROADMAP.md': (
-        'The fail-closed external-review form is seeded at its final\npath',
+        'Authentic external re-review, the exact record-only child,',
     ),
     'docs/VALIDATION.md': (
-        'Source A contains the valid-JSON pending external-review form and no rc2 '
-        'window\nrecord.',
-        'one modified seeded review form plus one added prepared rc2 window',
+        'Reviewed source A is',
+        'one modified seeded\nreview form plus one added prepared rc2 window',
     ),
 }
 
@@ -415,7 +413,7 @@ def _assert_candidate_maturity_truth(paths: Iterable[str]) -> None:
     _assert_contains(
         'SECURITY.md',
         _read('SECURITY.md'),
-        'prepared/unpublished `1.0.0rc2` release',
+        'published `1.0.0rc2` release candidate',
     )
     _assert_contains(
         'docs/ARCHITECTURE.md',
@@ -581,7 +579,7 @@ def main() -> int:
     _assert_contains(
         'CONTRIBUTING.md',
         contributing,
-        f'prepared/unpublished `{release_label}`',
+        f'published `{release_label}` candidate',
     )
     _assert_contains('CONTRIBUTING.md', contributing, 'scripts/validate_clean_package_install.py')
     _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`')
@@ -590,7 +588,7 @@ def main() -> int:
     _assert_contains(
         'PUBLIC_STATUS.md',
         public_status,
-        f'| Current source version | `govengine=={version}`; prepared and unpublished |',
+        f'| Current source version | `govengine=={version}`; published with active observation |',
     )
     _assert_contains(
         'PUBLIC_STATUS.md',

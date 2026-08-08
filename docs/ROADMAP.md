@@ -7,9 +7,8 @@ mechanics.
 ## Current 1.0 release-candidate line
 
 Current source baseline: `govengine==1.0.0rc2`, exact-pinned to
-`sclite-core==2.0.1`, prepared and unpublished. Published PyPI baseline remains
-immutable `govengine==1.0.0rc1` on `sclite-core==2.0.0`.
-Published PyPI baseline is `govengine==1.0.0rc1`.
+`sclite-core==2.0.1`, published from immutable tag `v1.0.0rc2` with its
+observation window active. Published PyPI baseline is `govengine==1.0.0rc2`.
 
 ## Responsibility boundary
 
@@ -46,21 +45,20 @@ surfaces. They are not part of the 1.x promise.
 ## Gate to the next candidate and 1.0.0
 
 `1.0.0rc2` is required before stable promotion. The coordinated release train
-published SCLite `2.0.1` patch is pinned by the prepared GovEngine
-`1.0.0rc2` source. The fail-closed external-review form is seeded at its final
-path for authentic reviewer completion. The rc2 record-only child, prepared
-window and tag remain deferred.
+published SCLite `2.0.1` patch is pinned by the published GovEngine
+`1.0.0rc2` candidate. Authentic external re-review, the exact record-only child,
+immutable tag, OIDC publication and public-index verification are complete.
+The rc2 observation remains active through `2026-08-15T11:15:02.258488Z`.
 
-The next candidate must include the post-tag security and compatibility fixes,
-the corrected package long description and the complete documentation
-anti-drift gate. It receives its own immutable tag, review/qualification
-evidence and observation record. Final promotion then requires all of the
-following:
+The published rc2 includes the post-rc1 security and compatibility fixes, the
+corrected package long description and the complete documentation anti-drift
+gate. It has its own immutable tag, review/qualification evidence and active
+observation record. Final promotion requires all of the following:
 
-- the new RC observation record is completed;
+- the rc2 observation record is completed;
 - no frozen facade, schema, corpus or reason-registry drift;
-- the review covering the new candidate reports no open P0/P1 security finding;
-- public installation of the new exact GovEngine/SCLite candidate pair remains
+- the review covering rc2 reports no open P0/P1 security finding;
+- public installation of the exact GovEngine/SCLite candidate pair remains
   reproducible;
 - the matching RExecOp candidate continues to pass shared conformance and
   pre-I/O decision gates;
@@ -78,7 +76,7 @@ record, never by refreshing `rc1` in place.
 The current dependency order is:
 
 ```text
-sclite-core 2.0.1 -> govengine 1.0.0rc2 (prepared/unpublished)
+sclite-core 2.0.1 -> govengine 1.0.0rc2 (published RC; observation active)
 
 sclite-core 2.0.0 -> govengine 1.0.0rc1 -> rexecop 1.0.0rc1
 

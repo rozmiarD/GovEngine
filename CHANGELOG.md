@@ -8,6 +8,13 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+## 1.0.0rc2 - 2026-08-08 - independently reviewed public release candidate
+
+- Publishes `govengine==1.0.0rc2` with exact `sclite-core==2.0.1` from
+  immutable tag `v1.0.0rc2` through the confirmed GitHub OIDC workflow.
+  Reviewed source A and record child B produce byte-identical wheel and sdist;
+  clean public-index installs pass and the seven-day observation window is
+  active through `2026-08-15T11:15:02.258488Z`.
 - Adds a private complete-payload seal to compiled policy packs and requires a
   stable, detached canonical snapshot before policy evaluation, pack digesting
   or enforcement admission. Post-compilation mutation of nested condition,
@@ -24,10 +31,8 @@ experimental and fixture classifications.
   approval-expiry bounds. This is fail-closed issuance-time validation and
   does not claim continuous activation lookup or background invalidation.
 
-## 1.0.0rc2 - prepared/unpublished source candidate
-
 - Prepares the next GovEngine candidate with exact `sclite-core==2.0.1` while
-  retaining immutable published rc1 history and deferring the record-only
+  retaining immutable published rc1 history and using a separate record-only
   authentic-review child.
 - Seeds the final rc2 external-review JSON path with a fail-closed pending form
   for the authentic reviewer to complete in GitHub Web. The record-only child

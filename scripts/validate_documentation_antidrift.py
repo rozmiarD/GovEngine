@@ -28,30 +28,31 @@ EXTERNAL_SCRIPT_OWNERS = {
 }
 REQUIRED_RELEASE_DISCLOSURES = {
     'README.md': (
-        'The immutable PyPI long description for `1.0.0rc1` is stale',
-        'Current source is `1.0.0rc2`,',
+        'Current source is `1.0.0rc2`;',
+        'candidate was published from `v1.0.0rc2`',
+        'observation window is active through',
     ),
     'PUBLIC_STATUS.md': (
-        'The immutable PyPI long description for `1.0.0rc1` is stale',
-        'Current source version | `govengine==1.0.0rc2`; prepared and unpublished',
+        'Current source version | `govengine==1.0.0rc2`; published with active observation',
+        'Latest published PyPI package: `govengine==1.0.0rc2`',
     ),
     'PUBLISHING.md': (
-        'The immutable PyPI long description for `1.0.0rc1` is stale',
-        'Current source version: `1.0.0rc2`, prepared and unpublished.',
+        'Current source version: `1.0.0rc2`, published with active observation.',
+        '31254483143',
         'validate_release_readiness.py` intentionally reports '
-        '`publishable=false`',
+        'stable promotion as `publishable=false`',
     ),
     'docs/ROADMAP.md': (
         '`1.0.0rc2` is required before stable promotion',
+        'observation remains active through',
     ),
     'docs/VALIDATION.md': (
-        'The immutable PyPI long description for `1.0.0rc1` is stale',
-        'does not qualify current `main` for stable promotion',
-        'prepared rc2 source is',
+        'Expected result for the current `1.0.0rc2` package line: published release',
+        'Observation is active through',
     ),
     'SECURITY.md': (
-        'prepared/unpublished `1.0.0rc2` release',
-        'Final `1.0.0` promotion requires rc2 authentic review',
+        'published `1.0.0rc2` release candidate',
+        'Final `1.0.0`\npromotion requires the candidate observation window to complete',
     ),
 }
 FORBIDDEN_OWNERSHIP_PATTERNS = (

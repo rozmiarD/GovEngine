@@ -1,9 +1,9 @@
 # GovEngine
 
 [![CI: pytest](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml/badge.svg)](https://github.com/rozmiarD/GovEngine/actions/workflows/pytest.yml)
-[![Package: govengine 1.0.0rc1](https://img.shields.io/badge/package-govengine%201.0.0rc1-blueviolet.svg)](https://pypi.org/project/govengine/1.0.0rc1/)
+[![Package: govengine 1.0.0rc2](https://img.shields.io/badge/package-govengine%201.0.0rc2-blueviolet.svg)](https://pypi.org/project/govengine/1.0.0rc2/)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Dependency: SCLite ==2.0.0](https://img.shields.io/badge/dependency-SCLite%20%3D%3D2.0.0-informational.svg)](https://github.com/rozmiarD/SCLite)
+[![Dependency: SCLite ==2.0.1](https://img.shields.io/badge/dependency-SCLite%20%3D%3D2.0.1-informational.svg)](https://github.com/rozmiarD/SCLite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
 GovEngine is an in-process Python governance kernel designed to be integrated
@@ -17,20 +17,20 @@ bundles; those responsibilities belong to SCLite. GovEngine does not perform
 the operation, schedule jobs, manage credentials, contact targets or store
 evidence.
 
-The immutable published release-candidate package `1.0.0rc1` exposes the frozen
-candidate contract through `govengine.v1`. Current source is `1.0.0rc2`,
-prepared and unpublished; it requires an authentic review-record child before
-tagging or publication.
+The immutable published release-candidate package `1.0.0rc2` exposes the frozen
+candidate contract through `govengine.v1`. Current source is `1.0.0rc2`; the
+candidate was published from `v1.0.0rc2` after authentic external review, and
+its seven-day observation window is active through
+`2026-08-15T11:15:02.258488Z`.
 
 Current source package coordinate: `govengine==1.0.0rc2`.
 The wider package still contains explicitly classified compatibility,
 experimental and fixture surfaces.
 
-The immutable PyPI long description for `1.0.0rc1` is stale: it was built from
-the pre-publication README and still describes the old release posture and
-`0.16.11` installation path. The wheel, dependency pin and release hashes are
-unaffected. This repository README is the corrected project description; the
-next release candidate must publish it as package metadata.
+The PyPI long description is the immutable, distribution-specific
+`PYPI_LONG_DESCRIPTION.md`; repository-only release state remains in this
+README and `PUBLIC_STATUS.md`. Public wheel and sdist bytes match the reviewed
+GitHub workflow artifacts.
 
 ## Why GovEngine exists
 
@@ -155,18 +155,17 @@ SCLite owns truth and proof.
 Install the published release candidate:
 
 ```bash
-python -m pip install govengine==1.0.0rc1
+python -m pip install govengine==1.0.0rc2
 ```
 
-Use the exact pin shown above. Because `1.0.0rc1` is a pre-release, an
+Use the exact pin shown above. Because `1.0.0rc2` is a pre-release, an
 unqualified `pip install govengine` continues to select the latest stable
 `0.16.11` line.
 
 Requirements:
 
 - Python 3.11 or newer;
-- published rc1 dependency `sclite-core==2.0.0`; prepared rc2 source dependency
-  `sclite-core==2.0.1`;
+- exact published and source dependency `sclite-core==2.0.1`;
 - imports intended for 1.x compatibility should come from `govengine.v1`.
 
 ## Quick start: evaluate a typed policy
@@ -230,15 +229,15 @@ continue with the bound request and decision contracts described in
 
 | Item | Current status |
 | --- | --- |
-| Source/package version | `1.0.0rc2` prepared/unpublished |
+| Source/package version | `1.0.0rc2` published; observation active |
 | Package maturity | Public release candidate |
 | Candidate 1.x facade | `govengine.v1`, exactly 40 exports |
 | GovEngine-owned v1 records | 15 frozen records |
 | Source SCLite dependency | `sclite-core==2.0.1` |
 | Legacy root modules | Compatibility, experimental or fixture classifications |
 
-Current source/package version: `1.0.0rc2` prepared/unpublished.
-Latest public package pin: `govengine==1.0.0rc1`.
+Current source/package version: `1.0.0rc2` published with an active RC window.
+Latest public package pin: `govengine==1.0.0rc2`.
 
 The final `1.0.0` promotion state is maintained in
 [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md). Exact facade and schema compatibility
