@@ -176,9 +176,17 @@ fields.
 The publish workflow rebuilt A and B, required artifact equality before OIDC,
 and never creates or fills authentic records itself. The seeded form is not
 approval, identity proof or publication authority and contains no confidential
-report content. `scripts/release_ab_repro_gate.sh` modifies the seeded form and
-adds only a temporary synthetic window to prove the mechanism; neither is rc2
-evidence.
+report content. On pending source A, `scripts/release_ab_repro_gate.sh` modifies
+the seeded form and adds only a temporary synthetic window to prove the
+mechanism; neither is rc2 evidence. Once authentic record child B exists, the
+same gate requires full history, resolves exactly one valid record child in the
+checked commit's ancestry, validates the current window/review binding, rebuilds
+source A and B, and requires byte-identical artifacts. Post-release descendants
+therefore retain the authentic A/B proof without being misclassified as source
+A. For a prepared record-only PR aggregate before B exists, the gate constructs
+a disposable exact-squash candidate with A as its sole parent, requires exactly
+the two record changes, and applies the same authentic binding and artifact
+checks; this fallback is forbidden after the window becomes active.
 
 ## Tag and publish
 

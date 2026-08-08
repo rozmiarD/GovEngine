@@ -18,7 +18,8 @@ Separate jobs:
 - clean and build wheel/sdist;
 - use the canonical deterministic release helper, including `twine check` and
   exact distribution metadata validation;
-- run reproducibility and synthetic record-only A/B gates;
+- run reproducibility and lifecycle-aware record-only A/B gates: synthetic for
+  pending source A, authentic for record child B and its descendants;
 - install wheel and sdist in explicit disposable `/tmp` smoke environments.
 
 The scheduled security workflow runs dependency audit and CodeQL. All GitHub

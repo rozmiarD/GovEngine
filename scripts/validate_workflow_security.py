@@ -80,6 +80,20 @@ def validate_workflow_security() -> dict[str, int]:
     ):
         if marker not in pytest:
             raise AssertionError(f'workflow_pytest_missing:{marker}')
+    package_marker = '\n  package-dry-run:\n'
+    if package_marker not in pytest:
+        raise AssertionError('workflow_pytest_missing:package-dry-run')
+    package_dry_run = pytest.split(package_marker, 1)[1]
+    next_job = re.search(r'\n  [a-zA-Z0-9_-]+:\n', package_dry_run)
+    if next_job is not None:
+        package_dry_run = package_dry_run[: next_job.start()]
+    for marker in (
+        'fetch-depth: 0',
+        '- name: Exercise lifecycle-aware record-only A/B gate\n'
+        '        run: PYTHON=python bash scripts/release_ab_repro_gate.sh',
+    ):
+        if marker not in package_dry_run:
+            raise AssertionError(f'workflow_package_dry_run_missing:{marker}')
     return {
         'workflows': len(workflows),
         'actions': action_count,

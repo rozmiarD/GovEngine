@@ -717,6 +717,12 @@ def main() -> int:
     _assert_contains('.github/workflows/pytest.yml', workflow, 'scripts/build_release_artifacts.sh --outdir dist')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'scripts/reproducible_build_gate.sh')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'scripts/release_ab_repro_gate.sh')
+    _assert_contains(
+        '.github/workflows/pytest.yml',
+        workflow,
+        'Exercise lifecycle-aware record-only A/B gate',
+    )
+    _assert_contains('.github/workflows/pytest.yml', workflow, 'fetch-depth: 0')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'scripts/package_smoke.sh')
     _assert_contains('.github/workflows/pytest.yml', workflow, 'govengine-hosted-runner-review-artifacts')
 
