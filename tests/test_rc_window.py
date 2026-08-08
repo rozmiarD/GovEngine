@@ -23,6 +23,17 @@ def test_rc_window_matches_frozen_contract_inputs() -> None:
     assert record['v1_records'] == 15
 
 
+def test_main_reports_v1_baseline_commit(capsys: pytest.CaptureFixture[str]) -> None:
+    record = json.loads(RECORD_PATH.read_text(encoding='utf-8'))
+
+    assert validator.main([]) == 0
+
+    assert capsys.readouterr().out == (
+        'rc_window_ok:version=1.0.0rc1:status=active:'
+        f"baseline={record['baseline_commit']}\n"
+    )
+
+
 def test_rc_window_rejects_contract_digest_drift(tmp_path: Path) -> None:
     record = json.loads(RECORD_PATH.read_text(encoding='utf-8'))
     record['v1_manifest_sha256'] = '0' * 64
@@ -219,6 +230,23 @@ def test_v2_prepared_window_binds_current_frozen_inputs_and_review(
 ) -> None:
     window = _write_v2_prepared_window(tmp_path, monkeypatch)
     assert validate_rc_window(window, expected_version='1.0.0rc2')['status'] == 'prepared'
+
+
+def test_main_reports_v2_source_commit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    window = _write_v2_prepared_window(tmp_path, monkeypatch)
+
+    assert validator.main([
+        '--record', str(window), '--expected-version', '1.0.0rc2',
+    ]) == 0
+
+    assert capsys.readouterr().out == (
+        'rc_window_ok:version=1.0.0rc2:status=prepared:'
+        f"source={'a' * 40}\n"
+    )
 
 
 @pytest.mark.parametrize(
