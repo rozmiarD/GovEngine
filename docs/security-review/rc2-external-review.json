@@ -1,15 +1,15 @@
 {
   "schema_version": "govengine.rc2_external_security_review.v1",
-  "source_commit": "",
+  "source_commit": "f4845c1076df848c1be2df7aa7817450472e6e11",
   "artifacts": {
     "runner": "github-hosted-runner",
-    "wheel_sha256": "",
-    "normalized_sdist_sha256": ""
+    "wheel_sha256": "e9da63696c58ad3f096a856ff75716918e3f0b397050212c13487573921d7676",
+    "normalized_sdist_sha256": "ea214948896ef5850bb3f536f20fa40bbacbae1a3221dba94bb7ff051276c9cd"
   },
-  "confidential_report_sha256": "",
-  "reviewer": "",
-  "reviewed_at": null,
-  "verdict": "pending_external_reviewer",
-  "open_p0": null,
-  "open_p1": null
+  "confidential_report_sha256": "34e1d6e94f26fb759fa159633a71902af7d2e2b126b38519584823e793675600",
+  "reviewer": "ExatronOmega",
+  "reviewed_at": "2026-08-08T09:35:00Z",
+  "verdict": "approved",
+  "open_p0": 0,
+  "open_p1": 0
 }
