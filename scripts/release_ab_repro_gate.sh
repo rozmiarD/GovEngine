@@ -59,7 +59,8 @@ PY
 elif [ "$gate_mode" = "authentic" ] && [ "$record_commit" != "-" ]; then
   "$python_bin" scripts/validate_rc_window.py \
     --record docs/rc-window/1.0.0rc2.json \
-    --expected-version 1.0.0rc2
+    --expected-version 1.0.0rc2 \
+    --history-mode
   mkdir -p "$work/records"
   git show "$record_commit:docs/security-review/rc2-external-review.json" \
     > "$work/records/review.json"

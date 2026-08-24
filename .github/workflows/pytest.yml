@@ -42,6 +42,7 @@ jobs:
         run: >-
           python scripts/validate_rc_window.py
           --record docs/rc-window/1.0.0rc1.json --expected-version 1.0.0rc1
+          --history-mode
       - name: Validate conformance corpus generation
         run: python scripts/generate_conformance_corpus.py --check
       - name: Validate workflow supply-chain security

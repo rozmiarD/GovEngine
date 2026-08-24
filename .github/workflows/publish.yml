@@ -52,7 +52,8 @@ jobs:
           if [[ "$PACKAGE_VERSION" == "1.0.0rc2" ]]; then
             python scripts/validate_rc_window.py \
               --record docs/rc-window/1.0.0rc2.json \
-              --expected-version 1.0.0rc2
+              --expected-version 1.0.0rc2 \
+              --history-mode
           elif [[ "$PACKAGE_VERSION" == *rc* ]]; then
             python scripts/validate_rc_window.py
           else
