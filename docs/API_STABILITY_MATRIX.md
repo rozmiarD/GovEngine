@@ -84,7 +84,7 @@ or host-specific Ravenclaw/Tecrax runtime behavior.
 | fixture | govengine.boundary profile fixtures | `known_profile_contracts`, `ravenclaw_profile_contract` | Fixture/profile metadata retained for conformance only; not part of the v1 kernel. |
 | fixture | govengine.context compatibility fixture | `ravenclaw_context` | Legacy host-context fixture retained for compatibility testing. |
 | fixture | govengine.profiles domain fixtures | `ravenclaw_security_profile`, `tecrax_infra_ops_profile` | Domain profile fixtures; domain semantics remain in their owning products. |
-| fixture | govengine.replay development adapters | `InMemoryReplayClaimStore`, `record_guard_replay_file` | Non-production replay fixtures without durable atomicity guarantees. |
+| fixture | govengine.replay development adapters | `InMemoryReplayClaimStore`, `record_guard_replay_file` | Non-production replay fixtures without durable atomicity guarantees. `record_guard_replay_file()` returns a typed blocked decision for invalid JSON or shape and leaves existing bytes untouched; it is not a production replay adapter. Production use requires a separate atomic `ReplayClaimStore` implementation. |
 | internal-exposed | govengine.scope_assertion compatibility imports | `build_scope_assertion`, `build_scope_decision`, `scope_decision_digest` | Explicit top-level compatibility imports consumed by RExecOp but intentionally excluded from `govengine.__all__`; migrate the consumer before removal or stable classification. |
 
 ## Explicit module-scoped additions

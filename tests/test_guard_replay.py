@@ -266,6 +266,53 @@ def test_record_guard_replay_file_round_trip(tmp_path) -> None:
     assert "tag-1" in path.read_text(encoding="utf-8")
 
 
+def test_record_guard_replay_file_blocks_corrupt_store_without_overwriting_bytes(tmp_path: Path) -> None:
+    path = tmp_path / "guard_replay_store.json"
+    fresh = guard_replay_record_from_guard(_guard("tag-1"), observed_at="2026-05-25T21:00:00+00:00")
+    replayed = guard_replay_record_from_guard(_guard("tag-1"), observed_at="2026-05-25T21:01:00+00:00")
+    after_corruption = guard_replay_record_from_guard(
+        _guard("tag-2"), observed_at="2026-05-25T21:02:00+00:00"
+    )
+
+    assert record_guard_replay_file(path, fresh).replay_status == "fresh"
+    assert record_guard_replay_file(path, replayed).replay_status == "replayed"
+
+    corrupt_bytes = b'{"records": '
+    path.write_bytes(corrupt_bytes)
+    blocked = record_guard_replay_file(path, after_corruption)
+
+    assert blocked.status == "blocked"
+    assert blocked.allowed is False
+    assert blocked.replay_status == "blocked"
+    assert blocked.blocker == "guard_replay_store_invalid_json"
+    assert blocked.next_action == "repair_or_replace_local_guard_replay_store"
+    assert path.read_bytes() == corrupt_bytes
+
+
+@pytest.mark.parametrize(
+    ("corrupt_bytes", "expected_blocker"),
+    (
+        (b'{"records": ', "guard_replay_store_invalid_json"),
+        (b'{"artifact_type": "guard_replay_store", "schema_version": "v0.1", "records": {}}', "guard_replay_store_invalid_shape"),
+    ),
+)
+def test_record_guard_replay_file_returns_typed_blocker_for_invalid_store_shape(
+    tmp_path: Path,
+    corrupt_bytes: bytes,
+    expected_blocker: str,
+) -> None:
+    path = tmp_path / "guard_replay_store.json"
+    record = guard_replay_record_from_guard(_guard(), observed_at="2026-05-25T21:00:00+00:00")
+    path.write_bytes(corrupt_bytes)
+
+    blocked = record_guard_replay_file(path, record)
+
+    assert blocked.status == "blocked"
+    assert blocked.replay_status == "blocked"
+    assert blocked.blocker == expected_blocker
+    assert path.read_bytes() == corrupt_bytes
+
+
 def _install_fake_sclite_secure(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, Any]]:
     module = types.ModuleType("sclite.secure")
     calls: list[dict[str, Any]] = []

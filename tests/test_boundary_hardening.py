@@ -185,3 +185,18 @@ def test_security_integration_doc_records_order_and_non_claims() -> None:
 
     for marker in required_markers:
         assert marker in text
+
+
+def test_replay_fixture_docs_preserve_fail_closed_non_production_boundary() -> None:
+    text = (ROOT / 'docs' / 'API_STABILITY_MATRIX.md').read_text(encoding='utf-8')
+    required_markers = (
+        '`record_guard_replay_file()`',
+        'invalid JSON or shape',
+        'typed blocked decision',
+        'leaves existing bytes untouched',
+        'not a production replay adapter',
+        'separate atomic `ReplayClaimStore` implementation',
+    )
+
+    for marker in required_markers:
+        assert marker in text

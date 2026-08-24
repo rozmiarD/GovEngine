@@ -373,6 +373,27 @@ def _store_from_records(records: Iterable[GuardReplayRecord]) -> dict[str, Any]:
     }
 
 
+def _normalize_file_store(value: Any) -> dict[str, Any]:
+    """Validate the complete local fixture shape before using its records.
+
+    This normalizer is deliberately local to ``record_guard_replay_file()``.
+    A host-provided ``ReplayClaimStore`` owns any production persistence and
+    atomicity guarantees.
+    """
+
+    raw = require_mapping(value, reason_code="invalid_guard_replay_store")
+    if raw.get("artifact_type") != GUARD_REPLAY_STORE_ARTIFACT_TYPE:
+        raise GovApiError("invalid_guard_replay_store_artifact_type")
+    if raw.get("schema_version") != GUARD_REPLAY_STORE_SCHEMA_VERSION:
+        raise GovApiError("invalid_guard_replay_store_schema_version")
+    records = raw.get("records")
+    if not isinstance(records, list):
+        raise GovApiError("invalid_guard_replay_store_records")
+    if any(not isinstance(item, Mapping) for item in records):
+        raise GovApiError("invalid_guard_replay_store_record")
+    return _store_from_records(GuardReplayRecord.from_mapping(item) for item in records)
+
+
 def evaluate_guard_replay(
     record: GuardReplayRecord,
     prior_records: Iterable[GuardReplayRecord],
@@ -461,10 +482,28 @@ def record_guard_replay_file(
     *,
     require_fresh: bool = True,
 ) -> GuardReplayDecision:
-    """Check and persist a guarded root in a local JSON replay-store file."""
+    """Check a local fixture store without treating corrupt bytes as empty.
+
+    This helper is not a production replay adapter.  A production adapter must
+    provide a separate atomic ``ReplayClaimStore`` implementation.
+    """
 
     store_path = Path(path)
-    current, _meta = safe_load_json_object(store_path, _empty_store(), description="guard_replay_store")
+    current, meta = safe_load_json_object(
+        store_path,
+        _empty_store(),
+        normalizer=_normalize_file_store,
+        description="guard_replay_store",
+    )
+    load_status = str(meta.get("status") or "invalid_shape")
+    if load_status not in {"missing", "ok"}:
+        return GuardReplayDecision(
+            status="blocked",
+            replay_status="blocked",
+            record=record,
+            blocker=f"guard_replay_store_{load_status}",
+            next_action="repair_or_replace_local_guard_replay_store",
+        )
     records = _records_from_store(current)
     decision = evaluate_guard_replay(record, records, require_fresh=require_fresh)
     if decision.replay_status == "fresh":

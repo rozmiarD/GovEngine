@@ -8,6 +8,11 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Hardens the local `record_guard_replay_file()` fixture: invalid JSON or an
+  invalid store shape now produces a typed blocked decision and leaves the
+  existing file unchanged. It remains a non-production helper; production
+  replay persistence requires a separate atomic `ReplayClaimStore` adapter.
+
 ## 1.0.0rc2 - 2026-08-08 - independently reviewed public release candidate
 
 - Publishes `govengine==1.0.0rc2` with exact `sclite-core==2.0.1` from
