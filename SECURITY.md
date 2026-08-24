@@ -10,7 +10,10 @@ Security fixes should target `main` until the stable release line exists. The
 public rc2 artifacts passed independent external review with zero open P0/P1
 and were published through the tag-confirmed OIDC workflow. Final `1.0.0`
 promotion requires the candidate observation window to complete without an
-open P0/P1 and the remaining downstream qualification to stay green.
+open P0/P1 and the remaining downstream qualification to stay green. The
+published rc2 window is elapsed_unclosed, not completed: stable promotion stays
+`publishable=false` until a forward-only closure record binds the frozen record
+and locally verified closure evidence by SHA-256.
 
 ## Reporting issues
 

@@ -8,7 +8,7 @@ mechanics.
 
 Current source baseline: `govengine==1.0.0rc2`, exact-pinned to
 `sclite-core==2.0.1`, published from immutable tag `v1.0.0rc2` with its
-observation window active. Published PyPI baseline is `govengine==1.0.0rc2`.
+observation window elapsed_unclosed. Published PyPI baseline is `govengine==1.0.0rc2`.
 
 ## Responsibility boundary
 
@@ -48,14 +48,17 @@ surfaces. They are not part of the 1.x promise.
 published SCLite `2.0.1` patch is pinned by the published GovEngine
 `1.0.0rc2` candidate. Authentic external re-review, the exact record-only child,
 immutable tag, OIDC publication and public-index verification are complete.
-The rc2 observation remains active through `2026-08-15T11:15:02.258488Z`.
+The rc2 observation is elapsed_unclosed after `2026-08-15T11:15:02.258488Z`.
 
 The published rc2 includes the post-rc1 security and compatibility fixes, the
 corrected package long description and the complete documentation anti-drift
-gate. It has its own immutable tag, review/qualification evidence and active
-observation record. Final promotion requires all of the following:
+gate. It has its own immutable tag, review/qualification evidence and frozen
+observation record. Its frozen record is not rewritten or auto-completed; a
+forward-only superseding closure must bind valid closure evidence. Final
+promotion requires all of the following:
 
-- the rc2 observation record is completed;
+- a `govengine.rc_window_closure.v1` record supersedes the frozen rc2 record and
+  passes its local evidence/digest checks;
 - no frozen facade, schema, corpus or reason-registry drift;
 - the review covering rc2 reports no open P0/P1 security finding;
 - public installation of the exact GovEngine/SCLite candidate pair remains
@@ -76,7 +79,7 @@ record, never by refreshing `rc1` in place.
 The current dependency order is:
 
 ```text
-sclite-core 2.0.1 -> govengine 1.0.0rc2 (published RC; observation active)
+sclite-core 2.0.1 -> govengine 1.0.0rc2 (published RC; observation elapsed_unclosed)
 
 sclite-core 2.0.0 -> govengine 1.0.0rc1 -> rexecop 1.0.0rc1
 

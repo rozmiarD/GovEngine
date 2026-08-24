@@ -9,7 +9,7 @@ decision. It does not execute the operation or define artifact truth.
 
 | Item | Current truth |
 | --- | --- |
-| Current source version | `govengine==1.0.0rc2`; published with active observation |
+| Current source version | `govengine==1.0.0rc2`; published; RC observation elapsed_unclosed |
 | Published immutable artifact | `govengine==1.0.0rc2` from tag `v1.0.0rc2` |
 | Python | `>=3.11`; CI covers 3.11, 3.12 and 3.13 |
 | Source dependency | `sclite-core==2.0.1` |
@@ -17,7 +17,7 @@ decision. It does not execute the operation or define artifact truth.
 | GovEngine-owned v1 records | 15 |
 | Conformance corpus | 33 cases: 5 valid, 28 negative |
 | Independent review | rc2 external re-review #4 approved with zero open P0/P1 |
-| RC observation | active through `2026-08-15T11:15:02.258488Z` |
+| RC observation | elapsed_unclosed after `2026-08-15T11:15:02.258488Z`; no closure evidence |
 | Reference runtime | `rexecop==1.0.0rc1` |
 | Profile alignment | Tecrax `0.4.0rc3` source-aligned/unpublished on the rc1 train |
 
@@ -25,8 +25,11 @@ The release was published from immutable tag `v1.0.0rc2` through confirmed
 workflow run `31254483143`, including source-A recovery, authentic review and
 window validation, exact A/B artifact equality, provenance and PyPI OIDC.
 Current `main` contains only post-tag evidence updates. Stable promotion
-remains `publishable=false` until the active seven-day observation is completed
-and downstream RExecOp qualification against the public rc2 pair passes.
+remains `publishable=false`: the seven-day observation elapsed without closure
+evidence, and downstream RExecOp qualification against the public rc2 pair is
+also incomplete. A forward-only `govengine.rc_window_closure.v1` record bound
+to the frozen record and local closure evidence digests is required; the frozen
+rc2 record is not rewritten.
 
 The public wheel and normalized sdist exactly match the reviewed artifacts.
 Their SHA-256 values are recorded in the rc2 external-review record and

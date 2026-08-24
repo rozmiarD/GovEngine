@@ -8,6 +8,12 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Makes expired RC observation fail closed: an immutable raw `active` record
+  now derives `elapsed_unclosed` at and after its end time and cannot be
+  auto-completed. Completion requires a separate versioned closure record bound
+  to the frozen record digest, lifecycle timestamps and a locally verified
+  evidence digest; frozen rc1/rc2 evidence remains unchanged.
+
 - Narrows the frozen GovEngine v1 record canonicalization/digest helpers to a
   Python-legacy numeric input boundary. Supported v1 bytes remain unchanged;
   integers outside `[-(2**53-1), 2**53-1]` and non-finite floats fail with

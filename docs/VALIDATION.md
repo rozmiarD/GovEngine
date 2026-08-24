@@ -48,7 +48,7 @@ the explicitly unreleased source posture, not release authorization.
 .venv/bin/python scripts/validate_digest_ownership.py
 .venv/bin/python scripts/validate_workflow_security.py
 .venv/bin/python scripts/validate_v1_security_review.py
-.venv/bin/python scripts/validate_rc_window.py
+.venv/bin/python scripts/validate_rc_window.py --history-mode
 .venv/bin/python scripts/validate_release_train_truth.py
 .venv/bin/python scripts/validate_distribution_metadata.py --wheel WHEEL --sdist SDIST
 .venv/bin/python scripts/validate_rc2_release_records.py --help
@@ -115,7 +115,8 @@ Before tagging, additionally require:
 
 ```bash
 .venv/bin/python scripts/validate_v1_security_review.py --require-independent
-.venv/bin/python scripts/validate_rc_window.py
+.venv/bin/python scripts/validate_rc_window.py --require-completed \
+  --closure-record PATH
 .venv/bin/python scripts/validate_release_train_truth.py --cross-repo
 PYTHON=.venv/bin/python bash scripts/build_release_artifacts.sh --outdir /tmp/govengine-dist
 PYTHON=.venv/bin/python bash scripts/reproducible_build_gate.sh
@@ -123,15 +124,18 @@ PYTHON=.venv/bin/python bash scripts/release_ab_repro_gate.sh
 PYTHON=.venv/bin/python bash scripts/package_smoke.sh
 ```
 
-For the immutable published `rc1`, completion is checked with:
+For immutable expired records, history inspection is checked with:
 
 ```bash
-.venv/bin/python scripts/validate_rc_window.py --require-completed
+.venv/bin/python scripts/validate_rc_window.py --history-mode
 ```
 
-The default command targets immutable rc1 history. Current rc2 evidence uses
-`--record docs/rc-window/1.0.0rc2.json --expected-version 1.0.0rc2
---require-published`; stable promotion later requires `--require-completed`.
+The default command is fail-closed for an expired active record. Current rc2
+history uses `--record docs/rc-window/1.0.0rc2.json --expected-version 1.0.0rc2
+--history-mode`. Both frozen records currently derive `elapsed_unclosed`; stable
+promotion requires a `govengine.rc_window_closure.v1` record to bind the frozen
+record SHA-256, exact publication/end timestamps and an existing local evidence
+file SHA-256. It must pass `--require-completed --closure-record PATH`.
 
 Tagging, publishing and public-index verification follow
 [PUBLISHING.md](../PUBLISHING.md). Validation never creates a tag or uploads a
@@ -140,7 +144,7 @@ package by itself.
 ## Current package evidence
 
 Expected result for the current `1.0.0rc2` package line: published release
-candidate with an active observation window and stable promotion still
+candidate with an elapsed_unclosed observation window and stable promotion
 `publishable=false`. Reviewed source A is
 `f4845c1076df848c1be2df7aa7817450472e6e11`; tagged record child B is
 `e65ad22ec25d74bbbb4969bd614981a8ed5e47c8`. B contains one modified seeded
@@ -154,8 +158,9 @@ produced public wheel
 and normalized sdist
 `ea214948896ef5850bb3f536f20fa40bbacbae1a3221dba94bb7ff051276c9cd`.
 Both match the external review and pass clean public-index installation with
-`sclite-core==2.0.1`. Observation is active through
-`2026-08-15T11:15:02.258488Z`.
+`sclite-core==2.0.1`. Observation is elapsed_unclosed after
+`2026-08-15T11:15:02.258488Z`; frozen evidence is history only and has not
+been rewritten as completion.
 
 ## Immutable published rc1 evidence
 
@@ -173,8 +178,8 @@ Expected result for the immutable `1.0.0rc1` package line:
   `10d08555497f15efcaa988510fdb88729331fa2e14f00144825e0e8124c3ed72`;
 - clean public-index install, `pip check`, independent review and the RExecOp G6
   consumer evidence passed;
-- the `rc1` record is active; stable promotion is additionally blocked on a new
-  candidate containing current `main`.
+- the `rc1` record is elapsed_unclosed in current-time evaluation; its frozen
+  historical bytes remain valid history, but it cannot qualify a later candidate.
 
 These are immutable release facts, not instructions to recreate the tag.
 The immutable PyPI long description for `1.0.0rc1` is stale because it contains

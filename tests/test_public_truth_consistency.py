@@ -7,6 +7,10 @@ from pathlib import Path
 
 import pytest
 
+from scripts.validate_documentation_antidrift import (
+    validate_current_rc_observation_claims,
+)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / 'scripts' / 'validate_public_truth.py'
@@ -45,7 +49,55 @@ def test_release_readiness_validator_passes() -> None:
     assert result.stdout.strip().startswith(
         'release_source_validation_ok:govengine==1.0.0rc2:'
     )
-    assert 'posture=published_active_observation:publishable=false' in result.stdout
+    assert 'posture=published_elapsed_unclosed:publishable=false' in result.stdout
+
+
+def test_public_truth_validator_rejects_rc2_state_other_than_elapsed_unclosed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    validator = _load_validator()
+    monkeypatch.setattr(
+        validator,
+        'validate_rc_window',
+        lambda *args, **kwargs: {'status': 'active', 'record_status': 'active'},
+    )
+
+    with pytest.raises(AssertionError, match='rc2_window:current_effective_status_invalid'):
+        validator._assert_rc2_window_current_state()
+
+
+@pytest.mark.parametrize(
+    ('relative', 'stale_claim'),
+    (
+        ('README.md', '`1.0.0rc2` published; observation active'),
+        (
+            'PUBLISHING.md',
+            'govengine 1.0.0rc2    governance; published RC, observation active',
+        ),
+    ),
+)
+def test_documentation_antidrift_rejects_expired_rc_active_claims(
+    tmp_path: Path,
+    relative: str,
+    stale_claim: str,
+) -> None:
+    (tmp_path / 'README.md').write_text('current RC status\n', encoding='utf-8')
+    (tmp_path / 'PUBLISHING.md').write_text('current RC status\n', encoding='utf-8')
+    (tmp_path / relative).write_text(stale_claim, encoding='utf-8')
+
+    with pytest.raises(
+        AssertionError,
+        match=f'{relative}:stale_current_rc_observation_claim',
+    ):
+        validate_current_rc_observation_claims(root=tmp_path)
+
+
+def test_current_release_docs_report_elapsed_unclosed() -> None:
+    readme = (ROOT / 'README.md').read_text(encoding='utf-8')
+    publishing = (ROOT / 'PUBLISHING.md').read_text(encoding='utf-8')
+
+    assert '`1.0.0rc2` published; observation elapsed_unclosed' in readme
+    assert 'govengine 1.0.0rc2    governance; published RC, observation elapsed_unclosed' in publishing
 
 
 def test_current_public_docs_do_not_reintroduce_pre_alpha_maturity_claims() -> None:

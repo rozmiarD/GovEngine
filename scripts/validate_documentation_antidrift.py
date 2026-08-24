@@ -30,30 +30,37 @@ REQUIRED_RELEASE_DISCLOSURES = {
     'README.md': (
         'Current source is `1.0.0rc2`;',
         'candidate was published from `v1.0.0rc2`',
-        'observation window is active through',
+        'observation window is elapsed_unclosed',
+        '| Source/package version | `1.0.0rc2` published; observation elapsed_unclosed |',
     ),
     'PUBLIC_STATUS.md': (
-        'Current source version | `govengine==1.0.0rc2`; published with active observation',
+        'Current source version | `govengine==1.0.0rc2`; published; RC observation elapsed_unclosed',
         'Latest published PyPI package: `govengine==1.0.0rc2`',
     ),
     'PUBLISHING.md': (
-        'Current source version: `1.0.0rc2`, published with active observation.',
+        'Current source version: `1.0.0rc2`, published; RC observation is elapsed_unclosed.',
+        'govengine 1.0.0rc2 governance; published RC, observation elapsed_unclosed',
         '31254483143',
         'validate_release_readiness.py` intentionally reports '
         'stable promotion as `publishable=false`',
     ),
     'docs/ROADMAP.md': (
         '`1.0.0rc2` is required before stable promotion',
-        'observation remains active through',
+        'observation is elapsed_unclosed',
     ),
     'docs/VALIDATION.md': (
         'Expected result for the current `1.0.0rc2` package line: published release',
-        'Observation is active through',
+        'Observation is elapsed_unclosed',
     ),
     'SECURITY.md': (
         'published `1.0.0rc2` release candidate',
+        'elapsed_unclosed',
         'Final `1.0.0`\npromotion requires the candidate observation window to complete',
     ),
+}
+FORBIDDEN_CURRENT_RC_ACTIVE_CLAIMS = {
+    'README.md': ('`1.0.0rc2` published; observation active',),
+    'PUBLISHING.md': ('govengine 1.0.0rc2    governance; published RC, observation active',),
 }
 FORBIDDEN_OWNERSHIP_PATTERNS = (
     re.compile(
@@ -344,6 +351,16 @@ def validate_release_disclosures(*, root: Path = ROOT) -> None:
                 raise AssertionError(f'{relative}:missing_release_disclosure:{marker}')
 
 
+def validate_current_rc_observation_claims(*, root: Path = ROOT) -> None:
+    for relative, stale_claims in FORBIDDEN_CURRENT_RC_ACTIVE_CLAIMS.items():
+        normalized_text = ' '.join((root / relative).read_text(encoding='utf-8').split())
+        for stale_claim in stale_claims:
+            if ' '.join(stale_claim.split()) in normalized_text:
+                raise AssertionError(
+                    f'{relative}:stale_current_rc_observation_claim:{stale_claim}'
+                )
+
+
 def validate_documentation_antidrift(
     *,
     root: Path = ROOT,
@@ -367,6 +384,7 @@ def validate_documentation_antidrift(
     )
     validate_release_claims(paths, root=root)
     validate_release_disclosures(root=root)
+    validate_current_rc_observation_claims(root=root)
     return {'active_markdown_files': len(paths)}
 
 

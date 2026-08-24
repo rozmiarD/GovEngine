@@ -20,6 +20,7 @@ from govengine.surfaces import public_surface_index  # noqa: E402
 from scripts.validate_documentation_antidrift import (  # noqa: E402
     validate_documentation_antidrift,
 )
+from scripts.validate_rc_window import ELAPSED_UNCLOSED, validate_rc_window  # noqa: E402
 from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 
 EXPECTED_RELEASE_LABEL = '1.0.0rc2'
@@ -28,6 +29,7 @@ PYPI_LONG_DESCRIPTION_PATH = 'PYPI_LONG_DESCRIPTION.md'
 PYPI_LONG_DESCRIPTION_SHA256 = 'e600766f447f1d7a085176de02b7b99778b298af80344c009cce2dc3f70c37a0'
 RC2_REVIEW_RECORD_PATH = 'docs/security-review/rc2-external-review.json'
 RC2_WINDOW_RECORD_PATH = 'docs/rc-window/1.0.0rc2.json'
+RC2_WINDOW_EFFECTIVE_STATUS = ELAPSED_UNCLOSED
 PENDING_RC2_REVIEW_FORM = {
     'schema_version': 'govengine.rc2_external_security_review.v1',
     'source_commit': '',
@@ -514,6 +516,19 @@ def _assert_rc2_review_form_state(
         )
 
 
+def _assert_rc2_window_current_state() -> None:
+    checked = validate_rc_window(
+        ROOT / RC2_WINDOW_RECORD_PATH,
+        expected_version='1.0.0rc2',
+        history_mode=True,
+    )
+    if (
+        checked['status'] != RC2_WINDOW_EFFECTIVE_STATUS
+        or checked['record_status'] != 'active'
+    ):
+        raise AssertionError('rc2_window:current_effective_status_invalid')
+
+
 def main() -> int:
     import_errors = validate_consumer_imports('govengine', ROOT)
     if import_errors:
@@ -588,7 +603,7 @@ def main() -> int:
     _assert_contains(
         'PUBLIC_STATUS.md',
         public_status,
-        f'| Current source version | `govengine=={version}`; published with active observation |',
+        f'| Current source version | `govengine=={version}`; published; RC observation elapsed_unclosed |',
     )
     _assert_contains(
         'PUBLIC_STATUS.md',
@@ -612,6 +627,7 @@ def main() -> int:
         json.loads(_read(RC2_REVIEW_RECORD_PATH)),
         window_exists=(ROOT / RC2_WINDOW_RECORD_PATH).exists(),
     )
+    _assert_rc2_window_current_state()
     changelog = _read('CHANGELOG.md')
     _assert_changelog_unreleased_api_names(changelog)
     _assert_source_pypi_gap_docs(version, readme, public_status, roadmap, changelog)

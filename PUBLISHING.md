@@ -6,14 +6,15 @@ releases. It describes the repository as it exists; release history belongs in
 
 ## Current state
 
-- Current source version: `1.0.0rc2`, published with active observation.
+- Current source version: `1.0.0rc2`, published; RC observation is elapsed_unclosed.
 - Published immutable candidate: `govengine==1.0.0rc2` from `v1.0.0rc2`.
 - Published and source dependency: `sclite-core==2.0.1`.
 - Published `rc2` external review: approved with no open P0/P1 findings.
 - Authentic review-record child B: merged and named by `v1.0.0rc2`.
 - Publication: tag-bound GitHub OIDC workflow, run
   [31254483143](https://github.com/rozmiarD/GovEngine/actions/runs/31254483143).
-- RC observation window: active until `2026-08-15T11:15:02.258488Z`.
+- RC observation window: elapsed_unclosed after `2026-08-15T11:15:02.258488Z`;
+  the frozen record has no closure evidence.
 
 Current `main` tracks the published `1.0.0rc2` candidate and contains normal
 post-tag evidence updates. Stable promotion remains `publishable=false` until
@@ -44,7 +45,7 @@ Publish in dependency order:
 sclite-core 2.0.1     truth/contracts; published and frozen
         |
         v
-govengine 1.0.0rc2    governance; published RC, observation active
+govengine 1.0.0rc2    governance; published RC, observation elapsed_unclosed
         |
         v
 rexecop 1.0.0rc1      reference runtime; published RC
@@ -130,14 +131,19 @@ git diff --check
 ```
 
 On current post-tag `main`, `validate_release_readiness.py` intentionally
-reports stable promotion as `publishable=false` while the rc2 observation and
-downstream qualification remain incomplete.
+reports stable promotion as `publishable=false` while the rc2 observation is
+elapsed_unclosed and downstream qualification remains incomplete.
 
 For an RC, the candidate-specific RC-window validator must pass.
 RC-window status must be `prepared` before first publication.
 `scripts/validate_rc_window.py` validates both immutable rc1 history and the
-rc2 v2 record. Current rc2 must pass `--require-published`; stable promotion
-requires `--require-completed` after the full observation interval.
+rc2 v2 record. Its frozen active record is now elapsed_unclosed: ordinary
+validation fails closed, while `--history-mode` verifies immutable history and
+reports that state. A distinct `govengine.rc_window_closure.v1` record must bind
+the frozen record SHA-256, the original lifecycle timestamps, a non-future
+`completed_at` no earlier than the window end, and an existing local evidence
+file by SHA-256. Pass it with `--closure-record`; never rewrite the frozen rc2
+JSON.
 
 The clean-install script is the dependency-consistency gate. Do not use
 `pip check` from a broad system interpreter as release evidence.
@@ -249,12 +255,12 @@ move the release tag to include it.
 ## Stable promotion
 
 Stable `1.0.0` remains blocked on completion of the published `1.0.0rc2`
-candidate observation. Completion of the existing `rc1` observation remains
-historical evidence but is insufficient for the rc2 changes. At least seven
-complete days must elapse from rc2 `published_at`, and all of the following
-must remain true:
+candidate observation. The existing elapsed_unclosed `rc1` history is
+insufficient for the rc2 changes. At least seven complete days must elapse from
+rc2 `published_at`, and all of the following must remain true:
 
-- the RC record is `completed` with an aware `completed_at`;
+- a forward-only closure record reports `completed` with an aware `completed_at`
+  and passes local evidence/digest verification;
 - frozen facade/schema/corpus/reason inputs have not drifted;
 - the review covering the `rc2` release commit reports zero open P0/P1
   findings;
@@ -262,7 +268,8 @@ must remain true:
 - source truth, changelog, version metadata, and release evidence are aligned.
 
 After the `rc2`-specific
-`python scripts/validate_rc_window.py --require-completed` passes, prepare and
+`python scripts/validate_rc_window.py --require-completed --closure-record
+PATH` passes, prepare and
 review a separate `1.0.0` release commit, rerun every gate, and use the same
 tag-confirmed OIDC workflow with `v1.0.0`.
 

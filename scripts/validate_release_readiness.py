@@ -24,7 +24,7 @@ from scripts.validate_release_train_truth import validate_release_train_truth  #
 
 EXPECTED_VERSION = '1.0.0rc2'
 EXPECTED_RELEASE_LABEL = '1.0.0rc2'
-CURRENT_SOURCE_POSTURE = 'published_active_observation'
+CURRENT_SOURCE_POSTURE = 'published_elapsed_unclosed'
 EXPECTED_SURFACES = [
     'artifact_governance_core',
     'planning_contracts_core',
@@ -116,7 +116,7 @@ def main() -> int:
         'Do not add a `PYPI_API_TOKEN` secret.',
         '`1.0.0rc2` is required before stable promotion',
         'published `1.0.0rc2` release candidate',
-        'observation window is active',
+        'observation window is elapsed_unclosed',
         'Stable promotion remains `publishable=false`',
     ):
         _assert(
