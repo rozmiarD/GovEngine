@@ -41,6 +41,13 @@ from govengine.signing import govengine_record_digest
 
 ROOT = Path(__file__).resolve().parents[1]
 INSPECT_ADMISSION_SCRIPT = ROOT / 'scripts' / 'inspect_runtime_admission.py'
+_EVENT_DIGEST_ONE = 'sha256:' + ('1' * 64)
+_EVENT_DIGEST_TWO = 'sha256:' + ('2' * 64)
+_PREVIOUS_ENTRY_DIGEST = 'sha256:' + ('3' * 64)
+_ENTRY_DIGEST = 'sha256:' + ('4' * 64)
+_PREPARED_DIGEST = 'sha256:' + ('5' * 64)
+_TICKET_DIGEST = 'sha256:' + ('6' * 64)
+_ADMISSION_DIGEST = 'sha256:' + ('7' * 64)
 
 
 def _audit_record_digest(record: GovAuditRecord) -> str:
@@ -251,15 +258,15 @@ def test_audit_ledger_port_contracts_are_shape_only() -> None:
         'sequence': 1,
         'record': record.as_dict(),
         'record_digest': record_digest,
-        'event_digest': 'sha256:event-1',
-        'previous_entry_digest': 'sha256:previous-entry',
+        'event_digest': _EVENT_DIGEST_ONE,
+        'previous_entry_digest': _PREVIOUS_ENTRY_DIGEST,
         'metadata': {'storage': 'host_owned'},
     })
     append = validate_audit_ledger_append_result({
         'status': 'appended',
         'entry_id': entry.entry_id,
         'sequence': entry.sequence,
-        'entry_digest': 'sha256:ledger-entry-1',
+        'entry_digest': _ENTRY_DIGEST,
     })
     verification = validate_audit_ledger_verification_result({
         'status': 'verified',
@@ -280,8 +287,8 @@ def test_audit_ledger_port_contracts_are_shape_only() -> None:
         ) -> AuditLedgerAppendResult:
             assert record.record_id == 'audit-1'
             assert record_digest == _audit_record_digest(record)
-            assert event_digest == 'sha256:event-1'
-            assert previous_entry_digest == 'sha256:previous-entry'
+            assert event_digest == _EVENT_DIGEST_ONE
+            assert previous_entry_digest == _PREVIOUS_ENTRY_DIGEST
             return append
 
         def read(self, *, after_entry_id: str = '', limit: int = 100) -> tuple[AuditLedgerEntry, ...]:
@@ -300,9 +307,9 @@ def test_audit_ledger_port_contracts_are_shape_only() -> None:
     assert ledger.append(
         record,
         record_digest=record_digest,
-        event_digest='sha256:event-1',
-        previous_entry_digest='sha256:previous-entry',
-    ).entry_digest == 'sha256:ledger-entry-1'
+        event_digest=_EVENT_DIGEST_ONE,
+        previous_entry_digest=_PREVIOUS_ENTRY_DIGEST,
+    ).entry_digest == _ENTRY_DIGEST
     assert ledger.read()[0].record_digest == record_digest
     assert ledger.verify(ledger.read()).verified is True
 
@@ -368,7 +375,7 @@ def test_audit_ledger_contracts_reject_unsafe_or_incomplete_boundaries() -> None
             'verified': False,
             'checked_entries': 1,
             'last_entry_id': 'ledger-entry-1',
-            'last_entry_digest': 'sha256:ledger-entry-1',
+            'last_entry_digest': _ENTRY_DIGEST,
         })
 
 
@@ -413,8 +420,8 @@ def test_jsonl_audit_ledger_adapter_appends_reads_and_verifies(tmp_path) -> None
         'decision_ref': 'policy-1',
     })
 
-    first_append = ledger.append(first, record_digest=_audit_record_digest(first), event_digest='sha256:event-1')
-    second_append = ledger.append(second, record_digest=_audit_record_digest(second), event_digest='sha256:event-2')
+    first_append = ledger.append(first, record_digest=_audit_record_digest(first), event_digest=_EVENT_DIGEST_ONE)
+    second_append = ledger.append(second, record_digest=_audit_record_digest(second), event_digest=_EVENT_DIGEST_TWO)
     entries = ledger.read()
     verification = ledger.verify(entries)
 
@@ -630,7 +637,7 @@ def test_audit_public_summaries_hide_records_and_metadata() -> None:
         'verified': True,
         'checked_entries': 1,
         'last_entry_id': 'ledger-entry-1',
-        'last_entry_digest': 'sha256:ledger-entry-1',
+        'last_entry_digest': _ENTRY_DIGEST,
     })
 
     record_summary = audit_record_public_summary(record)
@@ -647,8 +654,18 @@ def test_audit_public_summaries_hide_records_and_metadata() -> None:
     }
     assert 'metadata' not in record_summary
     assert verification_summary['checked_entries'] == 1
-    assert verification_summary['last_entry_digest'] == 'sha256:ledger-entry-1'
+    assert verification_summary['last_entry_digest'] == _ENTRY_DIGEST
     assert 'record' not in verification_summary
+
+
+def test_audit_ledger_contract_rejects_uppercase_digest() -> None:
+    with pytest.raises(GovApiError, match='invalid_audit_ledger_append_digest'):
+        validate_audit_ledger_append_result({
+            'status': 'appended',
+            'entry_id': 'ledger-entry-1',
+            'sequence': 0,
+            'entry_digest': 'sha256:' + ('A' * 64),
+        })
 
 
 def test_runtime_admission_result_rejects_status_allowed_mismatch() -> None:
@@ -709,13 +726,13 @@ def _runtime_admission_inputs(**overrides):
     values = {
         'admission_id': 'runtime-admission-composed-1',
         'subject_ref': 'sha256:prepared-contract',
-        'prepared_execution_contract': {'status': 'prepared', 'digest': 'sha256:contract'},
+        'prepared_execution_contract': {'status': 'prepared', 'digest': _PREPARED_DIGEST},
         'policy_decision': {'decision': 'allow', 'policy_id': 'policy-1'},
-        'execution_ticket': {'status': 'passed', 'ticket_id': 'ticket-1', 'digest': 'sha256:ticket'},
+        'execution_ticket': {'status': 'passed', 'ticket_id': 'ticket-1', 'digest': _TICKET_DIGEST},
         'trust_decision': {'status': 'passed', 'trust_status': 'trusted', 'verifier_id': 'fixture'},
         'runner_profile': {'name': 'dry-run', 'allowed': True, 'live_backend_enabled': False},
         'receipt_obligation': {'required': True, 'binds': ['admission', 'ticket']},
-        'artifact_refs': {'admission_digest': 'sha256:admission'},
+        'artifact_refs': {'admission_digest': _ADMISSION_DIGEST},
     }
     values.update(overrides)
     return values
@@ -732,7 +749,7 @@ def test_compose_runtime_admission_result_allows_complete_dry_run_chain() -> Non
 
 
 def test_normalize_admission_artifact_refs_is_deterministic_and_bounded() -> None:
-    raw_digest = 'A' * 64
+    raw_digest = 'sha256:' + ('a' * 64)
 
     first = normalize_admission_artifact_refs(
         execution_ticket={
@@ -743,12 +760,12 @@ def test_normalize_admission_artifact_refs_is_deterministic_and_bounded() -> Non
         artifact_refs={
             'raw_output': 'full stdout must not be carried',
             'path': 'artifacts/admission.json',
-            'admission_digest': 'SHA256:' + ('B' * 64),
+            'admission_digest': 'sha256:' + ('b' * 64),
         },
     )
     second = normalize_admission_artifact_refs(
         artifact_refs={
-            'admission_digest': 'SHA256:' + ('B' * 64),
+            'admission_digest': 'sha256:' + ('b' * 64),
             'path': 'artifacts/admission.json',
             'raw_output': 'full stdout must not be carried',
         },
@@ -762,7 +779,7 @@ def test_normalize_admission_artifact_refs_is_deterministic_and_bounded() -> Non
     assert first == second
     assert first == {
         'execution_ticket': {
-            'sha256': 'sha256:' + ('a' * 64),
+            'sha256': raw_digest,
             'ticket_id': 'ticket-1',
         },
         'explicit': {
@@ -779,18 +796,35 @@ def test_compose_runtime_admission_result_populates_bounded_artifact_refs() -> N
     result = compose_runtime_admission_result(**_runtime_admission_inputs(
         artifact_refs={
             'raw_output': 'full stdout must not be carried',
-            'admission_digest': 'C' * 64,
+            'admission_digest': 'sha256:' + ('c' * 64),
         },
     ))
 
     assert result.allowed is True
-    assert result.artifact_refs['prepared_execution_contract']['digest'] == 'sha256:contract'
+    assert result.artifact_refs['prepared_execution_contract']['digest'] == _PREPARED_DIGEST
     assert result.artifact_refs['policy_decision']['policy_id'] == 'policy-1'
     assert result.artifact_refs['execution_ticket']['ticket_id'] == 'ticket-1'
-    assert result.artifact_refs['execution_ticket']['digest'] == 'sha256:ticket'
+    assert result.artifact_refs['execution_ticket']['digest'] == _TICKET_DIGEST
     assert result.artifact_refs['trust_decision']['verifier_id'] == 'fixture'
     assert result.artifact_refs['explicit'] == {'admission_digest': 'sha256:' + ('c' * 64)}
     assert 'raw_output' not in repr(result.artifact_refs)
+
+
+@pytest.mark.parametrize(
+    'digest',
+    (
+        'c' * 64,
+        'SHA256:' + ('c' * 64),
+        'sha256:' + ('c' * 63),
+    ),
+)
+def test_normalize_admission_artifact_refs_rejects_noncanonical_digest(
+    digest: str,
+) -> None:
+    with pytest.raises(GovApiError, match='invalid_admission_artifact_digest'):
+        normalize_admission_artifact_refs(
+            artifact_refs={'admission_digest': digest},
+        )
 
 
 def test_compose_runtime_admission_result_allows_guarded_fresh_runtime_bundle() -> None:

@@ -34,16 +34,16 @@ from govengine.signing import (
 
 
 def _descriptor() -> ArtifactDescriptor:
-    return ArtifactDescriptor("execution_ticket", "v0.2", "sha256:ticket")
+    return ArtifactDescriptor("execution_ticket", "v0.2", "sha256:" + ("a" * 64))
 
 
 def _runtime_admission_inputs(**overrides):
     values = {
         "admission_id": "runtime-admission-signing-1",
         "subject_ref": "sha256:prepared-contract",
-        "prepared_execution_contract": {"status": "prepared", "digest": "sha256:contract"},
+        "prepared_execution_contract": {"status": "prepared", "digest": "sha256:" + ("b" * 64)},
         "policy_decision": {"decision": "allow", "policy_id": "policy-1"},
-        "execution_ticket": {"status": "passed", "ticket_id": "ticket-1", "digest": "sha256:ticket"},
+        "execution_ticket": {"status": "passed", "ticket_id": "ticket-1", "digest": "sha256:" + ("c" * 64)},
         "trust_decision": {"status": "passed", "trust_status": "trusted", "verifier_id": "fixture"},
         "runner_profile": {"name": "dry-run", "allowed": True, "live_backend_enabled": False},
         "receipt_obligation": {"required": True, "binds": ["admission", "ticket"]},
@@ -116,7 +116,7 @@ def test_signature_gate_requires_trusted_verification_for_signed_artifact() -> N
         mode="detached_signature",
         signer_id="owner",
         signature="sig",
-        binds_digest="sha256:ticket",
+        binds_digest="sha256:" + ("a" * 64),
     )
     decision = signature_transition_decision(
         _descriptor(),
@@ -133,7 +133,7 @@ def test_signature_gate_allows_trusted_signed_artifact() -> None:
         mode="detached_signature",
         signer_id="owner",
         signature="sig",
-        binds_digest="sha256:ticket",
+        binds_digest="sha256:" + ("a" * 64),
     )
     verification = VerificationResult(status="passed", trust_status="trusted", verifier_id="fixture")
     decision = signature_transition_decision(
@@ -153,7 +153,7 @@ def test_signature_gate_rejects_failed_verification_even_with_trusted_status() -
         mode="detached_signature",
         signer_id="owner",
         signature="sig",
-        binds_digest="sha256:ticket",
+        binds_digest="sha256:" + ("a" * 64),
     )
     verification = VerificationResult(status="failed", trust_status="trusted", verifier_id="fixture")
     decision = signature_transition_decision(
@@ -194,7 +194,7 @@ def test_demo_digest_signer_and_verifier_bind_signature_to_descriptor_digest() -
 
 def test_demo_digest_verifier_rejects_tampered_digest() -> None:
     descriptor = _descriptor()
-    other = ArtifactDescriptor("execution_ticket", "v0.2", "sha256:other")
+    other = ArtifactDescriptor("execution_ticket", "v0.2", "sha256:" + ("d" * 64))
     signing, _verification = demo_sign_and_verify(descriptor, purpose="execution_ticket", signer_id="owner-demo")
 
     verification = DemoDigestVerifier(allowed_signer_ids=("owner-demo",)).verify(other, signing.signature)
@@ -210,7 +210,7 @@ def test_demo_digest_verifier_rejects_unsupported_signature_mode() -> None:
             mode="detached_signature",
             signer_id="owner-demo",
             signature="host-signature",
-            binds_digest="sha256:ticket",
+            binds_digest="sha256:" + ("a" * 64),
         ),
     )
 
@@ -221,7 +221,7 @@ def test_demo_digest_verifier_rejects_unsupported_signature_mode() -> None:
 
 def test_runtime_admission_blocks_digest_mismatch_verification_result() -> None:
     descriptor = _descriptor()
-    other = ArtifactDescriptor("execution_ticket", "v0.2", "sha256:other")
+    other = ArtifactDescriptor("execution_ticket", "v0.2", "sha256:" + ("d" * 64))
     signing, _verification = demo_sign_and_verify(
         descriptor,
         purpose="execution_ticket",
@@ -1065,7 +1065,7 @@ def test_signature_transition_blocks_unknown_signer_trust_decision() -> None:
             mode="detached_signature",
             signer_id="unknown",
             signature="sig",
-            binds_digest="sha256:ticket",
+            binds_digest="sha256:" + ("a" * 64),
         ),
         verification=VerificationResult(status="failed", trust_status="unknown", reason_code="unknown_signer"),
         signing_policy=SigningPolicy(require_signature=True),
@@ -1141,6 +1141,16 @@ def test_signed_artifact_rejects_invalid_digest() -> None:
         SignedArtifact(
             record_type="govengine.admission.RuntimeAdmissionResult",
             record_digest="sha256:not-a-real-digest",
+            payload_ref="artifact://admission/runtime-1",
+            signature=SignatureEnvelope(),
+        )
+
+
+def test_signed_artifact_rejects_uppercase_digest_without_normalizing() -> None:
+    with pytest.raises(GovApiError, match="invalid_signed_record_digest"):
+        SignedArtifact(
+            record_type="govengine.admission.RuntimeAdmissionResult",
+            record_digest="sha256:" + ("A" * 64),
             payload_ref="artifact://admission/runtime-1",
             signature=SignatureEnvelope(),
         )

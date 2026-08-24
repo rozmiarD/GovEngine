@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Protocol
 
 from govengine._json_boundary import bounded_json_copy
+from govengine._governance_validation import require_sha256_digest
 from govengine.api import GovApiError, require_mapping
 
 
@@ -1449,12 +1450,13 @@ def _is_bounded_scalar(value: Any) -> bool:
 
 
 def _normalize_digest_reference(value: str) -> str:
-    item = value.strip()
-    if item.lower().startswith('sha256:'):
-        return 'sha256:' + item.split(':', 1)[1].strip().lower()
-    if len(item) == 64 and all(char in '0123456789abcdefABCDEF' for char in item):
-        return 'sha256:' + item.lower()
-    return item
+    """Accept only the public canonical digest representation.
+
+    Artifact references are evidence bindings. Silently repairing their case
+    or adding a prefix would change the bound value and make malformed
+    producer output indistinguishable from canonical input.
+    """
+    return require_sha256_digest(value, 'invalid_admission_artifact_digest')
 
 
 def _signal_status(payload: Mapping[str, Any], keys: tuple[str, ...]) -> str:
@@ -1708,17 +1710,15 @@ def _reject_forbidden_metadata(value: Mapping[str, Any]) -> None:
 
 
 def _require_digest_ref(value: str, missing_reason: str, invalid_reason: str) -> str:
-    text = str(value or '').strip()
-    if not text:
+    if value is None or value == '':
         raise GovApiError(missing_reason)
-    _validate_optional_digest_ref(text, invalid_reason)
-    return text
+    return require_sha256_digest(value, invalid_reason)
 
 
 def _validate_optional_digest_ref(value: str, invalid_reason: str) -> None:
-    text = str(value or '').strip()
-    if text and not text.startswith('sha256:'):
-        raise GovApiError(invalid_reason)
+    if value in (None, ''):
+        return
+    require_sha256_digest(value, invalid_reason)
 
 
 def _find_forbidden_key(value: Any) -> str:

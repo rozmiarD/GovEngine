@@ -91,6 +91,44 @@ def test_capability_descriptor_digest_mismatch_is_rejected() -> None:
         )
 
 
+@pytest.mark.parametrize(
+    ('path', 'value', 'reason_code'),
+    [
+        ('payload_digest', 'sha256:' + 'A' * 64, 'missing_payload_digest'),
+        ('required_origin_binding_digest', 'sha256:' + 'A' * 64, 'invalid_required_origin_binding_digest'),
+        ('read_only', 'true', 'invalid_typed_execution_read_only'),
+    ],
+)
+def test_typed_execution_rejects_uppercase_digests_and_bool_coercion(
+    path: str, value: object, reason_code: str
+) -> None:
+    with pytest.raises(GovApiError, match=reason_code):
+        explain_typed_execution_governance(_request(**{path: value}))
+
+
+def test_runtime_capability_descriptor_rejects_bool_coercion() -> None:
+    capability = _capability(read_only_backend='false')
+    with pytest.raises(GovApiError, match='invalid_runtime_capability_read_only_backend'):
+        explain_typed_execution_governance(_request(capability_descriptor=capability))
+
+
+@pytest.mark.parametrize(
+    ('path', 'value', 'reason_code'),
+    [
+        ('evidence_requirements', {'receipt_required': 'true'}, 'invalid_typed_execution_evidence_requirements'),
+        ('evidence_requirements', {'output_digest_required': 'false'}, 'invalid_typed_execution_evidence_requirements'),
+        ('evidence_requirements', False, 'invalid_typed_execution_evidence_requirements'),
+        ('allowed_network_egress', ['no_network', 1], 'invalid_typed_execution_allowed_network_egress'),
+        ('required_capability_descriptors', ['connector.fixture.static', True], 'invalid_typed_execution_required_capability_descriptors'),
+    ],
+)
+def test_typed_execution_rejects_nested_bool_and_nonstring_tuple_coercion(
+    path: str, value: object, reason_code: str
+) -> None:
+    with pytest.raises(GovApiError, match=reason_code):
+        explain_typed_execution_governance(_request(**{path: value}))
+
+
 def test_blocked_raw_shell_backend() -> None:
     capability = _capability(
         backend_class='shell',

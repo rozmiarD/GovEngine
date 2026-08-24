@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from string import hexdigits
 from typing import Any, Mapping
 
 from govengine.admission import (
@@ -10,6 +9,12 @@ from govengine.admission import (
     validate_admission_decision,
 )
 from govengine.api import GovApiError, require_mapping
+from govengine._governance_validation import (
+    optional_bool,
+    optional_nonnegative_int,
+    optional_nonnegative_number,
+    require_sha256_digest,
+)
 from govengine.signing import govengine_record_digest
 
 SUPERVISOR_ACTION_REQUEST_SCHEMA_VERSION = 'v0.1'
@@ -95,11 +100,26 @@ class SupervisorActionRequest:
             inbox_item_name=str(raw.get('inbox_item_name') or '').strip(),
             actor_ref=str(raw.get('actor_ref') or '').strip(),
             scope=str(raw.get('scope') or '').strip(),
-            attempt_count=_int(raw.get('attempt_count')),
-            max_attempts=_int(raw.get('max_attempts')),
-            age_seconds=_float(raw.get('age_seconds')),
-            max_age_seconds=_float(raw.get('max_age_seconds')),
-            human_signoff=bool(raw.get('human_signoff', False)),
+            attempt_count=optional_nonnegative_int(
+                raw, 'attempt_count', default=0,
+                reason_code='invalid_supervisor_attempt_limits'
+            ),
+            max_attempts=optional_nonnegative_int(
+                raw, 'max_attempts', default=0,
+                reason_code='invalid_supervisor_attempt_limits'
+            ),
+            age_seconds=optional_nonnegative_number(
+                raw, 'age_seconds', default=0.0,
+                reason_code='invalid_supervisor_age_limits'
+            ),
+            max_age_seconds=optional_nonnegative_number(
+                raw, 'max_age_seconds', default=0.0,
+                reason_code='invalid_supervisor_age_limits'
+            ),
+            human_signoff=optional_bool(
+                raw, 'human_signoff', default=False,
+                reason_code='invalid_supervisor_human_signoff'
+            ),
             schema_version=str(
                 raw.get('schema_version') or SUPERVISOR_ACTION_REQUEST_SCHEMA_VERSION
             ).strip(),
@@ -265,21 +285,4 @@ def _reject_forbidden_supervisor_metadata(value: Mapping[str, Any]) -> None:
 
 
 def _require_digest_ref(value: str, reason_code: str) -> None:
-    text = str(value or '').strip()
-    prefix, separator, digest = text.partition(':')
-    if separator != ':' or prefix != 'sha256' or len(digest) != 64:
-        raise GovApiError(reason_code)
-    if not all(char in hexdigits for char in digest):
-        raise GovApiError(reason_code)
-
-
-def _int(value: Any) -> int:
-    if value in (None, ''):
-        return 0
-    return int(value)
-
-
-def _float(value: Any) -> float:
-    if value in (None, ''):
-        return 0.0
-    return float(value)
+    require_sha256_digest(value, reason_code)

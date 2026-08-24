@@ -2,9 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from hmac import compare_digest
-from string import hexdigits
 from typing import Any, Mapping
 
+from govengine._governance_validation import (
+    optional_bool,
+    optional_sha256_digest,
+    require_sha256_digest,
+)
 from govengine._json_boundary import bounded_json_copy
 from govengine.admission import (
     GovAdmissionDecision,
@@ -485,14 +489,21 @@ def validate_runtime_capability_descriptor(
         backend_class=backend_class,
         identity_class=identity_class,
         egress_class=egress_class,
-        read_only_backend=bool(raw.get('read_only_backend', False)),
+        read_only_backend=optional_bool(
+            raw,
+            'read_only_backend',
+            default=False,
+            reason_code='invalid_runtime_capability_read_only_backend',
+        ),
         live_backend_posture=live_backend_posture,
         network_boundary=dict(network_boundary),
         secret_ref_requirements=_mapping_tuple(
             raw.get('secret_ref_requirements') or ()
         ),
-        declared_capability_descriptors=_string_tuple(
-            raw.get('declared_capability_descriptors') or ()
+        declared_capability_descriptors=_optional_string_tuple(
+            raw,
+            'declared_capability_descriptors',
+            reason_code='invalid_runtime_capability_declared_descriptors',
         ),
         certification_tier=str(raw.get('certification_tier') or '').strip(),
         mode=str(raw.get('mode') or '').strip(),
@@ -551,20 +562,36 @@ def validate_typed_execution_governance_request(
         backend_class=_required_text(raw, 'backend_class'),
         connector=_required_text(raw, 'connector'),
         action=_required_text(raw, 'action'),
-        read_only=bool(raw.get('read_only', False)),
+        read_only=optional_bool(
+            raw,
+            'read_only',
+            default=False,
+            reason_code='invalid_typed_execution_read_only',
+        ),
         side_effect_class=_required_text(raw, 'side_effect_class'),
         capability_descriptor=capability,
         operation_id=str(raw.get('operation_id') or '').strip(),
-        evidence_requirements=require_mapping(
-            raw.get('evidence_requirements') or {},
-            reason_code='invalid_typed_execution_evidence_requirements',
+        evidence_requirements=_evidence_requirements(raw),
+        allowed_network_egress=_optional_string_tuple(
+            raw,
+            'allowed_network_egress',
+            reason_code='invalid_typed_execution_allowed_network_egress',
         ),
-        allowed_network_egress=_string_tuple(raw.get('allowed_network_egress') or ()),
-        allowed_network_schemes=_string_tuple(raw.get('allowed_network_schemes') or ()),
-        allowed_address_classes=_string_tuple(raw.get('allowed_address_classes') or ()),
-        required_origin_binding_digest=str(
-            raw.get('required_origin_binding_digest') or ''
-        ).strip(),
+        allowed_network_schemes=_optional_string_tuple(
+            raw,
+            'allowed_network_schemes',
+            reason_code='invalid_typed_execution_allowed_network_schemes',
+        ),
+        allowed_address_classes=_optional_string_tuple(
+            raw,
+            'allowed_address_classes',
+            reason_code='invalid_typed_execution_allowed_address_classes',
+        ),
+        required_origin_binding_digest=optional_sha256_digest(
+            raw,
+            'required_origin_binding_digest',
+            reason_code='invalid_required_origin_binding_digest',
+        ),
         destination_binding=require_mapping(
             raw.get('destination_binding') or {},
             reason_code='invalid_destination_binding',
@@ -573,11 +600,15 @@ def validate_typed_execution_governance_request(
             raw.get('network_policy_binding'),
             reason_code='invalid_network_policy_binding',
         ),
-        network_policy_binding_digest=str(
-            raw.get('network_policy_binding_digest') or ''
-        ).strip(),
-        required_capability_descriptors=_string_tuple(
-            raw.get('required_capability_descriptors') or ()
+        network_policy_binding_digest=optional_sha256_digest(
+            raw,
+            'network_policy_binding_digest',
+            reason_code='invalid_network_policy_binding_digest',
+        ),
+        required_capability_descriptors=_optional_string_tuple(
+            raw,
+            'required_capability_descriptors',
+            reason_code='invalid_typed_execution_required_capability_descriptors',
         ),
         metadata=_metadata(raw.get('metadata')),
     )
@@ -658,8 +689,11 @@ def validate_typed_execution_stack_compatibility_request(
         schema_version=schema_version,
         request_id=_required_text(raw, 'request_id'),
         backend_descriptors=_mapping_tuple(raw.get('backend_descriptors') or ()),
-        required_controls=_string_tuple(
-            raw.get('required_controls') or BASELINE_TYPED_EXECUTION_CONTROLS
+        required_controls=_optional_string_tuple(
+            raw,
+            'required_controls',
+            default=BASELINE_TYPED_EXECUTION_CONTROLS,
+            reason_code='invalid_typed_execution_required_controls',
         ),
     )
 
@@ -1026,6 +1060,7 @@ def _validate_typed_execution_request_shape(
     ):
         raise GovApiError('capability_descriptor_digest_mismatch')
     _reject_forbidden_typed_execution_metadata(item.metadata)
+    _validate_evidence_requirement_booleans(item.evidence_requirements)
     _reject_forbidden_typed_execution_metadata(item.evidence_requirements)
     _reject_forbidden_typed_execution_metadata(item.network_policy_binding)
     if item.required_origin_binding_digest:
@@ -1361,19 +1396,14 @@ def _required_text(value: Mapping[str, Any], key: str) -> str:
 
 
 def _required_digest(value: Mapping[str, Any], key: str, reason_code: str) -> str:
-    text = str(value.get(key) or '').strip()
-    if not text:
+    text = value.get(key)
+    if text in (None, ''):
         raise GovApiError(reason_code)
-    _require_digest_ref(text, reason_code)
-    return text
+    return require_sha256_digest(text, reason_code)
 
 
 def _require_digest_ref(value: str, reason_code: str) -> None:
-    prefix, separator, digest = value.partition(':')
-    if separator != ':' or prefix != 'sha256' or len(digest) != 64:
-        raise GovApiError(reason_code)
-    if not all(char in hexdigits for char in digest):
-        raise GovApiError(reason_code)
+    require_sha256_digest(value, reason_code)
 
 
 def _metadata(value: Any) -> dict[str, Any]:
@@ -1422,14 +1452,46 @@ def _metadata_string_tuple(value: Any) -> tuple[str, ...]:
     return tuple(str(item).strip() for item in value if str(item).strip())
 
 
-def _string_tuple(values: Any) -> tuple[str, ...]:
-    if isinstance(values, str):
-        text = values.strip()
-        return (text,) if text else ()
-    try:
-        return tuple(str(value).strip() for value in values if str(value).strip())
-    except TypeError as exc:
-        raise GovApiError('invalid_typed_execution_governance_sequence') from exc
+def _optional_string_tuple(
+    value: Mapping[str, Any],
+    key: str,
+    *,
+    default: tuple[str, ...] = (),
+    reason_code: str,
+) -> tuple[str, ...]:
+    if key not in value or value[key] is None:
+        return default
+    return _string_tuple(value[key], reason_code=reason_code)
+
+
+def _string_tuple(values: Any, *, reason_code: str) -> tuple[str, ...]:
+    if not isinstance(values, (list, tuple)):
+        raise GovApiError(reason_code)
+    result: list[str] = []
+    for value in values:
+        if not isinstance(value, str) or not value.strip():
+            raise GovApiError(reason_code)
+        result.append(value.strip())
+    if len(result) != len(set(result)):
+        raise GovApiError(reason_code)
+    return tuple(result)
+
+
+def _evidence_requirements(value: Mapping[str, Any]) -> Mapping[str, Any]:
+    if 'evidence_requirements' not in value or value['evidence_requirements'] is None:
+        return {}
+    raw = require_mapping(
+        value['evidence_requirements'],
+        reason_code='invalid_typed_execution_evidence_requirements',
+    )
+    _validate_evidence_requirement_booleans(raw)
+    return raw
+
+
+def _validate_evidence_requirement_booleans(value: Mapping[str, Any]) -> None:
+    for key in ('receipt_required', 'output_digest_required'):
+        if key in value and not isinstance(value[key], bool):
+            raise GovApiError('invalid_typed_execution_evidence_requirements')
 
 
 def _mapping_tuple(values: Any) -> tuple[dict[str, Any], ...]:

@@ -5,9 +5,9 @@ from dataclasses import asdict, dataclass, field, is_dataclass
 from hashlib import sha256
 from hmac import compare_digest
 from math import isfinite
-from string import hexdigits
 from typing import Any, Mapping, Protocol
 
+from govengine._governance_validation import require_sha256_digest
 from govengine._json_boundary import bounded_json_copy
 from govengine._trust_references import (
     select_validated_opaque_trust_reference,
@@ -334,7 +334,11 @@ class SignedArtifact:
             raise GovApiError("missing_signed_record_signature")
         if not signature.signer_id:
             raise GovApiError("missing_signed_record_signer")
-        if not compare_digest(signature.binds_digest, record_digest):
+        binds_digest = require_sha256_digest(
+            signature.binds_digest,
+            "invalid_signed_record_binding_digest",
+        )
+        if not compare_digest(binds_digest, record_digest):
             raise GovApiError("signed_record_digest_mismatch")
         metadata = self.metadata if isinstance(self.metadata, Mapping) else {}
         object.__setattr__(self, "record_type", record_type)
@@ -458,12 +462,7 @@ def _validate_govengine_record_type(record_type: str) -> str:
 
 
 def _validate_govengine_record_digest(record_digest: str) -> str:
-    digest = str(record_digest or "").strip().lower()
-    prefix = "sha256:"
-    value = digest.removeprefix(prefix)
-    if not digest.startswith(prefix) or len(value) != 64 or any(char not in hexdigits for char in value):
-        raise GovApiError("invalid_signed_record_digest")
-    return digest
+    return require_sha256_digest(record_digest, "invalid_signed_record_digest")
 
 
 def _bounded_trust_metadata(value: Mapping[str, Any] | None) -> dict[str, Any]:

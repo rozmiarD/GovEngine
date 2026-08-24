@@ -79,6 +79,14 @@ def test_trigger_planning_rejects_mutating_operation_mode() -> None:
         validate_trigger_planning_request(_request(operation_mode="apply"))
 
 
+@pytest.mark.parametrize('field', ('event_ref', 'rule_set_digest', 'rule_digest'))
+def test_trigger_planning_rejects_uppercase_digest(field: str) -> None:
+    request = _request(**{field: 'sha256:' + 'A' * 64})
+
+    with pytest.raises(GovApiError, match='invalid_trigger_planning'):
+        validate_trigger_planning_request(request)
+
+
 def test_trigger_planning_requires_rule_digest_for_plan_operation() -> None:
     with pytest.raises(GovApiError, match="trigger_planning_missing_rule_binding"):
         validate_trigger_planning_request(_request(rule_digest=""))

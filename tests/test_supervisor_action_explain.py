@@ -3,7 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from govengine import explain_supervisor_action
+import pytest
+
+from govengine import GovApiError, explain_supervisor_action
+from govengine.supervisor_actions import SupervisorActionRequest
 
 
 def _digest(char: str) -> str:
@@ -100,3 +103,21 @@ def test_explain_supervisor_action_for_signed_manual_record() -> None:
     assert explanation['recovery_class'] == 'manual_record'
     assert explanation['evaluation_path'] == 'signed_manual_recovery'
     assert explanation['gates_checked'][0]['gate'] == 'human_signoff'
+
+
+@pytest.mark.parametrize(
+    ('field', 'value', 'reason_code'),
+    [
+        ('watchdog_record_ref', 'sha256:' + 'A' * 64, 'invalid_supervisor_watchdog_record_ref'),
+        ('attempt_count', '1', 'invalid_supervisor_attempt_limits'),
+        ('max_attempts', True, 'invalid_supervisor_attempt_limits'),
+        ('age_seconds', float('nan'), 'invalid_supervisor_age_limits'),
+        ('max_age_seconds', 10**1000, 'invalid_supervisor_age_limits'),
+        ('human_signoff', 'false', 'invalid_supervisor_human_signoff'),
+    ],
+)
+def test_supervisor_action_rejects_coercions_with_typed_errors(
+    field: str, value: object, reason_code: str
+) -> None:
+    with pytest.raises(GovApiError, match=reason_code):
+        SupervisorActionRequest.from_mapping(_request(**{field: value}))

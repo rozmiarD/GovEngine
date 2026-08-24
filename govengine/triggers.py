@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from string import hexdigits
 from typing import Any, Mapping
 
 from govengine.admission import (
@@ -10,6 +9,7 @@ from govengine.admission import (
     validate_admission_decision,
 )
 from govengine.api import GovApiError, require_mapping
+from govengine._governance_validation import require_sha256_digest
 from govengine.signing import govengine_record_digest
 
 TRIGGER_PLANNING_REQUEST_SCHEMA_VERSION = "v0.1"
@@ -221,9 +221,4 @@ def _reject_forbidden_trigger_metadata(value: Mapping[str, Any]) -> None:
 
 
 def _require_digest_ref(value: str, reason_code: str) -> None:
-    text = str(value or "").strip()
-    prefix, separator, digest = text.partition(":")
-    if separator != ":" or prefix != "sha256" or len(digest) != 64:
-        raise GovApiError(reason_code)
-    if not all(char in hexdigits for char in digest):
-        raise GovApiError(reason_code)
+    require_sha256_digest(value, reason_code)

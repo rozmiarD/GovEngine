@@ -2,9 +2,20 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from math import isfinite
-from string import hexdigits
 from typing import Any, Mapping
 
+from govengine._governance_validation import (
+    optional_bool,
+    optional_nonnegative_int,
+    optional_nonnegative_number,
+    optional_text_tuple,
+    require_sha256_digest,
+    required_nonnegative_int,
+    required_nonnegative_number,
+    required_text,
+    schema_version,
+    text_tuple,
+)
 from govengine.api import GovApiError, require_mapping
 from govengine.admission import (
     GovAdmissionDecision,
@@ -58,22 +69,79 @@ class RuntimeControlProjection:
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any] | None) -> RuntimeControlProjection:
-        raw = require_mapping(value or {}, reason_code="invalid_runtime_control_projection")
+        raw = require_mapping(
+            {} if value is None else value,
+            reason_code="invalid_runtime_control_projection",
+        )
         item = cls(
-            timeout_seconds=float(raw.get("timeout_seconds") or 0.0),
-            max_steps=int(raw.get("max_steps") or 0),
-            max_output_bytes=int(raw.get("max_output_bytes") or 0),
-            receipt_required=bool(raw.get("receipt_required", True)),
-            output_digest_required=bool(raw.get("output_digest_required", False)),
-            read_only_required=bool(raw.get("read_only_required", False)),
-            no_raw_shell=bool(raw.get("no_raw_shell", False)),
-            mutation_requires_approval=bool(raw.get("mutation_requires_approval", False)),
-            allowed_network_egress=_string_tuple(raw.get("allowed_network_egress") or ()),
-            allowed_backend_classes=_string_tuple(raw.get("allowed_backend_classes") or ()),
-            typed_execution_control_ids=_string_tuple(
-                raw.get("typed_execution_control_ids") or ()
+            timeout_seconds=optional_nonnegative_number(
+                raw,
+                "timeout_seconds",
+                default=0.0,
+                reason_code="invalid_runtime_control_timeout",
             ),
-            control_ids=_string_tuple(raw.get("control_ids") or ()),
+            max_steps=optional_nonnegative_int(
+                raw,
+                "max_steps",
+                default=0,
+                reason_code="invalid_runtime_control_max_steps",
+            ),
+            max_output_bytes=optional_nonnegative_int(
+                raw,
+                "max_output_bytes",
+                default=0,
+                reason_code="invalid_runtime_control_output_limit",
+            ),
+            receipt_required=optional_bool(
+                raw,
+                "receipt_required",
+                default=True,
+                reason_code="invalid_runtime_control_receipt_required",
+            ),
+            output_digest_required=optional_bool(
+                raw,
+                "output_digest_required",
+                default=False,
+                reason_code="invalid_runtime_control_output_digest_required",
+            ),
+            read_only_required=optional_bool(
+                raw,
+                "read_only_required",
+                default=False,
+                reason_code="invalid_runtime_control_read_only_required",
+            ),
+            no_raw_shell=optional_bool(
+                raw,
+                "no_raw_shell",
+                default=False,
+                reason_code="invalid_runtime_control_no_raw_shell",
+            ),
+            mutation_requires_approval=optional_bool(
+                raw,
+                "mutation_requires_approval",
+                default=False,
+                reason_code="invalid_runtime_control_mutation_requires_approval",
+            ),
+            allowed_network_egress=optional_text_tuple(
+                raw,
+                "allowed_network_egress",
+                reason_code="invalid_runtime_control_allowed_network_egress",
+            ),
+            allowed_backend_classes=optional_text_tuple(
+                raw,
+                "allowed_backend_classes",
+                reason_code="invalid_runtime_control_allowed_backend_classes",
+            ),
+            typed_execution_control_ids=optional_text_tuple(
+                raw,
+                "typed_execution_control_ids",
+                reason_code="invalid_runtime_control_typed_execution_control_ids",
+            ),
+            control_ids=optional_text_tuple(
+                raw,
+                "control_ids",
+                reason_code="invalid_runtime_control_ids",
+            ),
         )
         _validate_projection(item)
         return item
@@ -113,21 +181,59 @@ class PolicyEnforcementPlan:
     def from_mapping(cls, value: Mapping[str, Any]) -> PolicyEnforcementPlan:
         raw = require_mapping(value, reason_code="invalid_policy_enforcement_plan")
         controls = raw.get("controls")
+        if controls is not None and not isinstance(controls, Mapping):
+            raise GovApiError("invalid_runtime_control_projection")
         item = cls(
-            plan_id=str(raw.get("plan_id") or "").strip(),
-            subject_ref=str(raw.get("subject_ref") or "").strip(),
-            policy_pack_id=str(raw.get("policy_pack_id") or "").strip(),
-            policy_pack_version=str(raw.get("policy_pack_version") or "").strip(),
-            policy_pack_digest=str(raw.get("policy_pack_digest") or "").strip(),
-            verdict_id=str(raw.get("verdict_id") or "").strip(),
-            verdict_digest=str(raw.get("verdict_digest") or "").strip(),
-            status=str(raw.get("status") or "").strip(),
-            reason_code=str(raw.get("reason_code") or "").strip(),
-            schema_version=str(raw.get("schema_version") or "").strip(),
-            controls=RuntimeControlProjection.from_mapping(
-                controls if isinstance(controls, Mapping) else {}
+            plan_id=required_text(raw, "plan_id", "missing_policy_enforcement_plan_plan_id"),
+            subject_ref=required_text(
+                raw,
+                "subject_ref",
+                "missing_policy_enforcement_plan_subject_ref",
             ),
-            blockers=_string_tuple(raw.get("blockers") or ()),
+            policy_pack_id=required_text(
+                raw,
+                "policy_pack_id",
+                "missing_policy_enforcement_plan_policy_pack_id",
+            ),
+            policy_pack_version=required_text(
+                raw,
+                "policy_pack_version",
+                "missing_policy_enforcement_plan_policy_pack_version",
+            ),
+            policy_pack_digest=require_sha256_digest(
+                required_text(
+                    raw,
+                    "policy_pack_digest",
+                    "missing_policy_enforcement_plan_policy_pack_digest",
+                ),
+                "invalid_policy_enforcement_plan_digest",
+            ),
+            verdict_id=required_text(raw, "verdict_id", "missing_policy_enforcement_plan_verdict_id"),
+            verdict_digest=require_sha256_digest(
+                required_text(
+                    raw,
+                    "verdict_digest",
+                    "missing_policy_enforcement_plan_verdict_digest",
+                ),
+                "invalid_policy_enforcement_plan_digest",
+            ),
+            status=required_text(raw, "status", "unknown_policy_enforcement_plan_status"),
+            reason_code=required_text(
+                raw,
+                "reason_code",
+                "missing_policy_enforcement_plan_reason_code",
+            ),
+            schema_version=schema_version(
+                raw,
+                default=POLICY_ENFORCEMENT_PLAN_SCHEMA_VERSION,
+                reason_code="unknown_policy_enforcement_plan_schema",
+            ),
+            controls=RuntimeControlProjection.from_mapping(controls),
+            blockers=optional_text_tuple(
+                raw,
+                "blockers",
+                reason_code="invalid_policy_enforcement_plan_blockers",
+            ),
         )
         _validate_plan_shape(item)
         return item
@@ -392,12 +498,47 @@ def validate_policy_enforcement_admission(
 
 
 def _validate_projection(item: RuntimeControlProjection) -> None:
-    if not isfinite(item.timeout_seconds) or item.timeout_seconds < 0:
+    if (
+        isinstance(item.timeout_seconds, bool)
+        or not isinstance(item.timeout_seconds, (int, float))
+        or not isfinite(item.timeout_seconds)
+        or item.timeout_seconds < 0
+    ):
         raise GovApiError("invalid_runtime_control_timeout")
-    if item.max_steps < 0:
+    if (
+        isinstance(item.max_steps, bool)
+        or not isinstance(item.max_steps, int)
+        or item.max_steps < 0
+    ):
         raise GovApiError("invalid_runtime_control_max_steps")
-    if item.max_output_bytes < 0:
+    if (
+        isinstance(item.max_output_bytes, bool)
+        or not isinstance(item.max_output_bytes, int)
+        or item.max_output_bytes < 0
+    ):
         raise GovApiError("invalid_runtime_control_output_limit")
+    if not isinstance(item.receipt_required, bool):
+        raise GovApiError("invalid_runtime_control_receipt_required")
+    if not all(
+        isinstance(value, bool)
+        for value in (
+            item.output_digest_required,
+            item.read_only_required,
+            item.no_raw_shell,
+            item.mutation_requires_approval,
+        )
+    ):
+        raise GovApiError("invalid_runtime_control_boolean")
+    for values, reason_code in (
+        (item.allowed_network_egress, "invalid_runtime_control_allowed_network_egress"),
+        (item.allowed_backend_classes, "invalid_runtime_control_allowed_backend_classes"),
+        (
+            item.typed_execution_control_ids,
+            "invalid_runtime_control_typed_execution_control_ids",
+        ),
+        (item.control_ids, "invalid_runtime_control_ids"),
+    ):
+        text_tuple(values, reason_code)
     if not item.receipt_required:
         raise GovApiError("runtime_receipt_required")
 
@@ -424,54 +565,33 @@ def _validate_plan_shape(item: PolicyEnforcementPlan) -> None:
     if item.status == "blocked" and not item.blockers:
         raise GovApiError("blocked_policy_enforcement_plan_without_blockers")
     for digest in (item.policy_pack_digest, item.verdict_digest):
-        if not _is_sha256_reference(digest):
-            raise GovApiError("invalid_policy_enforcement_plan_digest")
+        require_sha256_digest(digest, "invalid_policy_enforcement_plan_digest")
 
 
 def _minimum_positive_float(current: float, value: Any) -> float:
-    try:
-        candidate = float(value)
-    except (TypeError, ValueError) as exc:
-        raise GovApiError("invalid_policy_constraint:timeout") from exc
-    if not isfinite(candidate) or candidate <= 0:
+    candidate = required_nonnegative_number(
+        {"value": value},
+        "value",
+        "invalid_policy_constraint:timeout",
+    )
+    if candidate <= 0:
         raise GovApiError("invalid_policy_constraint:timeout")
     return candidate if current <= 0 else min(current, candidate)
 
 
 def _minimum_positive_int(current: int, value: Any, kind: str) -> int:
-    if isinstance(value, bool):
-        raise GovApiError(f"invalid_policy_constraint:{kind}")
-    try:
-        candidate = int(value)
-    except (TypeError, ValueError) as exc:
-        raise GovApiError(f"invalid_policy_constraint:{kind}") from exc
-    if candidate <= 0 or candidate != value:
+    candidate = required_nonnegative_int(
+        {"value": value},
+        "value",
+        f"invalid_policy_constraint:{kind}",
+    )
+    if candidate <= 0:
         raise GovApiError(f"invalid_policy_constraint:{kind}")
     return candidate if current <= 0 else min(current, candidate)
 
 
 def _string_list(value: Any, kind: str) -> list[str]:
-    if not isinstance(value, (list, tuple, set)):
-        raise GovApiError(f"invalid_policy_constraint:{kind}")
-    items = [str(item).strip() for item in value if str(item).strip()]
+    items = list(text_tuple(value, f"invalid_policy_constraint:{kind}"))
     if not items:
         raise GovApiError(f"invalid_policy_constraint:{kind}")
     return items
-
-
-def _string_tuple(value: Any) -> tuple[str, ...]:
-    if isinstance(value, (str, bytes)):
-        return (str(value),) if str(value) else ()
-    if not isinstance(value, (list, tuple, set)):
-        return ()
-    return tuple(str(item).strip() for item in value if str(item).strip())
-
-
-def _is_sha256_reference(value: str) -> bool:
-    prefix, separator, digest = value.partition(":")
-    return (
-        separator == ":"
-        and prefix == "sha256"
-        and len(digest) == 64
-        and all(char in hexdigits for char in digest)
-    )

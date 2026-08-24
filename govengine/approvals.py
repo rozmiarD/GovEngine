@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, Mapping, Protocol
 from govengine._governance_validation import (
     optional_text,
     parse_aware_timestamp,
+    require_ascii_identifier,
     require_sha256_digest,
     reject_unknown_fields,
     required_nonnegative_int,
@@ -430,6 +431,8 @@ def _validate_request_binding(
         ),
     )
     for actual, expected, reason_code in bindings:
+        require_ascii_identifier(actual, 'invalid_approval_binding_identifier')
+        require_ascii_identifier(expected, 'invalid_governance_binding_identifier')
         if not compare_digest(actual, expected):
             raise GovApiError(reason_code)
     if attestation.policy_epoch != request.policy_epoch:

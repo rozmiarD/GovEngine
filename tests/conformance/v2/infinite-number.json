@@ -1,0 +1,11 @@
+{
+  "binding_digests": "not_applicable",
+  "case_id": "infinite-number",
+  "expected": {"govengine": {"reason_code": "json_boundary_non_finite_number", "status": "rejected"}, "rexecop": {"reason_code": "json_boundary_non_finite_number", "status": "rejected"}},
+  "forbidden_output_keys": ["credential", "password", "raw_output", "raw_target", "secret", "target_url", "token"],
+  "input": {"source": "{\"value\": Infinity}"},
+  "max_schema_version": "v1",
+  "operation": "parse_json",
+  "owner": "govengine",
+  "schema_version": "govengine.conformance_case.v1"
+}

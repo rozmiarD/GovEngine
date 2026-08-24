@@ -6,6 +6,12 @@ import importlib.resources
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
+from govengine._governance_validation import (
+    require_ascii_identifier,
+    require_sha256_digest,
+    required_nonnegative_int,
+    required_nonnegative_number,
+)
 from govengine._json_boundary import load_bounded_json
 from govengine.api import GovApiError, require_mapping
 from govengine.approvals import (
@@ -252,6 +258,27 @@ def _run_operation(operation: str, payload: Mapping[str, Any]) -> ConformanceOut
             raise GovApiError('invalid_conformance_json_source')
         load_bounded_json(source, max_bytes=64_000)
         return ConformanceOutcome('accepted', 'json_valid')
+    if operation == 'validate_governance_boundary':
+        kind = payload.get('kind')
+        if kind == 'ascii_identifier':
+            require_ascii_identifier(
+                payload.get('value'), 'invalid_governance_identifier'
+            )
+        elif kind == 'nonnegative_int':
+            required_nonnegative_int(
+                payload, 'value', 'invalid_governance_integer'
+            )
+        elif kind == 'nonnegative_number':
+            required_nonnegative_number(
+                payload, 'value', 'invalid_governance_number'
+            )
+        elif kind == 'sha256_digest':
+            require_sha256_digest(
+                payload.get('value'), 'invalid_governance_digest'
+            )
+        else:
+            raise GovApiError('invalid_governance_boundary_kind')
+        return ConformanceOutcome('accepted', 'governance_boundary_valid')
     if operation == 'compile_policy':
         result = PolicyCompiler().compile(
             require_mapping(payload.get('policy_pack'), reason_code='invalid_policy_pack')

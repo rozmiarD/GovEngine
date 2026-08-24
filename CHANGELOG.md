@@ -8,6 +8,10 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Tightens GovEngine governance-boundary parsing: runtime controls reject
+  coercions and non-finite values, approval bindings reject non-ASCII
+  identifiers before constant-time comparison, and GovEngine digest references
+  require exact lowercase `sha256:<64 hex>` values without normalization.
 - Hardens the local `record_guard_replay_file()` fixture: invalid JSON or an
   invalid store shape now produces a typed blocked decision and leaves the
   existing file unchanged. It remains a non-production helper; production

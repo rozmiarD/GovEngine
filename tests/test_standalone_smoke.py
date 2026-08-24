@@ -89,8 +89,14 @@ def test_runtime_admission_public_surface_smoke() -> None:
     from govengine import RuntimeAdmissionResult, normalize_admission_artifact_refs
 
     refs = normalize_admission_artifact_refs(
-        execution_ticket={'ticket_id': 'ticket-1', 'sha256': 'A' * 64},
-        artifact_refs={'raw_output': 'must stay out', 'admission_digest': 'B' * 64},
+        execution_ticket={
+            'ticket_id': 'ticket-1',
+            'sha256': 'sha256:' + ('a' * 64),
+        },
+        artifact_refs={
+            'raw_output': 'must stay out',
+            'admission_digest': 'sha256:' + ('b' * 64),
+        },
     )
     result = RuntimeAdmissionResult(
         admission_id='admission-1',

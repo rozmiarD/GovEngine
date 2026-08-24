@@ -19,6 +19,7 @@ from govengine import (
     validate_policy_enforcement_admission,
     validate_policy_enforcement_plan,
 )
+from govengine.policy.enforcement import RuntimeControlProjection
 from govengine.signing import govengine_record_digest
 
 
@@ -212,6 +213,56 @@ def test_policy_enforcement_plan_uses_least_numeric_limit() -> None:
 
     assert plan.allowed
     assert plan.controls.max_output_bytes == 1024
+
+
+@pytest.mark.parametrize(
+    ('payload', 'reason_code'),
+    [
+        ({'timeout_seconds': '7'}, 'invalid_runtime_control_timeout'),
+        ({'timeout_seconds': float('nan')}, 'invalid_runtime_control_timeout'),
+        ({'timeout_seconds': float('inf')}, 'invalid_runtime_control_timeout'),
+        ({'max_steps': True}, 'invalid_runtime_control_max_steps'),
+        ({'max_steps': '7'}, 'invalid_runtime_control_max_steps'),
+        ({'max_output_bytes': '4096'}, 'invalid_runtime_control_output_limit'),
+        ({'receipt_required': 'false'}, 'invalid_runtime_control_receipt_required'),
+        (
+            {'allowed_network_egress': ['no_network', 7]},
+            'invalid_runtime_control_allowed_network_egress',
+        ),
+    ],
+)
+def test_runtime_control_projection_rejects_coercions_with_typed_reason_codes(
+    payload: dict[str, object],
+    reason_code: str,
+) -> None:
+    with pytest.raises(GovApiError, match=reason_code):
+        RuntimeControlProjection.from_mapping(payload)
+
+
+def test_policy_constraint_rejects_numeric_string_without_coercion() -> None:
+    pack, verdict = _evaluate(
+        constraints=[
+            {'constraint_id': 'timeout', 'kind': 'timeout', 'value': '7'},
+        ]
+    )
+
+    plan = admit_policy_execution(pack, verdict)
+
+    assert plan.allowed is False
+    assert plan.reason_code == 'invalid_policy_constraint'
+
+
+def test_policy_enforcement_plan_rejects_uppercase_digest() -> None:
+    pack, verdict = _evaluate()
+    plan = admit_policy_execution(pack, verdict)
+
+    with pytest.raises(GovApiError, match='invalid_policy_enforcement_plan_digest'):
+        type(plan).from_mapping(
+            {
+                **plan.as_dict(),
+                'verdict_digest': 'sha256:' + 'A' * 64,
+            }
+        )
 
 
 def test_unsupported_control_is_a_fail_closed_admission() -> None:

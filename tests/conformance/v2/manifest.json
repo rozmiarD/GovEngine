@@ -1,0 +1,18 @@
+{
+  "case_count": 5,
+  "cases": [
+    "non-ascii-binding.json",
+    "bool-as-int.json",
+    "numeric-string.json",
+    "infinite-number.json",
+    "uppercase-digest.json"
+  ],
+  "corpus_version": "v2-additive",
+  "non_claims": [
+    "This test-only additive corpus does not alter the wheel-shipped v1 corpus or its RC evidence.",
+    "Corpus success does not prove a non-Python implementation exists.",
+    "RExecOp remains the reference runtime consumer."
+  ],
+  "runners": ["govengine", "rexecop"],
+  "schema_version": "govengine.conformance_manifest.v1"
+}

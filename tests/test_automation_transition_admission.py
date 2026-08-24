@@ -78,6 +78,24 @@ def test_automation_transition_denies_llm_authority() -> None:
     assert admission.metadata['execution_authority'] is False
 
 
+@pytest.mark.parametrize(
+    ('field', 'value', 'reason_code'),
+    [
+        ('parent_operation_ref', 'sha256:' + 'A' * 64, 'invalid_automation_parent_operation_ref'),
+        ('depth', '1', 'invalid_automation_transition_depth'),
+        ('max_depth', True, 'invalid_automation_transition_depth'),
+        ('child_sequence', '1', 'invalid_automation_transition_child_limits'),
+        ('llm_proposed', 'false', 'invalid_automation_llm_proposed'),
+        ('allowed_child_intent_classes', ['readonly_followup', 1], 'invalid_automation_allowed_child_intent_classes'),
+    ],
+)
+def test_automation_transition_rejects_coercions_with_typed_errors(
+    field: str, value: object, reason_code: str
+) -> None:
+    with pytest.raises(GovApiError, match=reason_code):
+        AutomationTransitionRequest.from_mapping(_request(**{field: value}))
+
+
 def test_automation_transition_defers_llm_proposal_without_approval() -> None:
     request = AutomationTransitionRequest.from_mapping(
         _request(source='llm_proposal', llm_proposed=True)

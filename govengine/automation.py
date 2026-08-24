@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from string import hexdigits
 from typing import Any, Mapping
 
 from govengine.admission import (
@@ -10,6 +9,12 @@ from govengine.admission import (
     validate_admission_decision,
 )
 from govengine.api import GovApiError, require_mapping
+from govengine._governance_validation import (
+    optional_bool,
+    optional_nonnegative_int,
+    optional_text_tuple,
+    require_sha256_digest,
+)
 from govengine.signing import govengine_record_digest
 
 AUTOMATION_TRANSITION_REQUEST_SCHEMA_VERSION = 'v0.1'
@@ -108,20 +113,37 @@ class AutomationTransitionRequest:
                 raw.get('automation_chain_ref') or raw.get('automation_chain_digest') or ''
             ).strip(),
             source=str(raw.get('source') or '').strip(),
-            depth=_int(raw.get('depth')),
-            max_depth=_int(raw.get('max_depth')),
-            child_sequence=_int(raw.get('child_sequence')),
-            max_children=_int(raw.get('max_children')),
-            allowed_child_intent_classes=_text_tuple(
-                raw.get('allowed_child_intent_classes')
+            depth=optional_nonnegative_int(
+                raw, 'depth', default=0, reason_code='invalid_automation_transition_depth'
+            ),
+            max_depth=optional_nonnegative_int(
+                raw, 'max_depth', default=0, reason_code='invalid_automation_transition_depth'
+            ),
+            child_sequence=optional_nonnegative_int(
+                raw, 'child_sequence', default=0,
+                reason_code='invalid_automation_transition_child_limits'
+            ),
+            max_children=optional_nonnegative_int(
+                raw, 'max_children', default=0,
+                reason_code='invalid_automation_transition_child_limits'
+            ),
+            allowed_child_intent_classes=optional_text_tuple(
+                raw, 'allowed_child_intent_classes',
+                reason_code='invalid_automation_allowed_child_intent_classes'
             ),
             automation_chain_schema_ref=str(
                 raw.get('automation_chain_schema_ref') or SUPPORTED_AUTOMATION_CHAIN_SCHEMA_REF
             ).strip(),
             trigger_ref=str(raw.get('trigger_ref') or '').strip(),
             approval_ref=str(raw.get('approval_ref') or '').strip(),
-            llm_proposed=bool(raw.get('llm_proposed', False)),
-            llm_authority=bool(raw.get('llm_authority', False)),
+            llm_proposed=optional_bool(
+                raw, 'llm_proposed', default=False,
+                reason_code='invalid_automation_llm_proposed'
+            ),
+            llm_authority=optional_bool(
+                raw, 'llm_authority', default=False,
+                reason_code='invalid_automation_llm_authority'
+            ),
             schema_version=str(
                 raw.get('schema_version') or AUTOMATION_TRANSITION_REQUEST_SCHEMA_VERSION
             ).strip(),
@@ -298,21 +320,4 @@ def _reject_forbidden_automation_metadata(value: Mapping[str, Any]) -> None:
 
 
 def _require_digest_ref(value: str, reason_code: str) -> None:
-    text = str(value or '').strip()
-    prefix, separator, digest = text.partition(':')
-    if separator != ':' or prefix != 'sha256' or len(digest) != 64:
-        raise GovApiError(reason_code)
-    if not all(char in hexdigits for char in digest):
-        raise GovApiError(reason_code)
-
-
-def _int(value: Any) -> int:
-    if value in (None, ''):
-        return 0
-    return int(value)
-
-
-def _text_tuple(value: Any) -> tuple[str, ...]:
-    if not isinstance(value, (list, tuple)):
-        return ()
-    return tuple(str(item).strip() for item in value if str(item or '').strip())
+    require_sha256_digest(value, reason_code)

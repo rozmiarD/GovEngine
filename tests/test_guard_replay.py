@@ -53,12 +53,15 @@ def _runtime_admission_inputs(**overrides):
     values = {
         "admission_id": "runtime-admission-guard-1",
         "subject_ref": "sha256:prepared-contract",
-        "prepared_execution_contract": {"status": "prepared", "digest": "sha256:contract"},
+        "prepared_execution_contract": {
+            "status": "prepared",
+            "digest": "sha256:" + ("a" * 64),
+        },
         "policy_decision": {"decision": "allow", "policy_id": "policy-1"},
         "execution_ticket": {
             "status": "passed",
             "ticket_id": "ticket-1",
-            "digest": "sha256:ticket",
+            "digest": "sha256:" + ("b" * 64),
         },
         "trust_decision": {
             "status": "passed",
@@ -329,7 +332,7 @@ def _install_fake_sclite_secure(monkeypatch: pytest.MonkeyPatch) -> list[dict[st
         return {
             "status": "passed",
             "secure_profile": "guarded-strict",
-            "root_chain_digest": "root-digest-1",
+            "root_chain_digest": "sha256:" + ("d" * 64),
             "guard_root_tag": json.loads(Path(guard_path).read_text(encoding="utf-8"))["root_tag"],
             "chain_id": "chain-1",
             "key_id": "key-20260525",
@@ -517,7 +520,7 @@ def test_guarded_fresh_runtime_admission_example_composes_allowed_dry_run(
     assert admission.sclite_guarded_strict["guard_root_tag"] == "tag-1"
     assert admission.artifact_refs["sclite_guarded_strict"]["root_chain_digest"] == guarded.root_chain_digest
     assert admission.artifact_refs["execution_ticket"]["ticket_id"] == "ticket-1"
-    assert admission.artifact_refs["execution_ticket"]["digest"] == "sha256:ticket"
+    assert admission.artifact_refs["execution_ticket"]["digest"] == "sha256:" + ("b" * 64)
 
 
 @pytest.mark.parametrize(

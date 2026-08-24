@@ -381,6 +381,15 @@ def test_governance_request_rejects_invalid_approval_subject_binding() -> None:
         GovernanceRequest.from_mapping(request)
 
 
+def test_approval_binding_rejects_non_ascii_identifier_with_typed_error() -> None:
+    request = _request_mapping_with_approval(
+        attestation_patch={'operation_id': 'operacja-ż'}
+    )
+
+    with pytest.raises(GovApiError, match='invalid_approval_binding_identifier'):
+        GovernanceRequest.from_mapping(request)
+
+
 @pytest.mark.parametrize(
     'schema_version',
     ['v0.1', 'v1'],
@@ -882,6 +891,24 @@ def test_direct_governance_request_instances_still_receive_full_validation(
 
 
 @pytest.mark.parametrize(
+    ('field', 'reason_code'),
+    [
+        ('execution_spec_digest', 'invalid_governance_execution_spec_digest'),
+        ('fencing_token_digest', 'invalid_governance_fencing_token_digest'),
+    ],
+)
+def test_governance_request_rejects_uppercase_sha256_digest(
+    field: str,
+    reason_code: str,
+) -> None:
+    request = _base_request_mapping()
+    request[field] = 'sha256:' + 'A' * 64
+
+    with pytest.raises(GovApiError, match=reason_code):
+        GovernanceRequest.from_mapping(request)
+
+
+@pytest.mark.parametrize(
     ('field', 'value', 'reason_code'),
     [
         ('attempt_id', '', 'missing_approval_attempt_id'),
@@ -905,3 +932,12 @@ def test_direct_approval_attestation_instances_still_receive_full_validation(
         approval_attestation_digest(
             replace(request.approval_attestation, **{field: value})
         )
+
+
+def test_approval_attestation_rejects_uppercase_sha256_digest() -> None:
+    payload = _request_mapping_with_approval()['approval_attestation']
+    assert isinstance(payload, dict)
+    payload['subject_digest'] = 'sha256:' + 'A' * 64
+
+    with pytest.raises(GovApiError, match='invalid_approval_subject_digest'):
+        ApprovalAttestation.from_mapping(payload)
