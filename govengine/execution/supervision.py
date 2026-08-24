@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping
 
 from govengine.api import GovApiError, require_mapping
+from govengine._governance_validation import find_bounded_governance_key
 from govengine.execution.runner_protocol import (
     GovRunnerReceipt,
     GovRunnerRequest,
@@ -109,7 +110,7 @@ class GovRunnerLease:
             lease_id=lease_id,
             request_id=request_id,
             runner_profile=str(raw.get('runner_profile') or 'dry-run').strip() or 'dry-run',
-            state=_enum(raw.get('state'), LEASE_STATES, 'active'),
+            state=_enum(raw.get('state'), LEASE_STATES, 'active', 'runner_lease_state'),
             expires_at=str(raw.get('expires_at') or '').strip(),
             metadata=_metadata(raw.get('metadata')),
         )
@@ -154,9 +155,9 @@ class GovSupervisionPlan:
             dry_run=bool(raw.get('dry_run', True)),
             live_backend_enabled=bool(raw.get('live_backend_enabled', False)),
             timeout_seconds=_int(raw.get('timeout_seconds'), 30),
-            cwd_policy=_enum(raw.get('cwd_policy'), CWD_POLICIES, 'none'),
-            env_policy=_enum(raw.get('env_policy'), ENV_POLICIES, 'empty'),
-            stdin_policy=_enum(raw.get('stdin_policy'), STDIN_POLICIES, 'bounded'),
+            cwd_policy=_enum(raw.get('cwd_policy'), CWD_POLICIES, 'none', 'cwd_policy'),
+            env_policy=_enum(raw.get('env_policy'), ENV_POLICIES, 'empty', 'env_policy'),
+            stdin_policy=_enum(raw.get('stdin_policy'), STDIN_POLICIES, 'bounded', 'stdin_policy'),
             receipt_required=bool(raw.get('receipt_required', True)),
             metadata=_metadata(raw.get('metadata')),
         )
@@ -447,9 +448,20 @@ def _receipt_from_mapping(value: Mapping[str, Any]) -> GovRunnerReceipt:
     )
 
 
-def _enum(value: Any, allowed: tuple[str, ...], default: str) -> str:
-    normalized = str(value or '').strip().lower() or default
-    return normalized if normalized in allowed else default
+def _enum(
+    value: Any,
+    allowed: tuple[str, ...],
+    default: str,
+    field_name: str,
+) -> str:
+    if value is None:
+        return default
+    if not isinstance(value, str):
+        raise GovApiError(f'unknown_{field_name}:{value}')
+    normalized = value.strip().casefold()
+    if not normalized or normalized not in allowed:
+        raise GovApiError(f'unknown_{field_name}:{normalized}')
+    return normalized
 
 
 def _int(value: Any, default: int = 0) -> int:
@@ -485,18 +497,4 @@ def _dedupe(values: tuple[str, ...]) -> tuple[str, ...]:
 
 
 def _find_forbidden_key(value: Any) -> str:
-    if isinstance(value, Mapping):
-        forbidden = set(FORBIDDEN_SUPERVISION_METADATA_KEYS)
-        for key, item in value.items():
-            normalized = str(key).lower()
-            if normalized in forbidden:
-                return normalized
-            nested = _find_forbidden_key(item)
-            if nested:
-                return nested
-    elif isinstance(value, (list, tuple)):
-        for item in value:
-            nested = _find_forbidden_key(item)
-            if nested:
-                return nested
-    return ''
+    return find_bounded_governance_key(value, FORBIDDEN_SUPERVISION_METADATA_KEYS)

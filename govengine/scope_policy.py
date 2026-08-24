@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping
 
 from govengine._governance_validation import (
+    find_bounded_governance_key,
     reject_forbidden_governance_input,
     reject_unknown_fields,
     require_sha256_digest,
@@ -257,7 +258,6 @@ def evaluate_scope_policy(
         destination,
         reason_code='invalid_requested_destination',
     )
-    _reject_raw_destination(raw_destination)
     if not policy.network_allowed:
         return _scope_decision(
             scope_digest,
@@ -400,27 +400,24 @@ def _validate_scope_policy_binding(item: ScopePolicyBinding) -> None:
 
 def _bounded_scope(value: Mapping[str, Any]) -> Mapping[str, Any]:
     raw = require_mapping(value, reason_code='invalid_requested_scope')
+    # Scan the requested-scope authority zone before the recursive JSON copy,
+    # so hostile legacy nesting receives a typed boundary failure.
+    reject_forbidden_governance_input(raw)
+    _reject_self_authorized_scope(raw)
+    _reject_raw_destination(raw)
     copied = bounded_json_copy(raw)
     if not isinstance(copied, Mapping) or not copied:
         raise GovApiError('invalid_requested_scope')
-    reject_forbidden_governance_input(copied)
-    _reject_self_authorized_scope(copied)
     return copied
 
 
 def _reject_self_authorized_scope(value: Any) -> None:
-    if isinstance(value, Mapping):
-        for key, nested in value.items():
-            if str(key).strip().lower() in SELF_AUTHORIZED_SCOPE_KEYS:
-                raise GovApiError('self_authorized_scope_policy')
-            _reject_self_authorized_scope(nested)
-    elif isinstance(value, (list, tuple)):
-        for nested in value:
-            _reject_self_authorized_scope(nested)
+    if find_bounded_governance_key(value, SELF_AUTHORIZED_SCOPE_KEYS):
+        raise GovApiError('self_authorized_scope_policy')
 
 
 def _reject_raw_destination(value: Mapping[str, Any]) -> None:
-    if any(str(key).strip().lower() in RAW_DESTINATION_KEYS for key in value):
+    if find_bounded_governance_key(value, RAW_DESTINATION_KEYS):
         raise GovApiError('raw_destination_detail_forbidden')
 
 

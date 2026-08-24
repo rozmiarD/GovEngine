@@ -117,3 +117,26 @@ def test_state_machine_rejects_runtime_and_sensitive_claims() -> None:
             'to_state': 'admitted',
             'metadata': {'scheduler': 'cron'},
         })
+
+
+def test_state_metadata_scan_is_iterative_bounded_and_normalized() -> None:
+    metadata: dict[str, object] = {}
+    for _ in range(1_200):
+        metadata = {'nested': metadata}
+
+    with pytest.raises(GovApiError, match='json_boundary_max_depth'):
+        validate_run_state({'run_id': 'run-1', 'metadata': metadata})
+
+    with pytest.raises(GovApiError, match='forbidden_state_metadata:credential'):
+        validate_run_state({
+            'run_id': 'run-1',
+            'metadata': {'nested': {' CREDENTIAL ': 'not-secret-material'}},
+        })
+
+    with pytest.raises(GovApiError, match='raw_intent_not_state_transition'):
+        validate_state_transition({
+            'run_id': 'run-1',
+            'from_state': 'new',
+            'to_state': 'admitted',
+            ' RAW_INTENT ': 'run this target',
+        })

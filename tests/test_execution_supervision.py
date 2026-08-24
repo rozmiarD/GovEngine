@@ -370,6 +370,57 @@ def test_supervision_rejects_forbidden_metadata_claims() -> None:
         runner_lease_from_request(request, metadata={'storage_path': '/tmp/lease.db'})
 
 
+@pytest.mark.parametrize(
+    ('field', 'value', 'reason_code'),
+    [
+        ('state', 'active_typo', 'unknown_runner_lease_state:active_typo'),
+        ('cwd_policy', 'repo_typo', 'unknown_cwd_policy:repo_typo'),
+        ('env_policy', 'allow_typo', 'unknown_env_policy:allow_typo'),
+        ('stdin_policy', 'unbounded', 'unknown_stdin_policy:unbounded'),
+    ],
+)
+def test_supervision_legacy_enum_values_fail_closed(
+    field: str,
+    value: str,
+    reason_code: str,
+) -> None:
+    if field == 'state':
+        with pytest.raises(GovApiError, match=reason_code):
+            GovRunnerLease.from_mapping({
+                'lease_id': 'lease-1',
+                'request_id': 'request-1',
+                field: value,
+            })
+        return
+
+    with pytest.raises(GovApiError, match=reason_code):
+        GovSupervisionPlan.from_mapping({
+            'plan_id': 'plan-1',
+            'request_id': 'request-1',
+            field: value,
+        })
+
+
+def test_supervision_metadata_scan_is_iterative_and_bounded() -> None:
+    metadata: dict[str, object] = {}
+    for _ in range(1_200):
+        metadata = {'nested': metadata}
+
+    with pytest.raises(GovApiError, match='json_boundary_max_depth'):
+        GovRunnerLease.from_mapping({
+            'lease_id': 'lease-1',
+            'request_id': 'request-1',
+            'metadata': metadata,
+        })
+
+    with pytest.raises(GovApiError, match='forbidden_supervision_metadata:password'):
+        GovRunnerLease.from_mapping({
+            'lease_id': 'lease-1',
+            'request_id': 'request-1',
+            'metadata': {'nested': {' Password ': 'not-secret-material'}},
+        })
+
+
 def test_local_subprocess_runner_readiness_is_not_applicable_by_default() -> None:
     readiness = evaluate_local_subprocess_runner_readiness()
 

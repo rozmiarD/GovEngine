@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from datetime import datetime
 from math import isfinite
-from typing import Any, Mapping
+from typing import Any, Collection, Mapping
 
 from govengine.api import GovApiError
+from govengine._json_boundary import DEFAULT_JSON_BOUNDARY_LIMITS
 
 
 FORBIDDEN_GOVERNANCE_INPUT_KEYS = frozenset(
@@ -193,18 +194,58 @@ def optional_text_tuple(
 
 
 def reject_forbidden_governance_input(value: Any) -> None:
-    if isinstance(value, Mapping):
-        for key, nested in value.items():
-            normalized = str(key).strip().lower()
-            if normalized in FORBIDDEN_GOVERNANCE_INPUT_KEYS:
-                raise GovApiError(
-                    'forbidden_governance_input',
-                    context={'detail': normalized},
-                )
-            reject_forbidden_governance_input(nested)
-    elif isinstance(value, (list, tuple)):
-        for nested in value:
-            reject_forbidden_governance_input(nested)
+    """Reject secret/raw fields from declared GovEngine authority inputs."""
+
+    forbidden = find_bounded_governance_key(
+        value,
+        FORBIDDEN_GOVERNANCE_INPUT_KEYS,
+    )
+    if forbidden:
+        raise GovApiError(
+            'forbidden_governance_input',
+            context={'detail': forbidden},
+        )
+
+
+def find_bounded_governance_key(
+    value: Any,
+    forbidden_keys: Collection[str],
+) -> str:
+    """Find a normalized forbidden key without recursive input traversal.
+
+    Callers invoke this only for declared authority-bearing input zones, such
+    as governance facts, requested scope, or GovEngine-owned metadata.  The
+    traversal deliberately mirrors the JSON input boundary limits so hostile
+    legacy structures produce typed boundary errors rather than recursion
+    failures.
+    """
+
+    forbidden = frozenset(key.strip().casefold() for key in forbidden_keys)
+    limits = DEFAULT_JSON_BOUNDARY_LIMITS
+    nodes = 0
+    stack: list[tuple[Any, int]] = [(value, 0)]
+    while stack:
+        item, depth = stack.pop()
+        nodes += 1
+        if nodes > limits.max_nodes:
+            raise GovApiError('json_boundary_max_nodes')
+        if depth > limits.max_depth:
+            raise GovApiError('json_boundary_max_depth')
+        if isinstance(item, Mapping):
+            if len(item) > limits.max_collection_length:
+                raise GovApiError('json_boundary_max_collection_length')
+            children: list[Any] = []
+            for key, nested in item.items():
+                normalized = str(key).strip().casefold()
+                if normalized in forbidden:
+                    return normalized
+                children.append(nested)
+            stack.extend((nested, depth + 1) for nested in reversed(children))
+        elif isinstance(item, (list, tuple)):
+            if len(item) > limits.max_collection_length:
+                raise GovApiError('json_boundary_max_collection_length')
+            stack.extend((nested, depth + 1) for nested in reversed(item))
+    return ''
 
 
 def reject_unknown_fields(

@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping
 
 from govengine.api import GovApiError, require_mapping
+from govengine._governance_validation import find_bounded_governance_key
 
 
 RUN_STATES = (
@@ -121,7 +122,10 @@ class StateTransition:
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any]) -> 'StateTransition':
         raw = require_mapping(value, reason_code='invalid_state_transition')
-        if 'raw_intent' in raw or 'prompt' in raw:
+        if any(
+            str(key).strip().casefold() in {'raw_intent', 'prompt'}
+            for key in raw
+        ):
             raise GovApiError('raw_intent_not_state_transition')
         run_id = str(raw.get('run_id') or '').strip()
         if not run_id:
@@ -212,18 +216,4 @@ def _reject_forbidden_metadata(value: Mapping[str, Any]) -> None:
 
 
 def _find_forbidden_key(value: Any) -> str:
-    if isinstance(value, Mapping):
-        forbidden = set(FORBIDDEN_STATE_METADATA_KEYS)
-        for key, item in value.items():
-            normalized = str(key).lower()
-            if normalized in forbidden:
-                return normalized
-            nested = _find_forbidden_key(item)
-            if nested:
-                return nested
-    elif isinstance(value, (list, tuple)):
-        for item in value:
-            nested = _find_forbidden_key(item)
-            if nested:
-                return nested
-    return ''
+    return find_bounded_governance_key(value, FORBIDDEN_STATE_METADATA_KEYS)

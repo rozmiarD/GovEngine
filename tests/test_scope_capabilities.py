@@ -21,6 +21,7 @@ from govengine.scope_policy import (
     evaluate_scope_policy,
     scope_decision_digest,
     scope_policy_binding_digest,
+    validate_requested_scope,
 )
 
 
@@ -163,6 +164,60 @@ def test_requested_scope_cannot_supply_its_own_allow_policy(
 ) -> None:
     with pytest.raises(GovApiError, match='self_authorized_scope_policy'):
         evaluate_scope_policy(_requested_scope(**claim), _scope_policy())
+
+
+def test_scope_boundary_is_bounded_and_normalizes_authority_keys() -> None:
+    nested: dict[str, object] = {}
+    for _ in range(1_200):
+        nested = {'nested': nested}
+
+    with pytest.raises(GovApiError, match='json_boundary_max_depth'):
+        evaluate_scope_policy(
+            _requested_scope(authority_context=nested),
+            _scope_policy(),
+        )
+
+    with pytest.raises(GovApiError, match='self_authorized_scope_policy'):
+        evaluate_scope_policy(
+            _requested_scope(**{' Allowed_Schemes ': ['https']}),
+            _scope_policy(),
+        )
+
+
+@pytest.mark.parametrize('raw_key', ['host', ' HOST ', 'URL', 'address'])
+def test_scope_rejects_raw_destination_detail_but_keeps_typed_binding(
+    raw_key: str,
+) -> None:
+    destination = dict(_requested_scope()['requested_destination'])
+    destination[raw_key] = 'raw.example.test'
+
+    with pytest.raises(GovApiError, match='raw_destination_detail_forbidden'):
+        evaluate_scope_policy(
+            _requested_scope(requested_destination=destination),
+            _scope_policy(),
+        )
+
+
+def test_requested_scope_rejects_nested_normalized_raw_destination_detail() -> None:
+    destination = dict(_requested_scope()['requested_destination'])
+    destination['observations'] = [{'\tUrL ': 'https://raw.example.test'}]
+
+    with pytest.raises(GovApiError, match='raw_destination_detail_forbidden'):
+        validate_requested_scope(_requested_scope(requested_destination=destination))
+
+
+def test_raw_destination_detail_precedes_disallowed_target_namespace() -> None:
+    destination = dict(_requested_scope()['requested_destination'])
+    destination['observations'] = [{' address ': 'raw.example.test'}]
+
+    with pytest.raises(GovApiError, match='raw_destination_detail_forbidden'):
+        evaluate_scope_policy(
+            _requested_scope(
+                target_namespace='service.billing',
+                requested_destination=destination,
+            ),
+            _scope_policy(),
+        )
 
 
 def test_scope_policy_binding_digest_is_recomputed_from_full_record() -> None:

@@ -816,9 +816,13 @@ def test_approval_validation_rejects_revoked_attestation() -> None:
 
 
 @pytest.mark.parametrize('field', ['execution_facts', 'requested_scope'])
-def test_governance_request_rejects_nested_secret_material(field: str) -> None:
+@pytest.mark.parametrize('forbidden_key', ['password', ' PASSWORD '])
+def test_governance_request_rejects_nested_secret_material(
+    field: str,
+    forbidden_key: str,
+) -> None:
     request = _base_request_mapping()
-    request[field] = {'items': [{'password': 'inline-secret'}]}
+    request[field] = {'items': [{forbidden_key: 'inline-secret'}]}
     digest_field = (
         'execution_facts_digest' if field == 'execution_facts' else 'requested_scope_digest'
     )
@@ -845,6 +849,19 @@ def test_governance_request_rejects_self_authorized_scope_policy() -> None:
     )
 
     with pytest.raises(GovApiError, match='self_authorized_scope_policy'):
+        GovernanceRequest.from_mapping(request)
+
+
+def test_governance_request_rejects_nested_raw_destination_detail() -> None:
+    request = _base_request_mapping()
+    destination = request['requested_scope']['requested_destination']
+    destination['observations'] = [{' HoSt ': 'raw.example.test'}]
+    request['requested_scope_digest'] = govengine_record_digest(
+        request['requested_scope'],
+        record_type='govengine.governance.RequestedScope',
+    )
+
+    with pytest.raises(GovApiError, match='raw_destination_detail_forbidden'):
         GovernanceRequest.from_mapping(request)
 
 

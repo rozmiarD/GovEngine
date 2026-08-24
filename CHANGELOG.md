@@ -8,6 +8,12 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Hardens bounded legacy governance inputs: unknown supervision enums now fail
+  closed with typed errors, authority-bearing metadata and scope scans are
+  iterative and bounded, forbidden keys use `strip().casefold()` matching, and
+  requested destinations reject raw host/URL/address details while retaining
+  the typed destination binding for independent scope-policy evaluation.
+
 - Makes expired RC observation fail closed: an immutable raw `active` record
   now derives `elapsed_unclosed` at and after its end time and cannot be
   auto-completed. Completion requires a separate versioned closure record bound
