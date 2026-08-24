@@ -29,6 +29,7 @@ FORBIDDEN_TRUST_MATERIAL_KEYS = {
     "secret",
     "token",
 }
+_JSON_SAFE_INTEGER_MAX = (2**53) - 1
 
 
 @dataclass(frozen=True)
@@ -502,6 +503,8 @@ def _canonical_record_value(value: Any) -> Any:
         return [_canonical_record_value(item) for item in value]
     if isinstance(value, float) and not isfinite(value):
         raise GovApiError("unsupported_govengine_record_value", "non_finite_float")
+    if isinstance(value, int) and not isinstance(value, bool) and int.__abs__(value) > _JSON_SAFE_INTEGER_MAX:
+        raise GovApiError("unsupported_govengine_record_unsafe_integer")
     if value is None or isinstance(value, (bool, int, float, str)):
         return value
     raise GovApiError("unsupported_govengine_record_value", type(value).__name__)

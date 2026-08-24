@@ -906,6 +906,27 @@ def test_canonical_govengine_record_serializes_mapping_deterministically() -> No
     assert payload["record"]["subject"] == {"a": 1, "b": 2}
 
 
+def test_v1_canonical_record_bytes_and_digest_remain_frozen() -> None:
+    record = {
+        "status": "allowed",
+        "blockers": [],
+        "subject": {"b": 2, "a": 1},
+        "score": 1.0,
+        "negative_zero": -0.0,
+        "small": 1e-7,
+    }
+    record_type = "govengine.admission.RuntimeAdmissionResult"
+
+    assert canonical_govengine_record(record, record_type=record_type) == (
+        '{"owner":"govengine","record":{"blockers":[],"negative_zero":-0.0,'
+        '"score":1.0,"small":1e-07,"status":"allowed","subject":{"a":1,"b":2}},'
+        '"record_type":"govengine.admission.RuntimeAdmissionResult","schema_version":"v1"}'
+    )
+    assert govengine_record_digest(record, record_type=record_type) == (
+        "sha256:5b7cadc6e8dc15afc8d07655776ead2bcbaaad5016a65ebe1351bf2f36cd5105"
+    )
+
+
 def test_govengine_record_digest_changes_when_owned_record_changes() -> None:
     record = {"status": "allowed", "reason_code": "ok"}
     mutated = {"status": "blocked", "reason_code": "missing_policy"}

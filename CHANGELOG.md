@@ -8,6 +8,11 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Narrows the frozen GovEngine v1 record canonicalization/digest helpers to a
+  Python-legacy numeric input boundary. Supported v1 bytes remain unchanged;
+  integers outside `[-(2**53-1), 2**53-1]` and non-finite floats fail with
+  typed GovEngine reasons. These helpers are not language-neutral number
+  canonicalization.
 - Tightens GovEngine governance-boundary parsing: runtime controls reject
   coercions and non-finite values, approval bindings reject non-ASCII
   identifiers before constant-time comparison, and GovEngine digest references
