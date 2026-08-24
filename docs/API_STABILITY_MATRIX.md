@@ -48,7 +48,7 @@ or host-specific Ravenclaw/Tecrax runtime behavior.
 | adapter | govengine.deconfliction | `ArtifactChangeOrder`, `ArtifactConflict`, `ConflictDetector` | Digest/state conflict helpers only. |
 | experimental | govengine.events | `EventEnvelope`, `GovEvent`, `validate_event_envelope`, `validate_gov_event` | Transport-neutral event metadata; no carrier payload authority. |
 | experimental | govengine.execution.gate | `DryRunRunner`, `ExecutionGate`, `ExecutionGateInput`, `RunnerProfile` | Dry-run/default-deny execution gate helpers; no live backend ownership. |
-| adapter | govengine.execution.runner_protocol | `runner_receipt_public_summary` | Public-safe runner receipt summary over bounded binding refs and digest counts only; no raw stdout/stderr publication and no execution authority. |
+| adapter | govengine.execution.runner_protocol | `runner_receipt_public_summary` | Public-safe runner receipt summary over bounded binding refs and digest counts only. It labels a present binding `present_unverified`, never `self_consistent` or `verified`; neither it nor its module-scoped companion reports SCLite ticket/evidence verification, publishes raw stdout/stderr, or grants execution authority. |
 | adapter | govengine.execution.supervision | `GovRunnerLease`, `GovSupervisionDecision`, `GovSupervisionPlan`, `LocalSubprocessRunnerReadiness`, `evaluate_local_subprocess_runner_readiness`, `runner_lease_from_request`, `supervision_plan_from_runner_request`, `validate_runner_lease`, `validate_runner_receipt_binding`, `validate_runner_receipt_for_request`, `validate_supervised_runner_request`, `validate_supervision_decision`, `validate_supervision_plan` | Runner request, lease, supervision, readiness, and receipt boundary helpers; live subprocess execution remains not applicable until the missing host-owned safety prerequisites are closed. |
 | experimental | govengine.execution_backend | `CommandResult`, `GovExecutionBackend` | Host-neutral backend protocol/result helpers. |
 | adapter | govengine.lifecycle | `ArtifactLifecycleController`, `TransitionGate`, `TransitionPolicy`, `canonical_lifecycle_state` | Lightweight lifecycle gate/controller helpers; `verified_chain` and `verified_lifecycle` are canonical while legacy aliases are migration shims; SCLite remains lifecycle authority. |
@@ -88,6 +88,22 @@ or host-specific Ravenclaw/Tecrax runtime behavior.
 | internal-exposed | govengine.scope_assertion compatibility imports | `build_scope_assertion`, `build_scope_decision`, `scope_decision_digest` | Explicit top-level compatibility imports consumed by RExecOp but intentionally excluded from `govengine.__all__`; migrate the consumer before removal or stable classification. |
 
 ## Explicit module-scoped additions
+
+`govengine.execution.runner_protocol.runner_receipt_binding_verification_summary()`
+is a module-scoped compatibility helper. It reports `self_consistent` only for
+a locally recomputed request/receipt chain and returns `verified` only after
+both independently supplied admission and ticket anchors match, including
+identity agreement between each supplied record and explicit identifier. In contrast,
+`runner_receipt_public_summary()` reports a present binding only as
+`present_unverified`. Neither vocabulary is SCLite ticket/evidence
+verification.
+
+`govengine.execution.ticket_gate.validate_execution_ticket_gate()` is a
+deprecated module-scoped compatibility-only ticket/contract command-shape
+check with only test call-sites in this repository. It accepts no
+`approved_execution_spec` and makes no runtime enforcement or execution-
+authority claim; RExecOp owns runtime claim/permit enforcement and SCLite owns
+ticket/receipt verification.
 
 `govengine.typed_execution_governed_admission` exposes the optional
 `typed_execution_governed_admission:v0.1` and

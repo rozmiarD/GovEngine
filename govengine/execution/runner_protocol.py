@@ -236,17 +236,22 @@ def normalize_runner_steps(raw_steps: Sequence[Mapping[str, Any]]) -> tuple[GovR
     for idx, raw_step in enumerate(raw_steps):
         if not isinstance(raw_step, Mapping):
             raise GovApiError("invalid_runner_step", f"index={idx}")
-        tool = str(raw_step.get("tool") or "").strip()
-        if not tool:
+        tool = raw_step.get("tool")
+        if not isinstance(tool, str) or not tool.strip():
             raise GovApiError("missing_runner_step_tool", f"index={idx}")
-        raw_args = raw_step.get("args") or []
+        raw_args = raw_step["args"] if "args" in raw_step else ()
         if not isinstance(raw_args, Sequence) or isinstance(raw_args, (str, bytes)):
             raise GovApiError("invalid_runner_step_args", f"index={idx}")
+        if any(not isinstance(arg, str) for arg in raw_args):
+            raise GovApiError("invalid_runner_step_args", f"index={idx}")
+        stdin = raw_step.get("stdin") or ""
+        if not isinstance(stdin, str):
+            raise GovApiError("invalid_runner_step_stdin", f"index={idx}")
         steps.append(GovRunnerStep(
             index=idx,
-            tool=tool,
-            args=tuple(str(arg) for arg in raw_args),
-            stdin=str(raw_step.get("stdin") or ""),
+            tool=tool.strip(),
+            args=tuple(raw_args),
+            stdin=stdin,
         ))
     if not steps:
         raise GovApiError("missing_runner_steps")
@@ -371,8 +376,80 @@ def runner_receipt_public_summary(value: GovRunnerReceipt | Mapping[str, Any]) -
         "ticket_id": binding.ticket_id,
         "request_digest": binding.request_digest,
         "receipt_digest": binding.receipt_digest,
+        # This summary has no request record or independent anchors with which
+        # to recompute the chain.  Binding presence is therefore intentionally
+        # weaker than local consistency (and much weaker than verification).
+        "binding_verification_status": "present_unverified" if binding.present else "unanchored",
         "output_digest_count": len(binding.output_digests),
         "evidence_ref_count": len(binding.evidence_refs),
+    }
+
+
+def runner_receipt_binding_verification_summary(
+    request: GovRunnerRequest,
+    receipt: GovRunnerReceipt,
+    *,
+    admission: Any | None = None,
+    admission_id: str = "",
+    admission_digest: str = "",
+    admission_record_type: str = "govengine.admission.RuntimeAdmissionResult",
+    ticket: Mapping[str, Any] | None = None,
+    ticket_id: str = "",
+    ticket_digest: str = "",
+) -> dict[str, Any]:
+    """Classify receipt binding assurance after optional external comparisons.
+
+    A locally recomputed request/receipt chain is only ``self_consistent``.
+    ``verified`` is returned only when independently supplied admission and
+    ticket anchors were both compared.  This checks bounded references, not
+    SCLite ticket or evidence truth; canonical verification remains SCLite's
+    responsibility.
+    """
+
+    validate_runner_receipt_binding(
+        request,
+        receipt,
+        admission=admission,
+        admission_id=admission_id,
+        admission_digest=admission_digest,
+        admission_record_type=admission_record_type,
+        ticket=ticket,
+        ticket_id=ticket_id,
+        ticket_digest=ticket_digest,
+    )
+    admission_anchored = bool(
+        _record_identifier(
+            admission,
+            admission_id,
+            ("admission_id", "id"),
+            mismatch_reason_code="runtime_admission_id_mismatch",
+        )
+        and _expected_admission_digest(
+            admission,
+            admission_digest=admission_digest,
+            admission_record_type=admission_record_type,
+        )
+    )
+    ticket_anchored = bool(
+        _record_identifier(
+            ticket,
+            ticket_id,
+            ("ticket_id", "id"),
+            mismatch_reason_code="execution_ticket_id_mismatch",
+        )
+        and _digest_reference(
+            ticket,
+            ticket_digest,
+            ("ticket_digest", "digest", "artifact_digest"),
+            mismatch_reason_code="execution_ticket_digest_mismatch",
+        )
+    )
+    anchors = tuple(name for name, present in (("admission", admission_anchored), ("ticket", ticket_anchored)) if present)
+    externally_anchored = admission_anchored and ticket_anchored
+    return {
+        "status": "verified" if externally_anchored else "self_consistent",
+        "verified": externally_anchored,
+        "external_anchors": anchors,
     }
 
 
@@ -451,7 +528,12 @@ def validate_runner_receipt_binding(
     if receipt.status not in set(allowed_statuses):
         raise GovApiError(f"unknown_runner_receipt_status:{receipt.status}")
 
-    expected_admission_id = _record_identifier(admission, admission_id, ("admission_id", "id"))
+    expected_admission_id = _record_identifier(
+        admission,
+        admission_id,
+        ("admission_id", "id"),
+        mismatch_reason_code="runtime_admission_id_mismatch",
+    )
     if expected_admission_id and binding.admission_id != expected_admission_id:
         raise GovApiError("runner_receipt_binding_admission_id_mismatch")
     expected_admission_digest = _expected_admission_digest(
@@ -462,10 +544,20 @@ def validate_runner_receipt_binding(
     if expected_admission_digest and not compare_digest(binding.admission_digest, expected_admission_digest):
         raise GovApiError("runner_receipt_binding_admission_digest_mismatch")
 
-    expected_ticket_id = _record_identifier(ticket, ticket_id, ("ticket_id", "id"))
+    expected_ticket_id = _record_identifier(
+        ticket,
+        ticket_id,
+        ("ticket_id", "id"),
+        mismatch_reason_code="execution_ticket_id_mismatch",
+    )
     if expected_ticket_id and binding.ticket_id != expected_ticket_id:
         raise GovApiError("runner_receipt_binding_ticket_id_mismatch")
-    expected_ticket_digest = _digest_reference(ticket, ticket_digest, ("ticket_digest", "digest", "artifact_digest"))
+    expected_ticket_digest = _digest_reference(
+        ticket,
+        ticket_digest,
+        ("ticket_digest", "digest", "artifact_digest"),
+        mismatch_reason_code="execution_ticket_digest_mismatch",
+    )
     if expected_ticket_digest and not compare_digest(binding.ticket_digest, expected_ticket_digest):
         raise GovApiError("runner_receipt_binding_ticket_digest_mismatch")
 
@@ -505,33 +597,56 @@ def _expected_admission_digest(
     return computed
 
 
-def _record_identifier(value: Any | None, explicit: str, keys: Sequence[str]) -> str:
-    if explicit:
-        return _clean_text(explicit)
+def _record_identifier(
+    value: Any | None,
+    explicit: str,
+    keys: Sequence[str],
+    *,
+    mismatch_reason_code: str,
+) -> str:
+    explicit_id = _clean_text(explicit)
+    record_ids: list[str] = []
     if value is None:
-        return ""
+        return explicit_id
     for key in keys:
         item = getattr(value, key, "")
         if item:
-            return _clean_text(item)
+            record_ids.append(_clean_text(item))
     if isinstance(value, Mapping):
         for key in keys:
             item = value.get(key)
             if item:
-                return _clean_text(item)
-    return ""
+                record_ids.append(_clean_text(item))
+    distinct_record_ids = tuple(dict.fromkeys(record_ids))
+    if len(distinct_record_ids) > 1:
+        raise GovApiError(mismatch_reason_code)
+    record_id = distinct_record_ids[0] if distinct_record_ids else ""
+    if explicit_id and record_id and explicit_id != record_id:
+        raise GovApiError(mismatch_reason_code)
+    return explicit_id or record_id
 
 
-def _digest_reference(value: Mapping[str, Any] | None, explicit: str, keys: Sequence[str]) -> str:
-    if explicit:
-        return _clean_text(explicit)
-    if not isinstance(value, Mapping):
-        return ""
-    for key in keys:
-        item = value.get(key)
-        if item:
-            return _clean_text(item)
-    return ""
+def _digest_reference(
+    value: Mapping[str, Any] | None,
+    explicit: str,
+    keys: Sequence[str],
+    *,
+    mismatch_reason_code: str,
+) -> str:
+    explicit_digest = _clean_text(explicit)
+    record_digests = tuple(
+        dict.fromkeys(
+            _clean_text(value.get(key))
+            for key in keys
+            if isinstance(value, Mapping) and value.get(key)
+        )
+    )
+    if len(record_digests) > 1:
+        raise GovApiError(mismatch_reason_code)
+    record_digest = record_digests[0] if record_digests else ""
+    if explicit_digest and record_digest and not compare_digest(explicit_digest, record_digest):
+        raise GovApiError(mismatch_reason_code)
+    return explicit_digest or record_digest
 
 
 def _bounded_string_mapping(

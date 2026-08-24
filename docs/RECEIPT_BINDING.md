@@ -141,3 +141,22 @@ evidence and does not duplicate SCLite review-bundle verdict authority.
 
 Read-only operator verification is available through
 `scripts/verify_runner_receipt_binding.py`.
+
+## Assurance Vocabulary and Non-claims
+
+The read-only operator verifier first recomputes the bounded
+request/receipt chain. With no independently supplied admission and ticket
+anchors, a successful result is `status=self_consistent` and `verified=false`.
+It is a local consistency result, not a verified ticket or evidence result.
+The verifier returns `status=verified` and `verified=true` only when both
+independently supplied admission and ticket anchors match the binding. When an
+explicit anchor identifier accompanies a record, the two identifiers must also
+match each other; a conflicting override fails closed before any digest or
+`verified` decision.
+
+`runner_receipt_public_summary()` cannot recompute the request/receipt chain
+or compare external anchors. It therefore labels a present binding
+`present_unverified` and an absent binding `unanchored`; it never labels either
+`self_consistent` or `verified`. These GovEngine terms do not replace SCLite
+canonical ticket, artifact, evidence, or review-bundle verification, and do
+not grant RExecOp runtime claim/permit authority.

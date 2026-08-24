@@ -16,6 +16,7 @@ from govengine.api import GovApiError, require_mapping  # noqa: E402
 from govengine.execution.runner_protocol import (  # noqa: E402
     GovRunnerRequest,
     normalize_runner_steps,
+    runner_receipt_binding_verification_summary,
 )
 from govengine.execution.supervision import validate_runner_receipt_binding  # noqa: E402
 
@@ -81,14 +82,22 @@ def _request_from_mapping(value: Mapping[str, Any]) -> GovRunnerRequest:
     )
 
 
-def _summary(receipt: Mapping[str, Any], *, reason_code: str = 'verified', verified: bool = True) -> dict[str, Any]:
+def _summary(
+    receipt: Mapping[str, Any],
+    *,
+    status: str = 'failed',
+    reason_code: str = 'verification_failed',
+    verified: bool = False,
+    external_anchors: tuple[str, ...] = (),
+) -> dict[str, Any]:
     binding = receipt.get('binding') if isinstance(receipt.get('binding'), Mapping) else {}
-    blockers: list[str] = [] if verified else [reason_code]
+    blockers: list[str] = [reason_code] if status == 'failed' else []
     return {
-        'status': 'verified' if verified else 'failed',
+        'status': status,
         'verified': verified,
         'reason_code': reason_code,
         'blockers': blockers,
+        'external_anchors': list(external_anchors),
         'request_id': str(receipt.get('request_id') or ''),
         'receipt_status': str(receipt.get('status') or ''),
         'admission_id': str(binding.get('admission_id') or ''),
@@ -141,18 +150,42 @@ def verify_runner_receipt_binding_file(
                 _read_json(admission_path, reason_prefix='runtime_admission'),
             )
         request = _request_from_mapping(request_payload)
-        validate_runner_receipt_binding(
+        ticket = admission.execution_ticket if admission is not None else None
+        validated_receipt = validate_runner_receipt_binding(
             request,
             receipt_payload,
             admission=admission.as_dict() if admission is not None else None,
             admission_id=admission_id,
             admission_digest=admission_digest,
+            ticket=ticket,
+            ticket_id=ticket_id,
+            ticket_digest=ticket_digest,
+        )
+        assurance = runner_receipt_binding_verification_summary(
+            request,
+            validated_receipt,
+            admission=admission.as_dict() if admission is not None else None,
+            admission_id=admission_id,
+            admission_digest=admission_digest,
+            ticket=ticket,
             ticket_id=ticket_id,
             ticket_digest=ticket_digest,
         )
     except GovApiError as exc:
-        return 1, _render(_summary(receipt_payload, reason_code=exc.reason_code, verified=False), output_format=output_format)
-    return 0, _render(_summary(receipt_payload), output_format=output_format)
+        return 1, _render(
+            _summary(receipt_payload, reason_code=exc.reason_code),
+            output_format=output_format,
+        )
+    return 0, _render(
+        _summary(
+            receipt_payload,
+            status=str(assurance['status']),
+            reason_code=str(assurance['status']),
+            verified=bool(assurance['verified']),
+            external_anchors=tuple(str(item) for item in assurance['external_anchors']),
+        ),
+        output_format=output_format,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -174,6 +207,7 @@ def main(argv: list[str] | None = None) -> int:
             'verified': False,
             'reason_code': exc.reason_code,
             'blockers': [exc.reason_code],
+            'external_anchors': [],
             'execution': 'not performed',
         }
         print(_render(summary, output_format=args.format), end='')

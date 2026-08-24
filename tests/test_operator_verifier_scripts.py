@@ -115,11 +115,217 @@ def test_runner_receipt_binding_script_verifies_bounded_refs(tmp_path: Path) -> 
     assert proc.returncode == 0
     assert data['status'] == 'verified'
     assert data['verified'] is True
+    assert data['external_anchors'] == ['admission', 'ticket']
     assert data['request_id'] == 'run-bound'
     assert data['admission_id'] == 'admission-1'
     assert data['ticket_id'] == 'ticket-1'
     assert data['execution'] == 'not performed'
     assert 'step_results' not in data
+
+
+def test_runner_receipt_binding_script_reports_local_consistency_without_external_anchors(tmp_path: Path) -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id='run-local', dry_run=True)
+    receipt = runner_receipt_with_binding(
+        dry_run_runner_receipt(request),
+        admission_id='admission-1',
+        admission_digest=ADMISSION_DIGEST,
+        ticket_id='ticket-1',
+        ticket_digest=TICKET_DIGEST,
+        request_digest=runner_request_digest(request),
+        receipt_id='receipt-1',
+        runner_profile='dry-run',
+    )
+    request_path = tmp_path / 'request.json'
+    receipt_path = tmp_path / 'receipt.json'
+    _write_json(request_path, request.as_dict())
+    _write_json(receipt_path, receipt.as_dict())
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(RECEIPT_SCRIPT),
+            '--request',
+            str(request_path),
+            '--receipt',
+            str(receipt_path),
+            '--format',
+            'json',
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    data = json.loads(proc.stdout)
+    assert proc.returncode == 0
+    assert data['status'] == 'self_consistent'
+    assert data['verified'] is False
+    assert data['external_anchors'] == []
+
+
+def test_runner_receipt_binding_script_rejects_mismatched_external_anchor(tmp_path: Path) -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id='run-anchor-mismatch', dry_run=True)
+    receipt = runner_receipt_with_binding(
+        dry_run_runner_receipt(request),
+        admission_id='admission-1',
+        admission_digest=ADMISSION_DIGEST,
+        ticket_id='ticket-1',
+        ticket_digest=TICKET_DIGEST,
+        request_digest=runner_request_digest(request),
+        receipt_id='receipt-1',
+        runner_profile='dry-run',
+    )
+    request_path = tmp_path / 'request.json'
+    receipt_path = tmp_path / 'receipt.json'
+    _write_json(request_path, request.as_dict())
+    _write_json(receipt_path, receipt.as_dict())
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(RECEIPT_SCRIPT),
+            '--request',
+            str(request_path),
+            '--receipt',
+            str(receipt_path),
+            '--admission-id',
+            'admission-1',
+            '--admission-digest',
+            ADMISSION_DIGEST,
+            '--ticket-id',
+            'ticket-1',
+            '--ticket-digest',
+            'sha256:' + 'c' * 64,
+            '--format',
+            'json',
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    data = json.loads(proc.stdout)
+    assert proc.returncode == 1
+    assert data['status'] == 'failed'
+    assert data['verified'] is False
+    assert data['reason_code'] == 'runner_receipt_binding_ticket_digest_mismatch'
+    assert data['external_anchors'] == []
+
+
+def test_runner_receipt_binding_script_rejects_conflicting_admission_identity(tmp_path: Path) -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id='run-admission-id-conflict', dry_run=True)
+    admission = _runtime_admission()
+    admission_digest = govengine_record_digest(
+        admission.as_dict(),
+        record_type='govengine.admission.RuntimeAdmissionResult',
+    )
+    receipt = runner_receipt_with_binding(
+        dry_run_runner_receipt(request),
+        admission_id='admission-override',
+        admission_digest=admission_digest,
+        ticket_id='ticket-1',
+        ticket_digest=TICKET_DIGEST,
+        request_digest=runner_request_digest(request),
+        receipt_id='receipt-1',
+        runner_profile='dry-run',
+    )
+    request_path = tmp_path / 'request.json'
+    receipt_path = tmp_path / 'receipt.json'
+    admission_path = tmp_path / 'admission.json'
+    _write_json(request_path, request.as_dict())
+    _write_json(receipt_path, receipt.as_dict())
+    _write_json(admission_path, admission.as_dict())
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(RECEIPT_SCRIPT),
+            '--request',
+            str(request_path),
+            '--receipt',
+            str(receipt_path),
+            '--admission',
+            str(admission_path),
+            '--admission-id',
+            'admission-override',
+            '--ticket-id',
+            'ticket-1',
+            '--ticket-digest',
+            TICKET_DIGEST,
+            '--format',
+            'json',
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    data = json.loads(proc.stdout)
+    assert proc.returncode == 1
+    assert data['status'] == 'failed'
+    assert data['verified'] is False
+    assert data['reason_code'] == 'runtime_admission_id_mismatch'
+    assert data['external_anchors'] == []
+
+
+def test_runner_receipt_binding_script_rejects_conflicting_ticket_digest_reference(tmp_path: Path) -> None:
+    request = runner_request_from_approved_spec(_approved_spec(), request_id='run-ticket-digest-conflict', dry_run=True)
+    admission_payload = _runtime_admission().as_dict()
+    admission_payload['execution_ticket']['digest'] = 'sha256:' + 'c' * 64
+    admission = RuntimeAdmissionResult.from_mapping(admission_payload)
+    admission_digest = govengine_record_digest(
+        admission.as_dict(),
+        record_type='govengine.admission.RuntimeAdmissionResult',
+    )
+    receipt = runner_receipt_with_binding(
+        dry_run_runner_receipt(request),
+        admission_id=admission.admission_id,
+        admission_digest=admission_digest,
+        ticket_id='ticket-1',
+        ticket_digest=TICKET_DIGEST,
+        request_digest=runner_request_digest(request),
+        receipt_id='receipt-1',
+        runner_profile='dry-run',
+    )
+    request_path = tmp_path / 'request.json'
+    receipt_path = tmp_path / 'receipt.json'
+    admission_path = tmp_path / 'admission.json'
+    _write_json(request_path, request.as_dict())
+    _write_json(receipt_path, receipt.as_dict())
+    _write_json(admission_path, admission.as_dict())
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(RECEIPT_SCRIPT),
+            '--request',
+            str(request_path),
+            '--receipt',
+            str(receipt_path),
+            '--admission',
+            str(admission_path),
+            '--ticket-id',
+            'ticket-1',
+            '--ticket-digest',
+            TICKET_DIGEST,
+            '--format',
+            'json',
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    data = json.loads(proc.stdout)
+    assert proc.returncode == 1
+    assert data['status'] == 'failed'
+    assert data['verified'] is False
+    assert data['reason_code'] == 'execution_ticket_digest_mismatch'
+    assert data['external_anchors'] == []
 
 
 def test_runner_receipt_binding_script_blocks_tampered_receipt(tmp_path: Path) -> None:

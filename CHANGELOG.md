@@ -8,6 +8,18 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Deprecates `validate_execution_ticket_gate()` as a compatibility-only
+  ticket/contract command-shape check: it no longer accepts an unbound
+  `approved_execution_spec`, rejects bool/numeric argv values rather than
+  string-coercing them, and makes no runtime enforcement claim. Public
+  receipt-binding summaries label a present binding `present_unverified`; the
+  separate read-only verifier reports `self_consistent` only after a local
+  recomputation and `verified` only when independently supplied admission and
+  ticket anchors match, failing closed on conflicting record/explicit anchor
+  identities. Missing optional runner argv remains empty while supplied falsey
+  non-sequence argv values are rejected. SCLite remains the canonical ticket/evidence verifier
+  and RExecOp retains runtime claim/permit enforcement.
+
 - Hardens bounded legacy governance inputs: unknown supervision enums now fail
   closed with typed errors, authority-bearing metadata and scope scans are
   iterative and bounded, forbidden keys use `strip().casefold()` matching, and

@@ -5,6 +5,7 @@ from importlib import resources
 
 import pytest
 
+from govengine.api import GovApiError
 from govengine.execution.approved_spec import approved_execution_steps, validate_approved_execution_spec
 from govengine.execution.runner import approved_spec_dry_run_result
 from govengine.execution.ticket_gate import validate_execution_ticket_gate, validate_scoped_ticket_use_gate
@@ -64,8 +65,8 @@ def test_approved_execution_steps_rejects_malformed_tool_or_args(bad_step, reaso
 
 def test_execution_ticket_gate_requires_ticket_when_called() -> None:
     approved = _approved_spec()
-    with pytest.raises(ValueError, match='missing_execution_ticket'):
-        validate_execution_ticket_gate(approved, execution_ticket=None, execution_contract=None, raw_steps=approved_execution_steps(approved))
+    with pytest.raises(GovApiError, match='missing_execution_ticket'):
+        validate_execution_ticket_gate(execution_ticket=None, execution_contract=None, raw_steps=approved_execution_steps(approved))
 
 
 def _scoped_ticket_fixture(name: str) -> dict:
@@ -74,20 +75,43 @@ def _scoped_ticket_fixture(name: str) -> dict:
 
 
 def test_execution_ticket_gate_delegates_v03_semantics_to_sclite() -> None:
-    approved = _approved_spec()
     ticket = _scoped_ticket_fixture('execution_ticket.json')
     contract = _scoped_ticket_fixture('execution_contract.json')
 
     result = validate_execution_ticket_gate(
-        approved,
         execution_ticket=ticket,
         execution_contract=contract,
         raw_steps=[{'tool': 'http_probe', 'args': ['https://example.com/login']}],
     )
 
-    assert result['status'] == 'passed'
+    assert result['status'] == 'compatibility_checked'
+    assert result['enforcement'] == 'not_claimed'
+    assert result['deprecated'] is True
     assert result['schema_version'] == 'v0.3'
     assert 'ticket_scope_matches_execution_contract' in result['sclite_checks']
+
+
+@pytest.mark.parametrize('argv', [[True], [7]])
+def test_execution_ticket_gate_rejects_coerced_argv(argv) -> None:
+    ticket = _scoped_ticket_fixture('execution_ticket.json')
+    contract = _scoped_ticket_fixture('execution_contract.json')
+
+    with pytest.raises(GovApiError, match='execution_ticket_invalid_raw_args'):
+        validate_execution_ticket_gate(
+            execution_ticket=ticket,
+            execution_contract=contract,
+            raw_steps=[{'tool': 'http_probe', 'args': argv}],
+        )
+
+
+def test_execution_ticket_gate_no_longer_accepts_unbound_approved_spec() -> None:
+    with pytest.raises(TypeError, match='approved_execution_spec'):
+        validate_execution_ticket_gate(
+            approved_execution_spec=_approved_spec(),
+            execution_ticket=None,
+            execution_contract=None,
+            raw_steps=[],
+        )
 
 
 def test_scoped_ticket_use_gate_delegates_receipt_evidence_bounds_to_sclite() -> None:
