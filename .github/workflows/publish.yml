@@ -39,13 +39,12 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.13'
-      - name: Exercise the aligned source dependency graph
+      - name: Exercise the aligned upstream source dependency graph
         run: |
           python -m venv "$RUNNER_TEMP/govstack-source"
           "$RUNNER_TEMP/govstack-source/bin/python" -m pip install \
             "$GITHUB_WORKSPACE/_govstack/sclite" \
-            "$GITHUB_WORKSPACE" \
-            "$GITHUB_WORKSPACE/_govstack/rexecop"
+            "$GITHUB_WORKSPACE"
           "$RUNNER_TEMP/govstack-source/bin/python" -m pip check
       - name: Qualify exact source candidates and downstream API consumers
         run: |
@@ -90,6 +89,15 @@ jobs:
           python -m pip install -r .github/release-test-requirements.txt
           python -m pip install "sclite-core==2.0.1"
           python -m pip install --no-build-isolation -e '.[dev]'
+      - name: Require authentic candidate record child before public truth
+        run: |
+          PACKAGE_VERSION="${GITHUB_REF_NAME#v}"
+          if [[ "$PACKAGE_VERSION" == *rc* ]]; then
+            python scripts/validate_release_record_commit.py \
+              --review-commit "$GITHUB_SHA" \
+              --candidate-version "$PACKAGE_VERSION" \
+              > "$RUNNER_TEMP/reviewed-source-commit"
+          fi
       - name: Run release contract gates
         run: |
           python scripts/validate_public_truth.py
@@ -97,13 +105,11 @@ jobs:
           python scripts/validate_api_stability.py --local
           python scripts/validate_v1_freeze.py
           PACKAGE_VERSION="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
-          if [[ "$PACKAGE_VERSION" == "1.0.0rc2" ]]; then
+          if [[ "$PACKAGE_VERSION" == *rc* ]]; then
             python scripts/validate_rc_window.py \
-              --record docs/rc-window/1.0.0rc2.json \
-              --expected-version 1.0.0rc2 \
+              --record "docs/rc-window/${PACKAGE_VERSION}.json" \
+              --expected-version "$PACKAGE_VERSION" \
               --history-mode
-          elif [[ "$PACKAGE_VERSION" == *rc* ]]; then
-            python scripts/validate_rc_window.py
           else
             python scripts/validate_rc_window.py --require-completed
           fi
@@ -114,24 +120,27 @@ jobs:
           python -m pytest -q
       - name: Build reviewed source artifacts
         run: |
-          if [[ "$GITHUB_REF_NAME" == "v1.0.0rc2" ]]; then
-            SOURCE_COMMIT="$(python scripts/validate_release_record_commit.py --review-commit "$GITHUB_SHA")"
-            mkdir -p "$RUNNER_TEMP/rc2-records"
-            cp docs/security-review/rc2-external-review.json "$RUNNER_TEMP/rc2-records/review.json"
-            cp docs/rc-window/1.0.0rc2.json "$RUNNER_TEMP/rc2-records/window.json"
+          PACKAGE_VERSION="${GITHUB_REF_NAME#v}"
+          if [[ "$PACKAGE_VERSION" == *rc* ]]; then
+            CANDIDATE_LABEL="rc${PACKAGE_VERSION##*rc}"
+            SOURCE_COMMIT="$(cat "$RUNNER_TEMP/reviewed-source-commit")"
+            mkdir -p "$RUNNER_TEMP/candidate-records"
+            cp "docs/security-review/${CANDIDATE_LABEL}-external-review.json" "$RUNNER_TEMP/candidate-records/review.json"
+            cp "docs/rc-window/${PACKAGE_VERSION}.json" "$RUNNER_TEMP/candidate-records/window.json"
             git checkout --detach "$SOURCE_COMMIT"
-            echo "$SOURCE_COMMIT" > "$RUNNER_TEMP/reviewed-source-commit"
           fi
           PYTHON=python bash scripts/build_release_artifacts.sh --outdir dist
           mkdir -p "$RUNNER_TEMP/reviewed-dist"
           cp dist/*.whl dist/*.tar.gz "$RUNNER_TEMP/reviewed-dist/"
-      - name: Require rc2 review binding and exact A/B artifact equality
+      - name: Require candidate review binding and exact A/B artifact equality
         run: |
-          if [[ "$GITHUB_REF_NAME" != "v1.0.0rc2" ]]; then exit 0; fi
+          PACKAGE_VERSION="${GITHUB_REF_NAME#v}"
+          if [[ "$PACKAGE_VERSION" != *rc* ]]; then exit 0; fi
           SOURCE_COMMIT="$(cat "$RUNNER_TEMP/reviewed-source-commit")"
           python scripts/validate_rc2_release_records.py \
-            --review "$RUNNER_TEMP/rc2-records/review.json" \
-            --window "$RUNNER_TEMP/rc2-records/window.json" \
+            --candidate-version "$PACKAGE_VERSION" \
+            --review "$RUNNER_TEMP/candidate-records/review.json" \
+            --window "$RUNNER_TEMP/candidate-records/window.json" \
             --source-commit "$SOURCE_COMMIT" \
             --wheel "$RUNNER_TEMP"/reviewed-dist/*.whl \
             --sdist "$RUNNER_TEMP"/reviewed-dist/*.tar.gz

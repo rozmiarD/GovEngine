@@ -6,9 +6,10 @@ mechanics.
 
 ## Current 1.0 release-candidate line
 
-Current source baseline: `govengine==1.0.0rc2`, exact-pinned to
-`sclite-core==2.0.1`, published from immutable tag `v1.0.0rc2` with its
-observation window elapsed_unclosed. Published PyPI baseline is `govengine==1.0.0rc2`.
+Current source baseline: `govengine==1.0.0rc3`, exact-pinned to
+`sclite-core==2.0.1`. It is source A with external review pending; it is not
+published or release-authorized. Published PyPI baseline is `govengine==1.0.0rc2`,
+whose observation window is elapsed_unclosed.
 
 ## Responsibility boundary
 
@@ -33,7 +34,7 @@ cross-stack blocker proves it unavoidable.
 - one attempt/lease/fencing/runtime-bound `GovernanceDecision`;
 - host signing/trust seam and RExecOp-owned atomic claim handoff;
 - module-scoped terminal-runtime-fact conformance;
-- 33-case language-neutral governance corpus shared with RExecOp;
+- 41-case language-neutral governance corpus shared with RExecOp;
 - strict JSON bounds, stable reason codes and redacted explanations;
 - threat model, security guarantees and independent review;
 - tag-bound OIDC publication with provenance and public-index evidence.
@@ -88,7 +89,9 @@ sclite-core 2.0.0 -> govengine 1.0.0rc1 -> rexecop 1.0.0rc1
 Current source candidates at the exact qualified sibling refs are:
 
 ```text
-sclite-core 2.0.1 -> govengine 1.0.0rc2 -> rexecop 1.0.0rc3.dev0
+sclite-core 2.0.1 -> govengine 1.0.0rc3
+
+rexecop 1.0.0rc3.dev0: govengine 1.0.0rc2 (pending realignment)
 
 tecrax 0.4.0rc3: govengine 1.0.0rc2, sclite-core 2.0.1,
                  rexecop 1.0.0rc2 (pending realignment)

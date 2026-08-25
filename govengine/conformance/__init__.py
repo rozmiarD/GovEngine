@@ -28,12 +28,21 @@ from govengine.governance import (
     governance_request_digest,
     validate_governance_request,
 )
-from govengine.governance_decision import GovernanceDecision, validate_governance_decision
+from govengine.governance_decision import (
+    GovernanceDecision,
+    PolicyActivationPort,
+    evaluate_governance,
+    validate_governance_decision,
+)
 from govengine.policy import (
     PolicyCompiler,
     PolicyEngine,
     policy_pack_digest,
     policy_verdict_digest,
+)
+from govengine.policy.activation import (
+    PolicyActivationBinding,
+    validate_policy_activation_binding,
 )
 from govengine.receipt_conformance import (
     evaluate_receipt_conformance,
@@ -84,6 +93,16 @@ class _Revocations(ApprovalRevocationPort):
         revocation_ref: str,
     ) -> bool:
         return self.revoked
+
+
+class _Activation(PolicyActivationPort):
+    """Fixture-only current-binding view for serialized conformance inputs."""
+
+    def __init__(self, binding: PolicyActivationBinding) -> None:
+        self.binding = binding
+
+    def current_binding(self, policy_id: str) -> PolicyActivationBinding:
+        return self.binding
 
 
 def conformance_root() -> Path:
@@ -290,6 +309,14 @@ def _run_operation(operation: str, payload: Mapping[str, Any]) -> ConformanceOut
             'compiled',
             {'policy_pack_digest': policy_pack_digest(result.policy_pack)},
         )
+    if operation == 'validate_policy_activation':
+        validate_policy_activation_binding(
+            require_mapping(
+                payload.get('policy_activation_binding'),
+                reason_code='invalid_policy_activation_binding',
+            )
+        )
+        return ConformanceOutcome('accepted', 'policy_activation_valid')
     if operation == 'evaluate_policy':
         result = PolicyCompiler().compile(
             require_mapping(payload.get('policy_pack'), reason_code='invalid_policy_pack')
@@ -410,6 +437,29 @@ def _run_operation(operation: str, payload: Mapping[str, Any]) -> ConformanceOut
             'accepted',
             'governance_decision_valid',
             {'governance_decision_digest': governance_decision.decision_digest},
+        )
+    if operation == 'evaluate_governance':
+        evaluated_at = payload.get('evaluated_at')
+        if not isinstance(evaluated_at, str):
+            raise GovApiError('invalid_conformance_evaluation_time')
+        activation = validate_policy_activation_binding(
+            require_mapping(
+                payload.get('policy_activation_binding'),
+                reason_code='invalid_policy_activation_binding',
+            )
+        )
+        decision = evaluate_governance(
+            require_mapping(
+                payload.get('governance_request'),
+                reason_code='invalid_governance_request',
+            ),
+            policy_activation_port=_Activation(activation),
+            evaluated_at=datetime.fromisoformat(evaluated_at),
+        )
+        return ConformanceOutcome(
+            decision.status,
+            decision.reason_code,
+            {'governance_decision_digest': decision.decision_digest},
         )
     if operation == 'evaluate_receipt':
         receipt_decision = GovernanceDecision.from_mapping(

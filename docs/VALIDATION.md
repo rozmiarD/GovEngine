@@ -25,10 +25,11 @@ Separate jobs:
   live source versions and dependency metadata with the cross-repository
   release-train gate, and scan both direct consumers with the cross-repository
   API gate;
-- install the aligned SCLite/GovEngine/RExecOp source graph with normal pip
-  dependency resolution and run `pip check`. Tecrax remains an inspected API
-  consumer and an explicitly `pending_realignment` source candidate until its
-  RExecOp pin matches; it is not included in the passing install graph.
+- install the aligned SCLite/GovEngine source pair with normal pip dependency
+  resolution and run `pip check`. RExecOp and Tecrax remain inspected API
+  consumers and explicit `pending_realignment` source candidates until their
+  GovEngine/RExecOp pins match; neither is included in the passing install
+  graph.
 
 The scheduled security workflow runs dependency audit and CodeQL. All GitHub
 Actions are pinned to full commit SHAs.
@@ -45,8 +46,9 @@ This runs public truth, local-only release-train truth, local-only API
 inventory, release-source validation, G3 receipt conformance, Ruff, mypy and
 full pytest. The parity helper's legacy bare validator invocations are always
 reported as `local`; they are not cross-stack or release qualification. Current
-post-tag `main` reports `publishable=false`; this is a successful validation of
-the explicitly unreleased source posture, not release authorization.
+rc3 source A reports `publishable=false`; this is a successful validation of
+the explicitly unreleased, external-review-pending source posture, not release
+authorization.
 `git diff --check` remains a separate local delivery check.
 
 ## Contract gates
@@ -58,7 +60,9 @@ the explicitly unreleased source posture, not release authorization.
 .venv/bin/python scripts/validate_digest_ownership.py
 .venv/bin/python scripts/validate_workflow_security.py
 .venv/bin/python scripts/validate_v1_security_review.py
-.venv/bin/python scripts/validate_rc_window.py --history-mode
+.venv/bin/python scripts/validate_rc_window.py --record docs/rc-window/1.0.0rc1.json --expected-version 1.0.0rc1 --history-mode
+.venv/bin/python scripts/validate_rc_window.py --record docs/rc-window/1.0.0rc2.json --expected-version 1.0.0rc2 --history-mode
+.venv/bin/python scripts/validate_rc_window.py --record docs/rc-window/1.0.0rc3.json --expected-version 1.0.0rc3
 .venv/bin/python scripts/validate_release_train_truth.py --local
 .venv/bin/python scripts/validate_distribution_metadata.py --wheel WHEEL --sdist SDIST
 .venv/bin/python scripts/validate_rc2_release_records.py --help
@@ -66,7 +70,11 @@ the explicitly unreleased source posture, not release authorization.
 
 - `validate_v1_freeze.py` enforces 40 facade exports, 15 v1 records and five
   retained v0.1 facade schemas.
-- corpus generation enforces 33 reproducible cases: five valid and 28 negative.
+- the historical rc1/rc2 corpus remains exactly 33 reproducible cases. Current
+  rc3 source expands the generated corpus to 41: five valid and 36 negative.
+  It rejects missing, extra and hand-edited v1 corpus files; the separate v1
+  freeze gate keeps the facade/schema inventory frozen, while immutable release
+  records retain their historical corpus digest.
 - documentation anti-drift scans all 42 active Markdown files for broken local
   links and anchors, missing file references, unknown CLI commands, index gaps,
   active ownership/version contradictions and inconsistent release
@@ -76,7 +84,10 @@ the explicitly unreleased source posture, not release authorization.
   RExecOp-owned payloads.
 - normal review validation checks structure; release mode adds
   `--require-independent`.
-- RC validation binds the facade manifest, corpus manifest and reason registry.
+- RC validation resolves immutable rc1/rc2 input hashes from their recorded Git
+  source and binds the rc3 `pending_review` record to current source inputs and
+  the exact pending review form. Pending review is not artifact or publication
+  evidence.
 - release-train validation checks current GovEngine package metadata and active
   documentation against `docs/release-train.json`. Schema v2 keeps immutable
   `published_artifacts` separate from current `source_candidates`; local mode
@@ -174,7 +185,14 @@ package by itself.
 
 ## Current package evidence
 
-Expected result for the current `1.0.0rc2` package line: published release
+Expected result for the current `1.0.0rc3` package line: external review
+pending. This is the current `1.0.0rc3` source-A line: no reviewed source
+commit, artifact hashes, approval verdict or publication evidence is claimed;
+stable promotion remains `publishable=false`.
+
+## Immutable published rc2 evidence
+
+Expected result for the immutable `1.0.0rc2` package line: published release
 candidate with an elapsed_unclosed observation window and stable promotion
 `publishable=false`. Reviewed source A is
 `f4845c1076df848c1be2df7aa7817450472e6e11`; tagged record child B is

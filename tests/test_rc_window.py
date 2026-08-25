@@ -380,6 +380,27 @@ def test_frozen_rc_records_remain_byte_identical() -> None:
     )
 
 
+def test_rc3_source_a_is_exact_pending_review_without_artifact_claims() -> None:
+    record = validate_rc_window(
+        Path.cwd() / 'docs/rc-window/1.0.0rc3.json',
+        expected_version='1.0.0rc3',
+    )
+
+    assert record['status'] == 'pending_review'
+    assert record['source_commit'] is None
+    assert record['prepared_at'] is None
+    assert record['published_at'] is None
+    assert record['public_evidence_ref'] == ''
+    review = json.loads(
+        (Path.cwd() / 'docs/security-review/rc3-external-review.json').read_text(
+            encoding='utf-8'
+        )
+    )
+    assert review['verdict'] == 'pending_external_reviewer'
+    assert review['artifacts']['wheel_sha256'] == ''
+    assert review['artifacts']['normalized_sdist_sha256'] == ''
+
+
 def _write_v2_prepared_window(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

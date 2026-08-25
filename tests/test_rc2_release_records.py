@@ -50,21 +50,23 @@ def _write_records(
     open_p1: object = 0,
     facade_exports: object = 40,
     v1_records: object = 15,
+    candidate_version: str = '1.0.0rc2',
 ) -> tuple[Path, Path]:
+    candidate_label = f"rc{candidate_version.rsplit('rc', 1)[1]}"
     review = tmp_path / 'review.json'
     review.write_text(json.dumps({
-        'schema_version': 'govengine.rc2_external_security_review.v1', 'source_commit': SOURCE,
+        'schema_version': f'govengine.{candidate_label}_external_security_review.v1', 'source_commit': SOURCE,
         'artifacts': {'runner': 'github-hosted-runner', 'wheel_sha256': hashlib.sha256(wheel.read_bytes()).hexdigest(), 'normalized_sdist_sha256': hashlib.sha256(sdist.read_bytes()).hexdigest()},
         'confidential_report_sha256': confidential_report_sha256, 'reviewer': reviewer,
         'reviewed_at': '2026-01-01T00:00:00Z', 'verdict': 'approved', 'open_p0': open_p0, 'open_p1': open_p1,
     }), encoding='utf-8')
     window = tmp_path / 'window.json'
     window.write_text(json.dumps({
-        'schema_version': 'govengine.rc_window.v2', 'status': 'prepared', 'version': '1.0.0rc2', 'source_commit': SOURCE,
+        'schema_version': 'govengine.rc_window.v2', 'status': 'prepared', 'version': candidate_version, 'source_commit': SOURCE,
         'prepared_at': '2026-01-01T00:00:00Z', 'published_at': None, 'observation_ends_at': None, 'completed_at': None,
         'minimum_observation_days': 7, 'public_evidence_ref': '',
         'frozen_inputs': {'pyproject_sha256': hashlib.sha256((ROOT / 'pyproject.toml').read_bytes()).hexdigest(), 'v1_compatibility_manifest_sha256': hashlib.sha256((ROOT / 'govengine/v1_compatibility_manifest.json').read_bytes()).hexdigest(), 'v1_conformance_manifest_sha256': hashlib.sha256((ROOT / 'govengine/conformance/v1/manifest.json').read_bytes()).hexdigest(), 'policy_reason_registry_sha256': hashlib.sha256((ROOT / 'govengine/policy/reasons.py').read_bytes()).hexdigest()},
-        'security_review': {'path': 'docs/security-review/rc2-external-review.json', 'sha256': hashlib.sha256(review.read_bytes()).hexdigest()},
+        'security_review': {'path': f'docs/security-review/{candidate_label}-external-review.json', 'sha256': hashlib.sha256(review.read_bytes()).hexdigest()},
         'facade_exports': facade_exports, 'v1_records': v1_records,
         'rule': 'schema_facade_corpus_or_reason_registry_change_requires_new_rc', 'notes': 'Synthetic fixture.',
     }), encoding='utf-8')
@@ -77,6 +79,29 @@ def test_accepts_bound_review_and_prepared_window(tmp_path: Path) -> None:
     sdist.write_bytes(b'sdist')
     review, window = _write_records(tmp_path, wheel, sdist)
     validate_rc2_release_records(review=review, window=window, source_commit=SOURCE, wheel=wheel, sdist=sdist)
+
+
+def test_accepts_candidate_bound_rc3_review_and_prepared_window(
+    tmp_path: Path,
+) -> None:
+    wheel, sdist = tmp_path / 'a.whl', tmp_path / 'a.tar.gz'
+    wheel.write_bytes(b'wheel')
+    sdist.write_bytes(b'sdist')
+    review, window = _write_records(
+        tmp_path,
+        wheel,
+        sdist,
+        candidate_version='1.0.0rc3',
+    )
+
+    validate_rc2_release_records(
+        review=review,
+        window=window,
+        source_commit=SOURCE,
+        wheel=wheel,
+        sdist=sdist,
+        candidate_version='1.0.0rc3',
+    )
 
 
 def test_live_review_matches_repository_posture_and_pending_fails_authentic_validation(

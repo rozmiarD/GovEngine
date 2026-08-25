@@ -10,28 +10,43 @@ from pathlib import Path
 from typing import Any
 
 
-REVIEW_PATH = Path("docs/security-review/rc2-external-review.json")
-WINDOW_PATH = Path("docs/rc-window/1.0.0rc2.json")
-EXPECTED_RECORD_CHANGES = (
-    ("A", str(WINDOW_PATH)),
-    ("M", str(REVIEW_PATH)),
-)
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
-PENDING_REVIEW: dict[str, Any] = {
-    "schema_version": "govengine.rc2_external_security_review.v1",
-    "source_commit": "",
-    "artifacts": {
-        "runner": "github-hosted-runner",
-        "wheel_sha256": "",
-        "normalized_sdist_sha256": "",
-    },
-    "confidential_report_sha256": "",
-    "reviewer": "",
-    "reviewed_at": None,
-    "verdict": "pending_external_reviewer",
-    "open_p0": None,
-    "open_p1": None,
-}
+RC_VERSION = re.compile(r"^1\.0\.0rc(?P<candidate>[1-9][0-9]*)$")
+
+
+def _candidate_paths(candidate_version: str) -> tuple[str, Path, Path]:
+    match = RC_VERSION.fullmatch(candidate_version)
+    if match is None:
+        raise ValueError("candidate_version_invalid")
+    label = f"rc{match.group('candidate')}"
+    return (
+        label,
+        Path(f"docs/security-review/{label}-external-review.json"),
+        Path(f"docs/rc-window/{candidate_version}.json"),
+    )
+
+
+def _pending_review(candidate_version: str) -> dict[str, Any]:
+    label, _, _ = _candidate_paths(candidate_version)
+    return {
+        "schema_version": f"govengine.{label}_external_security_review.v1",
+        "source_commit": "",
+        "artifacts": {
+            "runner": "github-hosted-runner",
+            "wheel_sha256": "",
+            "normalized_sdist_sha256": "",
+        },
+        "confidential_report_sha256": "",
+        "reviewer": "",
+        "reviewed_at": None,
+        "verdict": "pending_external_reviewer",
+        "open_p0": None,
+        "open_p1": None,
+    }
+
+
+# Backward-compatible fixture name for the immutable rc2 A/B history.
+PENDING_REVIEW = _pending_review("1.0.0rc2")
 
 
 @dataclass(frozen=True)
@@ -61,16 +76,52 @@ def _load_json(text: str) -> Any:
     return json.loads(text, object_pairs_hook=reject_duplicate_keys)
 
 
-def validate_record_commit(repo: Path, review_commit: str) -> str:
+def _source_has_path(repo: Path, source_commit: str, path: Path) -> bool:
+    return subprocess.run(
+        ["git", "cat-file", "-e", f"{source_commit}:{path}"],
+        cwd=repo,
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    ).returncode == 0
+
+
+def _expected_record_changes(
+    repo: Path,
+    source_commit: str,
+    *,
+    review_path: Path,
+    window_path: Path,
+) -> list[str]:
+    window_status = "M" if _source_has_path(repo, source_commit, window_path) else "A"
+    return [f"{window_status}\t{window_path}", f"M\t{review_path}"]
+
+
+def validate_record_commit(
+    repo: Path,
+    review_commit: str,
+    *,
+    candidate_version: str = "1.0.0rc2",
+) -> str:
+    label, review_path, window_path = _candidate_paths(candidate_version)
     parents = _git(repo, "rev-list", "--parents", "-n", "1", review_commit).split()
     if len(parents) != 2:
-        raise ValueError("rc2 review record commit must have exactly one parent")
+        raise ValueError(f"{label} review record commit must have exactly one parent")
     source_commit = parents[1]
     changes = _git(repo, "diff", "--name-status", source_commit, review_commit).splitlines()
-    expected = [f"{status}\t{path}" for status, path in EXPECTED_RECORD_CHANGES]
+    expected = _expected_record_changes(
+        repo,
+        source_commit,
+        review_path=review_path,
+        window_path=window_path,
+    )
     if changes != expected:
+        if _source_has_path(repo, source_commit, window_path):
+            action = "modify the window and seeded review form"
+        else:
+            action = "add the window and modify the seeded review form"
         raise ValueError(
-            "rc2 review record commit must add the window and modify the seeded review form"
+            f"{label} review record commit must {action}"
         )
     return source_commit
 
@@ -80,13 +131,20 @@ def _matches_authentic_record(
     commit: str,
     source_commit: str,
     current_review: bytes,
+    candidate_version: str,
+    review_path: Path,
+    window_path: Path,
 ) -> bool:
     try:
-        if validate_record_commit(repo, commit) != source_commit:
+        if validate_record_commit(
+            repo,
+            commit,
+            candidate_version=candidate_version,
+        ) != source_commit:
             return False
-        record_review = _git_bytes(repo, "show", f"{commit}:{REVIEW_PATH}")
+        record_review = _git_bytes(repo, "show", f"{commit}:{review_path}")
         record_window = _load_json(
-            _git_bytes(repo, "show", f"{commit}:{WINDOW_PATH}").decode("utf-8")
+            _git_bytes(repo, "show", f"{commit}:{window_path}").decode("utf-8")
         )
     except (ValueError, subprocess.CalledProcessError, json.JSONDecodeError):
         return False
@@ -98,8 +156,9 @@ def _matches_authentic_record(
     return (
         record_review == current_review
         and isinstance(record_reference, dict)
+        and record_window.get("version") == candidate_version
         and record_window.get("source_commit") == source_commit
-        and record_reference.get("path") == str(REVIEW_PATH)
+        and record_reference.get("path") == str(review_path)
         and record_reference.get("sha256")
         == hashlib.sha256(record_review).hexdigest()
     )
@@ -125,42 +184,65 @@ def _squash_candidate(repo: Path, head_commit: str, source_commit: str) -> str:
     ).strip()
 
 
-def resolve_release_ab_state(repo: Path) -> ReleaseABState:
+def resolve_release_ab_state(
+    repo: Path,
+    *,
+    candidate_version: str = "1.0.0rc2",
+) -> ReleaseABState:
+    label, review_relative, window_relative = _candidate_paths(candidate_version)
     head_commit = _git(repo, "rev-parse", "--verify", "HEAD^{commit}")
-    review_path = repo / REVIEW_PATH
-    window_path = repo / WINDOW_PATH
+    review_path = repo / review_relative
+    window_path = repo / window_relative
     review = _load_json(review_path.read_text(encoding="utf-8"))
     if not isinstance(review, dict):
-        raise ValueError("rc2 review record must be a JSON object")
+        raise ValueError(f"{label} review record must be a JSON object")
 
-    if review == PENDING_REVIEW:
+    if review == _pending_review(candidate_version):
         if window_path.exists():
-            raise ValueError("pending rc2 source must not contain an rc2 window")
+            if candidate_version == "1.0.0rc2":
+                raise ValueError("pending rc2 source must not contain an rc2 window")
+            pending_window = _load_json(window_path.read_text(encoding="utf-8"))
+            reference = (
+                pending_window.get("security_review")
+                if isinstance(pending_window, dict)
+                else None
+            )
+            if (
+                not isinstance(pending_window, dict)
+                or pending_window.get("status") != "pending_review"
+                or pending_window.get("version") != candidate_version
+                or pending_window.get("source_commit") is not None
+                or not isinstance(reference, dict)
+                or reference.get("path") != str(review_relative)
+                or reference.get("sha256")
+                != hashlib.sha256(review_path.read_bytes()).hexdigest()
+            ):
+                raise ValueError(f"pending {label} source record is inconsistent")
         return ReleaseABState("synthetic", head_commit, None)
 
     if not window_path.exists():
-        raise ValueError("approved rc2 review requires an rc2 window")
+        raise ValueError(f"approved {label} review requires a candidate window")
     window = _load_json(window_path.read_text(encoding="utf-8"))
     if not isinstance(window, dict):
-        raise ValueError("rc2 window must be a JSON object")
+        raise ValueError(f"{label} window must be a JSON object")
     source_commit = review.get("source_commit")
     if (
         review.get("verdict") != "approved"
         or not isinstance(source_commit, str)
         or not FULL_SHA.fullmatch(source_commit)
         or window.get("schema_version") != "govengine.rc_window.v2"
-        or window.get("version") != "1.0.0rc2"
+        or window.get("version") != candidate_version
         or window.get("source_commit") != source_commit
     ):
-        raise ValueError("rc2 review and window identity are inconsistent")
+        raise ValueError(f"{label} review and window identity are inconsistent")
     reference = window.get("security_review")
     current_review = review_path.read_bytes()
     if (
         not isinstance(reference, dict)
-        or reference.get("path") != str(REVIEW_PATH)
+        or reference.get("path") != str(review_relative)
         or reference.get("sha256") != hashlib.sha256(current_review).hexdigest()
     ):
-        raise ValueError("rc2 window does not bind the current review record")
+        raise ValueError(f"{label} window does not bind the current review record")
     if subprocess.run(
         ["git", "merge-base", "--is-ancestor", source_commit, head_commit],
         cwd=repo,
@@ -168,7 +250,7 @@ def resolve_release_ab_state(repo: Path) -> ReleaseABState:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     ).returncode != 0:
-        raise ValueError("rc2 source is not an ancestor of the checked commit")
+        raise ValueError(f"{label} source is not an ancestor of the checked commit")
 
     candidates: list[str] = []
     commits = _git(
@@ -182,12 +264,23 @@ def resolve_release_ab_state(repo: Path) -> ReleaseABState:
         parents = _git(repo, "rev-list", "--parents", "-n", "1", commit).split()[1:]
         if parents != [source_commit]:
             continue
-        if _matches_authentic_record(repo, commit, source_commit, current_review):
+        if _matches_authentic_record(
+            repo,
+            commit,
+            source_commit,
+            current_review,
+            candidate_version,
+            review_relative,
+            window_relative,
+        ):
             candidates.append(commit)
 
-    expected_changes = [
-        f"{status}\t{path}" for status, path in EXPECTED_RECORD_CHANGES
-    ]
+    expected_changes = _expected_record_changes(
+        repo,
+        source_commit,
+        review_path=review_relative,
+        window_path=window_relative,
+    )
     aggregate_changes = _git(
         repo, "diff", "--name-status", source_commit, head_commit
     ).splitlines()
@@ -197,10 +290,18 @@ def resolve_release_ab_state(repo: Path) -> ReleaseABState:
         and aggregate_changes == expected_changes
     ):
         candidate = _squash_candidate(repo, head_commit, source_commit)
-        if _matches_authentic_record(repo, candidate, source_commit, current_review):
+        if _matches_authentic_record(
+            repo,
+            candidate,
+            source_commit,
+            current_review,
+            candidate_version,
+            review_relative,
+            window_relative,
+        ):
             candidates.append(candidate)
     if len(candidates) != 1:
-        raise ValueError("exactly one authentic rc2 record child must resolve")
+        raise ValueError(f"exactly one authentic {label} record child must resolve")
     return ReleaseABState("authentic", source_commit, candidates[0])
 
 
@@ -209,17 +310,27 @@ def main() -> int:
     parser.add_argument("--repo", type=Path, default=Path("."))
     parser.add_argument("--review-commit", default="HEAD")
     parser.add_argument("--resolve-ab-state", action="store_true")
+    parser.add_argument("--candidate-version", default="1.0.0rc2")
     args = parser.parse_args()
     try:
         if args.resolve_ab_state:
-            state = resolve_release_ab_state(args.repo)
+            state = resolve_release_ab_state(
+                args.repo,
+                candidate_version=args.candidate_version,
+            )
             print(
                 "\t".join(
                     (state.mode, state.source_commit, state.record_commit or "-")
                 )
             )
         else:
-            print(validate_record_commit(args.repo, args.review_commit))
+            print(
+                validate_record_commit(
+                    args.repo,
+                    args.review_commit,
+                    candidate_version=args.candidate_version,
+                )
+            )
     except (
         OSError,
         ValueError,

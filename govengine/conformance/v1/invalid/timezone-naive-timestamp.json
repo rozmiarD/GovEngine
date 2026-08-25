@@ -1,0 +1,42 @@
+{
+  "binding_digests": "not_applicable",
+  "case_id": "timezone-naive-timestamp",
+  "expected": {
+    "govengine": {
+      "reason_code": "invalid_policy_activation_not_before",
+      "status": "rejected"
+    },
+    "rexecop": {
+      "reason_code": "invalid_policy_activation_not_before",
+      "status": "rejected"
+    }
+  },
+  "forbidden_output_keys": [
+    "credential",
+    "password",
+    "raw_output",
+    "raw_target",
+    "secret",
+    "target_url",
+    "token"
+  ],
+  "input": {
+    "policy_activation_binding": {
+      "binding_id": "activation:production-mutation:42",
+      "expires_at": "2026-07-15T13:00:00Z",
+      "issuer_ref": "organization:example",
+      "not_before": "2026-07-15T12:00:00",
+      "policy_epoch": 42,
+      "policy_id": "production-mutation",
+      "policy_pack_digest": "sha256:bcca407827c3d862d67bedac9d2a3c5be79b3bee7f50d2f1b35c881d36ebedaf",
+      "policy_version": "1.0.0",
+      "schema_version": "v1",
+      "status": "active",
+      "trust_ref": "policy-trust:organization:example"
+    }
+  },
+  "max_schema_version": "v1",
+  "operation": "validate_policy_activation",
+  "owner": "govengine",
+  "schema_version": "govengine.conformance_case.v1"
+}

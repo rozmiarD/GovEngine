@@ -18,13 +18,13 @@ the operation, schedule jobs, manage credentials, contact targets or store
 evidence.
 
 The immutable published release-candidate package `1.0.0rc2` exposes the frozen
-candidate contract through `govengine.v1`. Current source is `1.0.0rc2`; the
-candidate was published from `v1.0.0rc2` after authentic external review, and
-its seven-day observation window is elapsed_unclosed after
+candidate contract through `govengine.v1`. Current source is `1.0.0rc3`; source A is unpublished and external review is pending. The
+published candidate was built from `v1.0.0rc2` after authentic external review,
+and its seven-day rc2 observation window is elapsed_unclosed after
 `2026-08-15T11:15:02.258488Z`. The frozen RC record has no closure evidence;
 it is not active or completed and stable promotion remains `publishable=false`.
 
-Current source package coordinate: `govengine==1.0.0rc2`.
+Current source package coordinate: `govengine==1.0.0rc3`.
 The wider package still contains explicitly classified compatibility,
 experimental and fixture surfaces.
 
@@ -230,14 +230,14 @@ continue with the bound request and decision contracts described in
 
 | Item | Current status |
 | --- | --- |
-| Source/package version | `1.0.0rc2` published; observation elapsed_unclosed |
+| Source/package version | `1.0.0rc3` source A; external review pending |
 | Package maturity | Public release candidate |
 | Candidate 1.x facade | `govengine.v1`, exactly 40 exports |
 | GovEngine-owned v1 records | 15 frozen records |
 | Source SCLite dependency | `sclite-core==2.0.1` |
 | Legacy root modules | Compatibility, experimental or fixture classifications |
 
-Current source/package version: `1.0.0rc2` published with an elapsed_unclosed RC window.
+Current source/package version: `1.0.0rc3` source A; external review pending.
 Latest public package pin: `govengine==1.0.0rc2`.
 
 The final `1.0.0` promotion state is maintained in
@@ -290,9 +290,9 @@ python scripts/validate_public_truth.py
 python scripts/validate_release_readiness.py
 ```
 
-On current post-tag `main`, `validate_release_readiness.py` validates source
+On current source-A `main`, `validate_release_readiness.py` validates source
 invariants but reports `publishable=false`. It does not authorize republishing
-`rc1` or promoting the changed source directly to stable.
+`rc1`, republishing `rc2`, or promoting the changed source directly to stable.
 
 Use `scripts/validate_clean_package_install.py --no-editable --venv <path>` for
 an isolated package-install smoke test. See

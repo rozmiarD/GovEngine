@@ -8,6 +8,21 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Opens the `1.0.0rc3` source-A record in explicit `pending_review` posture.
+  Candidate-aware validators bind its current frozen inputs and exact empty
+  review/artifact form, while immutable rc1/rc2 records remain byte-identical
+  and validate against their recorded Git sources. No rc3 publication or
+  external-review approval is claimed.
+
+- Expands the generated, wheel-shipped shared conformance corpus from 33 to 41
+  deterministic cases. The new GovEngine-owned negative vectors cover
+  non-ASCII bindings, timezone-naive activation timestamps, approval validity,
+  inactive policy activation states, decision-body tampering and conflicting
+  policy rules. The corpus remains a bounded interoperability contract:
+  RExecOp retains its runtime `consume_decision` ownership, SCLite remains the
+  canonical evidence authority, and corpus generation does not rewrite
+  immutable RC records.
+
 - Removes unreachable local fallback branches after the existing typed input
   validation, while preserving public approval and governance-decision
   behavior. `DemoDigestVerifier` now uses `hmac.compare_digest` for its
@@ -21,13 +36,15 @@ experimental and fixture classifications.
   candidate identities in the release-train manifest. Local API/release checks
   now identify their bounded mode, while hosted test and publish workflows use
   exact sibling commit refs for cross-repository source metadata, direct
-  RExecOp/Tecrax consumer imports and an aligned dependency-resolved
-  SCLite/GovEngine/RExecOp install with `pip check`. These validation gates do
-  not publish artifacts, authorize execution, create SCLite verification truth,
-  or transfer RExecOp/Tecrax ownership into GovEngine. The active migration
-  guide now labels the immutable rc1 install recipe as historical, identifies
-  the public GovEngine rc2/SCLite 2.0.1 targets and the unaligned source
-  candidates, and is bound to manifest v2 by deterministic anti-drift checks.
+  RExecOp/Tecrax consumer imports and a dependency-resolved SCLite/GovEngine
+  install with `pip check`. RExecOp and Tecrax remain `pending_realignment`
+  source candidates inspected as API consumers, not members of an aligned
+  install graph. These validation gates do not publish artifacts, authorize
+  execution, create SCLite verification truth, or transfer RExecOp/Tecrax
+  ownership into GovEngine. The active migration guide now labels the immutable
+  rc1 install recipe as historical, identifies the public GovEngine rc2/SCLite
+  2.0.1 targets and the unaligned source candidates, and is bound to manifest v2
+  by deterministic anti-drift checks.
 
 - Deprecates `validate_execution_ticket_gate()` as a compatibility-only
   ticket/contract command-shape check: it no longer accepts an unbound

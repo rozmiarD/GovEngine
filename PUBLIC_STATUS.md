@@ -9,23 +9,26 @@ decision. It does not execute the operation or define artifact truth.
 
 | Item | Current truth |
 | --- | --- |
-| Current source version | `govengine==1.0.0rc2`; published; RC observation elapsed_unclosed |
+| Current source version | `govengine==1.0.0rc3`; source A; external review pending |
 | Published immutable artifact | `govengine==1.0.0rc2` from tag `v1.0.0rc2` |
 | Python | `>=3.11`; CI covers 3.11, 3.12 and 3.13 |
 | Source dependency | `sclite-core==2.0.1` |
 | Stable-candidate facade | `govengine.v1`, exactly 40 exports |
 | GovEngine-owned v1 records | 15 |
-| Conformance corpus | 33 cases: 5 valid, 28 negative |
-| Independent review | rc2 external re-review #4 approved with zero open P0/P1 |
+| Conformance corpus | current rc3 source: 41 cases; historical rc1/rc2: 33 |
+| Independent review | rc3 pending; rc2 external re-review #4 approved with zero open P0/P1 |
 | RC observation | elapsed_unclosed after `2026-08-15T11:15:02.258488Z`; no closure evidence |
 | Published reference runtime | `rexecop==1.0.0rc1`; immutable rc1 artifact |
-| RExecOp source candidate | `rexecop==1.0.0rc3.dev0`; unpublished |
+| RExecOp source candidate | `rexecop==1.0.0rc3.dev0`; unpublished; pending GovEngine rc3 realignment |
 | Profile source candidate | Tecrax `0.4.0rc3`; `pending_realignment`; pins `rexecop==1.0.0rc2` |
 
 The release was published from immutable tag `v1.0.0rc2` through confirmed
 workflow run `31254483143`, including source-A recovery, authentic review and
 window validation, exact A/B artifact equality, provenance and PyPI OIDC.
-Current `main` is a post-published source line with source and evidence updates.
+Current `main` is rc3 source A. Its pending review record contains no reviewed
+artifact hashes, approval verdict or publication evidence. The rc3 candidate
+record is `pending_review`; only an exact record child may bind the committed
+source, authentic review and reviewed artifacts and move it to `prepared`.
 Stable promotion remains `publishable=false`: the seven-day observation elapsed
 without closure evidence, and downstream RExecOp qualification against the
 public rc2 pair is also incomplete. A forward-only
@@ -38,7 +41,7 @@ Their SHA-256 values are recorded in the rc2 external-review record and
 The machine-readable current release train is
 [`docs/release-train.json`](docs/release-train.json).
 
-Source/package version: `1.0.0rc2`.
+Source/package version: `1.0.0rc3`.
 Latest published PyPI package: `govengine==1.0.0rc2`.
 
 ## Supported contract
@@ -84,7 +87,8 @@ migration. They do not make GovEngine a scheduler, lifecycle owner, executor,
 storage backend, domain profile or second SCLite truth layer.
 
 Published RExecOp `1.0.0rc1` is the immutable reference runtime artifact.
-RExecOp `1.0.0rc3.dev0` is the current source candidate. Tecrax is a downstream
+RExecOp `1.0.0rc3.dev0` is the current source candidate but remains pinned to
+GovEngine rc2, so it is pending realignment to rc3. Tecrax is a downstream
 profile whose `0.4.0rc3` source remains pending realignment because it pins
 RExecOp `1.0.0rc2`; these are not a source-aligned four-package train.
 Ravenclaw is a legacy/external consumer, not the current reference runtime.

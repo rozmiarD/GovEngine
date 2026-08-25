@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import subprocess
 import sys
 import tomllib
 from pathlib import Path
@@ -20,16 +21,21 @@ from govengine.surfaces import public_surface_index  # noqa: E402
 from scripts.validate_documentation_antidrift import (  # noqa: E402
     validate_documentation_antidrift,
 )
+from scripts.validate_release_record_commit import (  # noqa: E402
+    resolve_release_ab_state,
+)
 from scripts.validate_rc_window import ELAPSED_UNCLOSED, validate_rc_window  # noqa: E402
 from sclite.consumer_contracts import validate_consumer_imports  # noqa: E402
 
-EXPECTED_RELEASE_LABEL = '1.0.0rc2'
+EXPECTED_RELEASE_LABEL = '1.0.0rc3'
 PUBLISHED_VERSION = '1.0.0rc2'
 PYPI_LONG_DESCRIPTION_PATH = 'PYPI_LONG_DESCRIPTION.md'
 PYPI_LONG_DESCRIPTION_SHA256 = 'e600766f447f1d7a085176de02b7b99778b298af80344c009cce2dc3f70c37a0'
 RC2_REVIEW_RECORD_PATH = 'docs/security-review/rc2-external-review.json'
 RC2_WINDOW_RECORD_PATH = 'docs/rc-window/1.0.0rc2.json'
 RC2_WINDOW_EFFECTIVE_STATUS = ELAPSED_UNCLOSED
+RC3_REVIEW_RECORD_PATH = 'docs/security-review/rc3-external-review.json'
+RC3_WINDOW_RECORD_PATH = 'docs/rc-window/1.0.0rc3.json'
 PENDING_RC2_REVIEW_FORM = {
     'schema_version': 'govengine.rc2_external_security_review.v1',
     'source_commit': '',
@@ -44,6 +50,10 @@ PENDING_RC2_REVIEW_FORM = {
     'verdict': 'pending_external_reviewer',
     'open_p0': None,
     'open_p1': None,
+}
+PENDING_RC3_REVIEW_FORM = {
+    **PENDING_RC2_REVIEW_FORM,
+    'schema_version': 'govengine.rc3_external_security_review.v1',
 }
 
 CURRENT_ALPHA_DOCS = (
@@ -445,7 +455,7 @@ def _assert_roadmap_current_release_truth(roadmap: str) -> None:
     _assert_contains(
         'docs/ROADMAP.md',
         roadmap,
-        'Current source baseline: `govengine==1.0.0rc2`',
+        f'Current source baseline: `govengine=={EXPECTED_RELEASE_LABEL}`',
     )
     _assert_contains('docs/ROADMAP.md', roadmap, f'Published PyPI baseline is `govengine=={PUBLISHED_VERSION}`')
 
@@ -529,6 +539,47 @@ def _assert_rc2_window_current_state() -> None:
         raise AssertionError('rc2_window:current_effective_status_invalid')
 
 
+def _assert_rc3_candidate_state(*, root: Path = ROOT) -> str:
+    try:
+        state = resolve_release_ab_state(
+            root,
+            candidate_version=EXPECTED_RELEASE_LABEL,
+        )
+    except (OSError, ValueError, json.JSONDecodeError, subprocess.CalledProcessError) as exc:
+        raise AssertionError(f'rc3_release_ab_state_invalid:{exc}') from exc
+
+    review = json.loads(
+        (root / RC3_REVIEW_RECORD_PATH).read_text(encoding='utf-8')
+    )
+    checked = validate_rc_window(
+        root / RC3_WINDOW_RECORD_PATH,
+        expected_version=EXPECTED_RELEASE_LABEL,
+        history_mode=state.mode == 'authentic',
+    )
+
+    if state.mode == 'synthetic':
+        if review != PENDING_RC3_REVIEW_FORM:
+            raise AssertionError(f'{RC3_REVIEW_RECORD_PATH}:pending_form_mismatch')
+        if (
+            checked['status'] != 'pending_review'
+            or checked['record_status'] != 'pending_review'
+        ):
+            raise AssertionError('rc3_window:source_a_pending_status_invalid')
+        return 'source_a'
+
+    if state.mode != 'authentic' or state.record_commit is None:
+        raise AssertionError('rc3_release_ab_state_invalid:unsupported_lifecycle')
+    if (
+        not isinstance(review, Mapping)
+        or review.get('verdict') != 'approved'
+        or review.get('source_commit') != state.source_commit
+    ):
+        raise AssertionError(f'{RC3_REVIEW_RECORD_PATH}:record_child_identity_invalid')
+    if checked['status'] != 'prepared' or checked['record_status'] != 'prepared':
+        raise AssertionError('rc3_window:record_child_prepared_status_invalid')
+    return 'record_child_b'
+
+
 def main() -> int:
     import_errors = validate_consumer_imports('govengine', ROOT)
     if import_errors:
@@ -594,7 +645,7 @@ def main() -> int:
     _assert_contains(
         'CONTRIBUTING.md',
         contributing,
-        f'published `{release_label}` candidate',
+        f'published `{PUBLISHED_VERSION}` candidate',
     )
     _assert_contains('CONTRIBUTING.md', contributing, 'scripts/validate_clean_package_install.py')
     _assert_contains('docs/ROADMAP.md', roadmap, f'Current source baseline: `govengine=={version}`')
@@ -603,7 +654,7 @@ def main() -> int:
     _assert_contains(
         'PUBLIC_STATUS.md',
         public_status,
-        f'| Current source version | `govengine=={version}`; published; RC observation elapsed_unclosed |',
+        f'| Current source version | `govengine=={version}`; source A; external review pending |',
     )
     _assert_contains(
         'PUBLIC_STATUS.md',
@@ -628,6 +679,7 @@ def main() -> int:
         window_exists=(ROOT / RC2_WINDOW_RECORD_PATH).exists(),
     )
     _assert_rc2_window_current_state()
+    _assert_rc3_candidate_state()
     changelog = _read('CHANGELOG.md')
     _assert_changelog_unreleased_api_names(changelog)
     _assert_source_pypi_gap_docs(version, readme, public_status, roadmap, changelog)

@@ -305,6 +305,29 @@ def _approval_payload(
     }
 
 
+def _activation_binding(
+    request: Mapping[str, Any],
+    *,
+    status: str = 'active',
+    not_before: str = '2026-07-15T12:00:00Z',
+    expires_at: str = '2026-07-15T13:00:00Z',
+) -> dict[str, Any]:
+    policy_pack = request['policy_pack']
+    return {
+        'schema_version': 'v1',
+        'binding_id': 'activation:production-mutation:42',
+        'policy_id': policy_pack['policy_id'],
+        'policy_version': policy_pack['version'],
+        'policy_pack_digest': request['policy_pack_digest'],
+        'policy_epoch': request['policy_epoch'],
+        'issuer_ref': policy_pack['issuer_ref'],
+        'trust_ref': 'policy-trust:organization:example',
+        'status': status,
+        'not_before': not_before,
+        'expires_at': expires_at,
+    }
+
+
 def _decision() -> GovernanceDecision:
     grant = GovernanceAuthorization(
         authorization_id='gov-auth:decision-1',
@@ -576,6 +599,25 @@ def _cases() -> dict[str, dict[str, Any]]:
         input_payload={'source': '{"value": 1, "value": 2}'},
         govengine=('rejected', 'json_boundary_duplicate_key'),
     )
+    cases['invalid/non-ascii-binding.json'] = _case(
+        case_id='non-ascii-binding',
+        owner='govengine',
+        operation='validate_governance_boundary',
+        input_payload={'kind': 'ascii_identifier', 'value': 'operacja-ż'},
+        govengine=('rejected', 'invalid_governance_identifier'),
+    )
+
+    naive_activation = _activation_binding(
+        _governance_request(),
+        not_before='2026-07-15T12:00:00',
+    )
+    cases['invalid/timezone-naive-timestamp.json'] = _case(
+        case_id='timezone-naive-timestamp',
+        owner='govengine',
+        operation='validate_policy_activation',
+        input_payload={'policy_activation_binding': naive_activation},
+        govengine=('rejected', 'invalid_policy_activation_not_before'),
+    )
 
     forbidden = _governance_request()
     forbidden['execution_facts'] = {'items': [{'password': 'inline-secret'}]}
@@ -673,6 +715,34 @@ def _cases() -> dict[str, dict[str, Any]]:
         input_payload=_approval_payload(revoked=True),
         govengine=('rejected', 'approval_revoked'),
     )
+    cases['invalid/approval-not-yet-valid.json'] = _case(
+        case_id='approval-not-yet-valid',
+        owner='govengine',
+        operation='validate_approval',
+        input_payload=_approval_payload(now='2026-07-15T11:59:00+00:00'),
+        govengine=('rejected', 'approval_not_yet_valid'),
+    )
+
+    for status, reason_code in (
+        ('superseded', 'policy_superseded'),
+        ('revoked', 'policy_revoked'),
+        ('expired', 'policy_expired'),
+    ):
+        activation_request = _governance_request()
+        cases[f'invalid/activation-{status}.json'] = _case(
+            case_id=f'activation-{status}',
+            owner='govengine',
+            operation='evaluate_governance',
+            input_payload={
+                'governance_request': activation_request,
+                'policy_activation_binding': _activation_binding(
+                    activation_request,
+                    status=status,
+                ),
+                'evaluated_at': '2026-07-15T12:05:00+00:00',
+            },
+            govengine=('rejected', reason_code),
+        )
 
     epoch_drift = _governance_request()
     epoch_drift['scope_policy_binding']['policy_epoch'] = 43
@@ -751,6 +821,30 @@ def _cases() -> dict[str, dict[str, Any]]:
         input_payload=_runtime_decision_input(repeat=2),
         govengine=('not_applicable', 'not_applicable'),
         rexecop=('rejected', 'governance_decision_reused'),
+    )
+
+    tampered_decision = decision.as_dict()
+    tampered_decision['request_digest'] = 'sha256:' + 'f' * 64
+    cases['invalid/signed-decision-body-tamper.json'] = _case(
+        case_id='signed-decision-body-tamper',
+        owner='govengine',
+        operation='validate_governance_decision',
+        input_payload={'governance_decision': tampered_decision},
+        govengine=('rejected', 'governance_decision_digest_mismatch'),
+    )
+
+    conflicting_policy = policy.as_dict()
+    conflicting_rule = dict(conflicting_policy['rules'][0])
+    conflicting_rule['rule_id'] = 'deny-mutation'
+    conflicting_rule['effect'] = 'deny'
+    conflicting_rule['reason_code'] = 'mutation_denied'
+    conflicting_policy['rules'].append(conflicting_rule)
+    cases['invalid/conflicting-policy-rules.json'] = _case(
+        case_id='conflicting-policy-rules',
+        owner='govengine',
+        operation='compile_policy',
+        input_payload={'policy_pack': conflicting_policy},
+        govengine=('rejected', 'conflicting_policy_rules'),
     )
 
     receipt_cases = (

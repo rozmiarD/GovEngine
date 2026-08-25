@@ -377,6 +377,8 @@ def test_documentation_antidrift_ignores_historical_changelog_ownership_wording(
     (
         'Current main is publishable=true.',
         'Current main may be promoted directly to stable.',
+        'Current workflows provide an aligned dependency-resolved '
+        'SCLite/GovEngine/RExecOp install.',
     ),
 )
 def test_documentation_antidrift_rejects_contradictory_release_claim(

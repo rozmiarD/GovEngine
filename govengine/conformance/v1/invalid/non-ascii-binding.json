@@ -1,0 +1,31 @@
+{
+  "binding_digests": "not_applicable",
+  "case_id": "non-ascii-binding",
+  "expected": {
+    "govengine": {
+      "reason_code": "invalid_governance_identifier",
+      "status": "rejected"
+    },
+    "rexecop": {
+      "reason_code": "invalid_governance_identifier",
+      "status": "rejected"
+    }
+  },
+  "forbidden_output_keys": [
+    "credential",
+    "password",
+    "raw_output",
+    "raw_target",
+    "secret",
+    "target_url",
+    "token"
+  ],
+  "input": {
+    "kind": "ascii_identifier",
+    "value": "operacja-ż"
+  },
+  "max_schema_version": "v1",
+  "operation": "validate_governance_boundary",
+  "owner": "govengine",
+  "schema_version": "govengine.conformance_case.v1"
+}

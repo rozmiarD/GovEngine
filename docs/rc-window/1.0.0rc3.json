@@ -1,0 +1,26 @@
+{
+  "schema_version": "govengine.rc_window.v2",
+  "status": "pending_review",
+  "version": "1.0.0rc3",
+  "source_commit": null,
+  "prepared_at": null,
+  "published_at": null,
+  "observation_ends_at": null,
+  "completed_at": null,
+  "minimum_observation_days": 7,
+  "public_evidence_ref": "",
+  "frozen_inputs": {
+    "pyproject_sha256": "7e6cb5a938dacd76dbc68c3678b7cd422d47fd29fdc009a4b9d0d2b6b9ee176b",
+    "v1_compatibility_manifest_sha256": "663be1ef13d162d09a98a2cdf6448076394d0d5f02fab3acff10a59b01fb5882",
+    "v1_conformance_manifest_sha256": "482870e05194e89f9ee42338f53872efcf9ae4c47337a6ffccb32705be42e83b",
+    "policy_reason_registry_sha256": "1b59bc57d483604fc0febd289783ac3a4cc492ce03656bc3febffe50c86316d7"
+  },
+  "security_review": {
+    "path": "docs/security-review/rc3-external-review.json",
+    "sha256": "b7a9261371cf27f8e46ddf5e28cf9b9dcddf37c5db6fd64a7c9809eea444ec61"
+  },
+  "facade_exports": 40,
+  "v1_records": 15,
+  "rule": "schema_facade_corpus_or_reason_registry_change_requires_new_rc",
+  "notes": "Source-A candidate metadata only. External review, reviewed artifacts, publication and the seven-day observation window have not started. The record must move to prepared only in an exact record child bound to the committed source and authentic review artifacts."
+}

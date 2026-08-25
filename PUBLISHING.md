@@ -6,7 +6,7 @@ releases. It describes the repository as it exists; release history belongs in
 
 ## Current state
 
-- Current source version: `1.0.0rc2`, published; RC observation is elapsed_unclosed.
+- Current source version: `1.0.0rc3`, source A; external review is pending.
 - Published immutable candidate: `govengine==1.0.0rc2` from `v1.0.0rc2`.
 - Published and source dependency: `sclite-core==2.0.1`.
 - Published `rc2` external review: approved with no open P0/P1 findings.
@@ -16,10 +16,10 @@ releases. It describes the repository as it exists; release history belongs in
 - RC observation window: elapsed_unclosed after `2026-08-15T11:15:02.258488Z`;
   the frozen record has no closure evidence.
 
-Current `main` is the post-published source line for the immutable `1.0.0rc2`
-artifact and contains normal post-tag source and evidence updates. Stable
-promotion remains `publishable=false` until the rc2 observation completes and
-downstream qualification remains green.
+Current `main` is rc3 source A. Its review form and candidate record are
+explicitly pending and contain no authentic artifact hashes, approval verdict
+or publication evidence. Stable promotion remains `publishable=false`; the rc2
+observation is elapsed_unclosed and rc3 has not completed external review.
 
 The immutable PyPI description comes from `PYPI_LONG_DESCRIPTION.md`. The
 uploaded wheel/sdist, dependency metadata and recorded hashes match the
@@ -54,7 +54,10 @@ sclite-core 2.0.0 -> govengine 1.0.0rc1 -> rexecop 1.0.0rc1
 The exact current source candidates are:
 
 ```text
-sclite-core 2.0.1 -> govengine 1.0.0rc2 -> rexecop 1.0.0rc3.dev0
+sclite-core 2.0.1 -> govengine 1.0.0rc3
+govengine 1.0.0rc3 governance; source A, external review pending
+
+rexecop 1.0.0rc3.dev0: govengine 1.0.0rc2 (pending_realignment)
 
 tecrax 0.4.0rc3: govengine 1.0.0rc2, sclite-core 2.0.1,
                  rexecop 1.0.0rc2 (pending_realignment)
@@ -62,11 +65,12 @@ tecrax 0.4.0rc3: govengine 1.0.0rc2, sclite-core 2.0.1,
 
 Published RExecOp `1.0.0rc1` remains immutable and pinned to the published rc1
 dependency pair. The current RExecOp source candidate `1.0.0rc3.dev0` consumes
-GovEngine `1.0.0rc2` and SCLite `2.0.1`; it does not replace that artifact
+GovEngine `1.0.0rc2` and SCLite `2.0.1`; it is pending realignment to rc3 and does not replace that artifact
 history. Tecrax `0.4.0rc3` remains `pending_realignment` and pins
 `rexecop==1.0.0rc2`, so the four source candidates are not an aligned install
-graph. Hosted qualification installs the aligned SCLite/GovEngine/RExecOp
-three-package source graph and inspects Tecrax separately as an API consumer.
+graph. Hosted qualification installs only the aligned SCLite/GovEngine source
+pair and checks it with `pip check`; it validates RExecOp and Tecrax separately
+as exact, pending-realignment API consumers.
 
 Ravenclaw is a legacy/external consumer, not the next package in the current
 release train. A downstream release must consume the exact already-published
@@ -143,16 +147,17 @@ Then run the release-only gates:
 git diff --check
 ```
 
-On current post-tag `main`, `validate_release_readiness.py` intentionally
-reports stable promotion as `publishable=false` while the rc2 observation is
-elapsed_unclosed and downstream qualification remains incomplete.
+On current rc3 source A, `validate_release_readiness.py` intentionally reports
+stable promotion as `publishable=false` while external review is pending, the
+rc2 observation is elapsed_unclosed and downstream qualification is incomplete.
 
 For an RC, the candidate-specific RC-window validator must pass.
 RC-window status must be `prepared` before first publication.
-`scripts/validate_rc_window.py` validates both immutable rc1 history and the
-rc2 v2 record. Its frozen active record is now elapsed_unclosed: ordinary
-validation fails closed, while `--history-mode` verifies immutable history and
-reports that state. A distinct `govengine.rc_window_closure.v1` record must bind
+`scripts/validate_rc_window.py` validates immutable rc1/rc2 history against the
+recorded Git sources and validates the rc3 v2 source-A record against current
+inputs. `pending_review` never qualifies as prepared or published. The frozen
+rc2 active record is now elapsed_unclosed; `--history-mode` verifies immutable
+history and reports that state. A distinct `govengine.rc_window_closure.v1` record must bind
 the frozen record SHA-256, the original lifecycle timestamps, a non-future
 `completed_at` no earlier than the window end, and an existing local evidence
 file by SHA-256. Pass it with `--closure-record`; never rewrite the frozen rc2
@@ -206,6 +211,16 @@ A. For a prepared record-only PR aggregate before B exists, the gate constructs
 a disposable exact-squash candidate with A as its sole parent, requires exactly
 the two record changes, and applies the same authentic binding and artifact
 checks; this fallback is forbidden after the window becomes active.
+
+## Pending rc3 source A
+
+`docs/security-review/rc3-external-review.json` is an exact pending form and
+`docs/rc-window/1.0.0rc3.json` has status `pending_review`. Neither contains
+reviewed artifact hashes, approval or publication evidence. An authentic
+single-parent record child must modify only those two paths, bind the committed
+source A and reviewed wheel/sdist, and move the window to `prepared`. The
+candidate-aware A/B gate exercises that topology with synthetic data only in a
+disposable clone; synthetic output never becomes release evidence.
 
 ## Tag and publish
 

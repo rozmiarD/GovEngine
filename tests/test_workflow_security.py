@@ -66,6 +66,25 @@ def test_hosted_workflows_bind_exact_source_and_consumer_qualification() -> None
     assert 'needs: stack-qualification' in _job(publish_workflow, 'build')
 
 
+def test_publish_workflow_orders_record_truth_artifacts_and_ab_comparison() -> None:
+    publish = (ROOT / '.github/workflows/publish.yml').read_text(encoding='utf-8')
+    build = _job(publish, 'build')
+    ordered = (
+        '- name: Require authentic candidate record child before public truth',
+        'scripts/validate_release_record_commit.py',
+        '- name: Run release contract gates',
+        'python scripts/validate_public_truth.py',
+        '--history-mode',
+        '- name: Build reviewed source artifacts',
+        'scripts/validate_rc2_release_records.py',
+        'scripts/compare_release_builds.py',
+        'actions/upload-artifact@',
+    )
+
+    positions = [build.index(marker) for marker in ordered]
+    assert positions == sorted(positions)
+
+
 def test_publish_workflow_rejects_synthetic_evidence_opt_in(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

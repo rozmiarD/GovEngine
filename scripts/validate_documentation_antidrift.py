@@ -27,19 +27,23 @@ EXTERNAL_SCRIPT_OWNERS = {
     'scripts/validate_release_train_preflight.py': 'RExecOp',
 }
 REQUIRED_RELEASE_DISCLOSURES = {
+    'CHANGELOG.md': (
+        'RExecOp and Tecrax remain `pending_realignment` source candidates '
+        'inspected as API consumers, not members of an aligned install graph.',
+    ),
     'README.md': (
-        'Current source is `1.0.0rc2`;',
-        'candidate was published from `v1.0.0rc2`',
-        'observation window is elapsed_unclosed',
-        '| Source/package version | `1.0.0rc2` published; observation elapsed_unclosed |',
+        'Current source is `1.0.0rc3`; source A is unpublished and external review is pending.',
+        'published candidate was built from `v1.0.0rc2`',
+        'rc2 observation window is elapsed_unclosed',
+        '| Source/package version | `1.0.0rc3` source A; external review pending |',
     ),
     'PUBLIC_STATUS.md': (
-        'Current source version | `govengine==1.0.0rc2`; published; RC observation elapsed_unclosed',
+        'Current source version | `govengine==1.0.0rc3`; source A; external review pending',
         'Latest published PyPI package: `govengine==1.0.0rc2`',
     ),
     'PUBLISHING.md': (
-        'Current source version: `1.0.0rc2`, published; RC observation is elapsed_unclosed.',
-        'govengine 1.0.0rc2 governance; published RC, observation elapsed_unclosed',
+        'Current source version: `1.0.0rc3`, source A; external review is pending.',
+        'govengine 1.0.0rc3 governance; source A, external review pending',
         '31254483143',
         'validate_release_readiness.py` intentionally reports '
         'stable promotion as `publishable=false`',
@@ -47,9 +51,11 @@ REQUIRED_RELEASE_DISCLOSURES = {
     'docs/ROADMAP.md': (
         '`1.0.0rc2` is required before stable promotion',
         'observation is elapsed_unclosed',
+        'Current source baseline: `govengine==1.0.0rc3`',
     ),
     'docs/VALIDATION.md': (
-        'Expected result for the current `1.0.0rc2` package line: published release',
+        'Expected result for the current `1.0.0rc3` package line: external review pending',
+        'current `1.0.0rc3` source-A line: no reviewed source commit',
         'Observation is elapsed_unclosed',
     ),
     'SECURITY.md': (
@@ -95,6 +101,10 @@ FORBIDDEN_OWNERSHIP_PATTERNS = (
 FORBIDDEN_RELEASE_PATTERNS = (
     re.compile(r'\bpublishable\s*=\s*true\b', re.IGNORECASE),
     re.compile(r'\bmay\s+be\s+promoted\s+directly\s+to\s+stable\b', re.IGNORECASE),
+    re.compile(
+        r'\baligned\s+dependency-resolved\s+SCLite/GovEngine/RExecOp\s+install\b',
+        re.IGNORECASE,
+    ),
 )
 CURRENT_VERSION_CLAIM = re.compile(
     r'\bcurrent\s+(?:GovEngine|source/package|source|package)\s+version\s*[:=]?\s*'

@@ -35,8 +35,8 @@
     },
     "govengine": {
       "project": "govengine",
-      "version": "1.0.0rc2",
-      "status": "post_published_source",
+      "version": "1.0.0rc3",
+      "status": "source_candidate",
       "dependencies": {
         "sclite-core": "2.0.1"
       }
@@ -44,7 +44,7 @@
     "rexecop": {
       "project": "rexecop",
       "version": "1.0.0rc3.dev0",
-      "status": "source_candidate",
+      "status": "pending_realignment",
       "dependencies": {
         "govengine": "1.0.0rc2",
         "sclite-core": "2.0.1"

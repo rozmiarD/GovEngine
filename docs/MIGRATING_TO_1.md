@@ -108,7 +108,7 @@ gates.
 ## RExecOp consumer migration
 
 For the historical rc1 recipe, use `rexecop==1.0.0rc1` as the matching runtime
-candidate. It consumes the shared 33-case governance corpus, verifies trusted
+candidate. It consumes the historical shared 33-case governance corpus, verifies trusted
 signed decisions, atomically claims the decision nonce, produces the runtime
 permit and terminal receipt, and checks the decision again before connector
 I/O.

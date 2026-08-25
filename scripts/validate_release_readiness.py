@@ -22,9 +22,9 @@ from govengine._digest_ownership import validate_digest_ownership_inventory  # n
 from scripts.validate_release_train_truth import validate_release_train_truth  # noqa: E402
 
 
-EXPECTED_VERSION = '1.0.0rc2'
-EXPECTED_RELEASE_LABEL = '1.0.0rc2'
-CURRENT_SOURCE_POSTURE = 'published_elapsed_unclosed'
+EXPECTED_VERSION = '1.0.0rc3'
+EXPECTED_RELEASE_LABEL = '1.0.0rc3'
+CURRENT_SOURCE_POSTURE = 'source_a_pending_review'
 EXPECTED_SURFACES = [
     'artifact_governance_core',
     'planning_contracts_core',
@@ -118,6 +118,8 @@ def main() -> int:
         'published `1.0.0rc2` release candidate',
         'observation window is elapsed_unclosed',
         'Stable promotion remains `publishable=false`',
+        '`1.0.0rc3` source A',
+        'external review pending',
     ):
         _assert(
             ' '.join(marker.split()) in normalized_public_text,

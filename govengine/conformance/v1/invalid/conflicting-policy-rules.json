@@ -1,0 +1,106 @@
+{
+  "binding_digests": "not_applicable",
+  "case_id": "conflicting-policy-rules",
+  "expected": {
+    "govengine": {
+      "reason_code": "conflicting_policy_rules",
+      "status": "rejected"
+    },
+    "rexecop": {
+      "reason_code": "conflicting_policy_rules",
+      "status": "rejected"
+    }
+  },
+  "forbidden_output_keys": [
+    "credential",
+    "password",
+    "raw_output",
+    "raw_target",
+    "secret",
+    "target_url",
+    "token"
+  ],
+  "input": {
+    "policy_pack": {
+      "issuer_ref": "organization:example",
+      "metadata": {},
+      "policy_epoch": 42,
+      "policy_id": "production-mutation",
+      "rules": [
+        {
+          "conditions": [
+            {
+              "operator": "eq",
+              "path": "action.mode",
+              "value": "mutation"
+            }
+          ],
+          "constraints": [
+            {
+              "constraint_id": "bounded-output",
+              "kind": "output_limit",
+              "metadata": {},
+              "value": 4096
+            }
+          ],
+          "effect": "approval_required",
+          "obligations": [
+            {
+              "description": "",
+              "kind": "receipt",
+              "metadata": {},
+              "obligation_id": "receipt"
+            }
+          ],
+          "priority": 100,
+          "reason_code": "mutation_requires_approval",
+          "risk_class": "low",
+          "risk_score": 0.0,
+          "rule_id": "govern-mutation"
+        },
+        {
+          "conditions": [
+            {
+              "operator": "eq",
+              "path": "action.mode",
+              "value": "mutation"
+            }
+          ],
+          "constraints": [
+            {
+              "constraint_id": "bounded-output",
+              "kind": "output_limit",
+              "metadata": {},
+              "value": 4096
+            }
+          ],
+          "effect": "deny",
+          "obligations": [
+            {
+              "description": "",
+              "kind": "receipt",
+              "metadata": {},
+              "obligation_id": "receipt"
+            }
+          ],
+          "priority": 100,
+          "reason_code": "mutation_denied",
+          "risk_class": "low",
+          "risk_score": 0.0,
+          "rule_id": "deny-mutation"
+        }
+      ],
+      "schema_version": "v1",
+      "supersedes": [],
+      "validity": {
+        "expires_at": "2026-07-15T13:00:00Z",
+        "not_before": "2026-07-15T12:00:00Z"
+      },
+      "version": "1.0.0"
+    }
+  },
+  "max_schema_version": "v1",
+  "operation": "compile_policy",
+  "owner": "govengine",
+  "schema_version": "govengine.conformance_case.v1"
+}

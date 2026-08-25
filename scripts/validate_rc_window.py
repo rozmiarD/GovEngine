@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import subprocess
 import sys
 from typing import Any, Mapping
 
@@ -18,9 +19,9 @@ from scripts.validate_v1_freeze import validate_v1_freeze  # noqa: E402
 
 
 RECORD_PATH = ROOT / 'docs' / 'rc-window' / '1.0.0rc1.json'
-V2_REVIEW_PATH = 'docs/security-review/rc2-external-review.json'
 FULL_SHA = re.compile(r'^[0-9a-f]{40}$')
 DIGEST = re.compile(r'^[0-9a-f]{64}$')
+RC_VERSION = re.compile(r'^1\.0\.0rc(?P<candidate>[1-9][0-9]*)$')
 ELAPSED_UNCLOSED = 'elapsed_unclosed'
 CLOSURE_SCHEMA_VERSION = 'govengine.rc_window_closure.v1'
 HASHED_FILES = {
@@ -43,6 +44,50 @@ def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _historical_sha256(commit: str, relative: str, *, prefix: str) -> str:
+    try:
+        value = subprocess.check_output(
+            ['git', 'show', f'{commit}:{relative}'],
+            cwd=ROOT,
+            stderr=subprocess.PIPE,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise AssertionError(f'{prefix}_historical_source_unavailable:{relative}') from exc
+    return hashlib.sha256(value).hexdigest()
+
+
+def _review_record_path(version: str) -> str:
+    match = RC_VERSION.fullmatch(version)
+    if match is None:
+        raise AssertionError('rc_window_v2_version_mismatch')
+    return (
+        'docs/security-review/'
+        f"rc{match.group('candidate')}-external-review.json"
+    )
+
+
+def _pending_review_form(version: str) -> dict[str, Any]:
+    match = RC_VERSION.fullmatch(version)
+    if match is None:
+        raise AssertionError('rc_window_v2_version_mismatch')
+    candidate = match.group('candidate')
+    return {
+        'schema_version': f'govengine.rc{candidate}_external_security_review.v1',
+        'source_commit': '',
+        'artifacts': {
+            'runner': 'github-hosted-runner',
+            'wheel_sha256': '',
+            'normalized_sdist_sha256': '',
+        },
+        'confidential_report_sha256': '',
+        'reviewer': '',
+        'reviewed_at': None,
+        'verdict': 'pending_external_reviewer',
+        'open_p0': None,
+        'open_p1': None,
+    }
 
 
 def _aware_timestamp(value: Any) -> bool:
@@ -187,7 +232,7 @@ def _finalize_status(
     raw_status = str(record['status'])
     closure: Mapping[str, Any] | None = None
     if closure_path is not None:
-        if raw_status == 'prepared' or observation_ends_at is None:
+        if raw_status in {'pending_review', 'prepared'} or observation_ends_at is None:
             raise AssertionError('rc_window_closure_for_unpublished_record')
         closure = _validate_closure_record(
             closure_path,
@@ -205,7 +250,7 @@ def _finalize_status(
     )
     if effective_status == ELAPSED_UNCLOSED and not history_mode:
         raise AssertionError('rc_window_elapsed_unclosed')
-    if require_published and effective_status == 'prepared':
+    if require_published and effective_status in {'pending_review', 'prepared'}:
         raise AssertionError('published_rc_evidence_required')
     if require_completed and effective_status != 'completed':
         raise AssertionError('completed_rc_window_required')
@@ -216,7 +261,11 @@ def _finalize_status(
 
 
 def _validate_v2(
-    record: Mapping[str, Any], *, expected_version: str, now: datetime
+    record: Mapping[str, Any],
+    *,
+    expected_version: str,
+    now: datetime,
+    history_mode: bool,
 ) -> Mapping[str, Any]:
     required = {
         'schema_version', 'status', 'version', 'source_commit', 'prepared_at',
@@ -228,18 +277,42 @@ def _validate_v2(
         raise AssertionError('rc_window_v2_fields_drift')
     if record['schema_version'] != 'govengine.rc_window.v2':
         raise AssertionError('rc_window_v2_schema_mismatch')
-    if record['version'] != expected_version or record['version'] != '1.0.0rc2':
+    if (
+        record['version'] != expected_version
+        or not isinstance(record['version'], str)
+        or RC_VERSION.fullmatch(record['version']) is None
+    ):
         raise AssertionError('rc_window_v2_version_mismatch')
-    if not isinstance(record['source_commit'], str) or not FULL_SHA.fullmatch(record['source_commit']):
-        raise AssertionError('rc_window_v2_source_commit_invalid')
     status = record['status']
-    if status not in {'prepared', 'active', 'completed'}:
+    if status not in {'pending_review', 'prepared', 'active', 'completed'}:
         raise AssertionError('rc_window_v2_status_invalid')
-    prepared_at = _timestamp(record['prepared_at'], 'rc_window_v2_prepared_at_invalid')
     minimum_days = record['minimum_observation_days']
     if type(minimum_days) is not int or minimum_days != 7:
         raise AssertionError('rc_window_v2_minimum_observation_days_invalid')
-    if status == 'prepared':
+    if status == 'pending_review':
+        if record['source_commit'] is not None:
+            raise AssertionError('rc_window_v2_pending_has_source_commit')
+        if any(
+            record[field] is not None
+            for field in (
+                'prepared_at', 'published_at', 'observation_ends_at', 'completed_at'
+            )
+        ):
+            raise AssertionError('rc_window_v2_pending_has_lifecycle_timestamp')
+        if record['public_evidence_ref'] != '':
+            raise AssertionError('rc_window_v2_pending_has_public_evidence')
+    else:
+        if (
+            not isinstance(record['source_commit'], str)
+            or not FULL_SHA.fullmatch(record['source_commit'])
+        ):
+            raise AssertionError('rc_window_v2_source_commit_invalid')
+        prepared_at = _timestamp(
+            record['prepared_at'], 'rc_window_v2_prepared_at_invalid'
+        )
+    if status == 'pending_review':
+        pass
+    elif status == 'prepared':
         if any(record[field] is not None for field in ('published_at', 'observation_ends_at', 'completed_at')):
             raise AssertionError('rc_window_v2_prepared_has_public_timestamps')
         if record['public_evidence_ref'] != '':
@@ -260,24 +333,51 @@ def _validate_v2(
                 raise AssertionError('rc_window_v2_completed_timing_invalid')
     frozen = record['frozen_inputs']
     expected_frozen = {
-        'pyproject_sha256': ROOT / 'pyproject.toml',
-        'v1_compatibility_manifest_sha256': ROOT / 'govengine/v1_compatibility_manifest.json',
-        'v1_conformance_manifest_sha256': ROOT / 'govengine/conformance/v1/manifest.json',
-        'policy_reason_registry_sha256': ROOT / 'govengine/policy/reasons.py',
+        'pyproject_sha256': 'pyproject.toml',
+        'v1_compatibility_manifest_sha256': 'govengine/v1_compatibility_manifest.json',
+        'v1_conformance_manifest_sha256': 'govengine/conformance/v1/manifest.json',
+        'policy_reason_registry_sha256': 'govengine/policy/reasons.py',
     }
     if not isinstance(frozen, Mapping) or set(frozen) != set(expected_frozen):
         raise AssertionError('rc_window_v2_frozen_inputs_invalid')
-    for field, source in expected_frozen.items():
-        if not isinstance(frozen[field], str) or not DIGEST.fullmatch(frozen[field]) or frozen[field] != _sha256(source):
+    for field, relative in expected_frozen.items():
+        expected_digest = (
+            _historical_sha256(
+                str(record['source_commit']),
+                relative,
+                prefix='rc_window_v2',
+            )
+            if history_mode and status != 'pending_review'
+            else _sha256(ROOT / relative)
+        )
+        if (
+            not isinstance(frozen[field], str)
+            or not DIGEST.fullmatch(frozen[field])
+            or frozen[field] != expected_digest
+        ):
             raise AssertionError(f'rc_window_v2_frozen_input_drift:{field}')
     review = record['security_review']
-    if not isinstance(review, Mapping) or set(review) != {'path', 'sha256'} or review['path'] != V2_REVIEW_PATH or not isinstance(review['sha256'], str) or not DIGEST.fullmatch(review['sha256']):
+    review_record_path = _review_record_path(str(record['version']))
+    if (
+        not isinstance(review, Mapping)
+        or set(review) != {'path', 'sha256'}
+        or review['path'] != review_record_path
+        or not isinstance(review['sha256'], str)
+        or not DIGEST.fullmatch(review['sha256'])
+    ):
         raise AssertionError('rc_window_v2_security_review_invalid')
     review_path = ROOT / str(review['path'])
     if not review_path.is_file() or review['sha256'] != _sha256(review_path):
         raise AssertionError('rc_window_v2_security_review_binding_invalid')
-    review_data = json.loads(review_path.read_text(encoding='utf-8'))
-    if review_data.get('source_commit') != record['source_commit']:
+    review_data = _load_strict_object(review_path, prefix='rc_window_v2_review')
+    if status == 'pending_review' and review_data != _pending_review_form(
+        str(record['version'])
+    ):
+        raise AssertionError('rc_window_v2_pending_review_form_invalid')
+    if (
+        status != 'pending_review'
+        and review_data.get('source_commit') != record['source_commit']
+    ):
         raise AssertionError('rc_window_v2_review_source_mismatch')
     if type(record['facade_exports']) is not int or record['facade_exports'] != 40:
         raise AssertionError('rc_window_v2_facade_export_invalid')
@@ -312,9 +412,14 @@ def validate_rc_window(
         raise AssertionError('rc_window_not_mapping')
     checked_now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
     if record.get('schema_version') == 'govengine.rc_window.v2':
-        checked = _validate_v2(record, expected_version=expected_version, now=checked_now)
+        checked = _validate_v2(
+            record,
+            expected_version=expected_version,
+            now=checked_now,
+            history_mode=history_mode,
+        )
         ends_at = (
-            None if checked['status'] == 'prepared'
+            None if checked['status'] in {'pending_review', 'prepared'}
             else _timestamp(checked['observation_ends_at'], 'rc_window_v2_observation_ends_at_invalid')
         )
         return _finalize_status(
@@ -440,7 +545,12 @@ def validate_rc_window(
         expected = record[field]
         if not isinstance(expected, str) or not DIGEST.fullmatch(expected):
             raise AssertionError(f'rc_window_digest_invalid:{field}')
-        if _sha256(artifact) != expected:
+        relative = artifact.relative_to(ROOT).as_posix()
+        if _historical_sha256(
+            str(record['baseline_commit']),
+            relative,
+            prefix='rc_window',
+        ) != expected:
             raise AssertionError(f'rc_window_contract_drift:{field}')
     observation_ends_at = (
         None if status == 'prepared'

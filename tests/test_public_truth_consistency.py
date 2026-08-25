@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
+import json
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 
+import scripts.validate_rc_window as rc_window_validator
 from scripts.validate_documentation_antidrift import (
     validate_current_rc_observation_claims,
 )
@@ -25,6 +28,114 @@ def _load_validator():
     return module
 
 
+def _git(path: Path, *args: str) -> str:
+    return subprocess.check_output(['git', *args], cwd=path, text=True).strip()
+
+
+def _authentic_rc3_record_child(path: Path, pending_review: dict[str, object]) -> str:
+    _git(path, 'init', '-q')
+    _git(path, 'config', 'user.name', 'fixture')
+    _git(path, 'config', 'user.email', 'fixture@example.invalid')
+    frozen_sources = {
+        'pyproject.toml': b'[project]\nname = "fixture"\nversion = "1.0.0rc3"\n',
+        'govengine/v1_compatibility_manifest.json': b'{}\n',
+        'govengine/conformance/v1/manifest.json': b'{}\n',
+        'govengine/policy/reasons.py': b'REASONS = ()\n',
+    }
+    for relative, content in frozen_sources.items():
+        target = path / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
+    frozen_inputs = {
+        'pyproject_sha256': hashlib.sha256(frozen_sources['pyproject.toml']).hexdigest(),
+        'v1_compatibility_manifest_sha256': hashlib.sha256(
+            frozen_sources['govengine/v1_compatibility_manifest.json']
+        ).hexdigest(),
+        'v1_conformance_manifest_sha256': hashlib.sha256(
+            frozen_sources['govengine/conformance/v1/manifest.json']
+        ).hexdigest(),
+        'policy_reason_registry_sha256': hashlib.sha256(
+            frozen_sources['govengine/policy/reasons.py']
+        ).hexdigest(),
+    }
+    review_path = path / 'docs/security-review/rc3-external-review.json'
+    review_path.parent.mkdir(parents=True)
+    review_path.write_text(json.dumps(pending_review) + '\n', encoding='utf-8')
+    window_path = path / 'docs/rc-window/1.0.0rc3.json'
+    window_path.parent.mkdir(parents=True)
+    window_path.write_text(
+        json.dumps({
+            'schema_version': 'govengine.rc_window.v2',
+            'status': 'pending_review',
+            'version': '1.0.0rc3',
+            'source_commit': None,
+            'prepared_at': None,
+            'published_at': None,
+            'observation_ends_at': None,
+            'completed_at': None,
+            'minimum_observation_days': 7,
+            'public_evidence_ref': '',
+            'frozen_inputs': frozen_inputs,
+            'security_review': {
+                'path': 'docs/security-review/rc3-external-review.json',
+                'sha256': hashlib.sha256(review_path.read_bytes()).hexdigest(),
+            },
+            'facade_exports': 40,
+            'v1_records': 15,
+            'rule': 'schema_facade_corpus_or_reason_registry_change_requires_new_rc',
+            'notes': 'Pending source-A fixture.',
+        }) + '\n',
+        encoding='utf-8',
+    )
+    _git(path, 'add', 'docs', *frozen_sources)
+    _git(path, 'commit', '-qm', 'source A')
+    source = _git(path, 'rev-parse', 'HEAD')
+
+    approved = dict(pending_review)
+    approved.update({
+        'source_commit': source,
+        'artifacts': {
+            'runner': 'github-hosted-runner',
+            'wheel_sha256': 'a' * 64,
+            'normalized_sdist_sha256': 'b' * 64,
+        },
+        'confidential_report_sha256': 'c' * 64,
+        'reviewer': 'reviewer@example.invalid',
+        'reviewed_at': '2026-08-25T00:00:00Z',
+        'verdict': 'approved',
+        'open_p0': 0,
+        'open_p1': 0,
+    })
+    review_path.write_text(json.dumps(approved) + '\n', encoding='utf-8')
+    window_path.write_text(
+        json.dumps({
+            'schema_version': 'govengine.rc_window.v2',
+            'status': 'prepared',
+            'version': '1.0.0rc3',
+            'source_commit': source,
+            'prepared_at': '2026-08-25T00:00:00Z',
+            'published_at': None,
+            'observation_ends_at': None,
+            'completed_at': None,
+            'minimum_observation_days': 7,
+            'public_evidence_ref': '',
+            'frozen_inputs': frozen_inputs,
+            'security_review': {
+                'path': 'docs/security-review/rc3-external-review.json',
+                'sha256': hashlib.sha256(review_path.read_bytes()).hexdigest(),
+            },
+            'facade_exports': 40,
+            'v1_records': 15,
+            'rule': 'schema_facade_corpus_or_reason_registry_change_requires_new_rc',
+            'notes': 'Prepared record-child fixture.',
+        }) + '\n',
+        encoding='utf-8',
+    )
+    _git(path, 'add', 'docs')
+    _git(path, 'commit', '-qm', 'record child B')
+    return source
+
+
 def test_public_truth_validator_passes() -> None:
     result = subprocess.run(
         [sys.executable, 'scripts/validate_public_truth.py'],
@@ -34,7 +145,49 @@ def test_public_truth_validator_passes() -> None:
         check=True,
     )
 
-    assert result.stdout.strip().startswith('public_truth_ok:govengine==1.0.0rc2:')
+    assert result.stdout.strip().startswith('public_truth_ok:govengine==1.0.0rc3:')
+
+
+def test_public_truth_rc3_gate_accepts_authentic_prepared_record_child(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    validator = _load_validator()
+    source = _authentic_rc3_record_child(
+        tmp_path,
+        validator.PENDING_RC3_REVIEW_FORM,
+    )
+    window_calls: list[tuple[Path, str, bool]] = []
+    monkeypatch.setattr(rc_window_validator, 'ROOT', tmp_path)
+    monkeypatch.setattr(
+        rc_window_validator,
+        'validate_v1_freeze',
+        lambda: {'facade_exports': 40, 'v1_records': 15},
+    )
+
+    def checked_window(
+        path: Path,
+        *,
+        expected_version: str,
+        history_mode: bool,
+    ) -> dict[str, str]:
+        window_calls.append((path, expected_version, history_mode))
+        return dict(rc_window_validator.validate_rc_window(
+            path,
+            expected_version=expected_version,
+            history_mode=history_mode,
+        ))
+
+    monkeypatch.setattr(validator, 'validate_rc_window', checked_window)
+
+    assert validator._assert_rc3_candidate_state(root=tmp_path) == 'record_child_b'
+    assert window_calls == [
+        (tmp_path / validator.RC3_WINDOW_RECORD_PATH, '1.0.0rc3', True)
+    ]
+    review = json.loads(
+        (tmp_path / validator.RC3_REVIEW_RECORD_PATH).read_text(encoding='utf-8')
+    )
+    assert review['source_commit'] == source
 
 
 def test_release_readiness_validator_passes() -> None:
@@ -47,9 +200,9 @@ def test_release_readiness_validator_passes() -> None:
     )
 
     assert result.stdout.strip().startswith(
-        'release_source_validation_ok:govengine==1.0.0rc2:'
+        'release_source_validation_ok:govengine==1.0.0rc3:'
     )
-    assert 'posture=published_elapsed_unclosed:publishable=false' in result.stdout
+    assert 'posture=source_a_pending_review:publishable=false' in result.stdout
 
 
 def test_public_truth_validator_rejects_rc2_state_other_than_elapsed_unclosed(
@@ -96,8 +249,8 @@ def test_current_release_docs_report_elapsed_unclosed() -> None:
     readme = (ROOT / 'README.md').read_text(encoding='utf-8')
     publishing = (ROOT / 'PUBLISHING.md').read_text(encoding='utf-8')
 
-    assert '`1.0.0rc2` published; observation elapsed_unclosed' in readme
-    assert 'govengine 1.0.0rc2    governance; published RC, observation elapsed_unclosed' in publishing
+    assert '`1.0.0rc3` source A; external review pending' in readme
+    assert 'govengine 1.0.0rc3 governance; source A, external review pending' in publishing
 
 
 def test_current_public_docs_do_not_reintroduce_pre_alpha_maturity_claims() -> None:

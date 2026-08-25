@@ -57,9 +57,12 @@ def validate_workflow_security() -> dict[str, int]:
         'scripts/validate_release_record_commit.py',
         'scripts/validate_rc2_release_records.py',
         'scripts/compare_release_builds.py',
-        'v1.0.0rc2',
-        '--record docs/rc-window/1.0.0rc2.json',
-        '--expected-version 1.0.0rc2',
+        'CANDIDATE_LABEL="rc${PACKAGE_VERSION##*rc}"',
+        '--candidate-version "$PACKAGE_VERSION"',
+        '--record "docs/rc-window/${PACKAGE_VERSION}.json"',
+        '--expected-version "$PACKAGE_VERSION"',
+        '--history-mode',
+        'docs/security-review/${CANDIDATE_LABEL}-external-review.json',
     ):
         if marker not in publish:
             raise AssertionError(f'workflow_publish_missing:{marker}')
@@ -67,6 +70,23 @@ def validate_workflow_security() -> dict[str, int]:
         raise AssertionError('workflow_publish_long_lived_or_unsafe_upload_setting')
     if '--allow-synthetic' in publish:
         raise AssertionError('workflow_publish_synthetic_release_evidence_opt_in')
+    ordered_publish_markers = (
+        '- name: Require authentic candidate record child before public truth',
+        'scripts/validate_release_record_commit.py',
+        '- name: Run release contract gates',
+        'python scripts/validate_public_truth.py',
+        '--history-mode',
+        '- name: Build reviewed source artifacts',
+        'scripts/validate_rc2_release_records.py',
+        'scripts/compare_release_builds.py',
+        'actions/upload-artifact@',
+    )
+    previous = -1
+    for marker in ordered_publish_markers:
+        position = publish.find(marker, previous + 1)
+        if position <= previous:
+            raise AssertionError(f'workflow_publish_gate_order_invalid:{marker}')
+        previous = position
     pytest = (WORKFLOW_ROOT / 'pytest.yml').read_text(encoding='utf-8')
     for marker in (
         'release-build-requirements.txt',

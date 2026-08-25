@@ -31,6 +31,46 @@ def _source_with_seeded_review(tmp_path: Path) -> str:
     return _git(tmp_path, 'rev-parse', 'HEAD')
 
 
+def _source_with_seeded_candidate_review(
+    tmp_path: Path,
+    *,
+    candidate_version: str,
+) -> str:
+    candidate_label = f"rc{candidate_version.rsplit('rc', 1)[1]}"
+    _git(tmp_path, 'init', '-q')
+    _git(tmp_path, 'config', 'user.name', 'fixture')
+    _git(tmp_path, 'config', 'user.email', 'fixture@example.invalid')
+    (tmp_path / 'source.txt').write_text('a', encoding='utf-8')
+    review = tmp_path / f'docs/security-review/{candidate_label}-external-review.json'
+    review.parent.mkdir(parents=True)
+    pending = dict(PENDING_REVIEW)
+    pending['schema_version'] = (
+        f'govengine.{candidate_label}_external_security_review.v1'
+    )
+    review.write_text(json.dumps(pending) + '\n', encoding='utf-8')
+    window = tmp_path / f'docs/rc-window/{candidate_version}.json'
+    window.parent.mkdir(parents=True)
+    window.write_text(
+        json.dumps(
+            {
+                'schema_version': 'govengine.rc_window.v2',
+                'status': 'pending_review',
+                'version': candidate_version,
+                'source_commit': None,
+                'security_review': {
+                    'path': str(review.relative_to(tmp_path)),
+                    'sha256': hashlib.sha256(review.read_bytes()).hexdigest(),
+                },
+            }
+        )
+        + '\n',
+        encoding='utf-8',
+    )
+    _git(tmp_path, 'add', 'source.txt', 'docs')
+    _git(tmp_path, 'commit', '-qm', 'A')
+    return _git(tmp_path, 'rev-parse', 'HEAD')
+
+
 def _authentic_record_child(tmp_path: Path, source: str) -> str:
     review_path = tmp_path / 'docs/security-review/rc2-external-review.json'
     review = {
@@ -190,6 +230,24 @@ def test_record_child_rejects_multiple_parents(tmp_path: Path) -> None:
 def test_release_ab_state_accepts_pending_source_a(tmp_path: Path) -> None:
     source = _source_with_seeded_review(tmp_path)
     state = resolve_release_ab_state(tmp_path)
+    assert state.mode == 'synthetic'
+    assert state.source_commit == source
+    assert state.record_commit is None
+
+
+def test_release_ab_state_accepts_candidate_bound_rc3_pending_source_a(
+    tmp_path: Path,
+) -> None:
+    source = _source_with_seeded_candidate_review(
+        tmp_path,
+        candidate_version='1.0.0rc3',
+    )
+
+    state = resolve_release_ab_state(
+        tmp_path,
+        candidate_version='1.0.0rc3',
+    )
+
     assert state.mode == 'synthetic'
     assert state.source_commit == source
     assert state.record_commit is None

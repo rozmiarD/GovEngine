@@ -200,7 +200,9 @@ def _validate_active_docs(manifest: Mapping[str, Any], *, root: Path = ROOT) -> 
             ),
             (
                 '| RExecOp source candidate | '
-                f'`rexecop=={source_rexecop_version}`; unpublished |'
+                f'`rexecop=={source_rexecop_version}`; unpublished; pending '
+                f'GovEngine {govengine_version.removeprefix("1.0.0")} '
+                'realignment |'
             ),
             (
                 '| Profile source candidate | '
