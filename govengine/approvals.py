@@ -114,11 +114,20 @@ class ApprovalAttestation:
             'revocation_ref',
             'missing_approval_revocation_ref',
         )
+        if raw['revocation_ref'] != revocation_ref:
+            validate_opaque_trust_reference(
+                raw['revocation_ref'],
+                allow_empty=False,
+                reason_code='invalid_revocation_ref',
+            )
         signature_ref = optional_text(raw, 'signature_ref')
-        if isinstance(raw.get('revocation_ref'), str):
-            revocation_ref = raw['revocation_ref']
-        if isinstance(raw.get('signature_ref'), str):
-            signature_ref = raw['signature_ref']
+        raw_signature_ref = raw.get('signature_ref', '')
+        if raw_signature_ref is not None and raw_signature_ref != signature_ref:
+            validate_opaque_trust_reference(
+                raw_signature_ref,
+                allow_empty=True,
+                reason_code='invalid_signature_ref',
+            )
         item = cls(
             approval_id=required_text(raw, 'approval_id', 'missing_approval_id'),
             subject_digest=require_sha256_digest(

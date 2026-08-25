@@ -580,8 +580,6 @@ def evaluate_governance(
         approval_validated=validated_approval is not None,
     )
     resolved_decision_id = decision_id.strip() or f'gov-decision:{checked.transaction_id}'
-    if not resolved_decision_id:
-        raise GovApiError('missing_governance_decision_id')
     authorization = None
     if status == 'allowed':
         authorization = _authorization(

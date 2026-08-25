@@ -166,6 +166,7 @@ def test_public_docs_keep_live_backend_disabled_by_default_non_claims() -> None:
 
 def test_security_integration_doc_records_order_and_non_claims() -> None:
     text = (ROOT / 'docs' / 'SECURITY_INTEGRATION.md').read_text(encoding='utf-8')
+    normalized = ' '.join(text.split())
     required_markers = (
         'SCLite secure verification',
         'GovEngine replay freshness',
@@ -178,13 +179,27 @@ def test_security_integration_doc_records_order_and_non_claims() -> None:
         'PKI, KMS, CA, HSM, private key storage',
         'raw evidence storage',
         '`DemoDigestSigner` and `DemoDigestVerifier` are deterministic demo helpers',
+        'uses `hmac.compare_digest` for its computed signature-value comparison',
         '`InMemoryReplayClaimStore` is a development claim-once adapter',
         '`record_guard_replay_file()` is a local JSON helper',
         '`JsonlAuditLedgerAdapter` is a development JSONL hash-chain adapter',
+        'does not add locking, directory fsync, production persistence, or concurrency semantics',
     )
 
     for marker in required_markers:
-        assert marker in text
+        assert ' '.join(marker.split()) in normalized
+
+
+def test_fixture_docs_preserve_demo_and_development_only_boundaries() -> None:
+    api_matrix = (ROOT / 'docs' / 'API_STABILITY_MATRIX.md').read_text(encoding='utf-8')
+    admission_policy = (ROOT / 'docs' / 'ADMISSION_POLICY.md').read_text(encoding='utf-8')
+
+    assert 'Deterministic demo-only signer/verifier helpers.' in api_matrix
+    assert 'not cryptographic identity proof.' in api_matrix
+    assert 'hmac.compare_digest' in api_matrix
+    assert 'does not add locking, directory fsync, production persistence, or concurrency semantics.' in api_matrix
+    assert 'does not choose a production database, lock, directory fsync' in admission_policy
+    assert 'JSONL adapter is development-only' in admission_policy
 
 
 def test_replay_fixture_docs_preserve_fail_closed_non_production_boundary() -> None:

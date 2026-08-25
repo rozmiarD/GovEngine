@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from hashlib import sha256
 from math import nan
 
 import pytest
@@ -201,6 +202,38 @@ def test_demo_digest_verifier_rejects_tampered_digest() -> None:
 
     assert verification.status == "failed"
     assert verification.reason_code == "signature_digest_mismatch"
+
+
+def test_demo_digest_verifier_uses_compare_digest_for_computed_signature(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    descriptor = _descriptor()
+    signing = DemoDigestSigner(signer_id="owner-demo").sign(
+        SigningRequest(descriptor=descriptor, purpose="execution_ticket")
+    )
+    comparisons: list[tuple[str, str]] = []
+
+    def _compare_digest(actual: str, expected: str) -> bool:
+        comparisons.append((actual, expected))
+        return actual == expected if actual.startswith("sha256:") else False
+
+    monkeypatch.setattr("govengine.signing.compare_digest", _compare_digest)
+
+    verification = DemoDigestVerifier(allowed_signer_ids=("owner-demo",)).verify(
+        descriptor,
+        signing.signature,
+    )
+
+    assert verification.reason_code == "signature_value_mismatch"
+    assert comparisons == [
+        (signing.signature.binds_digest, descriptor.digest),
+        (
+            signing.signature.signature,
+            "demo:" + sha256(
+                f"{descriptor.digest}|owner-demo|execution_ticket".encode("utf-8")
+            ).hexdigest(),
+        ),
+    ]
 
 
 def test_demo_digest_verifier_rejects_unsupported_signature_mode() -> None:

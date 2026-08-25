@@ -561,7 +561,7 @@ class DemoDigestVerifier:
             return VerificationResult(status="failed", trust_status="denied", reason_code="signer_not_allowed", verifier_id=self.verifier_id)
         purpose = str(signature.metadata.get("purpose") or "") if isinstance(signature.metadata, Mapping) else ""
         expected = "demo:" + sha256(f"{descriptor.digest}|{signature.signer_id}|{purpose}".encode("utf-8")).hexdigest()
-        if signature.signature != expected:
+        if not compare_digest(signature.signature, expected):
             return VerificationResult(status="failed", trust_status="denied", reason_code="signature_value_mismatch", verifier_id=self.verifier_id)
         return VerificationResult(
             status="passed",

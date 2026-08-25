@@ -8,6 +8,15 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Removes unreachable local fallback branches after the existing typed input
+  validation, while preserving public approval and governance-decision
+  behavior. `DemoDigestVerifier` now uses `hmac.compare_digest` for its
+  computed demo-signature comparison; the signer/verifier remain deterministic
+  demo-only helpers, not cryptographic identity proof. Documentation also
+  makes explicit that `JsonlAuditLedgerAdapter` remains development-only and
+  does not add locking, directory fsync, production persistence, or
+  concurrency semantics.
+
 - Separates immutable published artifact identities from current source
   candidate identities in the release-train manifest. Local API/release checks
   now identify their bounded mode, while hosted test and publish workflows use

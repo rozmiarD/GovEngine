@@ -77,14 +77,16 @@ steps or fabricate bounded facts. No malicious-host resistance is claimed.
 The following helpers are safe for tests, examples, and local smoke evidence,
 but are not production security backends:
 
-- `DemoDigestSigner` and `DemoDigestVerifier` are deterministic demo helpers,
-  not cryptographic identity proof.
+- `DemoDigestSigner` and `DemoDigestVerifier` are deterministic demo helpers;
+  `DemoDigestVerifier` uses `hmac.compare_digest` for its computed
+  signature-value comparison, but is not cryptographic identity proof.
 - `InMemoryReplayClaimStore` is a development claim-once adapter, not durable
   atomic storage.
 - `record_guard_replay_file()` is a local JSON helper, not a production replay
   database.
 - `JsonlAuditLedgerAdapter` is a development JSONL hash-chain adapter, not a
-  production audit ledger.
+  production audit ledger; it does not add locking, directory fsync,
+  production persistence, or concurrency semantics.
 - `runner_receipt_public_summary()`, `runtime_admission_public_summary()`,
   `audit_record_public_summary()`, and review public-summary helpers are
   public-safe projections, not raw evidence publication.

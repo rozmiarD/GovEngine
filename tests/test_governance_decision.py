@@ -448,6 +448,15 @@ def test_governance_decision_is_byte_stable_for_identical_inputs() -> None:
     assert GovernanceDecision.from_mapping(first.as_dict()) == first
 
 
+@pytest.mark.parametrize('decision_id', ('', '   '))
+def test_governance_decision_uses_transaction_bound_fallback_decision_id(
+    decision_id: str,
+) -> None:
+    decision = _evaluate(_request_mapping(with_approval=True), decision_id=decision_id)
+
+    assert decision.decision_id == 'gov-decision:gov-tx-123'
+
+
 def test_governance_decision_json_rejects_digest_or_authorization_drift() -> None:
     decision = _evaluate(_request_mapping(with_approval=True))
     drifted = {
