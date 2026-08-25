@@ -1,9 +1,30 @@
 # Migrating to GovEngine 1
 
-This guide covers migration from the archived `govengine==0.16.11` line to
-the published `govengine==1.0.0rc1` release candidate. The candidate depends on
-frozen `sclite-core==2.0.0`; the matching published runtime candidate is
-`rexecop==1.0.0rc1`.
+This guide retains the migration recipe from the archived `govengine==0.16.11`
+line to the immutable rc1 artifacts, then describes the current public and
+source-candidate boundaries. The rc1 recipe is historical; it is not the
+current release-train qualification target.
+
+## Current release-train truth
+
+- Current public GovEngine target: `govengine==1.0.0rc2`.
+- Current public SCLite target: `sclite-core==2.0.1`.
+- Current RExecOp source candidate: `rexecop==1.0.0rc3.dev0` (unpublished).
+- Tecrax `0.4.0rc3` status: `pending_realignment`; it pins
+  `rexecop==1.0.0rc2`.
+
+Published RExecOp `rexecop==1.0.0rc1` remains immutable history and does not
+describe the current RExecOp source candidate. Because the Tecrax source pin
+does not match that candidate, the four source repositories are not currently
+an aligned install train.
+
+## Historical rc1 migration recipe
+
+Historical immutable GovEngine artifact: `govengine==1.0.0rc1`.
+Historical immutable RExecOp artifact: `rexecop==1.0.0rc1`.
+
+The historical GovEngine candidate depends on frozen `sclite-core==2.0.0`;
+its matching published runtime candidate is `rexecop==1.0.0rc1`.
 
 Do not mix the archived stack and release-candidate stack in one environment.
 Install the published governance, truth and runtime candidates with exact pins:
@@ -15,10 +36,9 @@ python -m pip install \
   "rexecop==1.0.0rc1"
 ```
 
-Tecrax `0.4.0rc3` is not a matching downstream release for this train: its
-current source is aligned to the published rc1 train. Prepared
-`govengine==1.0.0rc2` source and `sclite-core==2.0.1` are not public install
-targets until their own review and publication gates complete.
+Tecrax `0.4.0rc3` is not a matching downstream release for this historical
+train. Its current source belongs to the separate candidate state documented
+above.
 
 ## Candidate 1.x import boundary
 
@@ -87,10 +107,11 @@ gates.
 
 ## RExecOp consumer migration
 
-Use `rexecop==1.0.0rc1` for the matching runtime candidate. It consumes the shared
-33-case governance corpus, verifies trusted signed decisions, atomically
-claims the decision nonce, produces the runtime permit and terminal receipt,
-and checks the decision again before connector I/O.
+For the historical rc1 recipe, use `rexecop==1.0.0rc1` as the matching runtime
+candidate. It consumes the shared 33-case governance corpus, verifies trusted
+signed decisions, atomically claims the decision nonce, produces the runtime
+permit and terminal receipt, and checks the decision again before connector
+I/O.
 
 Planning-only trigger, supervisor and automation adapters remain available for
 compatibility, but cannot substitute for the canonical attempt-bound v1

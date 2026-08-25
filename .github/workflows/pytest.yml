@@ -33,9 +33,9 @@ jobs:
       - name: Validate public truth
         run: python scripts/validate_public_truth.py
       - name: Validate release train truth
-        run: python scripts/validate_release_train_truth.py
+        run: python scripts/validate_release_train_truth.py --local
       - name: Validate API stability inventory
-        run: python scripts/validate_api_stability.py
+        run: python scripts/validate_api_stability.py --local
       - name: Validate v1 API and schema freeze
         run: python scripts/validate_v1_freeze.py
       - name: Validate immutable rc1 window history
@@ -79,6 +79,53 @@ jobs:
           python -m pip install --no-build-isolation -e '.[dev]'
       - name: Test pinned edge integration
         run: python -m pytest -q
+
+  stack-qualification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: rozmiarD/SCLite
+          ref: f7c740f5b06f5121dd3a13e8d66c78c7f8922614
+          path: _govstack/sclite
+          persist-credentials: false
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: rozmiarD/RExecOP
+          ref: c7c3a44634b00bbcdacd34d0da2fad145d02bdd8
+          path: _govstack/rexecop
+          persist-credentials: false
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: rozmiarD/tecrax
+          ref: e785209475b4dcce14f90fc47efc0ab39c8d2b80
+          path: _govstack/tecrax
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13'
+      - name: Exercise the aligned source dependency graph
+        run: |
+          python -m venv "$RUNNER_TEMP/govstack-source"
+          "$RUNNER_TEMP/govstack-source/bin/python" -m pip install \
+            "$GITHUB_WORKSPACE/_govstack/sclite" \
+            "$GITHUB_WORKSPACE" \
+            "$GITHUB_WORKSPACE/_govstack/rexecop"
+          "$RUNNER_TEMP/govstack-source/bin/python" -m pip check
+      - name: Qualify exact source candidates and downstream API consumers
+        run: |
+          "$RUNNER_TEMP/govstack-source/bin/python" \
+            scripts/validate_release_train_truth.py --cross-repo \
+            --sclite-root "$GITHUB_WORKSPACE/_govstack/sclite" \
+            --rexecop-root "$GITHUB_WORKSPACE/_govstack/rexecop" \
+            --tecrax-root "$GITHUB_WORKSPACE/_govstack/tecrax"
+          "$RUNNER_TEMP/govstack-source/bin/python" \
+            scripts/validate_api_stability.py --cross-repo \
+            --consumer-root "$GITHUB_WORKSPACE/_govstack/rexecop" \
+            --consumer-root "$GITHUB_WORKSPACE/_govstack/tecrax"
 
   package-dry-run:
     runs-on: ubuntu-latest

@@ -8,6 +8,18 @@ experimental and fixture classifications.
 
 ## Unreleased
 
+- Separates immutable published artifact identities from current source
+  candidate identities in the release-train manifest. Local API/release checks
+  now identify their bounded mode, while hosted test and publish workflows use
+  exact sibling commit refs for cross-repository source metadata, direct
+  RExecOp/Tecrax consumer imports and an aligned dependency-resolved
+  SCLite/GovEngine/RExecOp install with `pip check`. These validation gates do
+  not publish artifacts, authorize execution, create SCLite verification truth,
+  or transfer RExecOp/Tecrax ownership into GovEngine. The active migration
+  guide now labels the immutable rc1 install recipe as historical, identifies
+  the public GovEngine rc2/SCLite 2.0.1 targets and the unaligned source
+  candidates, and is bound to manifest v2 by deterministic anti-drift checks.
+
 - Deprecates `validate_execution_ticket_gate()` as a compatibility-only
   ticket/contract command-shape check: it no longer accepts an unbound
   `approved_execution_spec`, rejects bool/numeric argv values rather than

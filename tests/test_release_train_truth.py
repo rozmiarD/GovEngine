@@ -12,6 +12,7 @@ from scripts.validate_release_train_truth import (
     _validate_active_docs,
     _validate_cross_repo,
     load_release_train,
+    main as release_train_main,
     validate_release_train_truth,
 )
 
@@ -39,34 +40,157 @@ def _write_project(
 
 
 def test_release_train_truth_matches_current_repository() -> None:
-    report = validate_release_train_truth()
+    report = validate_release_train_truth(mode='local')
     assert report == {
-        'sclite': '2.0.1',
-        'govengine': '1.0.0rc2',
-        'rexecop': '1.0.0rc1',
-        'tecrax': '0.4.0rc3',
+        'published_sclite': '2.0.1',
+        'published_govengine': '1.0.0rc2',
+        'published_rexecop': '1.0.0rc1',
+        'source_sclite': '2.0.1',
+        'source_govengine': '1.0.0rc2',
+        'source_rexecop': '1.0.0rc3.dev0',
+        'source_tecrax': '0.4.0rc3',
     }
 
 
-def test_active_docs_reject_stale_reference_runtime(tmp_path: Path) -> None:
+def test_manifest_separates_published_history_from_source_candidates() -> None:
+    manifest = load_release_train()
+
+    assert manifest['published_artifacts']['rexecop'] == {
+        'project': 'rexecop',
+        'version': '1.0.0rc1',
+        'status': 'published_rc',
+        'dependencies': {
+            'govengine': '1.0.0rc1',
+            'sclite-core': '2.0.0',
+        },
+    }
+    assert manifest['source_candidates']['rexecop'] == {
+        'project': 'rexecop',
+        'version': '1.0.0rc3.dev0',
+        'status': 'source_candidate',
+        'dependencies': {
+            'govengine': '1.0.0rc2',
+            'sclite-core': '2.0.1',
+        },
+    }
+    assert manifest['source_candidates']['tecrax'] == {
+        'project': 'tecrax',
+        'version': '0.4.0rc3',
+        'status': 'pending_realignment',
+        'dependencies': {
+            'govengine': '1.0.0rc2',
+            'rexecop': '1.0.0rc2',
+            'sclite-core': '2.0.1',
+        },
+    }
+
+
+def _copy_active_train_docs(tmp_path: Path) -> None:
     for relative in ACTIVE_TRAIN_DOCS:
         target = tmp_path / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         text = (ROOT / relative).read_text(encoding='utf-8')
-        if relative == 'PUBLISHING.md':
-            text = text.replace('rexecop 1.0.0rc1', 'rexecop 0.3.0rc3')
         target.write_text(text, encoding='utf-8')
+
+
+def test_active_docs_match_current_manifest() -> None:
+    _validate_active_docs(load_release_train())
+
+
+def test_active_docs_reject_stale_source_runtime(tmp_path: Path) -> None:
+    _copy_active_train_docs(tmp_path)
+    publishing = tmp_path / 'PUBLISHING.md'
+    publishing.write_text(
+        publishing.read_text(encoding='utf-8').replace(
+            'RExecOp source candidate `1.0.0rc3.dev0`',
+            'RExecOp source candidate `0.3.0rc3`',
+        ),
+        encoding='utf-8',
+    )
 
     with pytest.raises(
         AssertionError,
-        match='release_train_doc_drift:PUBLISHING.md:rexecop 1.0.0rc1',
+        match=(
+            'release_train_doc_drift:PUBLISHING.md:'
+            'RExecOp source candidate `1.0.0rc3.dev0`'
+        ),
+    ):
+        _validate_active_docs(load_release_train(), root=tmp_path)
+
+
+def test_active_docs_reject_contradictory_alignment_claim(tmp_path: Path) -> None:
+    _copy_active_train_docs(tmp_path)
+    public_status = tmp_path / 'PUBLIC_STATUS.md'
+    public_status.write_text(
+        public_status.read_text(encoding='utf-8')
+        + '\nTecrax `0.4.0rc3` is source-aligned/unpublished on the rc1 train.\n',
+        encoding='utf-8',
+    )
+
+    with pytest.raises(
+        AssertionError,
+        match=(
+            'release_train_doc_contradiction:PUBLIC_STATUS.md:'
+            'source-aligned/unpublished'
+        ),
+    ):
+        _validate_active_docs(load_release_train(), root=tmp_path)
+
+
+def test_migration_guide_rejects_current_source_as_historical_rc1(
+    tmp_path: Path,
+) -> None:
+    _copy_active_train_docs(tmp_path)
+    migration = tmp_path / 'docs/MIGRATING_TO_1.md'
+    migration.write_text(
+        migration.read_text(encoding='utf-8')
+        + (
+            '\nTecrax `0.4.0rc3` current source is aligned to the published '
+            'rc1 train.\n'
+        ),
+        encoding='utf-8',
+    )
+
+    with pytest.raises(
+        AssertionError,
+        match=(
+            'release_train_doc_contradiction:docs/MIGRATING_TO_1.md:'
+            'current source is aligned to the published rc1 train'
+        ),
+    ):
+        _validate_active_docs(load_release_train(), root=tmp_path)
+
+
+def test_migration_guide_rejects_current_public_targets_as_unpublished(
+    tmp_path: Path,
+) -> None:
+    _copy_active_train_docs(tmp_path)
+    migration = tmp_path / 'docs/MIGRATING_TO_1.md'
+    migration.write_text(
+        migration.read_text(encoding='utf-8')
+        + (
+            '\n`govengine==1.0.0rc2` source and `sclite-core==2.0.1` are not '
+            'public install targets.\n'
+        ),
+        encoding='utf-8',
+    )
+
+    with pytest.raises(
+        AssertionError,
+        match=(
+            'release_train_doc_contradiction:docs/MIGRATING_TO_1.md:'
+            '`govengine==1.0.0rc2` source and `sclite-core==2.0.1` are not '
+            'public install targets'
+        ),
     ):
         _validate_active_docs(load_release_train(), root=tmp_path)
 
 
 def test_pending_tecrax_cannot_match_current_runtime(tmp_path: Path) -> None:
     manifest = copy.deepcopy(dict(load_release_train()))
-    manifest['components']['tecrax']['dependencies']['rexecop'] = '1.0.0rc1'
+    manifest['source_candidates']['tecrax']['dependencies']['rexecop'] = (
+        '1.0.0rc3.dev0'
+    )
 
     roots = {
         'sclite': tmp_path / 'sclite',
@@ -78,21 +202,25 @@ def test_pending_tecrax_cannot_match_current_runtime(tmp_path: Path) -> None:
     _write_project(
         roots['rexecop'],
         name='rexecop',
-        version='1.0.0rc1',
-        dependencies=('govengine==1.0.0rc1', 'sclite-core==2.0.0'),
+        version='1.0.0rc3.dev0',
+        dependencies=('govengine==1.0.0rc2', 'sclite-core==2.0.1'),
     )
     _write_project(
         roots['tecrax'],
         name='tecrax',
         version='0.4.0rc3',
         dependencies=(
-            'govengine==1.0.0rc1',
-            'rexecop==1.0.0rc1',
-            'sclite-core==2.0.0',
+            'govengine==1.0.0rc2',
+            'rexecop==1.0.0rc3.dev0',
+            'sclite-core==2.0.1',
         ),
     )
 
-    _validate_cross_repo(manifest, roots)
+    with pytest.raises(
+        AssertionError,
+        match='release_train_pending_component_is_aligned:tecrax',
+    ):
+        _validate_cross_repo(manifest, roots)
 
 
 def test_cross_repo_rejects_dependency_drift(tmp_path: Path) -> None:
@@ -113,7 +241,7 @@ def test_cross_repo_rejects_dependency_drift(tmp_path: Path) -> None:
     _write_project(
         roots['rexecop'],
         name='rexecop',
-        version='1.0.0rc1',
+        version='1.0.0rc3.dev0',
         dependencies=('govengine==0.17.0rc2', 'sclite-core==2.0.0'),
     )
     _write_project(
@@ -122,8 +250,8 @@ def test_cross_repo_rejects_dependency_drift(tmp_path: Path) -> None:
         version='0.4.0rc3',
         dependencies=(
             'govengine==1.0.0rc1',
-            'rexecop==0.3.0rc3',
-            'sclite-core==2.0.0',
+            'rexecop==1.0.0rc2',
+            'sclite-core==2.0.1',
         ),
     )
 
@@ -131,10 +259,32 @@ def test_cross_repo_rejects_dependency_drift(tmp_path: Path) -> None:
         AssertionError,
         match=(
             'release_train_dependency_mismatch:rexecop:'
-            'govengine:0.17.0rc2!=1.0.0rc1'
+            'govengine:0.17.0rc2!=1.0.0rc2'
         ),
     ):
         _validate_cross_repo(manifest, roots)
+
+
+def test_release_train_modes_reject_mismatched_root_scope() -> None:
+    roots = {
+        'sclite': ROOT.parent / 'sclite',
+        'govengine': ROOT,
+        'rexecop': ROOT.parent / 'rexecop',
+        'tecrax': ROOT.parent / 'tecrax',
+    }
+
+    with pytest.raises(
+        AssertionError,
+        match='release_train_local_mode_rejects_cross_repo_roots',
+    ):
+        validate_release_train_truth(mode='local', cross_repo_roots=roots)
+    with pytest.raises(
+        AssertionError,
+        match='release_train_cross_repo_roots_required',
+    ):
+        validate_release_train_truth(mode='cross-repo')
+    with pytest.raises(SystemExit, match='2'):
+        release_train_main(['--local', '--sclite-root', '/tmp/sclite'])
 
 
 def test_historical_documents_are_outside_active_train_scan() -> None:

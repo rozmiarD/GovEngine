@@ -76,18 +76,32 @@ record, never by refreshing `rc1` in place.
 
 ## Release train
 
-The current dependency order is:
+The manifest records two deliberately separate views. Immutable published
+artifact identities remain:
 
 ```text
 sclite-core 2.0.1 -> govengine 1.0.0rc2 (published RC; observation elapsed_unclosed)
 
 sclite-core 2.0.0 -> govengine 1.0.0rc1 -> rexecop 1.0.0rc1
-
-tecrax 0.4.0rc3: source-aligned/unpublished on govengine/rexecop rc1
 ```
 
-RExecOp is the published reference runtime. Tecrax is a downstream profile, but
-its current source candidate is not aligned with the published runtime line.
+Current source candidates at the exact qualified sibling refs are:
+
+```text
+sclite-core 2.0.1 -> govengine 1.0.0rc2 -> rexecop 1.0.0rc3.dev0
+
+tecrax 0.4.0rc3: govengine 1.0.0rc2, sclite-core 2.0.1,
+                 rexecop 1.0.0rc2 (pending realignment)
+```
+
+RExecOp `1.0.0rc1` remains the published reference runtime; the development-only
+`1.0.0rc3.dev0` source identity does not rewrite that history.
+Tecrax is a downstream profile, but
+its current source candidate is not aligned with the current RExecOp source
+line; it remains a direct API consumer with pending realignment. Hosted CI
+checks all three sibling roots at exact refs and installs only the aligned
+SCLite/GovEngine/RExecOp source graph with dependency resolution plus
+`pip check`; this is qualification evidence, not release or execution authority.
 Ravenclaw is a legacy/external consumer and is not the next stage of this
 release train.
 

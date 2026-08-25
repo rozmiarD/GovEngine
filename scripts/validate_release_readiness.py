@@ -61,7 +61,7 @@ def _assert(condition: bool, reason: str) -> None:
 
 
 def main() -> int:
-    validate_release_train_truth()
+    validate_release_train_truth(mode='local')
     project = _pyproject()['project']
     version = str(project['version'])
     classifiers = tuple(str(item) for item in project.get('classifiers', ()))

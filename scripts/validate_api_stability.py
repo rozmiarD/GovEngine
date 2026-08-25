@@ -7,6 +7,7 @@ import importlib
 import inspect
 import re
 import sys
+import tomllib
 from pathlib import Path
 from types import ModuleType
 
@@ -29,6 +30,8 @@ MATRIX_STATUSES = (
 )
 TOP_LEVEL_CLASSIFICATIONS = MATRIX_STATUSES[:-1]
 IGNORED_CONSUMER_PARTS = frozenset({'.git', '.mypy_cache', '.pytest_cache', '.ruff_cache', '.tox', '.venv', 'build', 'dist', 'venv'})
+VALIDATION_MODES = frozenset({'local', 'cross-repo'})
+DIRECT_CONSUMER_PROJECTS = frozenset({'rexecop', 'tecrax'})
 
 
 @dataclass(frozen=True)
@@ -146,11 +149,56 @@ def consumer_import_map(root: Path, *, matrix_path: Path = MATRIX_PATH) -> tuple
     return tuple(sorted(set(imports), key=lambda item: (item.import_path, item.source_file, item.line)))
 
 
+def _consumer_project(root: Path) -> str:
+    path = root / 'pyproject.toml'
+    if not path.is_file():
+        raise AssertionError(f'api_consumer_pyproject_missing:{root}')
+    project = tomllib.loads(path.read_text(encoding='utf-8')).get('project')
+    if not isinstance(project, dict):
+        raise AssertionError(f'api_consumer_project_missing:{root}')
+    name = project.get('name')
+    if not isinstance(name, str) or not name:
+        raise AssertionError(f'api_consumer_project_identity_invalid:{root}')
+    return name.lower().replace('_', '-')
+
+
+def _validate_consumer_roots(
+    *,
+    mode: str,
+    consumer_roots: tuple[Path, ...],
+) -> tuple[Path, ...]:
+    if mode not in VALIDATION_MODES:
+        raise AssertionError(f'api_validation_mode_invalid:{mode}')
+    if mode == 'local':
+        if consumer_roots:
+            raise AssertionError('api_local_mode_rejects_consumer_roots')
+        return ()
+
+    by_project: dict[str, Path] = {}
+    for root in consumer_roots:
+        project = _consumer_project(root)
+        if project in by_project:
+            raise AssertionError(f'api_consumer_project_duplicate:{project}')
+        by_project[project] = root
+    if set(by_project) != set(DIRECT_CONSUMER_PROJECTS):
+        raise AssertionError(
+            'api_cross_repo_consumer_inventory_mismatch:'
+            f'expected={sorted(DIRECT_CONSUMER_PROJECTS)}:'
+            f'actual={sorted(by_project)}'
+        )
+    return tuple(by_project[project] for project in sorted(by_project))
+
+
 def validate_api_stability(
     *,
+    mode: str = 'local',
     matrix_path: Path = MATRIX_PATH,
     consumer_roots: tuple[Path, ...] = (),
-) -> dict[str, int]:
+) -> dict[str, int | str]:
+    checked_consumer_roots = _validate_consumer_roots(
+        mode=mode,
+        consumer_roots=consumer_roots,
+    )
     records = matrix_records(matrix_path)
     seen_exports: dict[str, str] = {}
     for record in records:
@@ -207,7 +255,7 @@ def validate_api_stability(
 
     allowed_imports = classified_top_level | inventory['internal-exposed']
     consumer_import_count = 0
-    for root in consumer_roots:
+    for root in checked_consumer_roots:
         imports = consumer_top_level_imports(root)
         consumer_import_count += len(imports)
         unsupported = sorted(imports - allowed_imports)
@@ -217,6 +265,7 @@ def validate_api_stability(
             )
 
     return {
+        'mode': mode,
         **{status: len(inventory[status]) for status in MATRIX_STATUSES},
         'top_level': len(govengine.__all__),
         'consumer_imports': consumer_import_count,
@@ -225,17 +274,24 @@ def validate_api_stability(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--local', action='store_true')
+    mode.add_argument('--cross-repo', action='store_true')
     parser.add_argument(
         '--consumer-root',
         action='append',
         default=[],
         type=Path,
-        help='Optional consumer source root to scan for from-govengine imports.',
+        help='RExecOp or Tecrax source root; cross-repo mode requires both.',
     )
     args = parser.parse_args(argv)
-    report = validate_api_stability(consumer_roots=tuple(args.consumer_root))
+    selected_mode = 'cross-repo' if args.cross_repo else 'local'
+    report = validate_api_stability(
+        mode=selected_mode,
+        consumer_roots=tuple(args.consumer_root),
+    )
     print(
-        'api_stability_ok:'
+        f'api_stability_ok:{report["mode"]}:'
         f"top_level={report['top_level']}:"
         f"v1_candidate={report['v1-candidate']}:adapter={report['adapter']}:"
         f"experimental={report['experimental']}:fixture={report['fixture']}:remove={report['remove']}:"

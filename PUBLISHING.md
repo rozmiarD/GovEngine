@@ -16,9 +16,10 @@ releases. It describes the repository as it exists; release history belongs in
 - RC observation window: elapsed_unclosed after `2026-08-15T11:15:02.258488Z`;
   the frozen record has no closure evidence.
 
-Current `main` tracks the published `1.0.0rc2` candidate and contains normal
-post-tag evidence updates. Stable promotion remains `publishable=false` until
-the rc2 observation completes and downstream qualification remains green.
+Current `main` is the post-published source line for the immutable `1.0.0rc2`
+artifact and contains normal post-tag source and evidence updates. Stable
+promotion remains `publishable=false` until the rc2 observation completes and
+downstream qualification remains green.
 
 The immutable PyPI description comes from `PYPI_LONG_DESCRIPTION.md`. The
 uploaded wheel/sdist, dependency metadata and recorded hashes match the
@@ -39,31 +40,39 @@ The relevant commits have different roles and must not be conflated:
 
 ## Release train
 
-Publish in dependency order:
+The v2 manifest keeps immutable `published_artifacts` separate from current
+`source_candidates`; source metadata never rewrites published history.
+The immutable published artifact identities are:
 
 ```text
 sclite-core 2.0.1     truth/contracts; published and frozen
-        |
-        v
 govengine 1.0.0rc2    governance; published RC, observation elapsed_unclosed
-        |
-        v
-rexecop 1.0.0rc1      reference runtime; published RC
 
-tecrax 0.4.0rc3       profile source candidate; source-aligned/unpublished
+sclite-core 2.0.0 -> govengine 1.0.0rc1 -> rexecop 1.0.0rc1
 ```
 
-Published RExecOp `1.0.0rc1` remains pinned to the rc1 dependency pair.
-Qualification against public GovEngine rc2 is the next downstream gate, not a
-claim that the published runtime already consumes rc2.
+The exact current source candidates are:
+
+```text
+sclite-core 2.0.1 -> govengine 1.0.0rc2 -> rexecop 1.0.0rc3.dev0
+
+tecrax 0.4.0rc3: govengine 1.0.0rc2, sclite-core 2.0.1,
+                 rexecop 1.0.0rc2 (pending_realignment)
+```
+
+Published RExecOp `1.0.0rc1` remains immutable and pinned to the published rc1
+dependency pair. The current RExecOp source candidate `1.0.0rc3.dev0` consumes
+GovEngine `1.0.0rc2` and SCLite `2.0.1`; it does not replace that artifact
+history. Tecrax `0.4.0rc3` remains `pending_realignment` and pins
+`rexecop==1.0.0rc2`, so the four source candidates are not an aligned install
+graph. Hosted qualification installs the aligned SCLite/GovEngine/RExecOp
+three-package source graph and inspects Tecrax separately as an API consumer.
 
 Ravenclaw is a legacy/external consumer, not the next package in the current
-release train. Tecrax is source-aligned/unpublished and pins the published
-`rexecop==1.0.0rc1` runtime line; it is not itself a release authority. A
-downstream release must consume the exact already-published upstream versions;
-it does not authorize changing upstream ownership.
-The same facts are recorded in machine-readable form in
-`docs/release-train.json`.
+release train. A downstream release must consume the exact already-published
+upstream versions; neither source qualification nor this manifest authorizes a
+release or changes component ownership. The same facts are recorded in
+machine-readable form in `docs/release-train.json`.
 
 ## External configuration
 
@@ -115,11 +124,15 @@ Then run the release-only gates:
 
 ```bash
 .venv/bin/python scripts/validate_v1_freeze.py
-.venv/bin/python scripts/validate_release_train_truth.py --cross-repo
+.venv/bin/python scripts/validate_release_train_truth.py --cross-repo \
+  --sclite-root /path/to/sclite \
+  --rexecop-root /path/to/rexecop \
+  --tecrax-root /path/to/tecrax
 .venv/bin/python scripts/generate_conformance_corpus.py --check
 .venv/bin/python scripts/validate_workflow_security.py
 .venv/bin/python scripts/validate_v1_security_review.py --require-independent
 .venv/bin/python scripts/validate_api_stability.py \
+  --cross-repo \
   --consumer-root /path/to/rexecop \
   --consumer-root /path/to/tecrax
 .venv/bin/python scripts/validate_clean_package_install.py \

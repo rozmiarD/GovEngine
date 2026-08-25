@@ -1,7 +1,7 @@
 {
-  "schema_version": "govengine.release_train.v1",
-  "checked_at": "2026-08-08",
-  "components": {
+  "schema_version": "govengine.release_train.v2",
+  "checked_at": "2026-08-25",
+  "published_artifacts": {
     "sclite": {
       "project": "sclite-core",
       "version": "2.0.1",
@@ -24,15 +24,40 @@
         "govengine": "1.0.0rc1",
         "sclite-core": "2.0.0"
       }
+    }
+  },
+  "source_candidates": {
+    "sclite": {
+      "project": "sclite-core",
+      "version": "2.0.1",
+      "status": "post_published_source",
+      "dependencies": {}
+    },
+    "govengine": {
+      "project": "govengine",
+      "version": "1.0.0rc2",
+      "status": "post_published_source",
+      "dependencies": {
+        "sclite-core": "2.0.1"
+      }
+    },
+    "rexecop": {
+      "project": "rexecop",
+      "version": "1.0.0rc3.dev0",
+      "status": "source_candidate",
+      "dependencies": {
+        "govengine": "1.0.0rc2",
+        "sclite-core": "2.0.1"
+      }
     },
     "tecrax": {
       "project": "tecrax",
       "version": "0.4.0rc3",
-      "status": "source_aligned_unpublished",
+      "status": "pending_realignment",
       "dependencies": {
-        "govengine": "1.0.0rc1",
-        "rexecop": "1.0.0rc1",
-        "sclite-core": "2.0.0"
+        "govengine": "1.0.0rc2",
+        "rexecop": "1.0.0rc2",
+        "sclite-core": "2.0.1"
       }
     }
   }

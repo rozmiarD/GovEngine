@@ -54,10 +54,13 @@ reason to move planning or runtime-shell mechanics into `govengine.v1`.
 
 ```bash
 python scripts/validate_api_stability.py \
+  --cross-repo \
   --consumer-root /path/to/rexecop \
   --consumer-root /path/to/tecrax
 ```
 
-The gate rejects an unclassified root export, an undocumented root callable,
-a duplicate classification, a missing owner/migration note, facade drift, a
-v1 facade larger than 40 symbols, or an unsupported downstream root import.
+Cross-repository mode is explicit: a bare or `--local` invocation with these
+consumer roots fails closed. The gate rejects an unclassified root export, an
+undocumented root callable, a duplicate classification, a missing
+owner/migration note, facade drift, a v1 facade larger than 40 symbols, or an
+unsupported downstream root import.

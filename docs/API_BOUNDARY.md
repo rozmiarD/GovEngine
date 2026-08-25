@@ -112,9 +112,14 @@ RExecOp and Tecrax import scans run with:
 
 ```bash
 python scripts/validate_api_stability.py \
+  --cross-repo \
   --consumer-root /path/to/rexecop \
   --consumer-root /path/to/tecrax
 ```
+
+`--cross-repo` is required for this two-consumer qualification. A bare or
+`--local` invocation with consumer roots fails closed and cannot be treated as
+downstream API evidence.
 
 See [API_COMPATIBILITY.md](API_COMPATIBILITY.md) and
 [DOWNSTREAM_IMPORT_MAP.md](DOWNSTREAM_IMPORT_MAP.md).

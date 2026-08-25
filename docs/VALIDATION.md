@@ -7,9 +7,9 @@ contact live targets or grant execution authority.
 
 `.github/workflows/pytest.yml` runs on Python 3.11, 3.12 and 3.13 with exact
 `sclite-core==2.0.1`. It checks public truth, the machine-readable release
-train, API stability, v1 freeze, the RC window, generated conformance, workflow
-security, review structure, release readiness, Ruff, mypy, strict facade typing
-and full pytest.
+train and API inventory in explicit local mode, v1 freeze, the RC window,
+generated conformance, workflow security, review structure, release readiness,
+Ruff, mypy, strict facade typing and full pytest.
 
 Separate jobs:
 
@@ -21,6 +21,14 @@ Separate jobs:
 - run reproducibility and lifecycle-aware record-only A/B gates: synthetic for
   pending source A, authentic for record child B and its descendants;
 - install wheel and sdist in explicit disposable `/tmp` smoke environments.
+- check out SCLite, RExecOp and Tecrax at exact reviewed commit refs, bind their
+  live source versions and dependency metadata with the cross-repository
+  release-train gate, and scan both direct consumers with the cross-repository
+  API gate;
+- install the aligned SCLite/GovEngine/RExecOp source graph with normal pip
+  dependency resolution and run `pip check`. Tecrax remains an inspected API
+  consumer and an explicitly `pending_realignment` source candidate until its
+  RExecOp pin matches; it is not included in the passing install graph.
 
 The scheduled security workflow runs dependency audit and CodeQL. All GitHub
 Actions are pinned to full commit SHAs.
@@ -33,8 +41,10 @@ Use the repository environment when available:
 bash scripts/run_ci_parity_checks.sh
 ```
 
-This runs public truth, local release-train truth, API stability, release-source
-validation, G3 receipt conformance, Ruff, mypy and full pytest. Current
+This runs public truth, local-only release-train truth, local-only API
+inventory, release-source validation, G3 receipt conformance, Ruff, mypy and
+full pytest. The parity helper's legacy bare validator invocations are always
+reported as `local`; they are not cross-stack or release qualification. Current
 post-tag `main` reports `publishable=false`; this is a successful validation of
 the explicitly unreleased source posture, not release authorization.
 `git diff --check` remains a separate local delivery check.
@@ -49,7 +59,7 @@ the explicitly unreleased source posture, not release authorization.
 .venv/bin/python scripts/validate_workflow_security.py
 .venv/bin/python scripts/validate_v1_security_review.py
 .venv/bin/python scripts/validate_rc_window.py --history-mode
-.venv/bin/python scripts/validate_release_train_truth.py
+.venv/bin/python scripts/validate_release_train_truth.py --local
 .venv/bin/python scripts/validate_distribution_metadata.py --wheel WHEEL --sdist SDIST
 .venv/bin/python scripts/validate_rc2_release_records.py --help
 ```
@@ -68,18 +78,27 @@ the explicitly unreleased source posture, not release authorization.
   `--require-independent`.
 - RC validation binds the facade manifest, corpus manifest and reason registry.
 - release-train validation checks current GovEngine package metadata and active
-  documentation against `docs/release-train.json`.
+  documentation against `docs/release-train.json`. Schema v2 keeps immutable
+  `published_artifacts` separate from current `source_candidates`; local mode
+  binds only the GovEngine source candidate and never claims sibling or
+  dependency-graph qualification.
 
 ## Downstream import and protocol gates
 
 ```bash
 .venv/bin/python scripts/validate_api_stability.py \
+  --cross-repo \
   --consumer-root /path/to/rexecop \
   --consumer-root /path/to/tecrax
 ```
 
-The gate classifies every GovEngine root export, detects unlisted callables and
-checks supported downstream root imports. RExecOp separately executes the
+Cross-repository mode requires exactly the RExecOp and Tecrax project roots;
+missing, duplicate or substituted consumer identities fail closed. Local mode
+is explicit with `--local` (and is also the compatibility meaning of a bare
+invocation); it rejects consumer roots and reports `consumer_imports=0`, so it
+cannot be read as downstream qualification. The gate classifies every
+GovEngine root export, detects unlisted callables and checks supported
+downstream root imports. RExecOp separately executes the
 shared corpus cases it owns, including trusted signed-decision verification and
 atomic decision/nonce claim semantics.
 
@@ -87,10 +106,16 @@ For a checked-out sibling stack, verify every package version and exact
 dependency pin:
 
 ```bash
-.venv/bin/python scripts/validate_release_train_truth.py --cross-repo
+.venv/bin/python scripts/validate_release_train_truth.py --cross-repo \
+  --sclite-root /path/to/sclite \
+  --rexecop-root /path/to/rexecop \
+  --tecrax-root /path/to/tecrax
 ```
 
-The cross-repo gate fails on version, dependency or alignment-status drift.
+Cross-repository mode requires the exact four-root inventory (GovEngine is the
+current root) and fails on source version, exact stack-dependency metadata or
+alignment-status drift. Published artifact entries remain historical artifact
+identities and are not rewritten to match later source candidates.
 Historical changelog entries and immutable security-review evidence are
 deliberately outside this current-truth scan.
 
@@ -117,7 +142,13 @@ Before tagging, additionally require:
 .venv/bin/python scripts/validate_v1_security_review.py --require-independent
 .venv/bin/python scripts/validate_rc_window.py --require-completed \
   --closure-record PATH
-.venv/bin/python scripts/validate_release_train_truth.py --cross-repo
+.venv/bin/python scripts/validate_release_train_truth.py --cross-repo \
+  --sclite-root /path/to/sclite \
+  --rexecop-root /path/to/rexecop \
+  --tecrax-root /path/to/tecrax
+.venv/bin/python scripts/validate_api_stability.py --cross-repo \
+  --consumer-root /path/to/rexecop \
+  --consumer-root /path/to/tecrax
 PYTHON=.venv/bin/python bash scripts/build_release_artifacts.sh --outdir /tmp/govengine-dist
 PYTHON=.venv/bin/python bash scripts/reproducible_build_gate.sh
 PYTHON=.venv/bin/python bash scripts/release_ab_repro_gate.sh
@@ -208,4 +239,7 @@ grant live execution authority.
 Passing these gates proves the bounded package contracts tested here. It is not
 a penetration test, legal authorization, production certification, malicious-
 host guarantee, plugin audit, live-target test or proof that external adapters
-are correct.
+are correct. GovEngine owns this validation wiring and its governance/API
+release declarations; it does not create canonical evidence or verification
+truth (SCLite), authorize execution beyond GovEngine admission, execute
+workflows (RExecOp), or define profile semantics (Tecrax).

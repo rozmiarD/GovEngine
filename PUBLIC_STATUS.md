@@ -18,18 +18,19 @@ decision. It does not execute the operation or define artifact truth.
 | Conformance corpus | 33 cases: 5 valid, 28 negative |
 | Independent review | rc2 external re-review #4 approved with zero open P0/P1 |
 | RC observation | elapsed_unclosed after `2026-08-15T11:15:02.258488Z`; no closure evidence |
-| Reference runtime | `rexecop==1.0.0rc1` |
-| Profile alignment | Tecrax `0.4.0rc3` source-aligned/unpublished on the rc1 train |
+| Published reference runtime | `rexecop==1.0.0rc1`; immutable rc1 artifact |
+| RExecOp source candidate | `rexecop==1.0.0rc3.dev0`; unpublished |
+| Profile source candidate | Tecrax `0.4.0rc3`; `pending_realignment`; pins `rexecop==1.0.0rc2` |
 
 The release was published from immutable tag `v1.0.0rc2` through confirmed
 workflow run `31254483143`, including source-A recovery, authentic review and
 window validation, exact A/B artifact equality, provenance and PyPI OIDC.
-Current `main` contains only post-tag evidence updates. Stable promotion
-remains `publishable=false`: the seven-day observation elapsed without closure
-evidence, and downstream RExecOp qualification against the public rc2 pair is
-also incomplete. A forward-only `govengine.rc_window_closure.v1` record bound
-to the frozen record and local closure evidence digests is required; the frozen
-rc2 record is not rewritten.
+Current `main` is a post-published source line with source and evidence updates.
+Stable promotion remains `publishable=false`: the seven-day observation elapsed
+without closure evidence, and downstream RExecOp qualification against the
+public rc2 pair is also incomplete. A forward-only
+`govengine.rc_window_closure.v1` record bound to the frozen record and local
+closure evidence digests is required; the frozen rc2 record is not rewritten.
 
 The public wheel and normalized sdist exactly match the reviewed artifacts.
 Their SHA-256 values are recorded in the rc2 external-review record and
@@ -82,7 +83,10 @@ profile helpers remain available only for compatibility or controlled
 migration. They do not make GovEngine a scheduler, lifecycle owner, executor,
 storage backend, domain profile or second SCLite truth layer.
 
-RExecOp is the reference runtime consumer. Tecrax is a downstream profile.
+Published RExecOp `1.0.0rc1` is the immutable reference runtime artifact.
+RExecOp `1.0.0rc3.dev0` is the current source candidate. Tecrax is a downstream
+profile whose `0.4.0rc3` source remains pending realignment because it pins
+RExecOp `1.0.0rc2`; these are not a source-aligned four-package train.
 Ravenclaw is a legacy/external consumer, not the current reference runtime.
 
 ## Security posture
