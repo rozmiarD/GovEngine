@@ -18,8 +18,11 @@ review_relative="docs/security-review/${candidate_label}-external-review.json"
 window_relative="docs/rc-window/${candidate_version}.json"
 
 git clone --quiet --no-local "$repo_root" "$work/repo"
-git -C "$repo_root" diff --binary --no-ext-diff HEAD -- | \
-  git -C "$work/repo" apply --binary
+tracked_patch="$work/tracked-worktree.patch"
+git -C "$repo_root" diff --binary --no-ext-diff HEAD -- > "$tracked_patch"
+if [ -s "$tracked_patch" ]; then
+  git -C "$work/repo" apply --binary < "$tracked_patch"
+fi
 while IFS= read -r -d '' relative; do
   mkdir -p "$work/repo/$(dirname "$relative")"
   cp "$repo_root/$relative" "$work/repo/$relative"

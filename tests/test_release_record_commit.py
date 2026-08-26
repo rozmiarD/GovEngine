@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -383,3 +384,78 @@ def test_release_ab_state_rejects_missing_source_history(tmp_path: Path) -> None
     )
     with pytest.raises(ValueError, match='source is not an ancestor'):
         resolve_release_ab_state(shallow)
+
+
+def test_release_ab_gate_skips_empty_patch_and_preserves_dirty_overlay(
+    tmp_path: Path,
+) -> None:
+    root = Path(__file__).parents[1]
+    source = tmp_path / 'source'
+    source.mkdir()
+    script = source / 'scripts/release_ab_repro_gate.sh'
+    script.parent.mkdir()
+    script.write_bytes((root / 'scripts/release_ab_repro_gate.sh').read_bytes())
+    script.chmod(0o755)
+    tracked = source / 'tracked.txt'
+    tracked.write_text('clean\n', encoding='utf-8')
+    _git(source, 'init', '-q')
+    _git(source, 'config', 'user.name', 'fixture')
+    _git(source, 'config', 'user.email', 'fixture@example.invalid')
+    _git(source, 'add', 'scripts/release_ab_repro_gate.sh', 'tracked.txt')
+    _git(source, 'commit', '-qm', 'source')
+
+    python_stub = tmp_path / 'python-stub'
+    python_stub.write_text(
+        """#!/usr/bin/env bash
+set -euo pipefail
+if [ "${1:-}" = "-c" ]; then
+  printf '1.0.0rc3\\n'
+  exit 0
+fi
+if [ "${1:-}" = "scripts/validate_release_record_commit.py" ]; then
+  if [ "${EXPECT_DIRTY:-0}" = "1" ]; then
+    test "$(cat tracked.txt)" = "dirty"
+    test "$(cat untracked.txt)" = "untracked"
+  else
+    test "$(cat tracked.txt)" = "clean"
+    test ! -e untracked.txt
+  fi
+  printf 'regression-sentinel\\t-\\t-\\n'
+  exit 0
+fi
+exit 97
+""",
+        encoding='utf-8',
+    )
+    python_stub.chmod(0o755)
+    env = os.environ.copy()
+    env['PYTHON'] = str(python_stub)
+
+    clean = subprocess.run(
+        ['bash', 'scripts/release_ab_repro_gate.sh'],
+        cwd=source,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert clean.returncode == 1
+    assert clean.stderr == (
+        'unsupported release A/B gate state: regression-sentinel\n'
+    )
+
+    tracked.write_text('dirty\n', encoding='utf-8')
+    (source / 'untracked.txt').write_text('untracked\n', encoding='utf-8')
+    env['EXPECT_DIRTY'] = '1'
+    dirty = subprocess.run(
+        ['bash', 'scripts/release_ab_repro_gate.sh'],
+        cwd=source,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert dirty.returncode == 1
+    assert dirty.stderr == (
+        'unsupported release A/B gate state: regression-sentinel\n'
+    )
